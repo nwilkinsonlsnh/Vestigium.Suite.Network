@@ -1,3 +1,4 @@
+using System.IO;
 using Vestigium.Helpers.Network;
 using Vestigium.Logging;
 

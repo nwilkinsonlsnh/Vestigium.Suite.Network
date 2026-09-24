@@ -1,4 +1,5 @@
 using Vestigium.Suite.Network.Shell;
+using Xunit;
 
 namespace Vestigium.Suite.Network.Tests;
 

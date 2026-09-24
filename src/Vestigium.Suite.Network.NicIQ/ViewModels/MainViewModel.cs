@@ -17,7 +17,7 @@ public sealed partial class MainViewModel : ObservableObject
         try
         {
             var adapters = NetworkHelper.GetAdapters();
-            Log = string.Join(Environment.NewLine, adapters.Select(a => $"{a.Name}  {a.OperationalStatus}  {a.Id}"));
+            Log = string.Join(Environment.NewLine, adapters.Select(a => $"{a.Name}  {a.Status}  {a.Id}"));
         }
         catch (Exception ex)
         {
