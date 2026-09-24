@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Vestigium.Suite.Network.Shell/Vestigium.Suite.Network.Shell.csproj" />
+    <Project Path="src/Vestigium.Suite.Network.PingIQ/Vestigium.Suite.Network.PingIQ.csproj" />
+    <Project Path="src/Vestigium.Suite.Network.TraceIQ/Vestigium.Suite.Network.TraceIQ.csproj" />
+    <Project Path="src/Vestigium.Suite.Network.DnsIQ/Vestigium.Suite.Network.DnsIQ.csproj" />
+    <Project Path="src/Vestigium.Suite.Network.NicIQ/Vestigium.Suite.Network.NicIQ.csproj" />
+    <Project Path="src/Vestigium.Suite.Network.RouteIQ/Vestigium.Suite.Network.RouteIQ.csproj" />
+    <Project Path="src/Vestigium.Suite.Network.ProbeHost/Vestigium.Suite.Network.ProbeHost.csproj" />
+    <Project Path="src/Vestigium.Suite.Network.ShareIQ/Vestigium.Suite.Network.ShareIQ.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Vestigium.Suite.Network.Tests/Vestigium.Suite.Network.Tests.csproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,16 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <UseWPF>true</UseWPF>
+    <Authors>Vestigium</Authors>
+    <Company>Wilkinson Business</Company>
+    <NeutralLanguage>en-US</NeutralLanguage>
+    <VestigiumNetworkVersion>1.2.0</VestigiumNetworkVersion>
+    <VestigiumAnalyticsVersion>1.0.1</VestigiumAnalyticsVersion>
+    <VestigiumChartsVersion>1.0.1</VestigiumChartsVersion>
+    <VestigiumLoggingVersion>1.7.1</VestigiumLoggingVersion>
+  </PropertyGroup>
+</Project>
