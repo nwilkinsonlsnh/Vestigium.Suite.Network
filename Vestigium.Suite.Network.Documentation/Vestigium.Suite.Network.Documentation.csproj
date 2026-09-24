@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <Folder Include="Vestigium\Suite\Network\DnsIQ\" />
+    <Folder Include="Vestigium\Suite\Network\Shell\" />
     <Folder Include="Vestigium\Suite\Network\TraceIQ\" />
     <Folder Include="Vestigium\Suite\Network\ShareIQ\" />
     <Folder Include="Vestigium\Suite\Network\RouteIQ\" />
