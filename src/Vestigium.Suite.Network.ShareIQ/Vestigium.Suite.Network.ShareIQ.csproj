@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>Vestigium.Suite.Network.ShareIQ</RootNamespace>
+    <AssemblyName>Vestigium.Suite.Network.ShareIQ</AssemblyName>
+    <ApplicationTitle>ShareIQ</ApplicationTitle>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Vestigium.Suite.Network.Shell\Vestigium.Suite.Network.Shell.csproj" />
+  </ItemGroup>
+</Project>

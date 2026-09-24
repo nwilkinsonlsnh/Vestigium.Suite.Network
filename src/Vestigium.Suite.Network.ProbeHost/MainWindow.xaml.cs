@@ -1,7 +1,7 @@
 using System.Windows;
-using Vestigium.Suite.Network.TraceIQ.ViewModels;
+using Vestigium.Suite.Network.ProbeHost.ViewModels;
 
-namespace Vestigium.Suite.Network.TraceIQ;
+namespace Vestigium.Suite.Network.ProbeHost;
 
 public partial class MainWindow : Window
 {
