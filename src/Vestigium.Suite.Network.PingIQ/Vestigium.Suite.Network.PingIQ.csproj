@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>Vestigium.Suite.Network.PingIQ</RootNamespace>
+    <AssemblyName>Vestigium.Suite.Network.PingIQ</AssemblyName>
+    <ApplicationTitle>PingIQ</ApplicationTitle>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Vestigium.Suite.Network.Shell\Vestigium.Suite.Network.Shell.csproj" />
+  </ItemGroup>
+</Project>
