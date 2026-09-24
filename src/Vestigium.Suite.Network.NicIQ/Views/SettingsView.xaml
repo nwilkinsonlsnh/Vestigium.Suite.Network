@@ -1,0 +1,106 @@
+<UserControl x:Class="Vestigium.Suite.Network.NicIQ.Views.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:nud="clr-namespace:Vestigium.Controls.NumericUpDown;assembly=Vestigium.Controls.NumericUpDown"
+             Background="{DynamicResource Vestigium.Brushes.Surface.Window}">
+  <UserControl.Resources>
+    <BooleanToVisibilityConverter x:Key="BoolToVis" />
+  </UserControl.Resources>
+  <DockPanel Margin="12">
+    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Left" Margin="20,0,0,12">
+      <RadioButton Style="{StaticResource RadioButton.HorizontalTab}"
+                   Content="NicIQ"
+                   IsChecked="{Binding NicIqPageOpen}"
+                   GroupName="SettingsPage"
+                   Margin="0,0,8,0" />
+      <RadioButton Style="{StaticResource RadioButton.HorizontalTab}"
+                   Content="Monitoring"
+                   IsChecked="{Binding MonitoringPageOpen}"
+                   GroupName="SettingsPage"
+                   Margin="0,0,8,0" />
+      <RadioButton Style="{StaticResource RadioButton.HorizontalTab}"
+                   Content="Theme"
+                   IsChecked="{Binding ThemePageOpen}"
+                   GroupName="SettingsPage" />
+    </StackPanel>
+
+    <StackPanel HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                Width="480"
+                Margin="20,0,0,0"
+                Visibility="{Binding NicIqPageOpen, Converter={StaticResource BoolToVis}}">
+      <TextBlock Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap" Margin="0,0,0,16"
+                 Text="Defaults for the NicIQ page. Duration is seconds." />
+
+      <CheckBox Style="{StaticResource CheckBox.Standard}"
+                Content="Show Down"
+                IsChecked="{Binding ShowDown}"
+                Margin="0,0,0,12" />
+      <CheckBox Style="{StaticResource CheckBox.Standard}"
+                Content="Show Up"
+                IsChecked="{Binding ShowUp}"
+                Margin="0,0,0,12" />
+      <CheckBox Style="{StaticResource CheckBox.Standard}"
+                Content="Show IPv4"
+                IsChecked="{Binding ShowIpv4}"
+                Margin="0,0,0,12" />
+      <CheckBox Style="{StaticResource CheckBox.Standard}"
+                Content="Show IPv6"
+                IsChecked="{Binding ShowIpv6}"
+                Margin="0,0,0,16" />
+
+      <Label Style="{StaticResource Label.Standard}" Content="Duration (s)" />
+      <nud:VestigiumNumericUpDown Value="{Binding DefaultDurationSeconds, Mode=TwoWay}"
+                                  SignMode="Unsigned"
+                                  Minimum="1" Maximum="60" Increment="1" PageIncrement="5" DecimalPlaces="0" />
+    </StackPanel>
+
+    <StackPanel HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                Width="480"
+                Margin="20,0,0,0"
+                Visibility="{Binding MonitoringPageOpen, Converter={StaticResource BoolToVis}}">
+      <TextBlock Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap" Margin="0,0,0,16"
+                 Text="The live chart grows with collected samples up to this window. Mean, p95, CL, UCL and LCL use the same window. Floor 180 seconds (3 minutes), ceiling 600 seconds (10 minutes)." />
+      <CheckBox Style="{StaticResource CheckBox.Standard}"
+                Content="Show chart legend"
+                IsChecked="{Binding ShowLegend}"
+                Margin="0,0,0,16" />
+      <Label Style="{StaticResource Label.Standard}" Content="Archive window (seconds)" />
+      <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+        <nud:VestigiumNumericUpDown Value="{Binding ArchiveSeconds, Mode=TwoWay}"
+                                    SignMode="Unsigned"
+                                    Minimum="180" Maximum="600" Increment="1" PageIncrement="30" DecimalPlaces="0"
+                                    Width="120" />
+        <TextBlock Style="{StaticResource TextBlock.Caption}"
+                   VerticalAlignment="Center"
+                   Margin="12,0,0,0"
+                   Text="{Binding ArchiveWindowLabel}" />
+      </StackPanel>
+    </StackPanel>
+
+    <StackPanel HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                Width="420"
+                Margin="20,0,0,0"
+                Visibility="{Binding ThemePageOpen, Converter={StaticResource BoolToVis}}">
+      <Label Style="{StaticResource Label.Standard}" Content="Palette" />
+      <ComboBox Style="{StaticResource ComboBox.Standard}"
+                ItemsSource="{Binding Themes}"
+                DisplayMemberPath="DisplayName"
+                SelectedValuePath="Id"
+                SelectedValue="{Binding SelectedThemeId, Mode=TwoWay}"
+                Margin="0,0,0,16" />
+
+      <CheckBox Style="{StaticResource CheckBox.Standard}"
+                Content="Status bar visible"
+                IsChecked="{Binding BarVisible}"
+                Margin="0,0,0,16" />
+
+      <Label Style="{StaticResource Label.Standard}" Content="Status bar dock" />
+      <ComboBox Style="{StaticResource ComboBox.Standard}"
+                ItemsSource="{Binding BarPositions}"
+                SelectedItem="{Binding BarPosition}" />
+    </StackPanel>
+  </DockPanel>
+</UserControl>

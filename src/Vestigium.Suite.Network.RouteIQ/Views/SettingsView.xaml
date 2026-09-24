@@ -1,0 +1,166 @@
+<UserControl x:Class="Vestigium.Suite.Network.RouteIQ.Views.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:nud="clr-namespace:Vestigium.Controls.NumericUpDown;assembly=Vestigium.Controls.NumericUpDown"
+             Background="{DynamicResource Vestigium.Brushes.Surface.Window}">
+  <TabControl Style="{StaticResource TabControl.Standard}" Margin="12,8,12,12" HorizontalContentAlignment="Left" VerticalContentAlignment="Top">
+    <TabItem Header="General" Style="{StaticResource TabItem.Standard}" HorizontalContentAlignment="Left" VerticalContentAlignment="Top">
+      <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <StackPanel HorizontalAlignment="Left" VerticalAlignment="Top" Width="520" Margin="16,12,0,16">
+          <TextBlock Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap" Margin="0,0,0,16"
+                     Text="Palette, the status bar, and the OUI pool. Saved under ProgramData\Vestigium\Settings\RouteIQ." />
+          <Label Style="{StaticResource Label.Standard}" Content="Palette" />
+          <ComboBox Style="{StaticResource ComboBox.Standard}"
+                    ItemsSource="{Binding Themes}"
+                    DisplayMemberPath="DisplayName"
+                    SelectedValuePath="Id"
+                    SelectedValue="{Binding SelectedThemeId, Mode=TwoWay}"
+                    Margin="0,0,0,16" />
+          <CheckBox Style="{StaticResource CheckBox.Standard}"
+                    Content="Status bar visible"
+                    IsChecked="{Binding BarVisible}"
+                    Margin="0,0,0,16" />
+          <Label Style="{StaticResource Label.Standard}" Content="Status bar dock" />
+          <ComboBox Style="{StaticResource ComboBox.Standard}"
+                    ItemsSource="{Binding BarPositions}"
+                    SelectedItem="{Binding BarPosition}"
+                    Margin="0,0,0,16" />
+          <Label Style="{StaticResource Label.Standard}" Content="OUI lookup pool" />
+          <nud:VestigiumNumericUpDown Value="{Binding OuiPoolSize, Mode=TwoWay}" Minimum="1" Maximum="20" Increment="1" Width="88" HorizontalAlignment="Left" Margin="0,0,0,8" />
+          <TextBlock Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap" Margin="0,0,0,12"
+                     Text="How many vendor lookups run at once. A finished call fills that row and starts the next prefix." />
+          <CheckBox Style="{StaticResource CheckBox.Standard}"
+                    Content="Look up missing vendors online"
+                    IsChecked="{Binding LiveVendorLookup}"
+                    Margin="0,0,0,8" />
+          <TextBlock Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap"
+                     Text="Off by default. Packed registry only until this is on. On sends the OUI to https://api.macvendors.com/{oui}." />
+        </StackPanel>
+      </Grid>
+    </TabItem>
+    <TabItem Header="Connections" Style="{StaticResource TabItem.Standard}" HorizontalContentAlignment="Left" VerticalContentAlignment="Top">
+      <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <StackPanel HorizontalAlignment="Left" VerticalAlignment="Top" Width="640" Margin="16,12,0,16">
+          <TextBlock Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap" Margin="0,0,0,12"
+                     Text="Added, Dropped, and Reopened. Open stays on the palette. Turn this off and every row stays on the palette. The colors stay saved." />
+          <CheckBox Style="{StaticResource CheckBox.Standard}"
+                    Content="Color changed rows"
+                    IsChecked="{Binding Marks.ColorChangedRows}"
+                    Margin="0,0,0,12" />
+          <Grid Margin="0,0,0,8">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="88" />
+              <ColumnDefinition Width="36" />
+              <ColumnDefinition Width="88" />
+              <ColumnDefinition Width="36" />
+              <ColumnDefinition Width="72" />
+              <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="28" />
+              <RowDefinition Height="32" />
+              <RowDefinition Height="32" />
+              <RowDefinition Height="32" />
+            </Grid.RowDefinitions>
+            <TextBlock Grid.Row="0" Grid.Column="1" Text="Fill" Style="{StaticResource TextBlock.Caption}" VerticalAlignment="Center" />
+            <TextBlock Grid.Row="0" Grid.Column="3" Text="Text" Style="{StaticResource TextBlock.Caption}" VerticalAlignment="Center" />
+            <TextBlock Grid.Row="1" Grid.Column="0" Text="Added" VerticalAlignment="Center" />
+            <Button Grid.Row="1" Grid.Column="1" Command="{Binding PickMarkColorCommand}" CommandParameter="AddedBackground" Background="{Binding Marks.AddedBackgroundBrush}" Width="28" Height="22" HorizontalAlignment="Left" ToolTip="Added fill" />
+            <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding Marks.AddedBackground}" VerticalAlignment="Center" />
+            <Button Grid.Row="1" Grid.Column="3" Command="{Binding PickMarkColorCommand}" CommandParameter="AddedForeground" Background="{Binding Marks.AddedForegroundBrush}" Width="28" Height="22" HorizontalAlignment="Left" ToolTip="Added text" />
+            <TextBlock Grid.Row="1" Grid.Column="4" Text="{Binding Marks.AddedForeground}" VerticalAlignment="Center" />
+            <TextBlock Grid.Row="2" Grid.Column="0" Text="Dropped" VerticalAlignment="Center" />
+            <Button Grid.Row="2" Grid.Column="1" Command="{Binding PickMarkColorCommand}" CommandParameter="DroppedBackground" Background="{Binding Marks.DroppedBackgroundBrush}" Width="28" Height="22" HorizontalAlignment="Left" ToolTip="Dropped fill" />
+            <TextBlock Grid.Row="2" Grid.Column="2" Text="{Binding Marks.DroppedBackground}" VerticalAlignment="Center" />
+            <Button Grid.Row="2" Grid.Column="3" Command="{Binding PickMarkColorCommand}" CommandParameter="DroppedForeground" Background="{Binding Marks.DroppedForegroundBrush}" Width="28" Height="22" HorizontalAlignment="Left" ToolTip="Dropped text" />
+            <TextBlock Grid.Row="2" Grid.Column="4" Text="{Binding Marks.DroppedForeground}" VerticalAlignment="Center" />
+            <TextBlock Grid.Row="3" Grid.Column="0" Text="Reopened" VerticalAlignment="Center" />
+            <Button Grid.Row="3" Grid.Column="1" Command="{Binding PickMarkColorCommand}" CommandParameter="ReopenedBackground" Background="{Binding Marks.ReopenedBackgroundBrush}" Width="28" Height="22" HorizontalAlignment="Left" ToolTip="Reopened fill" />
+            <TextBlock Grid.Row="3" Grid.Column="2" Text="{Binding Marks.ReopenedBackground}" VerticalAlignment="Center" />
+            <Button Grid.Row="3" Grid.Column="3" Command="{Binding PickMarkColorCommand}" CommandParameter="ReopenedForeground" Background="{Binding Marks.ReopenedForegroundBrush}" Width="28" Height="22" HorizontalAlignment="Left" ToolTip="Reopened text" />
+            <TextBlock Grid.Row="3" Grid.Column="4" Text="{Binding Marks.ReopenedForeground}" VerticalAlignment="Center" />
+          </Grid>
+          <Button Content="Recommended colors" Style="{StaticResource Button.Secondary}" Command="{Binding ResetMarkColorsCommand}" HorizontalAlignment="Left" Padding="16,4" />
+        </StackPanel>
+      </Grid>
+    </TabItem>
+    <TabItem Header="Queries" Style="{StaticResource TabItem.Standard}" HorizontalContentAlignment="Left" VerticalContentAlignment="Top">
+      <DockPanel HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="16,8,12,12">
+        <StackPanel DockPanel.Dock="Top" HorizontalAlignment="Left" Margin="0,4,0,8">
+          <Label Style="{StaticResource Label.Standard}" Content="Query list size" />
+          <nud:VestigiumNumericUpDown Value="{Binding QueryMruLimit, Mode=TwoWay}" Minimum="0" Maximum="30" Increment="1" Width="88" HorizontalAlignment="Left" Margin="0,0,0,8" />
+          <TextBlock Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap" Margin="0,0,0,8"
+                     Text="Recent queries per tab. 0 hides the list and does not delete saved queries. A sticky row stays and does not count against this size." />
+          <CheckBox Style="{StaticResource CheckBox.Standard}"
+                    Content="Close the query list after a selection"
+                    IsChecked="{Binding CloseMruOnApply}" />
+        </StackPanel>
+        <TabControl Style="{StaticResource TabControl.Standard}" HorizontalContentAlignment="Left" VerticalContentAlignment="Top">
+          <TabItem Header="RouteIQ" Style="{StaticResource TabItem.Standard}" HorizontalContentAlignment="Left" VerticalContentAlignment="Top">
+            <DataGrid ItemsSource="{Binding RouteQueries}" Style="{StaticResource DataGrid.Compact}" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" HeadersVisibility="Column" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,12,0,0">
+              <DataGrid.Columns>
+                <DataGridTextColumn Header="Query" Binding="{Binding Text}" Width="*" IsReadOnly="True" />
+                <DataGridTemplateColumn Header="" Width="44">
+                  <DataGridTemplateColumn.CellTemplate>
+                    <DataTemplate>
+                      <Button Style="{StaticResource Button.QueryPin}" Command="{Binding DataContext.ToggleStickyCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" />
+                    </DataTemplate>
+                  </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="" Width="80">
+                  <DataGridTemplateColumn.CellTemplate>
+                    <DataTemplate>
+                      <Button Content="Remove" Command="{Binding DataContext.RemoveQueryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Padding="8,2" />
+                    </DataTemplate>
+                  </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+              </DataGrid.Columns>
+            </DataGrid>
+          </TabItem>
+          <TabItem Header="Neighbors" Style="{StaticResource TabItem.Standard}" HorizontalContentAlignment="Left" VerticalContentAlignment="Top">
+            <DataGrid ItemsSource="{Binding NeighborQueries}" Style="{StaticResource DataGrid.Compact}" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" HeadersVisibility="Column" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,12,0,0">
+              <DataGrid.Columns>
+                <DataGridTextColumn Header="Query" Binding="{Binding Text}" Width="*" IsReadOnly="True" />
+                <DataGridTemplateColumn Header="" Width="44">
+                  <DataGridTemplateColumn.CellTemplate>
+                    <DataTemplate>
+                      <Button Style="{StaticResource Button.QueryPin}" Command="{Binding DataContext.ToggleStickyCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" />
+                    </DataTemplate>
+                  </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="" Width="80">
+                  <DataGridTemplateColumn.CellTemplate>
+                    <DataTemplate>
+                      <Button Content="Remove" Command="{Binding DataContext.RemoveQueryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Padding="8,2" />
+                    </DataTemplate>
+                  </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+              </DataGrid.Columns>
+            </DataGrid>
+          </TabItem>
+          <TabItem Header="Connections" Style="{StaticResource TabItem.Standard}" HorizontalContentAlignment="Left" VerticalContentAlignment="Top">
+            <DataGrid ItemsSource="{Binding ConnectionQueries}" Style="{StaticResource DataGrid.Compact}" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" HeadersVisibility="Column" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,12,0,0">
+              <DataGrid.Columns>
+                <DataGridTextColumn Header="Query" Binding="{Binding Text}" Width="*" IsReadOnly="True" />
+                <DataGridTemplateColumn Header="" Width="44">
+                  <DataGridTemplateColumn.CellTemplate>
+                    <DataTemplate>
+                      <Button Style="{StaticResource Button.QueryPin}" Command="{Binding DataContext.ToggleStickyCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" />
+                    </DataTemplate>
+                  </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="" Width="80">
+                  <DataGridTemplateColumn.CellTemplate>
+                    <DataTemplate>
+                      <Button Content="Remove" Command="{Binding DataContext.RemoveQueryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Padding="8,2" />
+                    </DataTemplate>
+                  </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+              </DataGrid.Columns>
+            </DataGrid>
+          </TabItem>
+        </TabControl>
+      </DockPanel>
+    </TabItem>
+  </TabControl>
+</UserControl>

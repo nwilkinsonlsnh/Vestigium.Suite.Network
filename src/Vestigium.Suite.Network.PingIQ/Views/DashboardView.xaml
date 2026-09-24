@@ -1,0 +1,68 @@
+<UserControl x:Class="Vestigium.Suite.Network.PingIQ.Views.DashboardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="{DynamicResource Vestigium.Brushes.Surface.Window}">
+  <UserControl.Resources>
+    <BooleanToVisibilityConverter x:Key="BoolToVis" />
+  </UserControl.Resources>
+  <Grid Margin="12">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+    </Grid.RowDefinitions>
+
+    <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Left" Margin="20,0,0,12">
+      <RadioButton Style="{StaticResource RadioButton.HorizontalTab}"
+                   Content="Ping"
+                   IsChecked="{Binding EchoPageOpen}"
+                   GroupName="DashboardPage"
+                   Margin="0,0,8,0" />
+      <RadioButton Style="{StaticResource RadioButton.HorizontalTab}"
+                   Content="Probe"
+                   IsChecked="{Binding ProbePageOpen}"
+                   GroupName="DashboardPage" />
+    </StackPanel>
+
+    <Grid Grid.Row="1">
+      <Grid Visibility="{Binding EchoPageOpen, Converter={StaticResource BoolToVis}}">
+        <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left"
+                    Visibility="{Binding EchoEmpty, Converter={StaticResource BoolToVis}}">
+          <TextBlock Style="{StaticResource TextBlock.Caption}" Text="No Ping chart yet." />
+          <TextBlock Margin="0,8,0,0">
+            <Hyperlink Command="{Binding OpenPingIqCommand}">Open PingIQ and run Ping</Hyperlink>
+          </TextBlock>
+        </StackPanel>
+        <ContentControl Content="{Binding EchoChart}"
+                        Visibility="{Binding HasEchoData, Converter={StaticResource BoolToVis}}" />
+      </Grid>
+
+      <ScrollViewer Visibility="{Binding ProbePageOpen, Converter={StaticResource BoolToVis}}"
+                    VerticalScrollBarVisibility="Auto"
+                    HorizontalScrollBarVisibility="Disabled"
+                    PreviewMouseWheel="Probe_PreviewMouseWheel">
+        <Grid MinHeight="720">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="*" MinHeight="240" />
+          <RowDefinition Height="*" MinHeight="240" />
+          <RowDefinition Height="*" MinHeight="240" />
+        </Grid.RowDefinitions>
+
+        <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left"
+                    Visibility="{Binding ProbeEmpty, Converter={StaticResource BoolToVis}}">
+          <TextBlock Style="{StaticResource TextBlock.Caption}" Text="No Probe chart yet." />
+          <TextBlock Margin="0,8,0,0">
+            <Hyperlink Command="{Binding OpenPingIqCommand}">Open PingIQ and run Probe</Hyperlink>
+          </TextBlock>
+        </StackPanel>
+
+        <ContentControl Grid.Row="0" Content="{Binding ProbeCurve}" Margin="0,0,0,8"
+                        Visibility="{Binding HasProbeData, Converter={StaticResource BoolToVis}}" />
+        <ContentControl Grid.Row="1" Content="{Binding ProbeShape}" Margin="0,0,0,8"
+                        Visibility="{Binding HasProbeData, Converter={StaticResource BoolToVis}}" />
+        <ContentControl Grid.Row="2" Content="{Binding ProbeControl}"
+                        Visibility="{Binding ShowProbeControl, Converter={StaticResource BoolToVis}}" />
+      </Grid>
+      </ScrollViewer>
+    </Grid>
+  </Grid>
+</UserControl>

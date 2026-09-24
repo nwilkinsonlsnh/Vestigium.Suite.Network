@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <UseWPF>false</UseWPF>
+    <UseWindowsForms>false</UseWindowsForms>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Vestigium\Suite\Network\WPF\TraceIQ\PR-Plans\Completed\" />
+    <None Include="Vestigium\**\*.md" />
+    <EmbeddedResource Remove="Vestigium\Suite\Network\WPF\NicIQ\PR-Plans\PR01\**" />
+    <None Remove="Vestigium\Suite\Network\WPF\NicIQ\PR-Plans\PR01\**" />
+    <Folder Include="Vestigium\Suite\Network\WPF\PingIQ\PR-Plans\Completed\" />
+    <Folder Include="Vestigium\Suite\Network\WPF\PingIQ\PR-Plans\PR01\" />
+    <Folder Include="Vestigium\Suite\Network\WPF\ProbeHost\PR-Plans\Completed\" />
+    <Folder Include="Vestigium\Suite\Network\WPF\ProbeHost\PR-Plans\PR01\" />
+    <Folder Include="Vestigium\Suite\Network\WPF\RouteIQ\PR-Plans\Completed\PR01\" />
+    <Folder Include="Vestigium\Suite\Network\WPF\ShareIQ\PR-Plans\Completed\" />
+    <Folder Include="Vestigium\Suite\Network\WPF\ShareIQ\PR-Plans\PR01\" />
+    <Folder Include="Vestigium\Suite\Network\WPF\Shell\PR-Plans\Completed\" />
+    <Folder Include="Vestigium\Suite\Network\WPF\Shell\PR-Plans\PR01\" />
+  </ItemGroup>
+</Project>

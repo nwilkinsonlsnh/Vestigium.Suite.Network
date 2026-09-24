@@ -1,0 +1,110 @@
+<UserControl x:Class="Vestigium.Suite.Network.RouteIQ.Views.ConnectionsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:nud="clr-namespace:Vestigium.Controls.NumericUpDown;assembly=Vestigium.Controls.NumericUpDown"
+             xmlns:query="clr-namespace:Vestigium.Controls.QueryBar;assembly=Vestigium.Controls.QueryBar"
+             Background="{DynamicResource Vestigium.Brushes.Surface.Window}">
+  <Grid Margin="16,12,16,16">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+    </Grid.RowDefinitions>
+    <StackPanel Grid.Row="0" Style="{StaticResource StackPanel.Toolbar}" Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,0,8">
+      <Button Content="Refresh" Style="{StaticResource Button.Primary}" Command="{Binding SnapshotConnectionsCommand}" Padding="16,4" Margin="0,0,8,0" />
+      <TextBlock Text="Window" Style="{StaticResource TextBlock.Caption}" VerticalAlignment="Center" Margin="8,0,6,0" />
+      <nud:VestigiumNumericUpDown Value="{Binding WatchSeconds, Mode=TwoWay}" Minimum="5" Maximum="180" Increment="5" Width="88" Margin="0,0,8,0" />
+      <Button Content="Watch" Style="{StaticResource Button.Secondary}" Command="{Binding WatchConnectionsCommand}" Padding="16,4" Margin="0,0,8,0" />
+      <Button Content="Copy" Style="{StaticResource Button.Secondary}" Command="{Binding CopyConnectionsCommand}" Padding="16,4" Margin="0,0,8,0" />
+      <Button x:Name="LegendButton" Content="Legend" Style="{StaticResource Button.Secondary}" Padding="16,4" Click="OnLegend" />
+      <Popup x:Name="LegendPopup" PlacementTarget="{Binding ElementName=LegendButton}" Placement="Bottom" StaysOpen="False" AllowsTransparency="True">
+        <Border Background="{DynamicResource Vestigium.Brushes.Surface.Window}" BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1" Padding="12" Margin="0,4,0,0">
+          <StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+              <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xEA3B;" Width="18" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+              <TextBlock Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" Text="Open. In the baseline. Refresh writes this." />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+              <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE710;" Width="18" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+              <TextBlock Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" Text="Added. Not in the baseline. Showed up during the watch." />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+              <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE738;" Width="18" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+              <TextBlock Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" Text="Dropped. Was present, then left. Same row." />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+              <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE72C;" Width="18" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+              <TextBlock Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" Text="Reopened. Came back after a drop. Same row." />
+            </StackPanel>
+          </StackPanel>
+        </Border>
+      </Popup>
+    </StackPanel>
+    <query:VestigiumQueryBar Grid.Row="1"
+                             Text="{Binding ConnectionQuery, UpdateSourceTrigger=PropertyChanged}"
+                             Session="{Binding ConnectionSession}"
+                             Queries="{Binding ConnectionMru}"
+                             Limit="{Binding QueryBook.QueryMruLimit}"
+                             CloseOnApply="{Binding QueryBook.Current.CloseMruOnApply}"
+                             LostFocus="OnConnectionCommit"
+                             PreviewKeyDown="OnConnectionKey"
+                             PinRequested="OnConnectionPin" />
+    <TextBlock Grid.Row="2" Style="{StaticResource TextBlock.Caption}" Text="{Binding ConnectionSummary}" Margin="0,4,0,4" />
+    <Border Grid.Row="3" BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
+      <DataGrid x:Name="ConnectionGrid" ItemsSource="{Binding Connections}" Style="{StaticResource DataGrid.Compact}" RowHeight="28" IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" CanUserResizeRows="False" CanUserSortColumns="True" EnableRowVirtualization="True" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling" ScrollViewer.CanContentScroll="True" PreviewMouseWheel="OnWheel" HeadersVisibility="Column" VerticalAlignment="Stretch" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+        <DataGrid.RowStyle>
+          <Style TargetType="DataGridRow" BasedOn="{StaticResource DataGridRow.Standard}">
+            <Style.Triggers>
+              <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                  <Condition Binding="{Binding Change}" Value="Added" />
+                  <Condition Binding="{Binding DataContext.Marks.ColorChangedRows, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="True" />
+                </MultiDataTrigger.Conditions>
+                <Setter Property="Background" Value="{Binding DataContext.Marks.AddedBackgroundBrush, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+                <Setter Property="Foreground" Value="{Binding DataContext.Marks.AddedForegroundBrush, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+              </MultiDataTrigger>
+              <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                  <Condition Binding="{Binding Change}" Value="Dropped" />
+                  <Condition Binding="{Binding DataContext.Marks.ColorChangedRows, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="True" />
+                </MultiDataTrigger.Conditions>
+                <Setter Property="Background" Value="{Binding DataContext.Marks.DroppedBackgroundBrush, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+                <Setter Property="Foreground" Value="{Binding DataContext.Marks.DroppedForegroundBrush, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+              </MultiDataTrigger>
+              <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                  <Condition Binding="{Binding Change}" Value="Reopened" />
+                  <Condition Binding="{Binding DataContext.Marks.ColorChangedRows, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="True" />
+                </MultiDataTrigger.Conditions>
+                <Setter Property="Background" Value="{Binding DataContext.Marks.ReopenedBackgroundBrush, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+                <Setter Property="Foreground" Value="{Binding DataContext.Marks.ReopenedForegroundBrush, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+              </MultiDataTrigger>
+            </Style.Triggers>
+          </Style>
+        </DataGrid.RowStyle>
+        <DataGrid.Columns>
+          <DataGridTemplateColumn Header="Status" Width="120" SortMemberPath="Change">
+            <DataGridTemplateColumn.CellTemplate>
+              <DataTemplate>
+                <StackPanel Orientation="Horizontal">
+                  <TextBlock FontFamily="Segoe MDL2 Assets" Text="{Binding Mark}" Width="16" Margin="0,0,6,0" VerticalAlignment="Center" />
+                  <TextBlock Text="{Binding Change}" VerticalAlignment="Center" />
+                </StackPanel>
+              </DataTemplate>
+            </DataGridTemplateColumn.CellTemplate>
+          </DataGridTemplateColumn>
+          <DataGridTextColumn Header="Protocol" Binding="{Binding Protocol}" Width="80" />
+          <DataGridTextColumn Header="Local" Binding="{Binding LocalAddress}" Width="140" />
+          <DataGridTextColumn Header="Port" Binding="{Binding LocalPort}" Width="70" />
+          <DataGridTextColumn Header="Remote" Binding="{Binding RemoteAddress}" Width="140" />
+          <DataGridTextColumn Header="Port" Binding="{Binding RemotePort}" Width="70" />
+          <DataGridTextColumn Header="Service" Binding="{Binding Service}" Width="100" />
+          <DataGridTextColumn Header="State" Binding="{Binding State}" Width="110" />
+          <DataGridTextColumn Header="Process" Binding="{Binding Process}" Width="140" />
+          <DataGridTextColumn Header="Time" Binding="{Binding TimeSeconds}" Width="70" />
+        </DataGrid.Columns>
+      </DataGrid>
+    </Border>
+  </Grid>
+</UserControl>

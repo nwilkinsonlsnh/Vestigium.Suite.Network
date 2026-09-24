@@ -1,0 +1,62 @@
+<UserControl x:Class="Vestigium.Suite.Network.RouteIQ.Views.RoutesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:query="clr-namespace:Vestigium.Controls.QueryBar;assembly=Vestigium.Controls.QueryBar"
+             Background="{DynamicResource Vestigium.Brushes.Surface.Window}"
+             SizeChanged="OnSizeChanged">
+  <DockPanel Margin="16,12,16,16">
+    <StackPanel x:Name="Toolbar" DockPanel.Dock="Top" Margin="0,0,0,12">
+      <StackPanel Style="{StaticResource StackPanel.Toolbar}" Orientation="Horizontal" HorizontalAlignment="Left">
+        <Button Content="Refresh" Style="{StaticResource Button.Primary}" Command="{Binding RefreshCommand}" Padding="16,4" Margin="0,0,8,0" />
+        <Button Content="Copy" Style="{StaticResource Button.Secondary}" Command="{Binding CopyCommand}" Padding="16,4" />
+      </StackPanel>
+      <query:VestigiumQueryBar Margin="0,8,0,0"
+                               Text="{Binding RouteQuery, UpdateSourceTrigger=PropertyChanged}"
+                               Session="{Binding RouteSession}"
+                               Queries="{Binding RouteMru}"
+                               Limit="{Binding QueryBook.QueryMruLimit}"
+                               CloseOnApply="{Binding QueryBook.Current.CloseMruOnApply}"
+                               LostFocus="OnRouteCommit"
+                               PreviewKeyDown="OnRouteKey"
+                               PinRequested="OnRoutePin" />
+    </StackPanel>
+    <Grid>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="*" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="276" />
+      </Grid.RowDefinitions>
+      <TextBlock x:Name="Ipv4Caption" Grid.Row="0" Style="{StaticResource TextBlock.Caption}" Text="IPv4 Route Table" Margin="0,0,0,4" />
+      <Border x:Name="Ipv4Host" Grid.Row="1" BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1" Margin="0,0,0,12">
+        <DataGrid ItemsSource="{Binding Ipv4Routes}" Style="{StaticResource DataGrid.Compact}" RowHeight="28" IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" HeadersVisibility="Column" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+          <DataGrid.Columns>
+            <DataGridTextColumn Header="Destination" Binding="{Binding Destination}" Width="220" />
+            <DataGridTextColumn Header="PrefixLength" Binding="{Binding PrefixLength}" Width="110" />
+            <DataGridTextColumn Header="Mask" Binding="{Binding Mask}" Width="140" />
+            <DataGridTextColumn Header="Gateway" Binding="{Binding Gateway}" Width="180" />
+            <DataGridTextColumn Header="InterfaceName" Binding="{Binding InterfaceName}" Width="160" />
+            <DataGridTextColumn Header="InterfaceIndex" Binding="{Binding InterfaceIndex}" Width="120" />
+            <DataGridTextColumn Header="Metric" Binding="{Binding Metric}" Width="80" />
+            <DataGridTextColumn Header="Protocol" Binding="{Binding Protocol}" Width="100" />
+          </DataGrid.Columns>
+        </DataGrid>
+      </Border>
+      <TextBlock x:Name="Ipv6Caption" Grid.Row="2" Style="{StaticResource TextBlock.Caption}" Text="IPv6 Route Table" Margin="0,0,0,4" />
+      <Border Grid.Row="3" BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1" Height="276">
+        <DataGrid ItemsSource="{Binding Ipv6Routes}" Style="{StaticResource DataGrid.Compact}" RowHeight="28" IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" HeadersVisibility="Column" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+          <DataGrid.Columns>
+            <DataGridTextColumn Header="Destination" Binding="{Binding Destination}" Width="220" />
+            <DataGridTextColumn Header="PrefixLength" Binding="{Binding PrefixLength}" Width="110" />
+            <DataGridTextColumn Header="Mask" Binding="{Binding Mask}" Width="140" />
+            <DataGridTextColumn Header="Gateway" Binding="{Binding Gateway}" Width="180" />
+            <DataGridTextColumn Header="InterfaceName" Binding="{Binding InterfaceName}" Width="160" />
+            <DataGridTextColumn Header="InterfaceIndex" Binding="{Binding InterfaceIndex}" Width="120" />
+            <DataGridTextColumn Header="Metric" Binding="{Binding Metric}" Width="80" />
+            <DataGridTextColumn Header="Protocol" Binding="{Binding Protocol}" Width="100" />
+          </DataGrid.Columns>
+        </DataGrid>
+      </Border>
+    </Grid>
+  </DockPanel>
+</UserControl>

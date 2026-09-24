@@ -1,0 +1,70 @@
+<UserControl x:Class="Vestigium.Suite.Network.RouteIQ.Views.NeighborsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:query="clr-namespace:Vestigium.Controls.QueryBar;assembly=Vestigium.Controls.QueryBar"
+             Background="{DynamicResource Vestigium.Brushes.Surface.Window}"
+             SizeChanged="OnSizeChanged">
+  <DockPanel Margin="16,12,16,16">
+    <StackPanel x:Name="Toolbar" DockPanel.Dock="Top" Margin="0,0,0,12">
+      <StackPanel Style="{StaticResource StackPanel.Toolbar}" Orientation="Horizontal" HorizontalAlignment="Left">
+        <Button Content="Refresh" Style="{StaticResource Button.Primary}" Command="{Binding RefreshCommand}" Padding="16,4" Margin="0,0,8,0" />
+        <Button Content="Probe" Style="{StaticResource Button.Secondary}" Command="{Binding ProbeCommand}" Padding="16,4" Margin="0,0,8,0" />
+        <TextBox Style="{StaticResource TextBox.Standard}" Width="180" Margin="0,0,8,0" Text="{Binding ProbeAddress, UpdateSourceTrigger=PropertyChanged}" />
+        <Button Content="Copy" Style="{StaticResource Button.Secondary}" Command="{Binding CopyNeighborsCommand}" Padding="16,4" />
+      </StackPanel>
+      <query:VestigiumQueryBar Margin="0,8,0,0"
+                               Text="{Binding NeighborQuery, UpdateSourceTrigger=PropertyChanged}"
+                               Session="{Binding NeighborSession}"
+                               Queries="{Binding NeighborMru}"
+                               Limit="{Binding QueryBook.QueryMruLimit}"
+                               CloseOnApply="{Binding QueryBook.Current.CloseMruOnApply}"
+                               LostFocus="OnNeighborCommit"
+                               PreviewKeyDown="OnNeighborKey"
+                               PinRequested="OnNeighborPin" />
+    </StackPanel>
+    <Grid>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="*" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="276" />
+      </Grid.RowDefinitions>
+      <TextBlock x:Name="Ipv4Caption" Grid.Row="0" Style="{StaticResource TextBlock.Caption}" Text="IPv4 Neighbor Cache" Margin="0,0,0,4" />
+      <Border x:Name="Ipv4Host" Grid.Row="1" BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1" Margin="0,0,0,12">
+        <DataGrid x:Name="Ipv4Grid" ItemsSource="{Binding Ipv4Neighbors}" SelectionChanged="OnNeighborSelected" Style="{StaticResource DataGrid.Compact}" RowHeight="28" IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" HeadersVisibility="Column" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+          <DataGrid.Columns>
+            <DataGridTextColumn Header="Address" Binding="{Binding Address}" Width="160" />
+            <DataGridTextColumn Header="Class" Binding="{Binding ClassText}" Width="70" />
+            <DataGridTextColumn Header="MacAddress" Binding="{Binding MacAddress}" Width="150" />
+            <DataGridTextColumn Header="InterfaceName" Binding="{Binding InterfaceName}" Width="170" />
+            <DataGridTextColumn Header="InterfaceIndex" Binding="{Binding InterfaceIndex}" Width="110" />
+            <DataGridTextColumn Header="State" Binding="{Binding State}" Width="90" />
+            <DataGridTextColumn Header="IsMulticast" Binding="{Binding IsMulticast}" Width="110" />
+            <DataGridTextColumn Header="IsBroadcast" Binding="{Binding IsBroadcast}" Width="110" />
+            <DataGridTextColumn Header="Vendor" Binding="{Binding VendorText}" Width="170" />
+            <DataGridTextColumn Header="RTT (ms)" Binding="{Binding RttMs}" Width="90" />
+          </DataGrid.Columns>
+        </DataGrid>
+      </Border>
+      <TextBlock x:Name="Ipv6Caption" Grid.Row="2" Style="{StaticResource TextBlock.Caption}" Text="IPv6 Neighbor Cache" Margin="0,0,0,4" />
+      <Border Grid.Row="3" BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1" Height="276">
+        <DataGrid x:Name="Ipv6Grid" ItemsSource="{Binding Ipv6Neighbors}" SelectionChanged="OnNeighborSelected" Style="{StaticResource DataGrid.Compact}" RowHeight="28" IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" HeadersVisibility="Column" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+          <DataGrid.Columns>
+            <DataGridTextColumn Header="Address" Binding="{Binding Address}" Width="160" />
+            <DataGridTextColumn Header="Class" Binding="{Binding ClassText}" Width="70" />
+            <DataGridTextColumn Header="MacAddress" Binding="{Binding MacAddress}" Width="150" />
+            <DataGridTextColumn Header="InterfaceName" Binding="{Binding InterfaceName}" Width="170" />
+            <DataGridTextColumn Header="InterfaceIndex" Binding="{Binding InterfaceIndex}" Width="110" />
+            <DataGridTextColumn Header="State" Binding="{Binding State}" Width="90" />
+            <DataGridTextColumn Header="IsMulticast" Binding="{Binding IsMulticast}" Width="110" />
+            <DataGridTextColumn Header="IsBroadcast" Binding="{Binding IsBroadcast}" Width="110" />
+            <DataGridTextColumn Header="Vendor" Binding="{Binding VendorText}" Width="150" />
+            <DataGridTextColumn Header="RTT (ms)" Binding="{Binding RttMs}" Width="90" />
+            <DataGridTextColumn Header="IsRouter" Binding="{Binding IsRouter}" Width="90" />
+            <DataGridTextColumn Header="LastReachable" Binding="{Binding LastReachableText}" Width="120" />
+          </DataGrid.Columns>
+        </DataGrid>
+      </Border>
+    </Grid>
+  </DockPanel>
+</UserControl>

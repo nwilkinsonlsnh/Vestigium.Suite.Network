@@ -1,0 +1,46 @@
+using System.Windows.Controls;
+using System.Windows.Input;
+using Vestigium.Suite.Network.Shell;
+
+namespace Vestigium.Suite.Network.DnsIQ.Views;
+
+public partial class DnsIqView : UserControl
+{
+    private readonly PageViewport _viewport;
+
+    public DnsIqView()
+    {
+        InitializeComponent();
+        _viewport = new PageViewport(this);
+    }
+
+    private void AnswerGrid_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+    {
+        if (sender is not DataGrid grid)
+            return;
+
+        var viewer = FindScrollViewer(grid);
+        if (viewer is null)
+            return;
+
+        viewer.ScrollToVerticalOffset(viewer.VerticalOffset - e.Delta);
+        e.Handled = true;
+    }
+
+    private static ScrollViewer? FindScrollViewer(System.Windows.DependencyObject root)
+    {
+        if (root is ScrollViewer viewer)
+            return viewer;
+
+        var count = System.Windows.Media.VisualTreeHelper.GetChildrenCount(root);
+        for (var i = 0; i < count; i++)
+        {
+            var child = System.Windows.Media.VisualTreeHelper.GetChild(root, i);
+            var found = FindScrollViewer(child);
+            if (found is not null)
+                return found;
+        }
+
+        return null;
+    }
+}

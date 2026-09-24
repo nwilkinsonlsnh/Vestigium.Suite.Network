@@ -1,0 +1,65 @@
+using Vestigium.Helpers.PerfMon.Network;
+
+namespace Vestigium.Suite.Network.NicIQ.ViewModels;
+
+/// <summary>Network Interface counters the four monitor charts need.</summary>
+public static class MonitorCounterList
+{
+    public static readonly string[] SeedReceiveSend =
+    [
+        NetworkInterface.BytesReceivedPerSec,
+        NetworkInterface.BytesSentPerSec,
+        NetworkInterface.BytesTotalPerSec
+    ];
+
+    public static readonly string[] ChartNeed =
+    [
+        NetworkInterface.BytesReceivedPerSec,
+        NetworkInterface.BytesSentPerSec,
+        NetworkInterface.BytesTotalPerSec,
+        NetworkInterface.PacketsReceivedPerSec,
+        NetworkInterface.PacketsSentPerSec,
+        NetworkInterface.PacketsReceivedErrors,
+        NetworkInterface.PacketsOutboundErrors,
+        NetworkInterface.PacketsReceivedDiscarded,
+        NetworkInterface.PacketsOutboundDiscarded,
+        NetworkInterface.PacketsReceivedUnknown,
+        NetworkInterface.OutputQueueLength,
+        NetworkInterface.CurrentBandwidth
+    ];
+
+    public static IReadOnlyList<string> FromSettings(NicIqSettings settings)
+    {
+        ArgumentNullException.ThrowIfNull(settings);
+        return Sanitize(ChartNeed);
+    }
+
+    public static IReadOnlyList<string> ForSample(IEnumerable<string> selected)
+        => Sanitize(selected.Concat(ChartNeed));
+
+    public static IReadOnlyList<string> Sanitize(IEnumerable<string?> names)
+    {
+        ArgumentNullException.ThrowIfNull(names);
+        var known = NetworkInterface.Counters;
+        var rows = new List<string>();
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var name in names)
+        {
+            var text = name?.Trim() ?? string.Empty;
+            if (text.Length == 0)
+                continue;
+            var match = known.FirstOrDefault(k => k.Equals(text, StringComparison.OrdinalIgnoreCase));
+            if (match is null || !seen.Add(match))
+                continue;
+            rows.Add(match);
+        }
+
+        return rows;
+    }
+
+    public static IReadOnlyList<string> Available(IEnumerable<string> selected)
+    {
+        var taken = new HashSet<string>(Sanitize(selected), StringComparer.OrdinalIgnoreCase);
+        return NetworkInterface.Counters.Where(c => !taken.Contains(c)).ToArray();
+    }
+}

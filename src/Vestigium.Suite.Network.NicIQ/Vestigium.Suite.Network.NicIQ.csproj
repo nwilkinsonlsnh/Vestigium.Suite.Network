@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>Vestigium.Suite.Network.NicIQ</RootNamespace>
+    <AssemblyName>NicIQ</AssemblyName>
+    <ApplicationTitle>NicIQ</ApplicationTitle>
+    <ApplicationIcon>Assets\NicIQ.ico</ApplicationIcon>
+    <NoWarn>$(NoWarn);NU1701</NoWarn>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Vestigium.Suite.Network.Shell\Vestigium.Suite.Network.Shell.csproj" />
+    <Resource Include="Assets\NicIQ.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.12" />
+    <PackageReference Include="Vestigium.Themes" Version="$(VestigiumThemesVersion)" />
+    <PackageReference Include="Vestigium.Controls" Version="$(VestigiumControlsVersion)" />
+    <PackageReference Include="Vestigium.Controls.StatusBar" Version="$(VestigiumStatusBarVersion)" />
+    <PackageReference Include="Vestigium.Controls.NumericUpDown" Version="$(VestigiumNumericUpDownVersion)" />
+    <PackageReference Include="Vestigium.Controls.UnderConstruction" Version="$(VestigiumUnderConstructionVersion)" />
+    <PackageReference Include="Vestigium.Converters" Version="$(VestigiumConvertersVersion)" />
+    <PackageReference Include="Vestigium.Helpers.Analytics" Version="$(VestigiumAnalyticsVersion)" />
+    <PackageReference Include="Vestigium.Helpers.Charts" Version="$(VestigiumChartsVersion)" />
+    <PackageReference Include="Vestigium.Helpers.PerfMon" Version="$(VestigiumPerfMonCoreVersion)" />
+    <PackageReference Include="Vestigium.Helpers.PerfMon.Cpu" Version="$(VestigiumPerfMonCpuVersion)" />
+    <PackageReference Include="Vestigium.Helpers.PerfMon.Memory" Version="$(VestigiumPerfMonMemoryVersion)" />
+    <PackageReference Include="Vestigium.Helpers.PerfMon.Network" Version="$(VestigiumPerfMonVersion)" />
+    <PackageReference Include="Vestigium.Helpers.SystemInfo" Version="$(VestigiumSystemInfoVersion)" />
+    <PackageReference Include="Vestigium.Helpers.SystemInfo.Cpu" Version="$(VestigiumSystemInfoVersion)" />
+    <PackageReference Include="Vestigium.Helpers.SystemInfo.Memory" Version="$(VestigiumSystemInfoVersion)" />
+  </ItemGroup>
+</Project>

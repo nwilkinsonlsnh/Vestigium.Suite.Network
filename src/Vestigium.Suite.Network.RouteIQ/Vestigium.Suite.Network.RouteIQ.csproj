@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>Vestigium.Suite.Network.RouteIQ</RootNamespace>
+    <AssemblyName>Vestigium.Suite.Network.RouteIQ</AssemblyName>
+    <ApplicationTitle>RouteIQ</ApplicationTitle>
+    <ApplicationIcon>Assets\RouteIQ.ico</ApplicationIcon>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Vestigium.Suite.Network.Shell\Vestigium.Suite.Network.Shell.csproj" />
+    <Resource Include="Assets\RouteIQ.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsDiVersion)" />
+    <PackageReference Include="Vestigium.Controls.QueryBar" Version="$(VestigiumQueryBarVersion)" />
+    <PackageReference Include="Vestigium.Helpers.ClosedXml" Version="$(VestigiumClosedXmlVersion)" />
+    <PackageReference Include="Vestigium.Helpers.Kql" Version="$(VestigiumKqlVersion)" />
+    <PackageReference Include="Vestigium.Themes" Version="$(VestigiumThemesVersion)" />
+    <PackageReference Include="Vestigium.Controls" Version="$(VestigiumControlsVersion)" />
+    <PackageReference Include="Vestigium.Controls.StatusBar" Version="$(VestigiumStatusBarVersion)" />
+    <PackageReference Include="Vestigium.Controls.NumericUpDown" Version="$(VestigiumNumericUpDownVersion)" />
+    <PackageReference Include="Vestigium.Converters" Version="$(VestigiumConvertersVersion)" />
+  </ItemGroup>
+</Project>

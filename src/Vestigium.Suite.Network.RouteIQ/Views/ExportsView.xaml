@@ -1,0 +1,20 @@
+<UserControl x:Class="Vestigium.Suite.Network.RouteIQ.Views.ExportsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="{DynamicResource Vestigium.Brushes.Surface.Window}"
+             Loaded="OnLoaded">
+  <StackPanel HorizontalAlignment="Left" VerticalAlignment="Top" Width="520" Margin="16,12,0,16">
+    <TextBlock Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap" Margin="0,0,0,16"
+               Text="One workbook. Cover is always written. Export writes the checked prints. Export All writes every print. The dialog opens in Desktop\Vestigium\Exports\RouteIQ." />
+    <CheckBox x:Name="RoutesBox" Style="{StaticResource CheckBox.Standard}" Content="Routes" Margin="0,0,0,8" Checked="OnCheck" Unchecked="OnCheck" />
+    <CheckBox x:Name="NeighborsBox" Style="{StaticResource CheckBox.Standard}" Content="Neighbors" Margin="0,0,0,8" Checked="OnCheck" Unchecked="OnCheck" />
+    <CheckBox x:Name="ConnectionsBox" Style="{StaticResource CheckBox.Standard}" Content="Connections" Margin="0,0,0,8" Checked="OnCheck" Unchecked="OnCheck" />
+    <CheckBox x:Name="NetBiosBox" Style="{StaticResource CheckBox.Standard}" Content="NetBIOS" Margin="0,0,0,8" Checked="OnCheck" Unchecked="OnCheck" />
+    <CheckBox x:Name="LmHostsBox" Style="{StaticResource CheckBox.Standard}" Content="LMHOSTS" Margin="0,0,0,8" Checked="OnCheck" Unchecked="OnCheck" />
+    <CheckBox x:Name="OpenBox" Style="{StaticResource CheckBox.Standard}" Content="Open after saving" Margin="0,0,0,16" Checked="OnCheck" Unchecked="OnCheck" />
+    <StackPanel Orientation="Horizontal">
+      <Button Content="Export" Style="{StaticResource Button.Primary}" Command="{Binding ExportSelectedCommand}" Padding="16,4" Margin="0,0,8,0" />
+      <Button Content="Export All" Style="{StaticResource Button.Secondary}" Command="{Binding ExportAllCommand}" Padding="16,4" />
+    </StackPanel>
+  </StackPanel>
+</UserControl>
