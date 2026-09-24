@@ -1,0 +1,88 @@
+<UserControl x:Class="Vestigium.Suite.Network.NicIQ.Views.NicIqView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:nud="clr-namespace:Vestigium.Controls.NumericUpDown;assembly=Vestigium.Controls.NumericUpDown"
+             Background="{DynamicResource Vestigium.Brushes.Surface.Window}">
+  <Grid Margin="16">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+    </Grid.RowDefinitions>
+
+    <TextBlock Style="{StaticResource TextBlock.Caption}"
+               Text="{Binding Header}"
+               TextWrapping="Wrap"
+               Margin="0,0,0,8" />
+
+    <StackPanel Grid.Row="1" Style="{StaticResource StackPanel.Toolbar}" Orientation="Horizontal" Margin="0,0,0,8">
+      <Button Content="Refresh" Style="{StaticResource Button.Secondary}" Command="{Binding RefreshCommand}" Padding="16,4" Margin="0,0,8,0" />
+      <CheckBox Style="{StaticResource CheckBox.Standard}" Content="Include down" IsChecked="{Binding IncludeDown}" Margin="0,0,16,0" />
+      <CheckBox Style="{StaticResource CheckBox.Standard}" Content="IP enabled only" IsChecked="{Binding IpEnabledOnly}" Margin="0,0,16,0" />
+      <Label Style="{StaticResource Label.Standard}" Content="Duration" VerticalAlignment="Center" Margin="0,0,8,0" />
+      <nud:VestigiumNumericUpDown Value="{Binding DurationSeconds, Mode=TwoWay}"
+                                  SignMode="Unsigned"
+                                  Minimum="1" Maximum="60" Increment="1" PageIncrement="5" DecimalPlaces="0"
+                                  Width="88"
+                                  Margin="0,0,8,0" />
+      <Button Content="Watch (Status)" Style="{StaticResource Button.Primary}" Command="{Binding WatchCommand}" Padding="16,4" Margin="0,0,8,0" />
+      <Button Content="Cancel" Style="{StaticResource Button.Secondary}" Command="{Binding CancelCommand}" Padding="16,4" />
+    </StackPanel>
+
+    <Border Grid.Row="2" BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
+      <DataGrid x:Name="AdapterGrid"
+                Style="{StaticResource DataGrid.Compact}"
+                ItemsSource="{Binding Adapters}"
+                SelectedItem="{Binding SelectedAdapter, Mode=TwoWay}"
+                IsReadOnly="True"
+                AutoGenerateColumns="False"
+                CanUserAddRows="False"
+                CanUserResizeColumns="True"
+                SelectionMode="Single"
+                HeadersVisibility="Column"
+                VerticalScrollBarVisibility="Visible"
+                HorizontalScrollBarVisibility="Visible"
+                ScrollViewer.HorizontalScrollBarVisibility="Visible"
+                ScrollViewer.VerticalScrollBarVisibility="Visible"
+                MouseDoubleClick="AdapterGrid_MouseDoubleClick">
+        <DataGrid.Columns>
+          <DataGridTemplateColumn Header="Status" Width="56" MinWidth="56">
+            <DataGridTemplateColumn.CellTemplate>
+              <DataTemplate>
+                <Grid Width="24" Height="24" ToolTip="{Binding Status}" HorizontalAlignment="Center">
+                  <Ellipse Fill="{Binding StatusFill}">
+                    <Ellipse.Style>
+                      <Style TargetType="Ellipse">
+                        <Setter Property="StrokeThickness" Value="0" />
+                        <Style.Triggers>
+                          <DataTrigger Binding="{Binding StatusChanged}" Value="True">
+                            <Setter Property="Stroke" Value="#FFFFD400" />
+                            <Setter Property="StrokeThickness" Value="2" />
+                          </DataTrigger>
+                        </Style.Triggers>
+                      </Style>
+                    </Ellipse.Style>
+                  </Ellipse>
+                  <TextBlock Text="{Binding StatusGlyph}"
+                             Foreground="White"
+                             FontSize="11"
+                             FontWeight="SemiBold"
+                             HorizontalAlignment="Center"
+                             VerticalAlignment="Center" />
+                </Grid>
+              </DataTemplate>
+            </DataGridTemplateColumn.CellTemplate>
+          </DataGridTemplateColumn>
+          <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="2*" MinWidth="180" />
+          <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="130" MinWidth="110" />
+          <DataGridTextColumn Header="MacAddress" Binding="{Binding MacAddress}" Width="150" MinWidth="130" />
+          <DataGridTextColumn Header="Speed" Binding="{Binding Speed}" Width="110" MinWidth="90" />
+          <DataGridTextColumn Header="Metric" Binding="{Binding Metric}" Width="80" MinWidth="70" />
+          <DataGridTextColumn Header="IPv4" Binding="{Binding Ipv4}" Width="70" MinWidth="60" />
+          <DataGridTextColumn Header="IPv6" Binding="{Binding Ipv6}" Width="70" MinWidth="60" />
+          <DataGridTextColumn Header="Id" Binding="{Binding Id}" Width="360" MinWidth="320" />
+        </DataGrid.Columns>
+      </DataGrid>
+    </Border>
+  </Grid>
+</UserControl>

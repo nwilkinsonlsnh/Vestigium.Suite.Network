@@ -1,0 +1,178 @@
+<UserControl x:Class="Vestigium.Suite.Network.PingIQ.Views.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:nud="clr-namespace:Vestigium.Controls.NumericUpDown;assembly=Vestigium.Controls.NumericUpDown"
+             Background="{DynamicResource Vestigium.Brushes.Surface.Window}">
+  <UserControl.Resources>
+    <BooleanToVisibilityConverter x:Key="BoolToVis" />
+  </UserControl.Resources>
+  <DockPanel Margin="12">
+    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Left" Margin="20,0,0,12">
+      <RadioButton Style="{StaticResource RadioButton.HorizontalTab}"
+                   Content="PingIQ"
+                   IsChecked="{Binding PingIqPageOpen}"
+                   GroupName="SettingsPage"
+                   Margin="0,0,8,0" />
+      <RadioButton Style="{StaticResource RadioButton.HorizontalTab}"
+                   Content="Probe"
+                   IsChecked="{Binding ProbePageOpen}"
+                   GroupName="SettingsPage"
+                   Margin="0,0,8,0" />
+      <RadioButton Style="{StaticResource RadioButton.HorizontalTab}"
+                   Content="MRU"
+                   IsChecked="{Binding MruPageOpen}"
+                   GroupName="SettingsPage"
+                   Margin="0,0,8,0" />
+      <RadioButton Style="{StaticResource RadioButton.HorizontalTab}"
+                   Content="Theme"
+                   IsChecked="{Binding ThemePageOpen}"
+                   GroupName="SettingsPage" />
+    </StackPanel>
+
+    <StackPanel HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                Width="480"
+                Margin="20,0,0,0"
+                Visibility="{Binding PingIqPageOpen, Converter={StaticResource BoolToVis}}">
+      <TextBlock Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap" Margin="0,0,0,16"
+                 Text="Count, Delay, Interface and Source live here. Hostnames resolve to an IP before ICMP. Resolve once (default) so RTT is not mixed with DNS. Delay is the wait between ICMP echoes. Reply wait stays 4000 ms. Source is the local address this PC sends from. Any lets Windows pick. This is not spoofing." />
+
+      <CheckBox Style="{StaticResource CheckBox.Standard}"
+                Content="Resolve hostname once per run"
+                IsChecked="{Binding ResolveOnce}"
+                Margin="0,0,0,16" />
+
+      <Label Style="{StaticResource Label.Standard}" Content="Count" />
+      <nud:VestigiumNumericUpDown Value="{Binding DefaultCount, Mode=TwoWay}"
+                                  SignMode="Unsigned"
+                                  Minimum="1" Maximum="99" Increment="1" PageIncrement="4" DecimalPlaces="0"
+                                  Background="{DynamicResource Vestigium.Brushes.Surface.Card}"
+                                  Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}"
+                                  BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
+                                  Margin="0,0,0,16" />
+
+      <Label Style="{StaticResource Label.Standard}" Content="Delay (ms)" />
+      <nud:VestigiumNumericUpDown Value="{Binding DefaultTimeoutMs, Mode=TwoWay}"
+                                  SignMode="Unsigned"
+                                  Minimum="10" Maximum="60000" Increment="100" PageIncrement="1000" DecimalPlaces="0"
+                                  Background="{DynamicResource Vestigium.Brushes.Surface.Card}"
+                                  Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}"
+                                  BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
+                                  Margin="0,0,0,16" />
+
+      <Label Style="{StaticResource Label.Standard}" Content="Interface" />
+      <ComboBox Style="{StaticResource ComboBox.Standard}"
+                IsEditable="False"
+                ItemsSource="{Binding Interfaces}"
+                DisplayMemberPath="Label"
+                SelectedValuePath="Index"
+                SelectedValue="{Binding SelectedInterfaceIndex, Mode=TwoWay}"
+                Margin="0,0,0,16" />
+
+      <Label Style="{StaticResource Label.Standard}" Content="Source" />
+      <ComboBox Style="{StaticResource ComboBox.Standard}"
+                IsEditable="False"
+                ItemsSource="{Binding Sources}"
+                DisplayMemberPath="Label"
+                SelectedValuePath="Address"
+                SelectedValue="{Binding SelectedSource, Mode=TwoWay}" />
+    </StackPanel>
+
+    <StackPanel HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                Width="480"
+                Margin="20,0,0,0"
+                Visibility="{Binding ProbePageOpen, Converter={StaticResource BoolToVis}}">
+      <TextBlock Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap" Margin="0,0,0,16"
+                 Text="Requests spread evenly across Milliseconds. Default is 300 requests over 5000 ms (5 s)." />
+      <TextBlock Style="{StaticResource TextBlock.Caption}" Text="{Binding ProbePlanText}" Margin="0,0,0,16" TextWrapping="Wrap" />
+
+      <Label Style="{StaticResource Label.Standard}" Content="Requests" />
+      <nud:VestigiumNumericUpDown Value="{Binding DefaultRequests, Mode=TwoWay}"
+                                  SignMode="Unsigned"
+                                  Minimum="1" Maximum="10000" Increment="10" PageIncrement="100" DecimalPlaces="0"
+                                  Background="{DynamicResource Vestigium.Brushes.Surface.Card}"
+                                  Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}"
+                                  BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
+                                  Margin="0,0,0,16" />
+
+      <Label Style="{StaticResource Label.Standard}" Content="Milliseconds" />
+      <nud:VestigiumNumericUpDown Value="{Binding DefaultDurationMs, Mode=TwoWay}"
+                                  SignMode="Unsigned"
+                                  Minimum="100" Maximum="600000" Increment="100" PageIncrement="1000" DecimalPlaces="0"
+                                  Background="{DynamicResource Vestigium.Brushes.Surface.Card}"
+                                  Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}"
+                                  BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
+                                  Margin="0,0,0,16" />
+
+      <Button Content="Defaults" Style="{StaticResource Button.Secondary}"
+              Command="{Binding RestoreProbeDefaultsCommand}" Padding="16,4" HorizontalAlignment="Left" />
+    </StackPanel>
+
+
+    <Grid HorizontalAlignment="Stretch"
+          VerticalAlignment="Stretch"
+          Margin="20,0,20,0"
+          Visibility="{Binding MruPageOpen, Converter={StaticResource BoolToVis}}">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="*" />
+        <RowDefinition Height="Auto" />
+      </Grid.RowDefinitions>
+      <StackPanel Grid.Row="0" Margin="0,0,0,12">
+        <TextBlock Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap" Margin="0,0,0,16"
+                   Text="Remembered targets used by the PingIQ combo. Add, change, or remove entries. Cap is the max kept." />
+        <Label Style="{StaticResource Label.Standard}" Content="Remember targets" Margin="0,0,0,4" />
+        <nud:VestigiumNumericUpDown Value="{Binding TargetHistorySize, Mode=TwoWay}"
+                                    SignMode="Unsigned"
+                                    Minimum="1" Maximum="25" Increment="1" PageIncrement="5" DecimalPlaces="0"
+                                    Width="240" HorizontalAlignment="Left"
+                                    Background="{DynamicResource Vestigium.Brushes.Surface.Card}"
+                                    Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}"
+                                    BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" />
+      </StackPanel>
+      <ListBox Grid.Row="1"
+               Style="{StaticResource ListBox.Standard}"
+               ItemsSource="{Binding Mru}"
+               SelectedItem="{Binding SelectedMru, Mode=TwoWay}"
+               MinHeight="180"
+               Margin="0,0,0,12" />
+      <StackPanel Grid.Row="2">
+        <Label Style="{StaticResource Label.Standard}" Content="Entry" />
+        <TextBox Style="{StaticResource TextBox.Standard}"
+                 Text="{Binding MruDraft, UpdateSourceTrigger=PropertyChanged}"
+                 Margin="0,0,0,8" />
+        <StackPanel Style="{StaticResource StackPanel.Toolbar}" Orientation="Horizontal">
+          <Button Content="Add" Style="{StaticResource Button.Primary}" Command="{Binding AddMruCommand}" Padding="16,4" Margin="0,0,8,0" />
+          <Button Content="Update" Style="{StaticResource Button.Secondary}" Command="{Binding UpdateMruCommand}" Padding="16,4" Margin="0,0,8,0" />
+          <Button Content="Delete" Style="{StaticResource Button.Secondary}" Command="{Binding DeleteMruCommand}" Padding="16,4" Margin="0,0,8,0" />
+          <Button Content="Clear" Style="{StaticResource Button.Secondary}" Command="{Binding ClearMruCommand}" Padding="16,4" />
+        </StackPanel>
+      </StackPanel>
+    </Grid>
+
+    <StackPanel HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                Width="420"
+                Margin="20,0,0,0"
+                Visibility="{Binding ThemePageOpen, Converter={StaticResource BoolToVis}}">
+      <Label Style="{StaticResource Label.Standard}" Content="Palette" />
+      <ComboBox Style="{StaticResource ComboBox.Standard}"
+                ItemsSource="{Binding Themes}"
+                DisplayMemberPath="DisplayName"
+                SelectedValuePath="Id"
+                SelectedValue="{Binding SelectedThemeId, Mode=TwoWay}"
+                Margin="0,0,0,16" />
+
+      <CheckBox Style="{StaticResource CheckBox.Standard}"
+                Content="Status bar visible"
+                IsChecked="{Binding BarVisible}"
+                Margin="0,0,0,16" />
+
+      <Label Style="{StaticResource Label.Standard}" Content="Status bar dock" />
+      <ComboBox Style="{StaticResource ComboBox.Standard}"
+                ItemsSource="{Binding BarPositions}"
+                SelectedItem="{Binding BarPosition}" />
+    </StackPanel>
+  </DockPanel>
+</UserControl>

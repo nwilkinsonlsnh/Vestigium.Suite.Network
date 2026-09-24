@@ -1,0 +1,153 @@
+using System.Net;
+using Vestigium.Helpers.Network;
+using Vestigium.Suite.Network.DnsIQ.ViewModels;
+using Xunit;
+
+namespace Vestigium.Suite.Network.Tests;
+
+public sealed class DnsIqInputTests
+{
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Blank_name_becomes_localhost(string? name)
+    {
+        var ok = Try(out var query, out var reject, name: name);
+        Assert.True(ok);
+        Assert.Null(reject);
+        Assert.Equal("localhost", query!.Name);
+    }
+
+    [Fact]
+    public void Localhost_with_empty_server_accepts()
+    {
+        var ok = Try(out var query, out var reject, name: "localhost", server: "");
+        Assert.True(ok);
+        Assert.Null(reject);
+        Assert.Equal("localhost", query!.Name);
+        Assert.True(query.Options.Server is null || IPAddress.TryParse(query.Options.Server, out _));
+        Assert.Equal(DnsRecordType.A, query.Options.Type);
+        Assert.False(query.AllTypes);
+        Assert.Equal(0, query.Options.InterfaceIndex);
+        Assert.Null(query.Options.SourceAddress);
+        Assert.Equal(53, query.Options.Port);
+    }
+
+    [Fact]
+    public void Server_ipv4_accepts()
+    {
+        var ok = Try(out var query, out var reject, server: "8.8.8.8");
+        Assert.True(ok);
+        Assert.Null(reject);
+        Assert.Equal("8.8.8.8", query!.Options.Server);
+    }
+
+    [Fact]
+    public void Server_hostname_rejects()
+    {
+        var ok = Try(out var query, out var reject, server: "dns.google");
+        Assert.False(ok);
+        Assert.Null(query);
+        Assert.Equal("Server must be an IPv4 or IPv6 address.", reject);
+    }
+
+    [Fact]
+    public void Source_garbage_rejects()
+    {
+        var ok = Try(out var query, out var reject, source: "not-an-ip");
+        Assert.False(ok);
+        Assert.Null(query);
+        Assert.Equal("Source must be an IPv4 or IPv6 address.", reject);
+    }
+
+    [Fact]
+    public void Empty_source_accepts()
+    {
+        var ok = Try(out var query, out var reject, source: "");
+        Assert.True(ok);
+        Assert.Null(reject);
+        Assert.Null(query!.Options.SourceAddress);
+    }
+
+    [Fact]
+    public void Negative_interface_index_rejects()
+    {
+        var ok = Try(out var query, out var reject, index: -1);
+        Assert.False(ok);
+        Assert.Null(query);
+        Assert.Equal("Interface index cannot be negative.", reject);
+    }
+
+    [Fact]
+    public void Zero_interface_index_accepts()
+    {
+        var ok = Try(out var query, out var reject, index: 0);
+        Assert.True(ok);
+        Assert.Null(reject);
+        Assert.Equal(0, query!.Options.InterfaceIndex);
+    }
+
+    [Fact]
+    public void Type_a_and_aaaa_accept()
+    {
+        Assert.True(Try(out var a, out _, type: "A"));
+        Assert.Equal(DnsRecordType.A, a!.Options.Type);
+        Assert.False(a.AllTypes);
+        Assert.True(Try(out var aaaa, out _, type: "AAAA"));
+        Assert.Equal(DnsRecordType.Aaaa, aaaa!.Options.Type);
+    }
+
+    [Fact]
+    public void Type_all_accepts()
+    {
+        var ok = Try(out var query, out var reject, type: "All");
+        Assert.True(ok);
+        Assert.Null(reject);
+        Assert.True(query!.AllTypes);
+    }
+
+    [Fact]
+    public void Type_outside_the_eight_rejects()
+    {
+        var ok = Try(out var query, out var reject, type: "SRV");
+        Assert.False(ok);
+        Assert.Null(query);
+        Assert.Equal("Type is not allowed.", reject);
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(53)]
+    [InlineData(65535)]
+    public void Port_in_range_accepts(int port)
+    {
+        var ok = Try(out var query, out var reject, port: port);
+        Assert.True(ok);
+        Assert.Null(reject);
+        Assert.Equal(port, query!.Options.Port);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(65536)]
+    [InlineData(-1)]
+    public void Port_outside_range_rejects(int port)
+    {
+        var ok = Try(out var query, out var reject, port: port);
+        Assert.False(ok);
+        Assert.Null(query);
+        Assert.Equal("Port must be 1–65535.", reject);
+    }
+
+    private static bool Try(
+        out DnsIqQuery? query,
+        out string? reject,
+        string? name = "localhost",
+        string? server = "",
+        string? type = "A",
+        int index = 0,
+        string? source = null,
+        int port = 53)
+        => DnsIqInput.TryCreate(name, server, type, index, source, port, out query, out reject);
+}

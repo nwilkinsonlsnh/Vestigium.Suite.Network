@@ -1,0 +1,75 @@
+<UserControl x:Class="Vestigium.Suite.Network.PingIQ.Views.PingIqView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="{DynamicResource Vestigium.Brushes.Surface.Window}">
+  <Grid Margin="16">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+
+    <Grid Grid.Row="0">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="*" />
+      </Grid.ColumnDefinitions>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+      </Grid.RowDefinitions>
+
+      <Label Style="{StaticResource Label.Standard}" Content="Target" VerticalAlignment="Center" Margin="0,0,8,8" />
+      <ComboBox Grid.Column="1"
+                Style="{StaticResource ComboBox.Editable}"
+                IsTextSearchEnabled="False"
+                StaysOpenOnEdit="True"
+                ItemsSource="{Binding Targets}"
+                Text="{Binding Target, UpdateSourceTrigger=PropertyChanged}"
+                Margin="0,0,0,8" />
+
+      <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Style="{StaticResource StackPanel.Toolbar}" Orientation="Horizontal">
+        <Button Content="Ping" Style="{StaticResource Button.Primary}" Command="{Binding PingCommand}" Padding="16,4" Margin="0,0,8,0" />
+        <Button Content="Probe" Style="{StaticResource Button.Success}" Command="{Binding ProbeCommand}" Padding="16,4" Margin="0,0,8,0" />
+        <Button Content="Cancel" Style="{StaticResource Button.Secondary}" Command="{Binding CancelCommand}" Padding="16,4" />
+      </StackPanel>
+    </Grid>
+
+    <Border Grid.Row="1" Margin="0,8,0,8" BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
+      <DataGrid Style="{StaticResource DataGrid.Compact}"
+                ItemsSource="{Binding Replies}"
+                IsReadOnly="True"
+                AutoGenerateColumns="False"
+                CanUserAddRows="False"
+                HeadersVisibility="Column"
+                VerticalScrollBarVisibility="Visible"
+                HorizontalScrollBarVisibility="Auto"
+                EnableRowVirtualization="True"
+                ScrollViewer.CanContentScroll="True"
+                PreviewMouseWheel="ReplyGrid_PreviewMouseWheel">
+        <DataGrid.Columns>
+          <DataGridTextColumn Header="Seq" Binding="{Binding Sequence}" Width="60" />
+          <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="140" />
+          <DataGridTextColumn Header="Address" Binding="{Binding Address}" Width="*" />
+          <DataGridTextColumn Header="RTT (ms)" Binding="{Binding RttMs}" Width="90" />
+          <DataGridTextColumn Header="TTL" Binding="{Binding Ttl}" Width="60" />
+          <DataGridTextColumn Header="Hops" Binding="{Binding Hops}" Width="60" />
+          <DataGridTextColumn Header="Detail" Binding="{Binding Detail}" Width="2*" />
+        </DataGrid.Columns>
+      </DataGrid>
+    </Border>
+
+    <Expander Grid.Row="2"
+              Header="Results"
+              IsExpanded="{Binding DetailsOpen, Mode=TwoWay}"
+              Background="{DynamicResource Vestigium.Brushes.Surface.Window}"
+              Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}">
+      <StackPanel Margin="12,8,0,0">
+        <TextBlock Style="{StaticResource TextBlock.Caption}" Text="{Binding Status}" Margin="0,0,0,8" />
+        <TextBlock Style="{StaticResource TextBlock.Caption}" Text="{Binding Summary}" Margin="0,0,0,4" />
+        <TextBlock Style="{StaticResource TextBlock.Caption}" Text="{Binding AnalyticsSummary}" TextWrapping="Wrap" Margin="0,0,0,8" />
+        <TextBlock Style="{StaticResource TextBlock.Caption}" Text="{Binding GateSummary}" TextWrapping="Wrap" />
+      </StackPanel>
+    </Expander>
+  </Grid>
+</UserControl>

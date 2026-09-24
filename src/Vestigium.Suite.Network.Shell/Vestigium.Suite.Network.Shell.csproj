@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Vestigium.Suite.Network.Shell</RootNamespace>
+    <AssemblyName>Vestigium.Suite.Network.Shell</AssemblyName>
+    <Description>Shared chrome for Network suite hosts: logging init, bind fields. Not a protocol API.</Description>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageReference Include="Vestigium.Logging" Version="$(VestigiumLoggingVersion)" />
+    <PackageReference Include="Vestigium.Helpers.Analytics" Version="$(VestigiumAnalyticsVersion)" />
+    <PackageReference Include="Vestigium.Helpers.Charts" Version="$(VestigiumChartsVersion)" />
+    <PackageReference Include="Vestigium.Helpers.Network" Version="$(VestigiumNetworkVersion)" />
+  </ItemGroup>
+</Project>
