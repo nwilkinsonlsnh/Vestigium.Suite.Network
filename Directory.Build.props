@@ -1,10 +1,8 @@
 <Project>
   <PropertyGroup>
-    <TargetFramework>net10.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
-    <UseWPF>true</UseWPF>
     <Authors>Vestigium</Authors>
     <Company>Wilkinson Business</Company>
     <NeutralLanguage>en-US</NeutralLanguage>
@@ -12,5 +10,18 @@
     <VestigiumAnalyticsVersion>1.0.1</VestigiumAnalyticsVersion>
     <VestigiumChartsVersion>1.0.1</VestigiumChartsVersion>
     <VestigiumLoggingVersion>1.7.1</VestigiumLoggingVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(MSBuildProjectName)' != 'Vestigium.Suite.Network.Documentation'">
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(MSBuildProjectName)' == 'Vestigium.Suite.Network.Documentation'">
+    <TargetFramework>net10.0</TargetFramework>
+    <UseWPF>false</UseWPF>
+    <UseWindowsForms>false</UseWindowsForms>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 </Project>
