@@ -121,7 +121,7 @@ public sealed partial class MainViewModel : ObservableObject
         }
 
         DnsRcode? last = null;
-        var anyError = false;
+        var anyOk = false;
         foreach (var typeName in DnsIqInput.RecordTypes)
         {
             token.ThrowIfCancellationRequested();
@@ -140,11 +140,11 @@ public sealed partial class MainViewModel : ObservableObject
             var result = await NetworkHelper.LookupAsync(typed!.Name, typed.Options, token).ConfigureAwait(true);
             last = result.Rcode;
             if (result.Rcode == DnsRcode.NoError)
-                anyError = true;
+                anyOk = true;
             AppendAnswers(result.Answers);
         }
 
-        Status = anyError || Answers.Count > 0
+        Status = anyOk || Answers.Count > 0
             ? DnsRcode.NoError.ToString()
             : (last ?? DnsRcode.Failed).ToString();
     }
@@ -154,7 +154,7 @@ public sealed partial class MainViewModel : ObservableObject
         foreach (var answer in records)
         {
             Answers.Add(new AnswerRow(
-                answer.Type.ToString(),
+                DnsIqInput.DisplayType(answer.Type),
                 answer.Name,
                 answer.Data,
                 answer.Ttl));

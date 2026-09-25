@@ -67,12 +67,43 @@ public static class DnsIqInput
             new DnsLookupOptions
             {
                 Type = type,
-                Server = trimmedServer,
+                Server = trimmedServer ?? FirstConfiguredDns(),
                 InterfaceIndex = interfaceIndex,
                 SourceAddress = trimmedSource
             },
             allTypes);
         return true;
+    }
+
+    public static string DisplayType(DnsRecordType type) => type switch
+    {
+        DnsRecordType.A => "A",
+        DnsRecordType.Aaaa => "AAAA",
+        DnsRecordType.Cname => "CNAME",
+        DnsRecordType.Mx => "MX",
+        DnsRecordType.Ns => "NS",
+        DnsRecordType.Ptr => "PTR",
+        DnsRecordType.Txt => "TXT",
+        DnsRecordType.Soa => "SOA",
+        DnsRecordType.Srv => "SRV",
+        DnsRecordType.Any => "ANY",
+        _ => type.ToString()
+    };
+
+    public static string? FirstConfiguredDns()
+    {
+        try
+        {
+            return NetworkHelper.GetAdapters()
+                .SelectMany(a => a.DnsServers)
+                .Where(s => IPAddress.TryParse(s, out var ip) && !IPAddress.IsLoopback(ip))
+                .OrderBy(s => IPAddress.Parse(s).AddressFamily == AddressFamily.InterNetwork ? 0 : 1)
+                .FirstOrDefault();
+        }
+        catch (Exception)
+        {
+            return null;
+        }
     }
 
     private static string? NullIfBlank(string? value)
