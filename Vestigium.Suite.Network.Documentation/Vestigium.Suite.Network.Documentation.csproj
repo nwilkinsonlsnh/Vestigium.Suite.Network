@@ -10,14 +10,22 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Folder Include="Vestigium\Suite\Network\WPF\TraceIQ\PR-Plans\Completed\" />
+    <Folder Include="Vestigium\Suite\Network\WPF\TraceIQ\PR-Plans\PR01\" />
     <None Include="Vestigium\**\*.md" />
-    <Folder Include="Vestigium\Suite\Network\WPF\DnsIQ\" />
-    <Folder Include="Vestigium\Suite\Network\WPF\Shell\" />
-    <Folder Include="Vestigium\Suite\Network\WPF\TraceIQ\" />
-    <Folder Include="Vestigium\Suite\Network\WPF\ShareIQ\" />
-    <Folder Include="Vestigium\Suite\Network\WPF\RouteIQ\" />
-    <Folder Include="Vestigium\Suite\Network\WPF\ProbeHost\" />
-    <Folder Include="Vestigium\Suite\Network\WPF\PingIQ\" />
-    <Folder Include="Vestigium\Suite\Network\WPF\NicIQ\" />
+    <Folder Include="Vestigium\Suite\Network\WPF\DnsIQ\PR-Plans\Completed\" />
+    <Folder Include="Vestigium\Suite\Network\WPF\DnsIQ\PR-Plans\PR01\" />
+    <Folder Include="Vestigium\Suite\Network\WPF\NicIQ\PR-Plans\Completed\" />
+    <Folder Include="Vestigium\Suite\Network\WPF\NicIQ\PR-Plans\PR01\" />
+    <Folder Include="Vestigium\Suite\Network\WPF\PingIQ\PR-Plans\Completed\" />
+    <Folder Include="Vestigium\Suite\Network\WPF\PingIQ\PR-Plans\PR01\" />
+    <Folder Include="Vestigium\Suite\Network\WPF\ProbeHost\PR-Plans\Completed\" />
+    <Folder Include="Vestigium\Suite\Network\WPF\ProbeHost\PR-Plans\PR01\" />
+    <Folder Include="Vestigium\Suite\Network\WPF\RouteIQ\PR-Plans\Completed\" />
+    <Folder Include="Vestigium\Suite\Network\WPF\RouteIQ\PR-Plans\PR01\" />
+    <Folder Include="Vestigium\Suite\Network\WPF\ShareIQ\PR-Plans\Completed\" />
+    <Folder Include="Vestigium\Suite\Network\WPF\ShareIQ\PR-Plans\PR01\" />
+    <Folder Include="Vestigium\Suite\Network\WPF\Shell\PR-Plans\Completed\" />
+    <Folder Include="Vestigium\Suite\Network\WPF\Shell\PR-Plans\PR01\" />
   </ItemGroup>
 </Project>
