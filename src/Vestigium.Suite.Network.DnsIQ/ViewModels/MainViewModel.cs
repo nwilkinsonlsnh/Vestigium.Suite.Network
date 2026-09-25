@@ -8,6 +8,9 @@ namespace Vestigium.Suite.Network.DnsIQ.ViewModels;
 
 public sealed partial class MainViewModel : ObservableObject
 {
+    private CancellationTokenSource? _cts;
+    private NetworkJob<DnsProbeResult>? _probeJob;
+
     public BindFields Bind { get; } = new();
 
     public IReadOnlyList<string> RecordTypes => DnsIqInput.RecordTypes;
@@ -26,8 +29,36 @@ public sealed partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private string _status = "Idle";
 
-    [RelayCommand]
-    private async Task LookupAsync()
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(LookupCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ProbeCommand))]
+    [NotifyCanExecuteChangedFor(nameof(CancelCommand))]
+    private bool _isBusy;
+
+    private bool CanStartJob() => !IsBusy;
+
+    private bool CanCancelJob() => IsBusy;
+
+    [RelayCommand(CanExecute = nameof(CanStartJob))]
+    private Task LookupAsync() => RunJobAsync(lookup: true);
+
+    [RelayCommand(CanExecute = nameof(CanStartJob))]
+    private Task ProbeAsync() => RunJobAsync(lookup: false);
+
+    [RelayCommand(CanExecute = nameof(CanCancelJob))]
+    private void Cancel()
+    {
+        _probeJob?.Cancel();
+        try
+        {
+            _cts?.Cancel();
+        }
+        catch (ObjectDisposedException)
+        {
+        }
+    }
+
+    private async Task RunJobAsync(bool lookup)
     {
         if (!DnsIqInput.TryCreate(
                 Name,
@@ -42,33 +73,55 @@ public sealed partial class MainViewModel : ObservableObject
             return;
         }
 
+        _cts = new CancellationTokenSource();
+        var token = _cts.Token;
+        IsBusy = true;
         Status = "Running";
         Answers.Clear();
+
         try
         {
-            var result = await NetworkHelper.LookupAsync(query!.Name, query.Options).ConfigureAwait(true);
-            Status = result.Rcode.ToString();
-            foreach (var answer in result.Answers)
+            if (lookup)
             {
-                Answers.Add(new AnswerRow(
-                    answer.Type.ToString(),
-                    answer.Name,
-                    answer.Data,
-                    answer.Ttl));
+                var result = await NetworkHelper.LookupAsync(query!.Name, query.Options, token).ConfigureAwait(true);
+                ReplaceAnswers(result.Answers);
+                Status = result.Rcode.ToString();
+                return;
             }
+
+            _probeJob = NetworkHelper.ProbeDns(query!.Name, query.Options);
+            var probe = await _probeJob.RunAsync(token).ConfigureAwait(true);
+            ReplaceAnswers(probe.Lookup.Answers);
+            Status = probe.Status.ToString();
+        }
+        catch (OperationCanceledException)
+        {
+            Status = "Cancelled";
         }
         catch (Exception ex)
         {
             Answers.Clear();
             Status = string.IsNullOrWhiteSpace(ex.Message) ? "Failed" : $"Failed: {ex.Message}";
         }
+        finally
+        {
+            _probeJob = null;
+            _cts.Dispose();
+            _cts = null;
+            IsBusy = false;
+        }
     }
 
-    [RelayCommand]
-    private Task ProbeAsync() => Task.CompletedTask;
-
-    [RelayCommand]
-    private void Cancel()
+    private void ReplaceAnswers(IReadOnlyList<DnsRecord> records)
     {
+        Answers.Clear();
+        foreach (var answer in records)
+        {
+            Answers.Add(new AnswerRow(
+                answer.Type.ToString(),
+                answer.Name,
+                answer.Data,
+                answer.Ttl));
+        }
     }
 }
