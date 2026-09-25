@@ -10,10 +10,7 @@ public sealed partial class MainViewModel : ObservableObject
 {
     public BindFields Bind { get; } = new();
 
-    public IReadOnlyList<string> RecordTypes { get; } =
-    [
-        "A", "AAAA", "CNAME", "MX", "NS", "PTR", "TXT", "SOA"
-    ];
+    public IReadOnlyList<string> RecordTypes => DnsIqInput.RecordTypes;
 
     public ObservableCollection<AnswerRow> Answers { get; } = [];
 
@@ -32,15 +29,24 @@ public sealed partial class MainViewModel : ObservableObject
     [RelayCommand]
     private async Task LookupAsync()
     {
+        if (!DnsIqInput.TryCreate(
+                Name,
+                Server,
+                RecordType,
+                Bind.InterfaceIndex,
+                Bind.SourceAddress,
+                out var query,
+                out var reject))
+        {
+            Status = reject ?? "Failed";
+            return;
+        }
+
         Status = "Running";
         Answers.Clear();
         try
         {
-            var result = await NetworkHelper.LookupAsync(Name, new DnsLookupOptions
-            {
-                InterfaceIndex = Bind.InterfaceIndex,
-                SourceAddress = Bind.SourceAddress
-            }).ConfigureAwait(true);
+            var result = await NetworkHelper.LookupAsync(query!.Name, query.Options).ConfigureAwait(true);
             Status = result.Rcode.ToString();
             foreach (var answer in result.Answers)
             {
@@ -53,7 +59,6 @@ public sealed partial class MainViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            Status = "Failed";
             Answers.Clear();
             Status = string.IsNullOrWhiteSpace(ex.Message) ? "Failed" : $"Failed: {ex.Message}";
         }
