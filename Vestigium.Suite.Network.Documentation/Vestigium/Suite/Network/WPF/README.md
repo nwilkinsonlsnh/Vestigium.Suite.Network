@@ -41,6 +41,8 @@ Shell does not wrap `NetworkHelper`. No port sweep. No default-route write. No H
 
 Implement against Requirements. Design is the class and window map, not a second lock table.
 
+DnsIQ is live: [PR01 -- Implementation Plan.md](DnsIQ/PR-Plans/PR01/PR01%20--%20Implementation%20Plan.md).
+
 ## Tree
 
 ```
@@ -50,8 +52,12 @@ WPF/
     Requirements_v1.0.md    the window
     Design_v1.0.md          class and window map
     PR-Plans/
-      README.md             queue keeper (idle until a PRnn file lands)
+      README.md             queue keeper — never a plan file
+      PRnn/                 LIVE slice
+        PRnn -- Implementation Plan.md
       Completed/PRnn/       finished plans — needs a file or Git drops the folder
 ```
+
+Open `PR-Plans/README.md` to see idle vs live. If live, the paper is inside `PR-Plans/PRnn/`, not beside the queue README. That `PRnn` folder is what Solution Explorer already shows.
 
 APPID is the host name (`PingIQ`, `DnsIQ`, …). Never `Network`.

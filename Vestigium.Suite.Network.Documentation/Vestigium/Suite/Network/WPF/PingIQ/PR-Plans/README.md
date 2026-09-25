@@ -4,29 +4,41 @@
 **APPID:** `PingIQ`  
 **Status:** No current implementation plan.
 
-This folder is kept so the GitHub tree matches Solution Explorer. Do not delete this file when the plan is idle.
+This file is the queue keeper. It is not the plan. Do not delete it when the plan is idle.
 
 ## Layout
 
+```
+PR-Plans/
+  README.md                          this file — never a plan
+  PRnn/                              LIVE slice folder (create when a plan opens)
+    PRnn -- Implementation Plan.md   the paper you implement
+  Completed/
+    PRnn/                            finished slice (needs a file or Git drops it)
+```
+
 | Location | Holds |
 |---|---|
-| Current plans | `WPF/PingIQ/PR-Plans` (this folder) |
-| Prior plans | `WPF/PingIQ/PR-Plans/Completed` |
+| Queue keeper | `WPF/PingIQ/PR-Plans/README.md` (this file) |
+| Live plan | `WPF/PingIQ/PR-Plans/PRnn/PRnn -- Implementation Plan.md` |
+| Finished plan | `WPF/PingIQ/PR-Plans/Completed/PRnn/` |
 
-Live plan stays in this folder. Finished plans move under `Completed/PRnn/` before the next number opens. Git does not keep empty directories — a finished plan needs a file under `Completed/PRnn/` or that folder disappears on GitHub.
+**Do not** place `PRnn -- Implementation Plan.md` next to this README. Solution Explorer already has a `PRnn` folder. The plan file lives inside it.
 
 ## Naming
 
-When a live plan exists, put it here and change **Status** above.
+When a live plan exists, create `PRnn/`, put the file **in that folder**, and change **Status** above to a link into the folder.
 
-| File | Meaning |
-|---|---|
-| `PR01 -- Implementation Plan.md` | First slice |
-| `PR01a -- Implementation Plan.md` | Follow-on on the same number |
-| `PR01b -- Implementation Plan.md` | Next follow-on |
-| `PR01c -- Implementation Plan.md` | Next follow-on |
+| File | Meaning | Disk |
+|---|---|---|
+| `PR01 -- Implementation Plan.md` | First slice | `PR-Plans/PR01/` |
+| `PR01a -- Implementation Plan.md` | Follow-on on the same number | still `PR-Plans/PR01/` |
+| `PR01b -- Implementation Plan.md` | Next follow-on | still `PR-Plans/PR01/` |
+| `PR01c -- Implementation Plan.md` | Next follow-on | still `PR-Plans/PR01/` |
 
-Do not leave a finished plan and a new plan in this folder at the same time.
+Follow-ons stay in the same `PRnn/` folder. They do not get their own sibling folder.
+
+When the slice finishes, move the whole `PRnn/` folder under `Completed/`. Then idle Status. Do not leave a live `PRnn/` and a new number at the same time.
 
 ## Papers this queue implements
 
@@ -35,7 +47,7 @@ Do not leave a finished plan and a new plan in this folder at the same time.
 | [Requirements_v1.0.md](../Requirements_v1.0.md) | The window |
 | [Design_v1.0.md](../Design_v1.0.md) | Class and window map |
 | Helpers.Network Requirements v1.6 | Protocol facts |
-| A live `PRnn` plan in this folder | The slice we are building now |
+| A live `PRnn` plan under `PR-Plans/PRnn/` | The slice we are building now |
 
 If a plan and Requirements disagree on the window, Requirements win.  
 If a plan invents a protocol the library does not own, the plan is wrong.

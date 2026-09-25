@@ -62,13 +62,18 @@ Vestigium.Suite.Network.Documentation/
         Requirements_v1.0.md           the window (or chrome, for Shell)
         Design_v1.0.md                 class and window map
         PR-Plans/
-          README.md                    queue keeper
-          Completed/                   finished plans (needs a file or Git drops it)
+          README.md                    queue keeper — never a plan file
+          PRnn/                        LIVE slice. Plan file goes here.
+            PRnn -- Implementation Plan.md
+          Completed/
+            PRnn/                      finished slice (needs a file or Git drops it)
 ```
 
 `<Host>` is one of: `Shell`, `PingIQ`, `TraceIQ`, `DnsIQ`, `NicIQ`, `RouteIQ`, `ProbeHost`, `ShareIQ`.
 
-A `.md` file is what Git keeps. Empty `Completed/` or `PR01/` folders in the `.csproj` `<Folder Include>` list are Solution Explorer only until a file lands inside them.
+A `.md` file is what Git keeps. Empty `Completed/` or `PRnn/` folders in the `.csproj` `<Folder Include>` list are Solution Explorer only until a file lands inside them.
+
+**Do not** drop `PRnn -- Implementation Plan.md` next to `PR-Plans/README.md`. The live paper is `PR-Plans/PRnn/PRnn -- Implementation Plan.md`. That matches the `PRnn` folder already shown in Solution Explorer.
 
 ### Paper precedence
 
@@ -77,7 +82,7 @@ A `.md` file is what Git keeps. Empty `Completed/` or `PR01/` folders in the `.c
 | Protocol fact | Helpers.Network Requirements v1.6 |
 | Window / chrome | that host's `Requirements_v1.0.md` |
 | Class and window map | that host's `Design_v1.0.md` |
-| What we build this week | a live `PRnn -- Implementation Plan.md` |
+| What we build this week | `PR-Plans/PRnn/PRnn -- Implementation Plan.md` |
 
 Design is not a second lock table. A plan does not reopen Requirements.
 
@@ -184,9 +189,10 @@ A ViewModel may call a library door, map rows, reject a blank field, and cancel 
 2. [WPF/README.md](WPF/README.md) — which host paper to open.
 3. That host's `Requirements_v1.0.md` — what the window must do.
 4. That host's `Design_v1.0.md` — what types exist.
-5. That host's `PR-Plans/README.md` — whether a slice is live.
-6. `src/Vestigium.Suite.Network.<Host>/` — the project you actually change.
-7. Helpers repo — if the door does not exist yet.
+5. That host's `PR-Plans/README.md` — idle or live. This file is the queue, not the plan.
+6. If live: `PR-Plans/PRnn/PRnn -- Implementation Plan.md`. Never beside the queue README.
+7. `src/Vestigium.Suite.Network.<Host>/` — the project you actually change.
+8. Helpers repo — if the door does not exist yet.
 
 ---
 
@@ -196,3 +202,4 @@ A ViewModel may call a library door, map rows, reject a blank field, and cancel 
 |---|---|
 | 1.0 | 25 Sep 2026 | First briefing. Two trees. Owner goal left editable. |
 | 1.0.1 | 25 Sep 2026 | Consume contract. Package pins, purpose, GUI is not a library. |
+| 1.0.2 | 25 Sep 2026 | Live PR plan path is `PR-Plans/PRnn/`, not the queue root. |
