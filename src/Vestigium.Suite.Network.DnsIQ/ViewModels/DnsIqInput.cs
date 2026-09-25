@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Sockets;
 using Vestigium.Helpers.Network;
 
 namespace Vestigium.Suite.Network.DnsIQ.ViewModels;
