@@ -11,13 +11,13 @@
 
   <ItemGroup>
     <None Include="Vestigium\**\*.md" />
-    <Folder Include="Vestigium\Suite\Network\DnsIQ\" />
-    <Folder Include="Vestigium\Suite\Network\Shell\" />
-    <Folder Include="Vestigium\Suite\Network\TraceIQ\" />
-    <Folder Include="Vestigium\Suite\Network\ShareIQ\" />
-    <Folder Include="Vestigium\Suite\Network\RouteIQ\" />
-    <Folder Include="Vestigium\Suite\Network\ProbeHost\" />
-    <Folder Include="Vestigium\Suite\Network\PingIQ\" />
-    <Folder Include="Vestigium\Suite\Network\NicIQ\" />
+    <Folder Include="Vestigium\Suite\Network\WPF\DnsIQ\" />
+    <Folder Include="Vestigium\Suite\Network\WPF\Shell\" />
+    <Folder Include="Vestigium\Suite\Network\WPF\TraceIQ\" />
+    <Folder Include="Vestigium\Suite\Network\WPF\ShareIQ\" />
+    <Folder Include="Vestigium\Suite\Network\WPF\RouteIQ\" />
+    <Folder Include="Vestigium\Suite\Network\WPF\ProbeHost\" />
+    <Folder Include="Vestigium\Suite\Network\WPF\PingIQ\" />
+    <Folder Include="Vestigium\Suite\Network\WPF\NicIQ\" />
   </ItemGroup>
 </Project>

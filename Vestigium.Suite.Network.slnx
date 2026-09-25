@@ -3,7 +3,8 @@
     <Project Path="Vestigium.Suite.Network.Documentation/Vestigium.Suite.Network.Documentation.csproj" Id="c1495cb5-2518-4e71-b18e-eaedc0442e45" />
   </Folder>
   <Folder Name="/Suite/" />
-  <Folder Name="/Suite/Network/">
+  <Folder Name="/Suite/Network/" />
+  <Folder Name="/Suite/Network/WPF/">
     <Project Path="src/Vestigium.Suite.Network.DnsIQ/Vestigium.Suite.Network.DnsIQ.csproj" />
     <Project Path="src/Vestigium.Suite.Network.NicIQ/Vestigium.Suite.Network.NicIQ.csproj" />
     <Project Path="src/Vestigium.Suite.Network.PingIQ/Vestigium.Suite.Network.PingIQ.csproj" />
