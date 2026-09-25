@@ -12,5 +12,6 @@ public sealed class HostIdsTests
         Assert.Equal("TraceIQ", HostIds.TraceIQ);
         Assert.Equal("DnsIQ", HostIds.DnsIQ);
         Assert.NotEqual("Network", HostIds.PingIQ);
+        Assert.NotEqual("Network", HostIds.DnsIQ);
     }
 }
