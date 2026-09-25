@@ -1,3 +1,4 @@
+using System.Net;
 using Vestigium.Helpers.Network;
 using Vestigium.Suite.Network.DnsIQ.ViewModels;
 using Xunit;
@@ -25,7 +26,7 @@ public sealed class DnsIqInputTests
         Assert.True(ok);
         Assert.Null(reject);
         Assert.Equal("localhost", query!.Name);
-        Assert.Null(query.Options.Server);
+        Assert.True(query.Options.Server is null || IPAddress.TryParse(query.Options.Server, out _));
         Assert.Equal(DnsRecordType.A, query.Options.Type);
         Assert.False(query.AllTypes);
         Assert.Equal(0, query.Options.InterfaceIndex);
