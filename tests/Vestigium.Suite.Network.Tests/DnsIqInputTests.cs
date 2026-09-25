@@ -27,6 +27,7 @@ public sealed class DnsIqInputTests
         Assert.Equal("localhost", query!.Name);
         Assert.Null(query.Options.Server);
         Assert.Equal(DnsRecordType.A, query.Options.Type);
+        Assert.False(query.AllTypes);
         Assert.Equal(0, query.Options.InterfaceIndex);
         Assert.Null(query.Options.SourceAddress);
     }
@@ -90,8 +91,18 @@ public sealed class DnsIqInputTests
     {
         Assert.True(Try(type: "A", out var a, out _));
         Assert.Equal(DnsRecordType.A, a!.Options.Type);
+        Assert.False(a.AllTypes);
         Assert.True(Try(type: "AAAA", out var aaaa, out _));
         Assert.Equal(DnsRecordType.Aaaa, aaaa!.Options.Type);
+    }
+
+    [Fact]
+    public void Type_all_accepts()
+    {
+        var ok = Try(type: "All", out var query, out var reject);
+        Assert.True(ok);
+        Assert.Null(reject);
+        Assert.True(query!.AllTypes);
     }
 
     [Fact]

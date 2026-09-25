@@ -13,7 +13,7 @@ public sealed partial class MainViewModel : ObservableObject
 
     public BindFields Bind { get; } = new();
 
-    public IReadOnlyList<string> RecordTypes => DnsIqInput.RecordTypes;
+    public IReadOnlyList<string> RecordTypes => DnsIqInput.ComboTypes;
 
     public ObservableCollection<AnswerRow> Answers { get; } = [];
 
@@ -24,7 +24,7 @@ public sealed partial class MainViewModel : ObservableObject
     private string _server = string.Empty;
 
     [ObservableProperty]
-    private string _recordType = "A";
+    private string _recordType = "All";
 
     [ObservableProperty]
     private string _status = "Idle";
@@ -83,15 +83,13 @@ public sealed partial class MainViewModel : ObservableObject
         {
             if (lookup)
             {
-                var result = await NetworkHelper.LookupAsync(query!.Name, query.Options, token).ConfigureAwait(true);
-                ReplaceAnswers(result.Answers);
-                Status = result.Rcode.ToString();
+                await LookupAnswersAsync(query!, token).ConfigureAwait(true);
                 return;
             }
 
             _probeJob = NetworkHelper.ProbeDns(query!.Name, query.Options);
             var probe = await _probeJob.RunAsync(token).ConfigureAwait(true);
-            ReplaceAnswers(probe.Lookup.Answers);
+            AppendAnswers(probe.Lookup.Answers);
             Status = probe.Status.ToString();
         }
         catch (OperationCanceledException)
@@ -112,9 +110,47 @@ public sealed partial class MainViewModel : ObservableObject
         }
     }
 
-    private void ReplaceAnswers(IReadOnlyList<DnsRecord> records)
+    private async Task LookupAnswersAsync(DnsIqQuery query, CancellationToken token)
     {
-        Answers.Clear();
+        if (!query.AllTypes)
+        {
+            var result = await NetworkHelper.LookupAsync(query.Name, query.Options, token).ConfigureAwait(true);
+            AppendAnswers(result.Answers);
+            Status = result.Rcode.ToString();
+            return;
+        }
+
+        DnsRcode? last = null;
+        var anyError = false;
+        foreach (var typeName in DnsIqInput.RecordTypes)
+        {
+            token.ThrowIfCancellationRequested();
+            if (!DnsIqInput.TryCreate(
+                    query.Name,
+                    query.Options.Server,
+                    typeName,
+                    query.Options.InterfaceIndex,
+                    query.Options.SourceAddress,
+                    out var typed,
+                    out _))
+            {
+                continue;
+            }
+
+            var result = await NetworkHelper.LookupAsync(typed!.Name, typed.Options, token).ConfigureAwait(true);
+            last = result.Rcode;
+            if (result.Rcode == DnsRcode.NoError)
+                anyError = true;
+            AppendAnswers(result.Answers);
+        }
+
+        Status = anyError || Answers.Count > 0
+            ? DnsRcode.NoError.ToString()
+            : (last ?? DnsRcode.Failed).ToString();
+    }
+
+    private void AppendAnswers(IReadOnlyList<DnsRecord> records)
+    {
         foreach (var answer in records)
         {
             Answers.Add(new AnswerRow(

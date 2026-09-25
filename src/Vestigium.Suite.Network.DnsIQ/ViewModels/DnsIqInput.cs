@@ -3,13 +3,18 @@ using Vestigium.Helpers.Network;
 
 namespace Vestigium.Suite.Network.DnsIQ.ViewModels;
 
-public sealed record DnsIqQuery(string Name, DnsLookupOptions Options);
+public sealed record DnsIqQuery(string Name, DnsLookupOptions Options, bool AllTypes);
 
 public static class DnsIqInput
 {
     public static IReadOnlyList<string> RecordTypes { get; } =
     [
         "A", "AAAA", "CNAME", "MX", "NS", "PTR", "TXT", "SOA"
+    ];
+
+    public static IReadOnlyList<string> ComboTypes { get; } =
+    [
+        "All", "A", "AAAA", "CNAME", "MX", "NS", "PTR", "TXT", "SOA"
     ];
 
     public static bool TryCreate(
@@ -31,7 +36,7 @@ public static class DnsIqInput
             return false;
         }
 
-        if (!TryMapType(recordType, out var type))
+        if (!TryMapType(recordType, out var type, out var allTypes))
         {
             reject = "Type is not allowed.";
             return false;
@@ -65,7 +70,8 @@ public static class DnsIqInput
                 Server = trimmedServer,
                 InterfaceIndex = interfaceIndex,
                 SourceAddress = trimmedSource
-            });
+            },
+            allTypes);
         return true;
     }
 
@@ -75,15 +81,20 @@ public static class DnsIqInput
         return string.IsNullOrEmpty(trimmed) ? null : trimmed;
     }
 
-    private static bool TryMapType(string? recordType, out DnsRecordType type)
+    private static bool TryMapType(string? recordType, out DnsRecordType type, out bool allTypes)
     {
         type = DnsRecordType.A;
+        allTypes = false;
         var key = recordType?.Trim();
         if (string.IsNullOrEmpty(key))
             return false;
 
         switch (key.ToUpperInvariant())
         {
+            case "ALL":
+                allTypes = true;
+                type = DnsRecordType.A;
+                return true;
             case "A":
                 type = DnsRecordType.A;
                 return true;
