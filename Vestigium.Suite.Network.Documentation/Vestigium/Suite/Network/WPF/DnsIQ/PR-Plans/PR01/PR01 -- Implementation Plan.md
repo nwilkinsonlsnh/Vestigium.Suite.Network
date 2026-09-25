@@ -162,7 +162,7 @@ Build order is the Order column.
 
 | Order | ID | Do | State |
 | ---: | :--- | :--- | :--- |
-| 1 | PR01-01 | Window + types. Replace `Log`. Add Server, Type, bind boxes, Probe, Cancel, `Answers` grid, `AnswerRow`. | Open |
+| 1 | PR01-01 | Window + types. Replace `Log`. Add Server, Type, bind boxes, Probe, Cancel, `Answers` grid, `AnswerRow`. | Done |
 | 2 | PR01-02 | `DnsIqInput` + Lookup path. Reject rules. Map answers. Failed clears. | Open |
 | 3 | PR01-03 | Probe + one in-flight + Cancel. Both buttons disabled while Running. | Open |
 | 4 | PR01-04 | Host tests for rejects and APPID. No wire. | Open |
@@ -225,7 +225,7 @@ tests/Vestigium.Suite.Network.Tests/DnsIqInputTests.cs             [NEW]
 
 Do not edit Shell. Do not bump package pins. Do not add a project reference from the exe to Helpers — Shell already flows Network through.
 
-When this plan finishes, move it to `PR-Plans/Completed/PR01/` and idle the queue README.
+When this plan finishes, move the whole `PR01/` folder to `PR-Plans/Completed/PR01/` and idle the queue README.
 
 ---
 
@@ -241,4 +241,4 @@ When this plan finishes, move it to `PR-Plans/Completed/PR01/` and idle the queu
 
 ## Next action
 
-PR01-01. Replace the log box with the form and grid so Lookup/Probe have somewhere to land.
+PR01-02. `DnsIqInput` plus Lookup using Type, Server, and bind. Probe and Cancel stay stubs until PR01-03.
