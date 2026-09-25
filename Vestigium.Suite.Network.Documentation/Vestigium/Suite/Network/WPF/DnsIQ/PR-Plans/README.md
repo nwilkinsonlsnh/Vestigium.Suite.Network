@@ -2,7 +2,7 @@
 
 **Host:** `Vestigium.Suite.Network.DnsIQ`  
 **APPID:** `DnsIQ`  
-**Status:** No current implementation plan.
+**Status:** Live — [PR01 -- Implementation Plan.md](PR01%20--%20Implementation%20Plan.md)
 
 This folder is kept so the GitHub tree matches Solution Explorer. Do not delete this file when the plan is idle.
 
