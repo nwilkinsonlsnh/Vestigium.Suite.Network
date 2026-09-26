@@ -5,6 +5,7 @@
         Title="DnsIQ"
         Height="720" Width="1100"
         MinHeight="480" MinWidth="720"
+        WindowStartupLocation="Manual"
         Background="{DynamicResource Vestigium.Brushes.Surface.Window}">
   <Window.Resources>
     <ResourceDictionary>
@@ -23,6 +24,8 @@
         <Separator Style="{StaticResource Separator.Menu}" />
         <MenuItem Header="Status bar at _Bottom" Style="{StaticResource MenuItem.Standard}" Command="{Binding DockStatusBarBottomCommand}" />
         <MenuItem Header="Status bar at _Top" Style="{StaticResource MenuItem.Standard}" Command="{Binding DockStatusBarTopCommand}" />
+        <Separator Style="{StaticResource Separator.Menu}" />
+        <MenuItem x:Name="ThemeMenu" Header="_Theme" Style="{StaticResource MenuItem.Standard}" />
       </MenuItem>
     </Menu>
     <ItemsControl DockPanel.Dock="Top"
