@@ -6,7 +6,7 @@ namespace Vestigium.Suite.Network.Shell;
 
 public static class HostLog
 {
-    public static void Initialize(string appId)
+    public static void Initialize(string appId, Action<VestigiumLoggerOptions>? extra = null)
     {
         if (string.IsNullOrWhiteSpace(appId))
             throw new ArgumentException("Host APPID is required.", nameof(appId));
@@ -23,6 +23,7 @@ public static class HostLog
             cfg.AppId = appId;
             cfg.LogDirectory = root;
             NetworkCatalog.Register(cfg);
+            extra?.Invoke(cfg);
         });
     }
 }
