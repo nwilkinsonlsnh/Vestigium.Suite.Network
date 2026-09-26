@@ -12,6 +12,7 @@
     <VestigiumLoggingVersion>1.7.1</VestigiumLoggingVersion>
     <VestigiumThemesVersion>1.0.2</VestigiumThemesVersion>
     <VestigiumControlsVersion>1.0.0</VestigiumControlsVersion>
+    <VestigiumNumericUpDownVersion>1.0.1</VestigiumNumericUpDownVersion>
     <VestigiumConvertersVersion>1.0.0</VestigiumConvertersVersion>
     <MicrosoftExtensionsDiVersion>10.0.0</MicrosoftExtensionsDiVersion>
   </PropertyGroup>
