@@ -125,7 +125,10 @@ public sealed partial class MainViewModel : ObservableObject
         finally
         {
             if (!lookup)
+            {
                 ShowProgress(1, visible: false);
+                StatusBar?.Engine.SetIdlePolicy(3000, "Idle. . .");
+            }
             _cts.Dispose();
             _cts = null;
             IsBusy = false;
@@ -213,7 +216,6 @@ public sealed partial class MainViewModel : ObservableObject
         var rate = plan.Seconds == 0 ? 0 : plan.Requests / (double)plan.Seconds;
         Status =
             $"{plan.Requests}/{plan.Requests} · {FormatServer(server)} · med {med} ms · {rate:0.0}/s · {timeout} timeout · {answered} answered · {refused} refused";
-        StatusBar?.Engine.SetIdlePolicy(3000, "Idle. . .");
     }
 
     private void ShowProgress(double fraction, bool visible)
