@@ -88,12 +88,12 @@ public sealed partial class DashboardViewModel : ObservableObject
             LookupChart = ChartTheme.Paint(
                 ChartView.Pie(slices, ChartTheme.Options(ChartSlot.Lookup, "Lookup type mix", "Record type", "Answers")),
                 ChartSlot.Lookup);
-            HasLookupData = true;
+            HasLookupData = LookupChart is not null;
         }
         catch (Exception)
         {
             LookupChart = null;
-            HasLookupData = rows.Count > 0;
+            HasLookupData = false;
         }
     }
 
@@ -103,52 +103,58 @@ public sealed partial class DashboardViewModel : ObservableObject
         ProbeCurve = null;
         ProbeShape = null;
         ProbeControl = null;
-        OnPropertyChanged(nameof(ShowProbeControl));
 
         if (rtts.Count == 0)
         {
             HasProbeData = false;
+            OnPropertyChanged(nameof(ShowProbeControl));
             return;
         }
 
+        var series = NumericSeries.From(rtts, "dns-rtt-ms");
+        ProbeCurve = TryChart(
+            () => ChartView.Line(series, ChartTheme.Options(ChartSlot.ProbeRtt, "Probe RTT (ms)", "Request", "RTT (ms)")),
+            ChartSlot.ProbeRtt);
+
+        var hist = ChartTheme.Options(ChartSlot.ProbeDist, "RTT distribution", "RTT (ms)", "Count") with
+        {
+            ShowBellCurve = true,
+            ShowKde = true
+        };
+        ProbeShape = TryChart(() => ChartView.Histogram(series, hist), ChartSlot.ProbeDist);
+
         try
         {
-            var series = NumericSeries.From(rtts, "dns-rtt-ms");
-            var line = ChartTheme.Options(ChartSlot.ProbeRtt, "Probe RTT (ms)", "Request", "RTT (ms)");
-            var hist = ChartTheme.Options(ChartSlot.ProbeDist, "RTT distribution", "RTT (ms)", "Count") with
+            var limits = series.ControlLimits(ControlLimitMethod.MovingRange);
+            if (limits.Upper > limits.Center && limits.Center > limits.Lower)
             {
-                ShowBellCurve = true,
-                ShowKde = true
-            };
-            ProbeCurve = ChartTheme.Paint(ChartView.Line(series, line), ChartSlot.ProbeRtt);
-            ProbeShape = ChartTheme.Paint(ChartView.Histogram(series, hist), ChartSlot.ProbeDist);
-
-            try
-            {
-                var limits = series.ControlLimits(ControlLimitMethod.MovingRange);
-                if (limits.Upper > limits.Center && limits.Center > limits.Lower)
-                {
-                    ProbeControl = ChartTheme.Paint(
-                        ChartView.Control(
-                            series,
-                            limits,
-                            series.RunRules(ControlLimitMethod.MovingRange),
-                            ChartTheme.Options(ChartSlot.ProbeControl, "Probe control", "Request", "RTT (ms)")),
-                        ChartSlot.ProbeControl);
-                }
+                ProbeControl = TryChart(
+                    () => ChartView.Control(
+                        series,
+                        limits,
+                        series.RunRules(ControlLimitMethod.MovingRange),
+                        ChartTheme.Options(ChartSlot.ProbeControl, "Probe control", "Request", "RTT (ms)")),
+                    ChartSlot.ProbeControl);
             }
-            catch (Exception)
-            {
-                ProbeControl = null;
-            }
-
-            HasProbeData = true;
         }
         catch (Exception)
         {
-            HasProbeData = true;
+            ProbeControl = null;
         }
 
+        HasProbeData = ProbeCurve is not null || ProbeShape is not null || ProbeControl is not null;
         OnPropertyChanged(nameof(ShowProbeControl));
+    }
+
+    private static FrameworkElement? TryChart(Func<FrameworkElement> build, ChartSlot slot)
+    {
+        try
+        {
+            return ChartTheme.Paint(build(), slot);
+        }
+        catch (Exception)
+        {
+            return null;
+        }
     }
 }
