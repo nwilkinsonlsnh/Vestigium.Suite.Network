@@ -20,6 +20,8 @@ public sealed partial class MainViewModel : ObservableObject
 
     public DnsIqSession? Session { get; set; }
 
+    public DashboardViewModel? Dashboard { get; set; }
+
     public IReadOnlyList<string> RecordTypes => DnsIqInput.ComboTypes;
 
     public IReadOnlyList<ServerOption> ServerOptions { get; } = DnsIqInput.ServerOptions();
@@ -76,7 +78,6 @@ public sealed partial class MainViewModel : ObservableObject
     public bool ShowNameHint => string.IsNullOrWhiteSpace(Name);
 
     public void BeginLoad() => _loading = true;
-
     public void EndLoad() => _loading = false;
 
     partial void OnServerChanged(string value) => Persist();
@@ -144,6 +145,8 @@ public sealed partial class MainViewModel : ObservableObject
         try
         {
             var preludeOk = await LookupAnswersAsync(query!, token).ConfigureAwait(true);
+            if (preludeOk)
+                Dashboard?.ShowLookup(Answers.ToList());
             if (lookup)
                 return;
             if (!PulsePrelude.MayStartPulse(preludeOk))
@@ -260,6 +263,7 @@ public sealed partial class MainViewModel : ObservableObject
         }
 
         PostPulseBar(plan.Requests, plan.Requests, clock.Elapsed, window);
+        Dashboard?.ShowProbe(samples);
         var med = Median(samples);
         var rate = plan.Seconds == 0 ? 0 : plan.Requests / (double)plan.Seconds;
         Status =
