@@ -6,6 +6,8 @@ namespace Vestigium.Suite.Network.DnsIQ.ViewModels;
 
 public sealed record DnsIqQuery(string Name, DnsLookupOptions Options, bool AllTypes);
 
+public sealed record ServerOption(string Address, string Label);
+
 public static class DnsIqInput
 {
     public static IReadOnlyList<string> RecordTypes { get; } =
@@ -17,6 +19,30 @@ public static class DnsIqInput
     [
         "All", "A", "AAAA", "CNAME", "MX", "NS", "PTR", "TXT", "SOA"
     ];
+
+    public static IReadOnlyList<ServerOption> PublicServers { get; } =
+    [
+        new("8.8.8.8", "8.8.8.8  Google"),
+        new("8.8.4.4", "8.8.4.4  Google"),
+        new("1.1.1.1", "1.1.1.1  Cloudflare"),
+        new("1.0.0.1", "1.0.0.1  Cloudflare"),
+        new("9.9.9.9", "9.9.9.9  Quad9"),
+        new("208.67.222.222", "208.67.222.222  OpenDNS")
+    ];
+
+    public static IReadOnlyList<ServerOption> ServerOptions()
+    {
+        var list = new List<ServerOption>();
+        var system = FirstConfiguredDns();
+        if (!string.IsNullOrWhiteSpace(system))
+            list.Add(new ServerOption(system, $"{system}  (this PC)"));
+        foreach (var item in PublicServers)
+        {
+            if (!list.Any(s => s.Address == item.Address))
+                list.Add(item);
+        }
+        return list;
+    }
 
     public static bool TryCreate(
         string? name,
@@ -32,10 +58,7 @@ public static class DnsIqInput
 
         var trimmedName = name?.Trim() ?? string.Empty;
         if (trimmedName.Length == 0)
-        {
-            reject = "Name is required.";
-            return false;
-        }
+            trimmedName = "localhost";
 
         if (!TryMapType(recordType, out var type, out var allTypes))
         {
