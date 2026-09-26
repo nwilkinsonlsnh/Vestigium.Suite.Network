@@ -15,7 +15,10 @@ public sealed class DnsIqSettings
     public bool StatusBarVisible { get; set; } = true;
     public string StatusBarDock { get; set; } = "Bottom";
     public string? Source { get; set; }
-    public bool ShowChartLegend { get; set; } = true;
+    public bool ShowLegendLookup { get; set; } = true;
+    public bool ShowLegendProbeRtt { get; set; } = true;
+    public bool ShowLegendProbeDist { get; set; } = true;
+    public bool ShowLegendProbeControl { get; set; } = true;
 }
 
 public sealed class DnsIqSettingsStore
