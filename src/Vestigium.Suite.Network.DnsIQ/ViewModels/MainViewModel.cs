@@ -24,10 +24,21 @@ public sealed partial class MainViewModel : ObservableObject
 
     public IReadOnlyList<ServerOption> ServerOptions { get; } = DnsIqInput.ServerOptions();
 
+    public IReadOnlyList<AdapterChoice> Interfaces { get; }
+
     public ObservableCollection<AnswerRow> Answers { get; } = [];
 
     public MainViewModel()
     {
+        try
+        {
+            Interfaces = AdapterChoices.From(NetworkHelper.GetAdapters());
+        }
+        catch (Exception)
+        {
+            Interfaces = AdapterChoices.From([]);
+        }
+
         Bind.PropertyChanged += (_, _) => Persist();
     }
 
@@ -43,6 +54,9 @@ public sealed partial class MainViewModel : ObservableObject
 
     [ObservableProperty]
     private decimal _port = DnsIqInput.DefaultPort;
+
+    [ObservableProperty]
+    private int _selectedInterfaceIndex;
 
     [ObservableProperty]
     private decimal _requestCount = SettingsViewModel.RequestDefault;
@@ -76,6 +90,12 @@ public sealed partial class MainViewModel : ObservableObject
     partial void OnRecordTypeChanged(string value) => Persist();
 
     partial void OnPortChanged(decimal value) => Persist();
+
+    partial void OnSelectedInterfaceIndexChanged(int value)
+    {
+        Bind.InterfaceIndex = value;
+        Persist();
+    }
 
     partial void OnRequestCountChanged(decimal value) => Persist();
 
@@ -287,20 +307,14 @@ public sealed partial class MainViewModel : ObservableObject
         if (StatusBar is null)
             return;
 
-        StatusBar.Engine.PostImmediate("message", new StatusBarUpdate
-        {
-            Text = $"{sent}/{total}"
-        });
+        StatusBar.Engine.PostImmediate("message", new StatusBarUpdate { Text = $"{sent}/{total}" });
         StatusBar.Engine.PostImmediate("progress", new StatusBarUpdate
         {
             Progress = PercentOfWindow(elapsed, window),
             IsProgressVisible = true,
             IsIndeterminate = false
         });
-        StatusBar.Engine.PostImmediate("detail", new StatusBarUpdate
-        {
-            Text = FormatElapsed(elapsed)
-        });
+        StatusBar.Engine.PostImmediate("detail", new StatusBarUpdate { Text = FormatElapsed(elapsed) });
     }
 
     private static double PercentOfWindow(TimeSpan elapsed, TimeSpan window)
