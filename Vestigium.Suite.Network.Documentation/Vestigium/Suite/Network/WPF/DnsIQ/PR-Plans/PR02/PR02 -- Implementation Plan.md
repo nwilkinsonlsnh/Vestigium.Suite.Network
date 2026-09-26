@@ -108,7 +108,7 @@ No timeout box. No port box. No chart. No Probe twin grid.
 
 | Order | ID | Do | Paper | State |
 | ---: | :--- | :--- | :--- | :--- |
-| 1 | PR02-01 | Requirements 1.1 + Design 1.1. Locks above. | this | Open |
+| 1 | PR02-01 | Requirements 1.1 + Design 1.1. Locks above. | this | Done |
 | 2 | PR02-02 | Pins + `ThemeManager` + `AddVestigiumControls` in DnsIQ `App.OnStartup`. HostLog still first. | PR02a | Open |
 | 3 | PR02-03 | Main window becomes default form + three tabs + status bar wired to VM. | PR02a | Open |
 | 4 | PR02-04 | Dashboard tab = Under Construction. | PR02a | Open |
@@ -120,9 +120,7 @@ No timeout box. No port box. No chart. No Probe twin grid.
 
 ### PR02-01
 
-Add `Requirements_v1.1.md` and `Design_v1.1.md` next to v1.0. Keep v1.0 as the first-and-ten lock. Point the queue README at 1.1.
-
-Must say the locks table. Must say Dashboard is Under Construction on purpose.
+Done. `Requirements_v1.1.md` and `Design_v1.1.md` sit next to v1.0. Queue README points at 1.1.
 
 ### PR02-02
 
@@ -159,8 +157,8 @@ src/Vestigium.Suite.Network.DnsIQ/MainWindow.xaml
 src/Vestigium.Suite.Network.DnsIQ/ViewModels/MainViewModel.cs
 src/Vestigium.Suite.Network.DnsIQ/Views/              (Dns tab, Dashboard, Settings — new)
 tests/Vestigium.Suite.Network.Tests/DnsIqInputTests.cs
-Vestigium/.../WPF/DnsIQ/Requirements_v1.1.md          [NEW]
-Vestigium/.../WPF/DnsIQ/Design_v1.1.md                [NEW]
+Vestigium/.../WPF/DnsIQ/Requirements_v1.1.md
+Vestigium/.../WPF/DnsIQ/Design_v1.1.md
 ```
 
 Do not edit PingIQ / TraceIQ / others. Do not bump Helpers.Network. Do not add PropertiesGrid.
@@ -181,4 +179,4 @@ When this plan finishes, move the whole `PR02/` folder to `PR-Plans/Completed/PR
 
 ## Next action
 
-PR02-01. Write Requirements 1.1 and Design 1.1 from the locks table. Then PR02-02 pins.
+PR02-02. Pins + ThemeManager + AddVestigiumControls. HostLog still first.
