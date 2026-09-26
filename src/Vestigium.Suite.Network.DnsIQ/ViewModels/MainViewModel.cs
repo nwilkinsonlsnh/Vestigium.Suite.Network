@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Windows;
+using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Vestigium.Controls.StatusBar;
@@ -13,6 +15,7 @@ public sealed partial class MainViewModel : ObservableObject
     private CancellationTokenSource? _cts;
     private bool _pulseActive;
     private bool _loading;
+    private TimeSpan _lastPulseUi;
 
     public BindFields Bind { get; } = new();
 
@@ -238,10 +241,11 @@ public sealed partial class MainViewModel : ObservableObject
             cycle.Add(query);
 
         _pulseActive = true;
+        _lastPulseUi = TimeSpan.Zero;
         StatusBar?.Engine.SetIdlePolicy(0);
         var clock = Stopwatch.StartNew();
         var window = TimeSpan.FromSeconds(plan.Seconds);
-        PostPulseBar(0, plan.Requests, clock.Elapsed, window);
+        TickPulseUi(0, plan.Requests, clock.Elapsed, window, "Pulse: 0 / " + plan.Requests, force: true);
 
         var samples = new List<double>();
         var answered = 0;
@@ -254,34 +258,43 @@ public sealed partial class MainViewModel : ObservableObject
         for (var i = 1; i <= plan.Requests; i++)
         {
             token.ThrowIfCancellationRequested();
-            await WaitUntilAsync(clock, plan.DueAt(i), window, sent, plan.Requests, token).ConfigureAwait(true);
+            await WaitUntilAsync(clock, plan.DueAt(i), token).ConfigureAwait(false);
 
             var typed = cycle[(i - 1) % cycle.Count];
             inflight.Add(NetworkHelper.LookupAsync(typed.Name, typed.Options, token));
             sent = i;
             DrainCompleted(inflight, ref answered, ref timeout, ref refused, samples, ref server);
-            PostPulseBar(sent, plan.Requests, clock.Elapsed, window);
-            Status = FormatPulseLive(sent, plan.Requests, inflight.Count, server, clock.Elapsed, draining: false);
+            TickPulseUi(
+                sent, plan.Requests, clock.Elapsed, window,
+                FormatPulseLive(sent, plan.Requests, inflight.Count, server, clock.Elapsed, draining: false),
+                force: i == plan.Requests);
         }
-
-        PostPulseBar(plan.Requests, plan.Requests, clock.Elapsed, window);
 
         while (inflight.Count > 0)
         {
             token.ThrowIfCancellationRequested();
-            var finished = await Task.WhenAny(inflight).ConfigureAwait(true);
+            var finished = await Task.WhenAny(inflight).ConfigureAwait(false);
             inflight.Remove(finished);
-            ApplyResult(await finished.ConfigureAwait(true), ref answered, ref timeout, ref refused, samples, ref server);
-            Status = FormatPulseLive(sent, plan.Requests, inflight.Count, server, clock.Elapsed, draining: true);
+            ApplyResult(await finished.ConfigureAwait(false), ref answered, ref timeout, ref refused, samples, ref server);
+            TickPulseUi(
+                sent, plan.Requests, clock.Elapsed, window,
+                FormatPulseLive(sent, plan.Requests, inflight.Count, server, clock.Elapsed, draining: true),
+                force: inflight.Count == 0);
         }
 
         var elapsed = clock.Elapsed;
-        Dashboard?.Unlock();
-        Dashboard?.ShowProbe(samples);
         var med = Median(samples);
         var rate = plan.Seconds == 0 ? 0 : plan.Requests / (double)plan.Seconds;
-        Status =
+        var summary =
             $"Pulse: {plan.Requests} / {plan.Requests} · {FormatServer(server)} · Med {med} ms · {rate:0.0}/s · {timeout} Timeout · {answered} Answered · {refused} Refused · Elapsed {FormatElapsed(elapsed)}";
+
+        await OnUiAsync(() =>
+        {
+            Dashboard?.Unlock();
+            Dashboard?.ShowProbe(samples);
+            Status = summary;
+            PostPulseBar(plan.Requests, plan.Requests, elapsed, window);
+        }).ConfigureAwait(true);
     }
 
     private static string FormatPulseLive(
@@ -289,6 +302,39 @@ public sealed partial class MainViewModel : ObservableObject
     {
         var phase = draining ? "Drain" : "In Flight";
         return $"Pulse: {sent} / {total} · {phase} {inflight} · {FormatServer(server)} · Elapsed {FormatElapsed(elapsed)}";
+    }
+
+    private void TickPulseUi(int sent, int total, TimeSpan elapsed, TimeSpan window, string status, bool force)
+    {
+        if (!force && elapsed - _lastPulseUi < TimeSpan.FromMilliseconds(100))
+            return;
+        _lastPulseUi = elapsed;
+        OnUi(() =>
+        {
+            Status = status;
+            PostPulseBar(sent, total, elapsed, window);
+        });
+    }
+
+    private static void OnUi(Action action)
+    {
+        var dispatcher = Application.Current?.Dispatcher;
+        if (dispatcher is null || dispatcher.CheckAccess())
+            action();
+        else
+            dispatcher.BeginInvoke(action, DispatcherPriority.Background);
+    }
+
+    private static Task OnUiAsync(Action action)
+    {
+        var dispatcher = Application.Current?.Dispatcher;
+        if (dispatcher is null || dispatcher.CheckAccess())
+        {
+            action();
+            return Task.CompletedTask;
+        }
+
+        return dispatcher.InvokeAsync(action, DispatcherPriority.Background).Task;
     }
 
     private static void DrainCompleted(
@@ -321,17 +367,15 @@ public sealed partial class MainViewModel : ObservableObject
         Classify(result, ref answered, ref timeout, ref refused, samples);
     }
 
-    private async Task WaitUntilAsync(
-        Stopwatch clock, TimeSpan due, TimeSpan window, int sent, int total, CancellationToken token)
+    private static async Task WaitUntilAsync(Stopwatch clock, TimeSpan due, CancellationToken token)
     {
         while (clock.Elapsed < due)
         {
             token.ThrowIfCancellationRequested();
-            PostPulseBar(sent, total, clock.Elapsed, window);
             var remaining = due - clock.Elapsed;
-            var slice = remaining > TimeSpan.FromMilliseconds(20) ? TimeSpan.FromMilliseconds(20) : remaining;
+            var slice = remaining > TimeSpan.FromMilliseconds(15) ? TimeSpan.FromMilliseconds(15) : remaining;
             if (slice > TimeSpan.Zero)
-                await Task.Delay(slice, token).ConfigureAwait(true);
+                await Task.Delay(slice, token).ConfigureAwait(false);
         }
     }
 
