@@ -19,6 +19,8 @@ public partial class App : Application
 
     public static SettingsViewModel? Settings { get; private set; }
 
+    public static DnsIqSession? Session { get; private set; }
+
     protected override void OnStartup(StartupEventArgs e)
     {
         HostLog.Initialize(HostIds.DnsIQ);
@@ -59,14 +61,19 @@ public partial class App : Application
             }
         });
 
-        Settings = new SettingsViewModel(Themes, chrome);
+        var store = new DnsIqSettingsStore(DnsIqSettingsStore.DefaultRoot);
+        var session = new DnsIqSession(store, Themes, chrome);
+        Session = session;
+
+        Settings = new SettingsViewModel(Themes, chrome) { Session = session };
 
         var dns = new MainViewModel
         {
             StatusBar = chrome.Status,
-            RequestCount = Settings.DefaultRequests,
-            DurationSeconds = Settings.DefaultSeconds
+            Session = session
         };
+        session.Attach(dns, Settings);
+
         var dnsItem = window.HostShell["DnsIQ"];
         if (dnsItem is not null)
         {
@@ -83,6 +90,12 @@ public partial class App : Application
             settingsItem.Content = new SettingsView { DataContext = Settings };
 
         chrome.Status.Message = "Idle";
+        chrome.PropertyChanged += (_, args) =>
+        {
+            if (args.PropertyName is nameof(VestigiumDefaultWindowViewModel.ShowStatusBar)
+                or nameof(VestigiumDefaultWindowViewModel.Status))
+                session.Save();
+        };
         return window;
     }
 }

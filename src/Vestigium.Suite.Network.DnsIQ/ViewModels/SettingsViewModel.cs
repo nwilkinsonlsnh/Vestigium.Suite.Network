@@ -16,6 +16,7 @@ public sealed partial class SettingsViewModel : ObservableObject
 
     private readonly ThemeManager _themes;
     private readonly VestigiumDefaultWindowViewModel _chrome;
+    private bool _loading;
 
     public SettingsViewModel(ThemeManager themes, VestigiumDefaultWindowViewModel chrome)
     {
@@ -33,6 +34,8 @@ public sealed partial class SettingsViewModel : ObservableObject
             }
         };
     }
+
+    public DnsIqSession? Session { get; set; }
 
     public IReadOnlyList<ThemeDefinition> Themes => _themes.AvailableThemes;
 
@@ -71,13 +74,38 @@ public sealed partial class SettingsViewModel : ObservableObject
     [ObservableProperty]
     private decimal _defaultSeconds = SecondsDefault;
 
+    [ObservableProperty]
+    private decimal _defaultPort = DnsIqInput.DefaultPort;
+
+    public void LoadFrom(DnsIqSettings data)
+    {
+        _loading = true;
+        try
+        {
+            if (!string.IsNullOrWhiteSpace(data.ThemeId))
+                SelectedThemeId = data.ThemeId;
+            DefaultRequests = data.Requests;
+            DefaultSeconds = data.Seconds;
+            DefaultPort = data.Port is >= DnsIqInput.MinPort and <= DnsIqInput.MaxPort
+                ? data.Port
+                : DnsIqInput.DefaultPort;
+            BarPosition = string.Equals(data.StatusBarDock, "Top", StringComparison.OrdinalIgnoreCase)
+                ? VestigiumStatusBarPosition.Top
+                : VestigiumStatusBarPosition.Bottom;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
     partial void OnSelectedThemeIdChanged(string? value)
     {
         if (string.IsNullOrWhiteSpace(value))
             return;
-        if (_themes.Current?.Id == value)
-            return;
-        _themes.SwitchTheme(value);
+        if (_themes.Current?.Id != value)
+            _themes.SwitchTheme(value);
+        Persist();
     }
 
     partial void OnBarPositionChanged(VestigiumStatusBarPosition value)
@@ -87,5 +115,19 @@ public sealed partial class SettingsViewModel : ObservableObject
             _chrome.DockStatusBarBottomCommand.Execute(null);
         else
             _chrome.DockStatusBarTopCommand.Execute(null);
+        Persist();
+    }
+
+    partial void OnDefaultRequestsChanged(decimal value) => Persist();
+
+    partial void OnDefaultSecondsChanged(decimal value) => Persist();
+
+    partial void OnDefaultPortChanged(decimal value) => Persist();
+
+    private void Persist()
+    {
+        if (_loading)
+            return;
+        Session?.Save();
     }
 }
