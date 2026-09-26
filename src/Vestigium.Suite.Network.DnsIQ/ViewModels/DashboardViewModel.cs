@@ -13,9 +13,11 @@ public sealed partial class DashboardViewModel : ObservableObject
     private string _dashboardPage = "Lookup";
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(LookupEmpty))]
     private bool _hasLookupData;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ProbeEmpty))]
     private bool _hasProbeData;
 
     [ObservableProperty]
@@ -41,6 +43,10 @@ public sealed partial class DashboardViewModel : ObservableObject
         get => DashboardPage == "Probe";
         set { if (value) DashboardPage = "Probe"; }
     }
+
+    public bool LookupEmpty => !HasLookupData;
+
+    public bool ProbeEmpty => !HasProbeData;
 
     public bool ShowProbeControl => ProbeControl is not null;
 
@@ -90,10 +96,11 @@ public sealed partial class DashboardViewModel : ObservableObject
             var limits = series.ControlLimits(ControlLimitMethod.MovingRange);
             if (limits.Upper > limits.Center && limits.Center > limits.Lower)
             {
-                ProbeControl = ChartView.Control(series, limits, series.RunRules(), new ChartOptions
-                {
-                    Title = "Probe control"
-                });
+                ProbeControl = ChartView.Control(
+                    series,
+                    limits,
+                    series.RunRules(ControlLimitMethod.MovingRange),
+                    new ChartOptions { Title = "Probe control" });
             }
         }
         catch (Exception)

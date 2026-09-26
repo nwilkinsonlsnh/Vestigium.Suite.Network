@@ -25,7 +25,7 @@
                  Text="Run Lookup on the DnsIQ page."
                  VerticalAlignment="Top"
                  HorizontalAlignment="Left"
-                 Visibility="{Binding HasLookupData, Converter={StaticResource BoolToVis}, ConverterParameter=Invert}" />
+                 Visibility="{Binding LookupEmpty, Converter={StaticResource BoolToVis}}" />
       <ContentControl Content="{Binding LookupChart}"
                       Visibility="{Binding HasLookupData, Converter={StaticResource BoolToVis}}" />
     </Grid>
@@ -34,7 +34,7 @@
       <StackPanel>
         <TextBlock Style="{StaticResource TextBlock.Caption}"
                    Text="Run Probe on the DnsIQ page."
-                   Visibility="{Binding HasProbeData, Converter={StaticResource BoolToVis}, ConverterParameter=Invert}" />
+                   Visibility="{Binding ProbeEmpty, Converter={StaticResource BoolToVis}}" />
         <ContentControl Content="{Binding ProbeCurve}" Height="220" Margin="0,0,0,16"
                         Visibility="{Binding HasProbeData, Converter={StaticResource BoolToVis}}" />
         <ContentControl Content="{Binding ProbeShape}" Height="220" Margin="0,0,0,16"

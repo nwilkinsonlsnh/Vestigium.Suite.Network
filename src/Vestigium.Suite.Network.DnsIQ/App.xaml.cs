@@ -4,6 +4,8 @@ using Vestigium.Controls.DependencyInjection;
 using Vestigium.Controls.Shell;
 using Vestigium.Converters;
 using Vestigium.Converters.DependencyInjection;
+using Vestigium.Helpers.Analytics;
+using Vestigium.Helpers.Charts;
 using Vestigium.Suite.Network.DnsIQ.ViewModels;
 using Vestigium.Suite.Network.DnsIQ.Views;
 using Vestigium.Suite.Network.Shell;
@@ -23,7 +25,11 @@ public partial class App : Application
 
     protected override void OnStartup(StartupEventArgs e)
     {
-        HostLog.Initialize(HostIds.DnsIQ);
+        HostLog.Initialize(HostIds.DnsIQ, cfg =>
+        {
+            AnalyticsCatalog.Register(cfg);
+            ChartsCatalog.Register(cfg);
+        });
 
         ThemeCatalog.RegisterAll(Themes);
         Themes.Initialize(this, "LightBlue");
@@ -66,11 +72,12 @@ public partial class App : Application
         Session = session;
 
         Settings = new SettingsViewModel(Themes, chrome) { Session = session };
-
+        var dash = new DashboardViewModel();
         var dns = new MainViewModel
         {
             StatusBar = chrome.Status,
-            Session = session
+            Session = session,
+            Dashboard = dash
         };
         session.Attach(dns, Settings);
 
@@ -81,9 +88,9 @@ public partial class App : Application
             window.HostShell.SelectedItem = dnsItem;
         }
 
-        var dash = window.HostShell["Dashboard"];
-        if (dash is not null)
-            dash.Content = new DashboardView { DataContext = new DashboardViewModel() };
+        var dashItem = window.HostShell["Dashboard"];
+        if (dashItem is not null)
+            dashItem.Content = new DashboardView { DataContext = dash };
 
         var settingsItem = window.HostShell["Settings"];
         if (settingsItem is not null)
