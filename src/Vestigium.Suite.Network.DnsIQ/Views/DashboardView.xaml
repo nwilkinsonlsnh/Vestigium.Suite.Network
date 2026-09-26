@@ -8,13 +8,10 @@
   <Grid Margin="12">
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
-      <RowDefinition Height="Auto" />
       <RowDefinition Height="*" />
     </Grid.RowDefinitions>
 
-    <TextBlock Style="{StaticResource TextBlock.Heading}" Text="Dashboard" Margin="0,0,0,12" />
-
-    <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,0,12">
+    <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Left" Margin="20,0,0,12">
       <RadioButton Style="{StaticResource RadioButton.HorizontalTab}"
                    Content="Lookup"
                    IsChecked="{Binding LookupPageOpen}"
@@ -26,7 +23,7 @@
                    GroupName="DashboardPage" />
     </StackPanel>
 
-    <Grid Grid.Row="2">
+    <Grid Grid.Row="1">
       <Grid Visibility="{Binding LookupPageOpen, Converter={StaticResource BoolToVis}}">
         <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left"
                     Visibility="{Binding LookupEmpty, Converter={StaticResource BoolToVis}}">
