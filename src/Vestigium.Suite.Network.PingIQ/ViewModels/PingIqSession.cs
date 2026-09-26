@@ -100,4 +100,14 @@ public sealed class PingIqSession
         _main.Bind.SourceAddress = _settings.SelectedSource;
         _main.Bind.InterfaceIndex = _main.SelectedInterfaceIndex;
     }
+
+    private static decimal ResolveDelay(int stored)
+    {
+        // 4000 was the old reply-timeout default written into Delay.
+        if (stored == 4000)
+            return PingIqInput.DefaultDelayMs;
+        return stored is >= PingIqInput.MinDelayMs and <= PingIqInput.MaxDelayMs
+            ? stored
+            : PingIqInput.DefaultDelayMs;
+    }
 }
