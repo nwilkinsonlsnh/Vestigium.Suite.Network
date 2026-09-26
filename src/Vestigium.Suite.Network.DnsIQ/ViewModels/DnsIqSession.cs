@@ -44,14 +44,13 @@ public sealed class DnsIqSession
 
         _main.RequestCount = _settings.DefaultRequests;
         _main.DurationSeconds = _settings.DefaultSeconds;
-        _main.Port = _settings.DefaultPort;
 
         Current = new DnsIqSettings
         {
             ThemeId = _settings.SelectedThemeId,
             Server = _main.Server,
             Type = _main.RecordType,
-            InterfaceIndex = _main.Bind.InterfaceIndex,
+            InterfaceIndex = _main.SelectedInterfaceIndex,
             Port = (int)_main.Port,
             Requests = (int)_settings.DefaultRequests,
             Seconds = (int)_settings.DefaultSeconds,
@@ -83,11 +82,13 @@ public sealed class DnsIqSession
             _main.Server = Current.Server;
         if (!string.IsNullOrWhiteSpace(Current.Type))
             _main.RecordType = Current.Type;
-        _main.Bind.InterfaceIndex = Current.InterfaceIndex;
-        _main.Bind.SourceAddress = Current.Source ?? string.Empty;
         _main.Port = Current.Port is >= DnsIqInput.MinPort and <= DnsIqInput.MaxPort
             ? Current.Port
             : DnsIqInput.DefaultPort;
+        _main.SelectedInterfaceIndex = _main.Interfaces.Any(i => i.Index == Current.InterfaceIndex)
+            ? Current.InterfaceIndex
+            : 0;
+        _main.Bind.SourceAddress = Current.Source ?? string.Empty;
         _main.RequestCount = Current.Requests;
         _main.DurationSeconds = Current.Seconds;
         _settings.LoadFrom(Current);
