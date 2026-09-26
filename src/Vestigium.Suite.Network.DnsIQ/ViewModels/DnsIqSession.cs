@@ -23,6 +23,7 @@ public sealed class DnsIqSession
         _chrome = chrome;
         Current = store.Load();
         ApplyThemeAndBar();
+        ChartTheme.ShowLegend = Current.ShowChartLegend;
     }
 
     public DnsIqSettings Current { get; private set; }
@@ -59,7 +60,8 @@ public sealed class DnsIqSession
             Seconds = (int)_settings.DefaultSeconds,
             StatusBarVisible = _settings.BarVisible,
             StatusBarDock = _settings.BarPosition == VestigiumStatusBarPosition.Top ? "Top" : "Bottom",
-            Source = _settings.SelectedSource
+            Source = _settings.SelectedSource,
+            ShowChartLegend = _settings.ShowChartLegend
         };
         _store.Save(Current);
     }
@@ -96,5 +98,6 @@ public sealed class DnsIqSession
         _settings.NarrowSources(_main.SelectedInterfaceIndex);
         _settings.LoadFrom(Current);
         _main.Bind.SourceAddress = _settings.SelectedSource;
+        ChartTheme.ShowLegend = Current.ShowChartLegend;
     }
 }
