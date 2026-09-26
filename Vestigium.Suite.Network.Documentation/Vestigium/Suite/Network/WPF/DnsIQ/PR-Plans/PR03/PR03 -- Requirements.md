@@ -16,7 +16,7 @@ Baseline is the PR02 exe: Vestigium window, Lookup grid, pulse N lookups over X 
 
 **Not spoofing.** Spoofing is putting a source IP on the wire that this machine does not own. DnsIQ will not do that.
 
-**Source** is an optional **local bind address**. This PC may have several IPv4/IPv6 addresses (Ethernet, Wi-Fi, VPN). Empty Source = Windows picks. A filled Source = bind the UDP socket to that address before the query leaves, the same idea as `ping -S 192.168.1.20`.
+**Source** is an optional **local bind address**. This PC may have several IPv4/IPv6 addresses (Ethernet, Wi-Fi, VPN). Empty / **Any** = Windows picks. A picked address = bind the UDP socket to that address before the query leaves, the same idea as `ping -S 192.168.1.20`.
 
 | Field | Question |
 |---|---|
@@ -24,9 +24,7 @@ Baseline is the PR02 exe: Vestigium window, Lookup grid, pulse N lookups over X 
 | Interface | Which NIC / index? |
 | Source | Which of *this PC's* addresses does the packet leave from? |
 
-If the typed address is not assigned to this machine, the bind fails. That is an error, not a fake identity.
-
-Most runs leave Source blank. It does not belong on the Lookup row.
+Addresses come only from `NetworkHelper.GetAdapters()` → `UnicastAddresses`. The user cannot type an IP. If it is not on the list, it is not on this machine.
 
 ---
 
@@ -51,9 +49,11 @@ File: `settings.json`.
 | Seconds | |
 | Status-bar **visible** | |
 | Status-bar **dock** (Top / Bottom) | |
-| Source (Settings only) | |
+| Source address (or Any) | |
 
-Load after `ThemeManager.Initialize`. Missing file = current defaults (Requests=1000, Seconds=60, Port=53, Type=All, adapter DNS, LightBlue, bar visible Bottom, Source empty). Create the directory if needed. No secrets.
+Load after `ThemeManager.Initialize`. Missing file = current defaults (Requests=1000, Seconds=60, Port=53, Type=All, adapter DNS, LightBlue, bar visible Bottom, Source = Any). Create the directory if needed. No secrets.
+
+If a persisted Source is no longer on the adapter list at load, fall back to Any.
 
 ### R03-02 Port on the query row and in Settings
 
@@ -71,7 +71,18 @@ Load after `ThemeManager.Initialize`. Missing file = current defaults (Requests=
 - Selected value: interface index.
 - **Not editable.** User picks. They do not type.
 
-### R03-04 Settings layout and Probe page
+### R03-04 Source is a closed combo on Settings → Probe
+
+- Control: ComboBox, **not editable**. Not a text box.
+- Items: **Any** plus every `UnicastAddress.Address` from `NetworkHelper.GetAdapters()`.
+- Display: address, and adapter name when useful (`192.168.1.20  Ethernet`).
+- Selected value: that address, or empty for Any.
+- Feeds `DnsLookupOptions.SourceAddress` only when not Any.
+- Lives **only** on Settings → Probe. Not on the DnsIQ row.
+- When Interface is a specific NIC, the Source list **narrows** to that adapter's unicast addresses plus Any. When Interface is Any (0), the list is every adapter.
+- Loopback may appear if the library reports it; do not invent extras.
+
+### R03-05 Settings layout and Probe page
 
 Settings keeps two pages, top-left under the heading: **Theme** | **Probe**.
 
@@ -85,15 +96,13 @@ Labels are **Requests** and **Seconds**. Drop `(N)` and `(X)`.
 
 Requests and Seconds are **not** on the DnsIQ Lookup row. Probe reads the Settings values (and the persisted file).
 
-Source lives **only** on Settings → Probe. Tooltip states the bind rule above. Empty is the default.
-
-### R03-05 DnsIQ query row
+### R03-06 DnsIQ query row
 
 **Name | Server | Port | Type** then **Interface**. Lookup / Probe / Cancel.
 
 No Requests, Seconds, or Source on that row.
 
-### R03-06 Probe starts with one Lookup
+### R03-07 Probe starts with one Lookup
 
 Probe is two steps, one token:
 
@@ -102,13 +111,13 @@ Probe is two steps, one token:
 
 Status: Lookup line first, then pulse `sent/total` + elapsed as today.
 
-### R03-07 View menu
+### R03-08 View menu
 
 Remove **Increase nav indent** and **Decrease nav indent**.
 
 Keep status-bar visible and Top / Bottom. Those two persist (R03-01).
 
-### R03-08 Dashboard has Lookup and Probe tabs
+### R03-09 Dashboard has Lookup and Probe tabs
 
 Remove the single Under Construction page as the only Dashboard content.
 
@@ -117,7 +126,7 @@ Remove the single Under Construction page as the only Dashboard content.
 | Lookup | Last Lookup: type mix (pie or column). Optional TTL strip. | Short empty card: run Lookup on the DnsIQ page. |
 | Probe | Last pulse: RTT curve + distribution. | Short empty card: run Probe on the DnsIQ page. |
 
-### R03-09 Probe dashboard uses Analytics + Charts
+### R03-10 Probe dashboard uses Analytics + Charts
 
 Pinned packages only: `Vestigium.Helpers.Analytics` 1.0.1, `Vestigium.Helpers.Charts` 1.0.1.
 
@@ -133,7 +142,7 @@ Timeouts and refused stay **counts**. They are not RTT points.
 
 Paint **after** the pulse ends. Live-follow is not required to close PR03.
 
-### R03-10 Lookup dashboard is smaller than Probe
+### R03-11 Lookup dashboard is smaller than Probe
 
 Type-count pie or column from the last grid. Optional TTL column/box. No fake live tail.
 
@@ -152,13 +161,14 @@ Type-count pie or column from the last grid. Optional TTL column/box. No fake li
 
 ## Acceptance
 
-1. Change theme, server, type, port, Requests, Seconds, interface, Source, bar visible, bar dock. Exit. Start. Same values. Name is not restored.
+1. Change theme, server, type, port, Requests, Seconds, interface, Source, bar visible, bar dock. Exit. Start. Same values. Name is not restored. Dead Source address becomes Any.
 2. Port 53 sits between Server and Type. Lookup/Probe use that port.
 3. Interface combo lists NICs. Typing is impossible.
-4. Requests / Seconds / Source are on Settings → Probe only, top-left. DnsIQ row does not show them.
-5. Probe fills the grid with one Lookup, then pulses. Pulse does not add rows. Failed Lookup does not pulse.
-6. View menu has no nav-indent items. Bar visible + dock survive restart.
-7. Dashboard Lookup and Probe tabs exist. After Lookup, a type mix. After Probe, a curve and a histogram.
+4. Source combo lists unicast addresses from `GetAdapters` plus Any. Typing is impossible. Settings → Probe only.
+5. Requests / Seconds are on Settings → Probe only, top-left. DnsIQ row does not show them.
+6. Probe fills the grid with one Lookup, then pulses. Pulse does not add rows. Failed Lookup does not pulse.
+7. View menu has no nav-indent items. Bar visible + dock survive restart.
+8. Dashboard Lookup and Probe tabs exist. After Lookup, a type mix. After Probe, a curve and a histogram.
 
 ---
 
