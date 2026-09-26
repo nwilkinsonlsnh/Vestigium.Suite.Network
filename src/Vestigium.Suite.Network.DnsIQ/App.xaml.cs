@@ -68,7 +68,7 @@ public partial class App : Application
         });
 
         var store = new DnsIqSettingsStore(DnsIqSettingsStore.DefaultRoot);
-        var session = new DnsIqSession(store, Themes, chrome);
+        var session = new DnsIqSettingsStore is null ? null : new DnsIqSession(store, Themes, chrome);
         Session = session;
 
         Settings = new SettingsViewModel(Themes, chrome) { Session = session };
@@ -90,7 +90,21 @@ public partial class App : Application
 
         var dashItem = window.HostShell["Dashboard"];
         if (dashItem is not null)
+        {
             dashItem.Content = new DashboardView { DataContext = dash };
+            dashItem.IsEnabled = false;
+        }
+
+        dash.GoToDnsIq = () =>
+        {
+            if (dnsItem is not null)
+                window.HostShell.SelectedItem = dnsItem;
+        };
+        dash.DashboardAvailabilityChanged = available =>
+        {
+            if (dashItem is not null)
+                dashItem.IsEnabled = available;
+        };
 
         var settingsItem = window.HostShell["Settings"];
         if (settingsItem is not null)
