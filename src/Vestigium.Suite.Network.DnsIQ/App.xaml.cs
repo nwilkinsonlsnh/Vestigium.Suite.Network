@@ -1,8 +1,11 @@
 using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using Vestigium.Controls.DependencyInjection;
+using Vestigium.Controls.Shell;
 using Vestigium.Converters;
 using Vestigium.Converters.DependencyInjection;
+using Vestigium.Suite.Network.DnsIQ.ViewModels;
+using Vestigium.Suite.Network.DnsIQ.Views;
 using Vestigium.Suite.Network.Shell;
 using Vestigium.Themes;
 
@@ -32,6 +35,55 @@ public partial class App : Application
         Services = services.BuildServiceProvider();
         VestigiumConverterHost.ServiceProvider = Services;
 
+        ShutdownMode = ShutdownMode.OnMainWindowClose;
+        MainWindow = CreateMainWindow();
+        MainWindow.Show();
+
         base.OnStartup(e);
+    }
+
+    private static Window CreateMainWindow()
+    {
+        var chrome = Services.GetRequiredService<VestigiumDefaultWindowViewModel>();
+        var window = new VestigiumDefaultWindow(chrome)
+        {
+            Title = "DnsIQ"
+        };
+
+        window.HostShell.ApplySpec(new VestigiumShellSpec
+        {
+            Items =
+            {
+                new VestigiumNavItemSpec("DnsIQ")
+                {
+                    Title = "DnsIQ",
+                    Subject = "Lookup and pulse",
+                    Description = "One name. Lookup writes records. Probe is the resolver pulse."
+                },
+                new VestigiumNavItemSpec("Dashboard")
+                {
+                    Title = "Dashboard",
+                    Subject = "Resolver pulse charts",
+                    Description = "Not in this release. Pulse numbers stay on the DnsIQ page and the status bar."
+                },
+                new VestigiumNavItemSpec("Settings")
+                {
+                    Title = "Settings",
+                    Subject = "Theme and defaults",
+                    Description = "Theme, status-bar dock, and default burst count / duration land here."
+                }
+            }
+        });
+
+        var dns = new MainViewModel { StatusBar = chrome.Status };
+        var dnsItem = window.HostShell["DnsIQ"];
+        if (dnsItem is not null)
+        {
+            dnsItem.Content = new DnsIqView { DataContext = dns };
+            window.HostShell.SelectedItem = dnsItem;
+        }
+
+        chrome.Status.Message = "Idle";
+        return window;
     }
 }

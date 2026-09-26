@@ -1,0 +1,59 @@
+<UserControl x:Class="Vestigium.Suite.Network.DnsIQ.Views.DnsIqView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <DockPanel Margin="16">
+    <TextBlock DockPanel.Dock="Top" FontSize="20" FontWeight="SemiBold" Text="DnsIQ" Margin="0,0,0,12" />
+
+    <TextBlock DockPanel.Dock="Top" Text="{Binding Status}" Margin="0,0,0,12" />
+
+    <Grid DockPanel.Dock="Top" Margin="0,0,0,12">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="120" />
+      </Grid.ColumnDefinitions>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+      </Grid.RowDefinitions>
+
+      <TextBlock Text="Name" VerticalAlignment="Center" Margin="0,0,8,8" />
+      <TextBox Grid.Column="1" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,16,8" />
+      <TextBlock Grid.Column="2" Text="Server" VerticalAlignment="Center" Margin="0,0,8,8" />
+      <TextBox Grid.Column="3" Text="{Binding Server, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,16,8" />
+      <TextBlock Grid.Column="4" Text="Type" VerticalAlignment="Center" Margin="0,0,8,8" />
+      <ComboBox Grid.Column="5" ItemsSource="{Binding RecordTypes}"
+                SelectedItem="{Binding RecordType}" Margin="0,0,0,8" />
+
+      <TextBlock Grid.Row="1" Text="Interface" VerticalAlignment="Center" Margin="0,0,8,8" />
+      <TextBox Grid.Row="1" Grid.Column="1"
+               Text="{Binding Bind.InterfaceIndex, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,16,8" />
+      <TextBlock Grid.Row="1" Grid.Column="2" Text="Source" VerticalAlignment="Center" Margin="0,0,8,8" />
+      <TextBox Grid.Row="1" Grid.Column="3" Grid.ColumnSpan="3"
+               Text="{Binding Bind.SourceAddress, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8" />
+
+      <StackPanel Grid.Row="2" Grid.ColumnSpan="6" Orientation="Horizontal">
+        <Button Content="Lookup" Command="{Binding LookupCommand}" Padding="16,4" Margin="0,0,8,0" />
+        <Button Content="Probe" Command="{Binding ProbeCommand}" Padding="16,4" Margin="0,0,8,0" />
+        <Button Content="Cancel" Command="{Binding CancelCommand}" Padding="16,4" />
+      </StackPanel>
+    </Grid>
+
+    <DataGrid ItemsSource="{Binding Answers}"
+              IsReadOnly="True"
+              AutoGenerateColumns="False"
+              CanUserAddRows="False"
+              HeadersVisibility="Column">
+      <DataGrid.Columns>
+        <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="80" />
+        <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*" />
+        <DataGridTextColumn Header="Data" Binding="{Binding Data}" Width="2*" />
+        <DataGridTextColumn Header="Ttl" Binding="{Binding Ttl}" Width="80" />
+      </DataGrid.Columns>
+    </DataGrid>
+  </DockPanel>
+</UserControl>
