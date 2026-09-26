@@ -11,12 +11,12 @@ public sealed class DnsIqInputTests
     [InlineData(null)]
     [InlineData("")]
     [InlineData("   ")]
-    public void Blank_name_rejects(string? name)
+    public void Blank_name_becomes_localhost(string? name)
     {
         var ok = Try(out var query, out var reject, name: name);
-        Assert.False(ok);
-        Assert.Null(query);
-        Assert.Equal("Name is required.", reject);
+        Assert.True(ok);
+        Assert.Null(reject);
+        Assert.Equal("localhost", query!.Name);
     }
 
     [Fact]
