@@ -12,16 +12,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsDiVersion)" />
     <PackageReference Include="Vestigium.Themes" Version="$(VestigiumThemesVersion)" />
-    <PackageReference Include="Vestigium.Themes.Controls" Version="$(VestigiumThemesVersion)" />
-    <PackageReference Include="Vestigium.Themes.LightBlue" Version="$(VestigiumThemesVersion)" />
-    <PackageReference Include="Vestigium.Themes.DarkMode" Version="$(VestigiumThemesVersion)" />
-    <PackageReference Include="Vestigium.Themes.Terminal" Version="$(VestigiumThemesVersion)" />
-    <PackageReference Include="Vestigium.Themes.SolarizedDark" Version="$(VestigiumThemesVersion)" />
-    <PackageReference Include="Vestigium.Themes.StandardWPF" Version="$(VestigiumThemesVersion)" />
-    <PackageReference Include="Vestigium.Themes.Monokai" Version="$(VestigiumThemesVersion)" />
-    <PackageReference Include="Vestigium.Themes.Sublime" Version="$(VestigiumThemesVersion)" />
-    <PackageReference Include="Vestigium.Themes.Dracula" Version="$(VestigiumThemesVersion)" />
-    <PackageReference Include="Vestigium.Themes.Nord" Version="$(VestigiumThemesVersion)" />
     <PackageReference Include="Vestigium.Controls" Version="$(VestigiumControlsVersion)" />
     <PackageReference Include="Vestigium.Controls.StatusBar" Version="$(VestigiumControlsVersion)" />
     <PackageReference Include="Vestigium.Controls.NumericUpDown" Version="$(VestigiumControlsVersion)" />
