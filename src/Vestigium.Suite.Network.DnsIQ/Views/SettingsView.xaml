@@ -2,37 +2,50 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:nud="clr-namespace:Vestigium.Controls.NumericUpDown;assembly=Vestigium.Controls.NumericUpDown">
-  <ScrollViewer VerticalScrollBarVisibility="Auto">
-    <StackPanel Margin="16" MaxWidth="420" HorizontalAlignment="Left">
-      <TextBlock Text="Settings" FontSize="20" FontWeight="SemiBold" Margin="0,0,0,16" />
+  <DockPanel Margin="12">
+    <TextBlock DockPanel.Dock="Top" Text="Settings" FontSize="20" FontWeight="SemiBold" Margin="0,0,0,12" />
+    <TabControl>
+      <TabItem Header="Theme">
+        <StackPanel Margin="16" MaxWidth="420" HorizontalAlignment="Left">
+          <TextBlock Text="Palette" Margin="0,0,0,4" />
+          <ComboBox ItemsSource="{Binding Themes}"
+                    DisplayMemberPath="DisplayName"
+                    SelectedValuePath="Id"
+                    SelectedValue="{Binding SelectedThemeId, Mode=TwoWay}"
+                    Margin="0,0,0,16" />
 
-      <TextBlock Text="Theme" Margin="0,0,0,4" />
-      <ComboBox ItemsSource="{Binding Themes}"
-                SelectedItem="{Binding SelectedTheme}"
-                DisplayMemberPath="DisplayName"
-                Margin="0,0,0,16" />
+          <TextBlock Text="Status bar" Margin="0,0,0,4" />
+          <ComboBox ItemsSource="{Binding BarPositions}"
+                    SelectedItem="{Binding BarPosition}" />
+        </StackPanel>
+      </TabItem>
+      <TabItem Header="Probe">
+        <StackPanel Margin="16" MaxWidth="480" HorizontalAlignment="Left">
+          <TextBlock TextWrapping="Wrap" Margin="0,0,0,16"
+                     Text="N lookups spaced across X seconds. Type All cycles A, AAAA, CNAME, MX, NS, PTR, TXT, SOA. The question is resolver stability, not the record set." />
 
-      <TextBlock Text="Status bar" Margin="0,0,0,4" />
-      <ComboBox ItemsSource="{Binding BarPositions}"
-                SelectedItem="{Binding BarPosition}"
-                Margin="0,0,0,16" />
+          <TextBlock Text="Requests (N)" Margin="0,0,0,4" />
+          <nud:VestigiumNumericUpDown Value="{Binding DefaultRequests, Mode=TwoWay}"
+                                      SignMode="Unsigned"
+                                      Minimum="1"
+                                      Maximum="10000"
+                                      Increment="10"
+                                      PageIncrement="100"
+                                      DecimalPlaces="0"
+                                      Margin="0,0,0,16" />
 
-      <TextBlock Text="Default bursts (N)" Margin="0,0,0,4" />
-      <nud:VestigiumNumericUpDown Value="{Binding DefaultBursts, Mode=TwoWay}"
-                                  SignMode="Unsigned"
-                                  Minimum="1"
-                                  Maximum="60"
-                                  Increment="1"
-                                  DecimalPlaces="0"
-                                  Margin="0,0,0,16" />
-
-      <TextBlock Text="Default seconds (X)" Margin="0,0,0,4" />
-      <nud:VestigiumNumericUpDown Value="{Binding DefaultSeconds, Mode=TwoWay}"
-                                  SignMode="Unsigned"
-                                  Minimum="1"
-                                  Maximum="60"
-                                  Increment="1"
-                                  DecimalPlaces="0" />
-    </StackPanel>
-  </ScrollViewer>
+          <TextBlock Text="Seconds (X)" Margin="0,0,0,4" />
+          <nud:VestigiumNumericUpDown Value="{Binding DefaultSeconds, Mode=TwoWay}"
+                                      SignMode="Unsigned"
+                                      Minimum="1"
+                                      Maximum="600"
+                                      Increment="1"
+                                      PageIncrement="30"
+                                      DecimalPlaces="0" />
+          <TextBlock Margin="0,8,0,0" Opacity="0.7"
+                     Text="Examples: 1000 over 60 s, or 1000 over 180 s." />
+        </StackPanel>
+      </TabItem>
+    </TabControl>
+  </DockPanel>
 </UserControl>

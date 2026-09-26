@@ -7,9 +7,12 @@ namespace Vestigium.Suite.Network.DnsIQ.ViewModels;
 
 public sealed partial class SettingsViewModel : ObservableObject
 {
-    public const decimal PulseMin = 1m;
-    public const decimal PulseMax = 60m;
-    public const decimal PulseDefault = 10m;
+    public const decimal RequestMin = PulsePlan.MinRequests;
+    public const decimal RequestMax = PulsePlan.MaxRequests;
+    public const decimal RequestDefault = 1000m;
+    public const decimal SecondsMin = PulsePlan.MinSeconds;
+    public const decimal SecondsMax = PulsePlan.MaxSeconds;
+    public const decimal SecondsDefault = 60m;
 
     private readonly ThemeManager _themes;
     private readonly VestigiumDefaultWindowViewModel _chrome;
@@ -18,8 +21,17 @@ public sealed partial class SettingsViewModel : ObservableObject
     {
         _themes = themes;
         _chrome = chrome;
-        _selectedTheme = themes.Current ?? themes.AvailableThemes.FirstOrDefault();
+        _selectedThemeId = themes.Current?.Id ?? themes.AvailableThemes.FirstOrDefault()?.Id;
         _barPosition = chrome.Status.Position;
+        themes.ThemeChanged += (_, _) =>
+        {
+            var id = themes.Current?.Id;
+            if (_selectedThemeId != id)
+            {
+                _selectedThemeId = id;
+                OnPropertyChanged(nameof(SelectedThemeId));
+            }
+        };
     }
 
     public IReadOnlyList<ThemeDefinition> Themes => _themes.AvailableThemes;
@@ -31,28 +43,24 @@ public sealed partial class SettingsViewModel : ObservableObject
     ];
 
     [ObservableProperty]
-    private ThemeDefinition? _selectedTheme;
+    private string? _selectedThemeId;
 
     [ObservableProperty]
     private VestigiumStatusBarPosition _barPosition;
 
     [ObservableProperty]
-    private decimal _defaultBursts = PulseDefault;
+    private decimal _defaultRequests = RequestDefault;
 
     [ObservableProperty]
-    private decimal _defaultSeconds = PulseDefault;
+    private decimal _defaultSeconds = SecondsDefault;
 
-    public int BurstCount => Clamp((int)DefaultBursts);
-
-    public int DurationSeconds => Clamp((int)DefaultSeconds);
-
-    partial void OnSelectedThemeChanged(ThemeDefinition? value)
+    partial void OnSelectedThemeIdChanged(string? value)
     {
-        if (value is null)
+        if (string.IsNullOrWhiteSpace(value))
             return;
-        if (_themes.Current?.Id == value.Id)
+        if (_themes.Current?.Id == value)
             return;
-        _themes.SwitchTheme(value.Id);
+        _themes.SwitchTheme(value);
     }
 
     partial void OnBarPositionChanged(VestigiumStatusBarPosition value)
@@ -62,21 +70,5 @@ public sealed partial class SettingsViewModel : ObservableObject
             _chrome.DockStatusBarBottomCommand.Execute(null);
         else
             _chrome.DockStatusBarTopCommand.Execute(null);
-    }
-
-    partial void OnDefaultBurstsChanged(decimal value)
-        => DefaultBursts = ClampDecimal(value);
-
-    partial void OnDefaultSecondsChanged(decimal value)
-        => DefaultSeconds = ClampDecimal(value);
-
-    private static int Clamp(int value)
-        => Math.Clamp(value, (int)PulseMin, (int)PulseMax);
-
-    private static decimal ClampDecimal(decimal value)
-    {
-        if (value < PulseMin) return PulseMin;
-        if (value > PulseMax) return PulseMax;
-        return decimal.Truncate(value);
     }
 }
