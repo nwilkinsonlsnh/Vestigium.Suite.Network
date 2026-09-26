@@ -10,13 +10,59 @@ using Vestigium.Helpers.Charts;
 
 namespace Vestigium.Suite.Network.DnsIQ.ViewModels;
 
+internal enum ChartSlot
+{
+    Lookup,
+    ProbeRtt,
+    ProbeDist,
+    ProbeControl
+}
+
 internal static class ChartTheme
 {
-    public static bool ShowLegend { get; set; } = true;
+    public static bool LookupLegend { get; set; } = true;
+    public static bool ProbeRttLegend { get; set; } = true;
+    public static bool ProbeDistLegend { get; set; } = true;
+    public static bool ProbeControlLegend { get; set; } = true;
 
     public static Action? LegendChanged { get; set; }
 
-    public static ChartOptions Options(string title, string? xLabel = null, string? yLabel = null)
+    public static bool GetLegend(ChartSlot slot) => slot switch
+    {
+        ChartSlot.ProbeRtt => ProbeRttLegend,
+        ChartSlot.ProbeDist => ProbeDistLegend,
+        ChartSlot.ProbeControl => ProbeControlLegend,
+        _ => LookupLegend
+    };
+
+    public static void SetLegend(ChartSlot slot, bool value)
+    {
+        switch (slot)
+        {
+            case ChartSlot.ProbeRtt: ProbeRttLegend = value; break;
+            case ChartSlot.ProbeDist: ProbeDistLegend = value; break;
+            case ChartSlot.ProbeControl: ProbeControlLegend = value; break;
+            default: LookupLegend = value; break;
+        }
+    }
+
+    public static void LoadFrom(DnsIqSettings data)
+    {
+        LookupLegend = data.ShowLegendLookup;
+        ProbeRttLegend = data.ShowLegendProbeRtt;
+        ProbeDistLegend = data.ShowLegendProbeDist;
+        ProbeControlLegend = data.ShowLegendProbeControl;
+    }
+
+    public static void CopyTo(DnsIqSettings data)
+    {
+        data.ShowLegendLookup = LookupLegend;
+        data.ShowLegendProbeRtt = ProbeRttLegend;
+        data.ShowLegendProbeDist = ProbeDistLegend;
+        data.ShowLegendProbeControl = ProbeControlLegend;
+    }
+
+    public static ChartOptions Options(ChartSlot slot, string title, string? xLabel = null, string? yLabel = null)
     {
         var color = Hex("Vestigium.Brushes.Accent.Primary")
                     ?? Hex("Vestigium.Brushes.Text.Primary")
@@ -27,12 +73,12 @@ internal static class ChartTheme
             XLabel = xLabel,
             YLabel = yLabel,
             Color = color,
-            ShowLegend = ShowLegend,
+            ShowLegend = GetLegend(slot),
             ShowGrid = true
         };
     }
 
-    public static FrameworkElement Paint(FrameworkElement view)
+    public static FrameworkElement Paint(FrameworkElement view, ChartSlot slot)
     {
         var figure = Hex("Vestigium.Brushes.Surface.Window") ?? "#1B1B1B";
         var data = Hex("Vestigium.Brushes.Surface.Card") ?? "#242424";
@@ -45,7 +91,7 @@ internal static class ChartTheme
             SetSlotColor(plot, "FigureBackground", figure);
             SetSlotColor(plot, "DataBackground", data);
             TrySetAxes(plot, ink, grid);
-            TrySetLegend(plot, ShowLegend);
+            TrySetLegend(plot, GetLegend(slot));
             view.GetType().GetMethod("Refresh", Type.EmptyTypes)?.Invoke(view, null);
         }
 
@@ -54,7 +100,7 @@ internal static class ChartTheme
         view.VerticalAlignment = VerticalAlignment.Stretch;
         view.HorizontalAlignment = HorizontalAlignment.Stretch;
         DisableStockMenu(view);
-        AttachMenu(view, plot);
+        AttachMenu(view, plot, slot);
 
         if (view is Control control)
             control.SetResourceReference(Control.BackgroundProperty, "Vestigium.Brushes.Surface.Card");
@@ -68,12 +114,12 @@ internal static class ChartTheme
         TrySetProp(view, "EnableContextMenu", false);
     }
 
-    private static void AttachMenu(FrameworkElement view, object? plot)
+    private static void AttachMenu(FrameworkElement view, object? plot, ChartSlot slot)
     {
         void Assign()
         {
             DisableStockMenu(view);
-            view.ContextMenu = BuildMenu(view, plot);
+            view.ContextMenu = BuildMenu(view, plot, slot);
         }
 
         Assign();
@@ -95,22 +141,22 @@ internal static class ChartTheme
         }
     }
 
-    private static ContextMenu BuildMenu(FrameworkElement view, object? plot)
+    private static ContextMenu BuildMenu(FrameworkElement view, object? plot, ChartSlot slot)
     {
         var menu = new ContextMenu();
         PaintMenu(menu);
         menu.Items.Add(Item("Save Image", () => SaveImage(view)));
         menu.Items.Add(Item("Copy to Clipboard", () => CopyImage(view)));
         menu.Items.Add(Item("Auto Scale", () => AutoScale(view, plot)));
-        menu.Items.Add(Item("Open in New Window", () => OpenWindow(view, plot)));
+        menu.Items.Add(Item("Open in New Window", () => OpenWindow(view)));
         menu.Items.Add(new Separator());
 
-        var legend = new MenuItem { Header = "Show Legend", IsCheckable = true, IsChecked = ShowLegend };
+        var legend = new MenuItem { Header = "Show Legend", IsCheckable = true, IsChecked = GetLegend(slot) };
         PaintItem(legend);
         legend.Click += (_, _) =>
         {
-            ShowLegend = legend.IsChecked;
-            TrySetLegend(plot, ShowLegend);
+            SetLegend(slot, legend.IsChecked);
+            TrySetLegend(plot, GetLegend(slot));
             view.GetType().GetMethod("Refresh", Type.EmptyTypes)?.Invoke(view, null);
             LegendChanged?.Invoke();
         };
@@ -118,7 +164,7 @@ internal static class ChartTheme
         menu.Opened += (_, _) =>
         {
             PaintMenu(menu);
-            legend.IsChecked = ShowLegend;
+            legend.IsChecked = GetLegend(slot);
         };
         return menu;
     }
@@ -133,23 +179,20 @@ internal static class ChartTheme
 
     private static void PaintMenu(ContextMenu menu)
     {
-        var card = Brush("Vestigium.Brushes.Surface.Card") ?? Brushes.WhiteSmoke;
-        var ink = Brush("Vestigium.Brushes.Text.Primary") ?? Brushes.Black;
-        var line = Brush("Vestigium.Brushes.Stroke.Subtle") ?? Brushes.Gray;
-        menu.Background = card;
-        menu.Foreground = ink;
-        menu.BorderBrush = line;
+        menu.Background = SystemColors.MenuBrush;
+        menu.Foreground = SystemColors.MenuTextBrush;
+        menu.BorderBrush = SystemColors.MenuTextBrush;
         foreach (var raw in menu.Items)
         {
             if (raw is MenuItem item)
-                PaintItem(item, card, ink);
+                PaintItem(item);
         }
     }
 
-    private static void PaintItem(MenuItem item, Brush? card = null, Brush? ink = null)
+    private static void PaintItem(MenuItem item)
     {
-        item.Background = card ?? Brush("Vestigium.Brushes.Surface.Card") ?? Brushes.WhiteSmoke;
-        item.Foreground = ink ?? Brush("Vestigium.Brushes.Text.Primary") ?? Brushes.Black;
+        item.Background = SystemColors.MenuBrush;
+        item.Foreground = SystemColors.MenuTextBrush;
     }
 
     private static void SaveImage(FrameworkElement view)
@@ -184,7 +227,7 @@ internal static class ChartTheme
         view.GetType().GetMethod("Refresh", Type.EmptyTypes)?.Invoke(view, null);
     }
 
-    private static void OpenWindow(FrameworkElement view, object? plot)
+    private static void OpenWindow(FrameworkElement view)
     {
         try
         {
@@ -199,20 +242,14 @@ internal static class ChartTheme
         {
         }
 
-        var window = new Window
+        new Window
         {
             Title = "DnsIQ Chart",
             Width = Math.Max(900, view.ActualWidth + 80),
             Height = Math.Max(560, view.ActualHeight + 80),
-            Background = Brush("Vestigium.Brushes.Surface.Window") ?? Brushes.White
-        };
-        window.Content = new Image
-        {
-            Source = Capture(view),
-            Stretch = Stretch.Uniform,
-            Margin = new Thickness(8)
-        };
-        window.Show();
+            Background = SystemColors.WindowBrush,
+            Content = new Image { Source = Capture(view), Stretch = Stretch.Uniform, Margin = new Thickness(8) }
+        }.Show();
     }
 
     private static BitmapSource Capture(FrameworkElement view)
@@ -283,9 +320,6 @@ internal static class ChartTheme
         if (color is not null)
             colorProp.SetValue(slot, color);
     }
-
-    private static Brush? Brush(string key)
-        => Application.Current?.TryFindResource(key) as Brush;
 
     private static string? Hex(string resourceKey)
     {
