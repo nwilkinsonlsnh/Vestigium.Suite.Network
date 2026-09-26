@@ -4,7 +4,8 @@
         xmlns:shell="clr-namespace:Vestigium.Controls.Shell;assembly=Vestigium.Controls"
         Title="DnsIQ"
         Height="720" Width="1100"
-        MinHeight="480" MinWidth="720">
+        MinHeight="480" MinWidth="720"
+        Background="{DynamicResource Vestigium.Brushes.Surface.Window}">
   <Window.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
@@ -12,19 +13,19 @@
       </ResourceDictionary.MergedDictionaries>
     </ResourceDictionary>
   </Window.Resources>
-  <DockPanel>
-    <Menu DockPanel.Dock="Top">
-      <MenuItem Header="_File">
-        <MenuItem Header="E_xit" Click="Exit_Click" />
+  <DockPanel Style="{StaticResource DockPanel.Standard}">
+    <Menu DockPanel.Dock="Top" Style="{StaticResource Menu.Standard}">
+      <MenuItem Header="_File" Style="{StaticResource MenuItem.Standard}">
+        <MenuItem Header="E_xit" Style="{StaticResource MenuItem.Standard}" Click="Exit_Click" />
       </MenuItem>
-      <MenuItem Header="_View">
-        <MenuItem Header="Status bar _visible" IsCheckable="True" IsChecked="{Binding ShowStatusBar}" />
-        <Separator />
-        <MenuItem Header="Status bar at _Bottom" Command="{Binding DockStatusBarBottomCommand}" />
-        <MenuItem Header="Status bar at _Top" Command="{Binding DockStatusBarTopCommand}" />
-        <Separator />
-        <MenuItem Header="Increase nav _indent" Command="{Binding IncreaseNavIndentCommand}" />
-        <MenuItem Header="Decrease nav i_ndent" Command="{Binding DecreaseNavIndentCommand}" />
+      <MenuItem Header="_View" Style="{StaticResource MenuItem.Standard}">
+        <MenuItem Header="Status bar _visible" Style="{StaticResource MenuItem.Standard}" IsCheckable="True" IsChecked="{Binding ShowStatusBar}" />
+        <Separator Style="{StaticResource Separator.Menu}" />
+        <MenuItem Header="Status bar at _Bottom" Style="{StaticResource MenuItem.Standard}" Command="{Binding DockStatusBarBottomCommand}" />
+        <MenuItem Header="Status bar at _Top" Style="{StaticResource MenuItem.Standard}" Command="{Binding DockStatusBarTopCommand}" />
+        <Separator Style="{StaticResource Separator.Menu}" />
+        <MenuItem Header="Increase nav _indent" Style="{StaticResource MenuItem.Standard}" Command="{Binding IncreaseNavIndentCommand}" />
+        <MenuItem Header="Decrease nav i_ndent" Style="{StaticResource MenuItem.Standard}" Command="{Binding DecreaseNavIndentCommand}" />
       </MenuItem>
     </Menu>
     <shell:VestigiumShell x:Name="RootShell"
