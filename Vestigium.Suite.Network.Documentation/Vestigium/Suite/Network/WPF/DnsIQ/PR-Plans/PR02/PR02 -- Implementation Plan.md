@@ -5,105 +5,145 @@
 **APPID:** `DnsIQ`  
 **Status:** Live  
 **Date:** 25 September 2026  
-**Binding:** Requirements win on the window. This file wins on the slice. Helpers.Network 1.2.0 wins on protocol. Do not invent a second DNS client.
+**Binding:** Requirements 1.1 (written in this slice) win on the window. Helpers.Network 1.2.0 wins on protocol. Vestigium.Controls / Themes / Converters win on chrome. Do not invent a second DNS client. Do not invent a second status bar.
 
-**Goal:** Two buttons with two jobs. Lookup reads records. Probe says whether the resolver answered. Status names the resolver and the time. The grid belongs to Lookup only.
+**Goal:** One Vestigium window. Three tabs. Lookup reads records. Probe is a resolver pulse you can steer (N bursts over X seconds). Dashboard is honest Under Construction. Status bar tells server, progress, and time.
 
-**Not:** A protocol library. Not Probe as a second dump of the same rows. Not DoH. Not AXFR. Not CSV. Not a chart. Not a server roster editor.
+**Not:** Charts. CSV. DoH. AXFR. PropertiesGrid. A Helpers campaign class. Pulse rows in the answer grid. Rate as a third spinner.
+
+Follow-ons in this folder (same number, do not make PR03 yet):
+
+| File | What it is |
+|---|---|
+| [PR02 -- Implementation Plan.md](PR02%20--%20Implementation%20Plan.md) | This file. The attack. |
+| [PR02a -- Chrome.md](PR02a%20--%20Chrome.md) | Packages, default window, tabs, status bar. |
+| [PR02b -- Pulse.md](PR02b%20--%20Pulse.md) | N over X, burst rules, status math. |
+
+Build in table order. Do not start PR02b code before the window has tabs.
 
 ---
 
 ## Why this slice exists
 
-PR01 shipped a usable window. Then the owner used it.
+PR01 shipped a working record reader. The owner then asked two things that v1.0 did not have:
 
-What we learned on the glass:
+1. A **resolver pulse** that is not a twin Lookup.
+2. A **Vestigium facelift** — default form, status bar, NumericUpDown, themes, converters — and a Dashboard tab that is allowed to be empty.
 
-- Blank Server was not Pi-hole. A/AAAA went to `GetHostAddresses` (TTL 0). The adapter already listed `172.16.0.5`.
-- Type All + an explicit server produced A, AAAA, MX, NS, TXT, SOA. That is the product.
-- Lookup and Probe run the same `LookupAsync`. Two buttons painted the same grid. Status was the only tell (`NoError` vs `Answered`). That is fog.
-- `Txt` / `Aaaa` / `Mx` were enum `ToString`, not wire names.
-- Owner is fine keeping both buttons **if the jobs are different**.
-
-PR01 is first-and-ten. PR02 is the first week of use. Do not reopen AXFR because the grid works.
+Probe keeps the button. It gets a job: N bursts over X seconds.
 
 ---
 
-## Decision
+## Locks (do not reopen in a slice)
 
-| Call | Why |
+| Lock | Value |
 |---|---|
-| Keep **Lookup** and **Probe**. Split the jobs. | Owner wants both. They only earn two buttons if the glass differs. |
-| Lookup owns the grid. Status = `rcode · server · ms` (· type count if All). | Record reader. |
-| Probe does **not** write the grid. Status = `Answered|Refused|TimedOut · server · ms`. Last Lookup rows stay put. | Reachability. NxDomain is still Answered (library map). |
-| Probe All = one `ProbeDns` per first-and-ten type. Status: Answered if any type answered, else TimedOut, else Refused. Still no grid writes. | Same walk as Lookup, different surface. |
-| Type default stays **All**. Single type stays in the combo. | Owner asked for `cnn.com` → every first-and-ten type. |
-| Empty Server binds the first non-loopback adapter DNS (IPv4 first). Keep `FirstConfiguredDns`. | Pi-hole on this workstation (`172.16.0.5`). |
-| Grid columns stay Type, Name, Data, Ttl. Wire names. Sort by Type then Name. | TXT pile is real. Sort beats a second list. |
-| Failed on Lookup clears the grid. Probe never clears it. Cancel cancels the in-flight job. | D3 / D8 stay; Probe is not Failed-on-empty. |
-| Papers: Requirements 1.1 / Design 1.1. | v1.0 defaulted Type to A and let both buttons fill the list. Write the split down. |
+| Window | `VestigiumDefaultWindow` (menu + client + `VestigiumStatusBar`). Client = three tabs. |
+| Tabs | **DnsIQ** (work) · **Dashboard** (Under Construction) · **Settings** (theme, dock, default N/X). |
+| Lookup | One walk. Writes the grid. Status = rcode · server · ms. Type All = eight types. |
+| Probe | Pulse. Does **not** write the grid. Last Lookup rows stay. |
+| Burst | Type All = eight `LookupAsync` **in parallel**. One type = one query. |
+| N | Burst count. NumericUpDown. Default **10**. Min 1. Max 60. |
+| X | Duration seconds. NumericUpDown. Default **10**. Min 1. Max 60. |
+| Timing | Burst 1 at t=0. Burst N at t=X when N>1. Spacing = `X / (N - 1)` seconds. N=1 → one burst, no wait. |
+| Overrun | If a burst is still running when the next slot is due, **slip**: start the next burst when the current one ends. Do not overlap. Do not queue a pile. |
+| Rate | Derived: `N / X` bursts per second. Show it at the end. Do not add a Rate box. |
+| Delay box | None. N and X are the knobs. |
+| Server | Empty = first configured adapter DNS (already in `DnsIqInput`). Status shows that IP. |
+| Type default | **All**. |
+| Failed Lookup | Clears the grid. |
+| Failed / cancel pulse | Does not clear the grid. |
+| One in-flight | Lookup and Probe share one token. Second click ignored until cancel or done. |
+| Dashboard | `VestigiumUnderConstruction` only. No chart host. |
+| Settings | Theme display name, status-bar Top/Bottom, default N, default X. No protocol. |
+| Pins | `Directory.Build.props`. Shell (or DnsIQ if Shell must stay thin this week) consumes packages. Do not copy control source into the exe. |
+| Protocol | Still `NetworkHelper.LookupAsync` / `ProbeDns`. Pulse is a **host loop**. Not a new library job this slice. |
+| Other hosts | Untouched. |
 
-### Rejected
+### Packages this slice consumes
 
-| Idea | Why out |
+Confirm restore against nuget.org. These are the names. Versions move in `Directory.Build.props` if a newer pack is already published.
+
+| Package | Why |
 |---|---|
-| Delete Probe | Owner wants the button if the job is distinct. |
-| One button that runs both | Two statuses fighting one line. |
-| Probe fills the same grid | That is PR01 fog. |
-| Type ANY on the wire | Public resolvers ignore or refuse 255. All is eight questions. |
-| `LookupManyAsync` | Many names, same type. Wrong door. |
-| Auto-fill the Server box | Status line names the IP. Empty still means adapter DNS. |
-| CSV / favorites / history | After the two jobs stop lying. |
-| Pack Helpers this slice | Host already reads `GetAdapters().DnsServers` on 1.2.0. |
+| `Vestigium.Themes` | `ThemeManager` in `OnStartup` before the window parses. Register at least one palette (LightBlue is the Controls README example). |
+| `Vestigium.Controls` | `AddVestigiumControls()`, `VestigiumDefaultWindow`. |
+| `Vestigium.Controls.StatusBar` | `VestigiumStatusBar`. Left / Center / Right. |
+| `Vestigium.Controls.NumericUpDown` | N and X. |
+| `Vestigium.Controls.UnderConstruction` | Dashboard tab. |
+| `Vestigium.Converters` | Visibility / format. No converters in the exe. |
+
+Do **not** add `Vestigium.Controls.PropertiesGrid` in this slice.
+
+`Vestigium.Controls*` does not reference Themes. The **host** initializes both.
 
 ---
 
-## Window map (after PR02)
+## Window map
 
-Top: Name, Server (optional override), Type (`All` default + eight), Interface, Source, **Lookup**, **Probe**, Cancel.  
-Middle: Status — Idle / Running / `NoError · 172.16.0.5 · 84 ms · 8 types` / `Answered · 172.16.0.5 · 12 ms` / Failed / Cancelled.  
-Bottom: read-only grid, sorted. Written by Lookup only.
+```
+VestigiumDefaultWindow
+  menu (File/View may switch tabs; do not leave stock items on Under Construction only)
+  client
+    TabControl
+      DnsIQ     Name, Server, Type, Interface, Source,
+                N, X, Lookup, Probe, Cancel,
+                answer grid (Lookup only)
+      Dashboard VestigiumUnderConstruction
+                  Title: Dashboard
+                  Subject: Resolver pulse charts
+                  Description: Not in PR02.
+      Settings  Theme, status-bar dock, default N, default X
+  VestigiumStatusBar  dock Bottom unless Settings says Top
+    Left   Idle | Running | rcode | pulse 3/10
+    Center server IP
+    Right  last ms | med ms | derived rate at end
+```
 
-No timeout box. No port box. No chart.
+No timeout box. No port box. No chart. No Probe twin grid.
 
 ---
 
 ## Implementation table
 
-| Order | ID | Do | State |
-| ---: | :--- | :--- | :--- |
-| 1 | PR02-01 | Requirements 1.1 + Design 1.1. Two buttons. Split surfaces. All default. Adapter DNS. Status carries server and ms. | Open |
-| 2 | PR02-02 | Probe stops writing `Answers`. Lookup status formatter. Probe status formatter. | Open |
-| 3 | PR02-03 | Sort grid after Lookup. Keep display names. No new columns. | Open |
-| 4 | PR02-04 | Host tests stay off the wire. All accepts. Empty server is null or an IP. | Open |
-| 5 | PR02-05 | Owner: Lookup fills the grid. Probe changes Status only. Blank Server shows `172.16.0.5` on the line. Pi-hole log sees more than A on All. | Owner |
+| Order | ID | Do | Paper | State |
+| ---: | :--- | :--- | :--- | :--- |
+| 1 | PR02-01 | Requirements 1.1 + Design 1.1. Locks above. | this | Open |
+| 2 | PR02-02 | Pins + `ThemeManager` + `AddVestigiumControls` in DnsIQ `App.OnStartup`. HostLog still first. | PR02a | Open |
+| 3 | PR02-03 | Main window becomes default form + three tabs + status bar wired to VM. | PR02a | Open |
+| 4 | PR02-04 | Dashboard tab = Under Construction. | PR02a | Open |
+| 5 | PR02-05 | Settings tab: theme, dock, default N/X. | PR02a | Open |
+| 6 | PR02-06 | DnsIQ tab: current fields + NumericUpDown N/X. Lookup unchanged except status formatter (server · ms). | PR02b | Open |
+| 7 | PR02-07 | Probe = pulse. Host loop. Parallel All. Slip. No grid writes. Progress on status bar. | PR02b | Open |
+| 8 | PR02-08 | Host tests off the wire: N/X reject 0 and 61; spacing math; AllTypes. | PR02b | Open |
+| 9 | PR02-09 | Owner gate: tabs exist, Dashboard is UC, Lookup still fills grid, Probe 10/10s shows 3/10 then a summary, Pi-hole sees bursts. | Owner | Open |
 
 ### PR02-01
 
-Add `Requirements_v1.1.md` and `Design_v1.1.md`. Keep v1.0 as the first-and-ten lock. Point the queue at 1.1.
+Add `Requirements_v1.1.md` and `Design_v1.1.md` next to v1.0. Keep v1.0 as the first-and-ten lock. Point the queue README at 1.1.
 
-Must say:
-
-- Lookup writes the grid. Probe does not.
-- Type default All.
-- Empty Server = first configured adapter DNS.
-- Status includes resolver IP and elapsed.
+Must say the locks table. Must say Dashboard is Under Construction on purpose.
 
 ### PR02-02
 
-`MainViewModel.ProbeAnswersAsync`: run `ProbeDns`, set Status, do not call `AppendAnswers`.  
-Lookup keeps `AppendAnswers`.  
-Format Status from `result.Server` / options.Server and elapsed. All-walk may use a host `Stopwatch` around the loop.
+`Directory.Build.props` gets version properties. PackageReference on Shell **or** DnsIQ — pick one surface and do not duplicate. Prefer Shell if the other hosts will take the same chrome later; DnsIQ-only is allowed if you do not want PingIQ pulling Themes this week.
 
-### PR02-03
+`App.OnStartup` order:
 
-After Lookup, order `Answers` by Type then Name then Data in the VM.
+1. `HostLog.Initialize(HostIds.DnsIQ)`
+2. `ThemeManager` register + `Initialize`
+3. `ServiceCollection` + `AddVestigiumControls`
+4. then the window
 
-### PR02-04
+### PR02-03 / 04 / 05
 
-Keep `DnsIqInputTests`. Do not assert a specific Pi-hole address. Do not call `LookupAsync` or `ProbeDns`.
+See [PR02a -- Chrome.md](PR02a%20--%20Chrome.md).
 
-### PR02-05
+### PR02-06 / 07 / 08
+
+See [PR02b -- Pulse.md](PR02b%20--%20Pulse.md).
+
+### PR02-09
 
 Owner on the clone. This agent does not mark PR02 closed.
 
@@ -112,15 +152,20 @@ Owner on the clone. This agent does not mark PR02 closed.
 ## Files this plan expects to touch
 
 ```
+Directory.Build.props
+src/Vestigium.Suite.Network.Shell/Vestigium.Suite.Network.Shell.csproj   (if pins live here)
+src/Vestigium.Suite.Network.DnsIQ/App.xaml.cs
+src/Vestigium.Suite.Network.DnsIQ/MainWindow.xaml
+src/Vestigium.Suite.Network.DnsIQ/ViewModels/MainViewModel.cs
+src/Vestigium.Suite.Network.DnsIQ/Views/              (Dns tab, Dashboard, Settings — new)
+tests/Vestigium.Suite.Network.Tests/DnsIqInputTests.cs
 Vestigium/.../WPF/DnsIQ/Requirements_v1.1.md          [NEW]
 Vestigium/.../WPF/DnsIQ/Design_v1.1.md                [NEW]
-src/Vestigium.Suite.Network.DnsIQ/ViewModels/MainViewModel.cs
-tests/Vestigium.Suite.Network.Tests/DnsIqInputTests.cs
 ```
 
-Do not edit Shell. Do not bump package pins in this slice.
+Do not edit PingIQ / TraceIQ / others. Do not bump Helpers.Network. Do not add PropertiesGrid.
 
-When this plan finishes, move the whole `PR02/` folder to `PR-Plans/Completed/PR02/` and idle the queue README. Move `PR01/` under `Completed/` at the same time if it is still sitting live.
+When this plan finishes, move the whole `PR02/` folder to `PR-Plans/Completed/PR02/` and idle the queue. Move `PR01/` under `Completed/` at the same time if it is still sitting live.
 
 ---
 
@@ -128,12 +173,12 @@ When this plan finishes, move the whole `PR02/` folder to `PR-Plans/Completed/PR
 
 | Role | Watch |
 |---|---|
-| Alvin | Probe must not refill the grid. No timeout box. |
-| Theodore | Cancel still kills an All walk. Tests stay off the wire. |
-| Simon | Status server is the resolver IP, not `pi.hole`. |
+| Alvin | Dashboard has no fake chart. Probe does not refill the grid. No Rate spinner. |
+| Theodore | One token. Slip, not overlap. Tests stay off the wire. |
+| Simon | Status Center is the resolver IP. Themes init before StartupUri. |
 
 ---
 
 ## Next action
 
-PR02-01. Write Requirements 1.1 and Design 1.1 with the split surfaces.
+PR02-01. Write Requirements 1.1 and Design 1.1 from the locks table. Then PR02-02 pins.
