@@ -68,7 +68,7 @@ public partial class App : Application
         });
 
         var store = new DnsIqSettingsStore(DnsIqSettingsStore.DefaultRoot);
-        var session = new DnsIqSettingsStore is null ? null : new DnsIqSession(store, Themes, chrome);
+        var session = new DnsIqSession(store, Themes, chrome);
         Session = session;
 
         Settings = new SettingsViewModel(Themes, chrome) { Session = session };
