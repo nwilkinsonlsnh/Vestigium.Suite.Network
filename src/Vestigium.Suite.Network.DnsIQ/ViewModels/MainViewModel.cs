@@ -146,7 +146,10 @@ public sealed partial class MainViewModel : ObservableObject
         {
             var preludeOk = await LookupAnswersAsync(query!, token).ConfigureAwait(true);
             if (preludeOk)
+            {
+                Dashboard?.Unlock();
                 Dashboard?.ShowLookup(Answers.ToList());
+            }
             if (lookup)
                 return;
             if (!PulsePrelude.MayStartPulse(preludeOk))
@@ -237,15 +240,16 @@ public sealed partial class MainViewModel : ObservableObject
         _pulseActive = true;
         StatusBar?.Engine.SetIdlePolicy(0);
         var clock = Stopwatch.StartNew();
-        PostPulseBar(0, plan.Requests, clock.Elapsed, TimeSpan.FromSeconds(plan.Seconds));
+        var window = TimeSpan.FromSeconds(plan.Seconds);
+        PostPulseBar(0, plan.Requests, clock.Elapsed, window);
 
         var samples = new List<double>();
         var answered = 0;
         var timeout = 0;
         var refused = 0;
         string? server = query.Options.Server;
-        var window = TimeSpan.FromSeconds(plan.Seconds);
         var sent = 0;
+        var inflight = new List<Task<DnsLookupResult>>();
 
         for (var i = 1; i <= plan.Requests; i++)
         {
@@ -253,21 +257,60 @@ public sealed partial class MainViewModel : ObservableObject
             await WaitUntilAsync(clock, plan.DueAt(i), window, sent, plan.Requests, token).ConfigureAwait(true);
 
             var typed = cycle[(i - 1) % cycle.Count];
-            var result = await NetworkHelper.LookupAsync(typed.Name, typed.Options, token).ConfigureAwait(true);
+            inflight.Add(NetworkHelper.LookupAsync(typed.Name, typed.Options, token));
             sent = i;
-            server ??= result.Server;
-            Classify(result, ref answered, ref timeout, ref refused, samples);
-            var lastMs = (int)Math.Round(result.Elapsed.TotalMilliseconds);
+            DrainCompleted(inflight, ref answered, ref timeout, ref refused, samples, ref server);
             PostPulseBar(sent, plan.Requests, clock.Elapsed, window);
-            Status = $"pulse {sent}/{plan.Requests} · {FormatServer(server)} · {lastMs} ms";
+            Status = $"pulse {sent}/{plan.Requests} · in flight {inflight.Count} · {FormatServer(server)}";
         }
 
         PostPulseBar(plan.Requests, plan.Requests, clock.Elapsed, window);
+
+        while (inflight.Count > 0)
+        {
+            token.ThrowIfCancellationRequested();
+            var finished = await Task.WhenAny(inflight).ConfigureAwait(true);
+            inflight.Remove(finished);
+            ApplyResult(await finished.ConfigureAwait(true), ref answered, ref timeout, ref refused, samples, ref server);
+            Status = $"pulse {sent}/{plan.Requests} · drain {inflight.Count} · {FormatServer(server)}";
+        }
+
+        Dashboard?.Unlock();
         Dashboard?.ShowProbe(samples);
         var med = Median(samples);
         var rate = plan.Seconds == 0 ? 0 : plan.Requests / (double)plan.Seconds;
         Status =
             $"{plan.Requests}/{plan.Requests} · {FormatServer(server)} · med {med} ms · {rate:0.0}/s · {timeout} timeout · {answered} answered · {refused} refused";
+    }
+
+    private static void DrainCompleted(
+        List<Task<DnsLookupResult>> inflight,
+        ref int answered,
+        ref int timeout,
+        ref int refused,
+        List<double> samples,
+        ref string? server)
+    {
+        for (var i = inflight.Count - 1; i >= 0; i--)
+        {
+            if (!inflight[i].IsCompleted)
+                continue;
+            var task = inflight[i];
+            inflight.RemoveAt(i);
+            ApplyResult(task.GetAwaiter().GetResult(), ref answered, ref timeout, ref refused, samples, ref server);
+        }
+    }
+
+    private static void ApplyResult(
+        DnsLookupResult result,
+        ref int answered,
+        ref int timeout,
+        ref int refused,
+        List<double> samples,
+        ref string? server)
+    {
+        server ??= result.Server;
+        Classify(result, ref answered, ref timeout, ref refused, samples);
     }
 
     private async Task WaitUntilAsync(
@@ -278,7 +321,7 @@ public sealed partial class MainViewModel : ObservableObject
             token.ThrowIfCancellationRequested();
             PostPulseBar(sent, total, clock.Elapsed, window);
             var remaining = due - clock.Elapsed;
-            var slice = remaining > TimeSpan.FromMilliseconds(100) ? TimeSpan.FromMilliseconds(100) : remaining;
+            var slice = remaining > TimeSpan.FromMilliseconds(20) ? TimeSpan.FromMilliseconds(20) : remaining;
             if (slice > TimeSpan.Zero)
                 await Task.Delay(slice, token).ConfigureAwait(true);
         }
