@@ -11,7 +11,7 @@ public sealed class PingIqSettingsStoreTests
     {
         var loaded = new PingIqSettingsStore(NewRoot()).Load();
         Assert.Equal(4, loaded.Count);
-        Assert.Equal(4000, loaded.TimeoutMs);
+        Assert.Equal(1000, loaded.TimeoutMs);
         Assert.Equal(1000, loaded.Requests);
         Assert.Equal(60, loaded.Seconds);
         Assert.True(loaded.StatusBarVisible);
@@ -77,7 +77,7 @@ public sealed class PingIqSettingsStoreTests
         Directory.CreateDirectory(root);
         File.WriteAllText(Path.Combine(root, "settings.json"), "{ not json");
         var loaded = new PingIqSettingsStore(root).Load();
-        Assert.Equal(4000, loaded.TimeoutMs);
+        Assert.Equal(1000, loaded.TimeoutMs);
         Assert.Equal(4, loaded.Count);
     }
 

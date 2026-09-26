@@ -11,7 +11,7 @@ public sealed partial class DashboardViewModel : ObservableObject
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(EchoPageOpen))]
     [NotifyPropertyChangedFor(nameof(ProbePageOpen))]
-    private string _dashboardPage = "Echo";
+    private string _dashboardPage = "Ping";
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(EchoEmpty))]
@@ -41,8 +41,8 @@ public sealed partial class DashboardViewModel : ObservableObject
 
     public bool EchoPageOpen
     {
-        get => DashboardPage == "Echo";
-        set { if (value) DashboardPage = "Echo"; }
+        get => DashboardPage == "Ping";
+        set { if (value) DashboardPage = "Ping"; }
     }
 
     public bool ProbePageOpen
@@ -77,7 +77,7 @@ public sealed partial class DashboardViewModel : ObservableObject
 
             var series = NumericSeries.From(rtts, "icmp-echo-ms");
             EchoChart = TryChart(
-                () => ChartView.Line(series, ChartTheme.Options(ChartSlot.Echo, "Echo RTT (ms)", "Reply", "RTT (ms)")),
+                () => ChartView.Line(series, ChartTheme.Options(ChartSlot.Echo, "Ping RTT (ms)", "Reply", "RTT (ms)")),
                 ChartSlot.Echo);
             HasEchoData = EchoChart is not null;
         }

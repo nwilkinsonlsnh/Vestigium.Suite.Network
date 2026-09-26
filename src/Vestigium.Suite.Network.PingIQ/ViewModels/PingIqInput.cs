@@ -9,15 +9,16 @@ public static class PingIqInput
 {
     public const int DefaultCount = 4;
     public const int MinCount = 1;
-    public const int MaxCount = 60;
-    public const int DefaultTimeoutMs = 4000;
-    public const int MinTimeoutMs = IcmpEchoOptions.MinTimeoutMs;
-    public const int MaxTimeoutMs = IcmpEchoOptions.MaxTimeoutMs;
+    public const int MaxCount = 99;
+    public const int DefaultDelayMs = 1000;
+    public const int MinDelayMs = IcmpEchoOptions.MinTimeoutMs;
+    public const int MaxDelayMs = IcmpEchoOptions.MaxTimeoutMs;
+    public const int ReplyTimeoutMs = 4000;
 
     public static bool TryCreate(
         string? target,
         decimal count,
-        decimal timeoutMs,
+        decimal delayMs,
         int interfaceIndex,
         string? sourceAddress,
         out PingIqQuery? query,
@@ -40,10 +41,10 @@ public static class PingIqInput
             return false;
         }
 
-        var ms = (int)decimal.Truncate(timeoutMs);
-        if (ms is < MinTimeoutMs or > MaxTimeoutMs)
+        var ms = (int)decimal.Truncate(delayMs);
+        if (ms is < MinDelayMs or > MaxDelayMs)
         {
-            reject = $"Timeout must be {MinTimeoutMs}–{MaxTimeoutMs} ms.";
+            reject = $"Delay must be {MinDelayMs}–{MaxDelayMs} ms.";
             return false;
         }
 
@@ -67,7 +68,8 @@ public static class PingIqInput
             new IcmpEchoOptions
             {
                 Count = n,
-                Timeout = TimeSpan.FromMilliseconds(ms),
+                Timeout = TimeSpan.FromMilliseconds(ReplyTimeoutMs),
+                Interval = TimeSpan.FromMilliseconds(ms),
                 InterfaceIndex = interfaceIndex,
                 SourceAddress = source
             });

@@ -18,9 +18,9 @@
           <ColumnDefinition Width="Auto" />
           <ColumnDefinition Width="*" />
           <ColumnDefinition Width="Auto" />
-          <ColumnDefinition Width="90" />
+          <ColumnDefinition Width="140" />
           <ColumnDefinition Width="Auto" />
-          <ColumnDefinition Width="110" />
+          <ColumnDefinition Width="150" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
           <RowDefinition Height="Auto" />
@@ -36,17 +36,19 @@
         <nud:VestigiumNumericUpDown Grid.Column="3"
                                     Value="{Binding Count, Mode=TwoWay}"
                                     SignMode="Unsigned"
-                                    Minimum="1" Maximum="60" Increment="1" PageIncrement="4" DecimalPlaces="0"
+                                    Minimum="1" Maximum="99" Increment="1" PageIncrement="4" DecimalPlaces="0"
+                                    MinWidth="128"
                                     Background="{DynamicResource Vestigium.Brushes.Surface.Card}"
                                     Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}"
                                     BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
                                     Margin="0,0,16,8" />
 
-        <Label Grid.Column="4" Style="{StaticResource Label.Standard}" Content="Timeout" VerticalAlignment="Center" Margin="0,0,8,8" />
+        <Label Grid.Column="4" Style="{StaticResource Label.Standard}" Content="Delay" VerticalAlignment="Center" Margin="0,0,8,8" />
         <nud:VestigiumNumericUpDown Grid.Column="5"
                                     Value="{Binding TimeoutMs, Mode=TwoWay}"
                                     SignMode="Unsigned"
                                     Minimum="10" Maximum="60000" Increment="100" PageIncrement="1000" DecimalPlaces="0"
+                                    MinWidth="136"
                                     Background="{DynamicResource Vestigium.Brushes.Surface.Card}"
                                     Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}"
                                     BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
@@ -63,7 +65,7 @@
                   Margin="0,0,16,8" />
 
         <StackPanel Grid.Row="2" Grid.ColumnSpan="6" Style="{StaticResource StackPanel.Toolbar}" Orientation="Horizontal">
-          <Button Content="Echo" Style="{StaticResource Button.Primary}" Command="{Binding EchoCommand}" Padding="16,4" Margin="0,0,8,0" />
+          <Button Content="Ping" Style="{StaticResource Button.Primary}" Command="{Binding PingCommand}" Padding="16,4" Margin="0,0,8,0" />
           <Button Content="Probe" Style="{StaticResource Button.Success}" Command="{Binding ProbeCommand}" Padding="16,4" Margin="0,0,8,0" />
           <Button Content="Cancel" Style="{StaticResource Button.Secondary}" Command="{Binding CancelCommand}" Padding="16,4" />
         </StackPanel>

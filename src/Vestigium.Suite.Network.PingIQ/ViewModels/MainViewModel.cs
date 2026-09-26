@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Vestigium.Controls.StatusBar;
 using Vestigium.Helpers.Network;
 using Vestigium.Suite.Network.Shell;
 
@@ -15,6 +16,8 @@ public sealed partial class MainViewModel : ObservableObject
     private bool _loading;
 
     public BindFields Bind { get; } = new();
+
+    public VestigiumStatusBarViewModel? StatusBar { get; set; }
 
     public PingIqSession? Session { get; set; }
 
@@ -45,7 +48,7 @@ public sealed partial class MainViewModel : ObservableObject
     private decimal _count = PingIqInput.DefaultCount;
 
     [ObservableProperty]
-    private decimal _timeoutMs = PingIqInput.DefaultTimeoutMs;
+    private decimal _timeoutMs = PingIqInput.DefaultDelayMs;
 
     [ObservableProperty]
     private int _selectedInterfaceIndex;
@@ -67,7 +70,7 @@ public sealed partial class MainViewModel : ObservableObject
     public bool CanCancel => _busy;
 
     [RelayCommand(CanExecute = nameof(CanStart))]
-    private Task EchoAsync() => RunAsync(probe: false);
+    private Task PingAsync() => RunAsync(probe: false);
 
     [RelayCommand(CanExecute = nameof(CanStart))]
     private Task ProbeAsync() => RunAsync(probe: true);
@@ -106,14 +109,15 @@ public sealed partial class MainViewModel : ObservableObject
         var token = _cts.Token;
         try
         {
-            var prelude = await EchoOnceAsync(query!, count: probe ? 1 : query!.Options.Count, token).ConfigureAwait(true);
-            var preludeOk = prelude.Status == NetworkJobStatus.Success;
-            ApplyResult(prelude);
             if (!probe)
             {
-                Dashboard?.ShowEcho(SuccessRtts(prelude));
+                await PingLoopAsync(query!, token).ConfigureAwait(true);
                 return;
             }
+
+            var prelude = await EchoOnceAsync(query!, token).ConfigureAwait(true);
+            var preludeOk = prelude.Status == NetworkJobStatus.Success;
+            ApplyShot(prelude, sequence: 1, replace: true);
             if (!PulsePrelude.MayStartPulse(preludeOk))
                 return;
 
@@ -132,12 +136,39 @@ public sealed partial class MainViewModel : ObservableObject
         }
         finally
         {
+            HideProgress();
             _job = null;
             _cts.Dispose();
             _cts = null;
             _busy = false;
             RaiseBusy();
         }
+    }
+
+    private async Task PingLoopAsync(PingIqQuery query, CancellationToken token)
+    {
+        var n = query.Options.Count;
+        var delay = query.Options.Interval;
+        var clock = Stopwatch.StartNew();
+        var samples = new List<double>();
+        StatusBar?.Engine.SetIdlePolicy(0);
+
+        for (var i = 1; i <= n; i++)
+        {
+            token.ThrowIfCancellationRequested();
+            await WaitUntilAsync(clock, TimeSpan.FromTicks(delay.Ticks * (i - 1)), token).ConfigureAwait(false);
+            var shot = await EchoOnceAsync(query, token).ConfigureAwait(true);
+            ApplyShot(shot, sequence: i, replace: false);
+            samples.AddRange(SeriesRtts(shot));
+            Status = $"Ping {i} / {n}";
+            PostBar(i, n, clock.Elapsed);
+        }
+
+        WriteSummary();
+        Dashboard?.ShowEcho(samples);
+        Dashboard?.Unlock();
+        Status = $"Ping {n} / {n}";
+        StatusBar?.Engine.SetIdlePolicy(3000, "Idle. . .");
     }
 
     private async Task ProbeLoopAsync(PingIqQuery query, CancellationToken token)
@@ -151,26 +182,29 @@ public sealed partial class MainViewModel : ObservableObject
         var clock = Stopwatch.StartNew();
         var last = default(IcmpEchoResult);
         var samples = new List<double>();
+        StatusBar?.Engine.SetIdlePolicy(0);
         for (var i = 1; i <= plan.Requests; i++)
         {
             token.ThrowIfCancellationRequested();
             await WaitUntilAsync(clock, plan.DueAt(i), token).ConfigureAwait(false);
-            last = await EchoOnceAsync(query, count: 1, token).ConfigureAwait(true);
-            samples.AddRange(SuccessRtts(last));
+            last = await EchoOnceAsync(query, token).ConfigureAwait(true);
+            samples.AddRange(SeriesRtts(last));
             Status = $"Probe {i} / {plan.Requests}";
+            PostBar(i, plan.Requests, clock.Elapsed);
         }
 
         if (last is not null)
-            ApplyResult(last);
+            ApplyShot(last, sequence: plan.Requests, replace: true);
         Dashboard?.ShowProbe(samples);
         Status = $"Probe {plan.Requests} / {plan.Requests}";
+        StatusBar?.Engine.SetIdlePolicy(3000, "Idle. . .");
     }
 
-    private async Task<IcmpEchoResult> EchoOnceAsync(PingIqQuery query, int count, CancellationToken token)
+    private async Task<IcmpEchoResult> EchoOnceAsync(PingIqQuery query, CancellationToken token)
     {
         var options = new IcmpEchoOptions
         {
-            Count = count,
+            Count = 1,
             Timeout = query.Options.Timeout,
             InterfaceIndex = query.Options.InterfaceIndex,
             SourceAddress = query.Options.SourceAddress
@@ -191,19 +225,23 @@ public sealed partial class MainViewModel : ObservableObject
         }
     }
 
-    private static List<double> SuccessRtts(IcmpEchoResult result)
+    private static List<double> SeriesRtts(IcmpEchoResult result)
         => result.Replies
-            .Where(r => r.Status == IcmpEchoStatus.Success)
+            .Where(r => r.Status is IcmpEchoStatus.Success
+                or IcmpEchoStatus.DestinationUnreachable
+                or IcmpEchoStatus.TtlExpired)
             .Select(r => (double)r.RoundtripTimeMs)
             .ToList();
 
-    private void ApplyResult(IcmpEchoResult result)
+    private void ApplyShot(IcmpEchoResult result, int sequence, bool replace)
     {
-        Replies.Clear();
+        if (replace)
+            Replies.Clear();
+
         foreach (var reply in result.Replies)
         {
             Replies.Add(new ReplyRow(
-                reply.Sequence,
+                sequence,
                 reply.Status.ToString(),
                 reply.Address,
                 reply.RoundtripTimeMs,
@@ -211,11 +249,55 @@ public sealed partial class MainViewModel : ObservableObject
                 reply.Detail));
         }
 
-        var avg = result.AverageMs is { } ms ? $"{ms:0.#}" : "—";
-        var min = result.MinMs is { } lo ? lo.ToString() : "—";
-        var max = result.MaxMs is { } hi ? hi.ToString() : "—";
-        Summary = $"sent={result.Sent} recv={result.Received} lost={result.Lost} loss={result.LossPercent:0.#}% min={min} max={max} avg={avg} ms";
+        WriteSummary();
         Status = result.Status.ToString();
+    }
+
+    private void WriteSummary()
+    {
+        var sent = Replies.Count;
+        var recv = Replies.Count(r => r.Status == nameof(IcmpEchoStatus.Success));
+        var lost = Math.Max(0, sent - recv);
+        var times = Replies.Where(r => r.Status == nameof(IcmpEchoStatus.Success)).Select(r => r.RttMs).ToList();
+        var avg = times.Count == 0 ? "—" : times.Average().ToString("0.#");
+        var min = times.Count == 0 ? "—" : times.Min().ToString();
+        var max = times.Count == 0 ? "—" : times.Max().ToString();
+        var loss = sent == 0 ? 0 : 100.0 * lost / sent;
+        Summary = $"sent={sent} recv={recv} lost={lost} loss={loss:0.#}% min={min} max={max} avg={avg} ms";
+    }
+
+    private void PostBar(int sent, int total, TimeSpan elapsed)
+    {
+        if (StatusBar is null)
+            return;
+        StatusBar.Engine.PostImmediate("message", new StatusBarUpdate { Text = $"{sent} / {total}" });
+        StatusBar.Engine.PostImmediate("progress", new StatusBarUpdate
+        {
+            Progress = total == 0 ? 0 : Math.Clamp(100.0 * sent / total, 0, 100),
+            IsProgressVisible = true,
+            IsIndeterminate = false
+        });
+        StatusBar.Engine.PostImmediate("detail", new StatusBarUpdate { Text = FormatElapsed(elapsed) });
+    }
+
+    private void HideProgress()
+    {
+        if (StatusBar is null)
+            return;
+        StatusBar.Engine.PostImmediate("progress", new StatusBarUpdate
+        {
+            Progress = 0,
+            IsProgressVisible = false,
+            IsIndeterminate = false
+        });
+    }
+
+    private static string FormatElapsed(TimeSpan elapsed)
+    {
+        var total = Math.Max(0, (int)Math.Floor(elapsed.TotalSeconds));
+        var minutes = total / 60;
+        var seconds = total % 60;
+        return $"{minutes:00}:{seconds:00}";
     }
 
     public void BeginLoad() => _loading = true;
@@ -241,7 +323,7 @@ public sealed partial class MainViewModel : ObservableObject
     {
         OnPropertyChanged(nameof(CanStart));
         OnPropertyChanged(nameof(CanCancel));
-        EchoCommand.NotifyCanExecuteChanged();
+        PingCommand.NotifyCanExecuteChanged();
         ProbeCommand.NotifyCanExecuteChanged();
         CancelCommand.NotifyCanExecuteChanged();
     }

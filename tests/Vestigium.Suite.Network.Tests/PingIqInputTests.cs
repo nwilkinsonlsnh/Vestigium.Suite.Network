@@ -18,13 +18,14 @@ public sealed class PingIqInputTests
     }
 
     [Fact]
-    public void Loopback_count_four_timeout_default_accepts()
+    public void Loopback_count_four_delay_default_accepts()
     {
         var ok = Try(out var query, out var reject);
         Assert.True(ok);
         Assert.Null(reject);
         Assert.Equal("127.0.0.1", query!.Target);
         Assert.Equal(4, query.Options.Count);
+        Assert.Equal(TimeSpan.FromMilliseconds(1000), query.Options.Interval);
         Assert.Equal(TimeSpan.FromMilliseconds(4000), query.Options.Timeout);
         Assert.Equal(0, query.Options.InterfaceIndex);
         Assert.Null(query.Options.SourceAddress);
@@ -32,14 +33,14 @@ public sealed class PingIqInputTests
 
     [Theory]
     [InlineData(0)]
-    [InlineData(61)]
+    [InlineData(100)]
     [InlineData(-1)]
     public void Count_outside_range_rejects(int count)
     {
         var ok = Try(out var query, out var reject, count: count);
         Assert.False(ok);
         Assert.Null(query);
-        Assert.Equal("Count must be 1–60.", reject);
+        Assert.Equal("Count must be 1–99.", reject);
     }
 
     [Fact]
@@ -54,21 +55,21 @@ public sealed class PingIqInputTests
     [Theory]
     [InlineData(9)]
     [InlineData(60001)]
-    public void Timeout_outside_range_rejects(int timeoutMs)
+    public void Delay_outside_range_rejects(int timeoutMs)
     {
         var ok = Try(out var query, out var reject, timeoutMs: timeoutMs);
         Assert.False(ok);
         Assert.Null(query);
-        Assert.Equal("Timeout must be 10–60000 ms.", reject);
+        Assert.Equal("Delay must be 10–60000 ms.", reject);
     }
 
     [Fact]
-    public void Timeout_ten_accepts()
+    public void Delay_ten_accepts()
     {
         var ok = Try(out var query, out var reject, timeoutMs: 10);
         Assert.True(ok);
         Assert.Null(reject);
-        Assert.Equal(TimeSpan.FromMilliseconds(10), query!.Options.Timeout);
+        Assert.Equal(TimeSpan.FromMilliseconds(10), query!.Options.Interval);
     }
 
     [Fact]
@@ -109,21 +110,21 @@ public sealed class PingIqInputTests
 
 
     [Fact]
-    public void Count_sixty_accepts()
+    public void Count_ninety_nine_accepts()
     {
-        var ok = Try(out var query, out var reject, count: 60);
+        var ok = Try(out var query, out var reject, count: 99);
         Assert.True(ok);
         Assert.Null(reject);
-        Assert.Equal(60, query!.Options.Count);
+        Assert.Equal(99, query!.Options.Count);
     }
 
     [Fact]
-    public void Timeout_sixty_seconds_accepts()
+    public void Delay_sixty_seconds_accepts()
     {
         var ok = Try(out var query, out var reject, timeoutMs: 60000);
         Assert.True(ok);
         Assert.Null(reject);
-        Assert.Equal(TimeSpan.FromMilliseconds(60000), query!.Options.Timeout);
+        Assert.Equal(TimeSpan.FromMilliseconds(60000), query!.Options.Interval);
     }
 
     [Fact]

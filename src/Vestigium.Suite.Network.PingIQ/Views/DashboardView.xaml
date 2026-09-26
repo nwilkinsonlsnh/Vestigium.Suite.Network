@@ -13,7 +13,7 @@
 
     <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Left" Margin="20,0,0,12">
       <RadioButton Style="{StaticResource RadioButton.HorizontalTab}"
-                   Content="Echo"
+                   Content="Ping"
                    IsChecked="{Binding EchoPageOpen}"
                    GroupName="DashboardPage"
                    Margin="0,0,8,0" />
@@ -27,9 +27,9 @@
       <Grid Visibility="{Binding EchoPageOpen, Converter={StaticResource BoolToVis}}">
         <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left"
                     Visibility="{Binding EchoEmpty, Converter={StaticResource BoolToVis}}">
-          <TextBlock Style="{StaticResource TextBlock.Caption}" Text="No Echo chart yet." />
+          <TextBlock Style="{StaticResource TextBlock.Caption}" Text="No Ping chart yet." />
           <TextBlock Margin="0,8,0,0">
-            <Hyperlink Command="{Binding OpenPingIqCommand}">Open PingIQ and run Echo</Hyperlink>
+            <Hyperlink Command="{Binding OpenPingIqCommand}">Open PingIQ and run Ping</Hyperlink>
           </TextBlock>
         </StackPanel>
         <ContentControl Content="{Binding EchoChart}"

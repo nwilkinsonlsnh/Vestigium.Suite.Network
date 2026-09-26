@@ -30,9 +30,9 @@
                 Margin="20,0,0,0"
                 Visibility="{Binding PingIqPageOpen, Converter={StaticResource BoolToVis}}">
       <TextBlock Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap" Margin="0,0,0,16"
-                 Text="Timeout seeds the PingIQ row. Source is the local address this PC sends from. Any lets Windows pick. This is not spoofing." />
+                 Text="Delay is the wait between ICMP echoes. Reply wait stays 4000 ms. Source is the local address this PC sends from. Any lets Windows pick. This is not spoofing." />
 
-      <Label Style="{StaticResource Label.Standard}" Content="Timeout (ms)" />
+      <Label Style="{StaticResource Label.Standard}" Content="Delay (ms)" />
       <nud:VestigiumNumericUpDown Value="{Binding DefaultTimeoutMs, Mode=TwoWay}"
                                   SignMode="Unsigned"
                                   Minimum="10" Maximum="60000" Increment="100" PageIncrement="1000" DecimalPlaces="0"

@@ -7,7 +7,7 @@ public sealed class PingIqSettings
 {
     public string? ThemeId { get; set; }
     public int Count { get; set; } = PingIqInput.DefaultCount;
-    public int TimeoutMs { get; set; } = PingIqInput.DefaultTimeoutMs;
+    public int TimeoutMs { get; set; } = PingIqInput.DefaultDelayMs;
     public int InterfaceIndex { get; set; }
     public int Requests { get; set; } = 1000;
     public int Seconds { get; set; } = 60;

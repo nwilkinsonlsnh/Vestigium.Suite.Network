@@ -95,7 +95,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     private bool _barVisible;
 
     [ObservableProperty]
-    private decimal _defaultTimeoutMs = PingIqInput.DefaultTimeoutMs;
+    private decimal _defaultTimeoutMs = PingIqInput.DefaultDelayMs;
 
     [ObservableProperty]
     private decimal _defaultRequests = RequestDefault;
@@ -113,9 +113,9 @@ public sealed partial class SettingsViewModel : ObservableObject
         {
             if (!string.IsNullOrWhiteSpace(data.ThemeId))
                 SelectedThemeId = data.ThemeId;
-            DefaultTimeoutMs = data.TimeoutMs is >= PingIqInput.MinTimeoutMs and <= PingIqInput.MaxTimeoutMs
+            DefaultTimeoutMs = data.TimeoutMs is >= PingIqInput.MinDelayMs and <= PingIqInput.MaxDelayMs
                 ? data.TimeoutMs
-                : PingIqInput.DefaultTimeoutMs;
+                : PingIqInput.DefaultDelayMs;
             DefaultRequests = data.Requests;
             DefaultSeconds = data.Seconds;
             BarPosition = string.Equals(data.StatusBarDock, "Top", StringComparison.OrdinalIgnoreCase)
