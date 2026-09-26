@@ -1,0 +1,36 @@
+<Window x:Class="Vestigium.Suite.Network.DnsIQ.DnsIqWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:shell="clr-namespace:Vestigium.Controls.Shell;assembly=Vestigium.Controls"
+        Title="DnsIQ"
+        Height="720" Width="1100"
+        MinHeight="480" MinWidth="720">
+  <Window.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="pack://application:,,,/Vestigium.Controls;component/Shell/MenuChrome.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </Window.Resources>
+  <DockPanel>
+    <Menu DockPanel.Dock="Top">
+      <MenuItem Header="_File">
+        <MenuItem Header="E_xit" Click="Exit_Click" />
+      </MenuItem>
+      <MenuItem Header="_View">
+        <MenuItem Header="Status bar _visible" IsCheckable="True" IsChecked="{Binding ShowStatusBar}" />
+        <Separator />
+        <MenuItem Header="Status bar at _Bottom" Command="{Binding DockStatusBarBottomCommand}" />
+        <MenuItem Header="Status bar at _Top" Command="{Binding DockStatusBarTopCommand}" />
+        <Separator />
+        <MenuItem Header="Increase nav _indent" Command="{Binding IncreaseNavIndentCommand}" />
+        <MenuItem Header="Decrease nav i_ndent" Command="{Binding DecreaseNavIndentCommand}" />
+      </MenuItem>
+    </Menu>
+    <shell:VestigiumShell x:Name="RootShell"
+                          Status="{Binding Status}"
+                          StatusBarPosition="{Binding Status.Position, Mode=TwoWay}"
+                          ShowStatusBar="{Binding ShowStatusBar}"
+                          NavIndent="{Binding NavIndent, Mode=TwoWay}" />
+  </DockPanel>
+</Window>
