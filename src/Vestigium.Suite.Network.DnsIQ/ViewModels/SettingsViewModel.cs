@@ -34,7 +34,6 @@ public sealed partial class SettingsViewModel : ObservableObject
         }
 
         Sources = SourceChoices.From(_adapters);
-        _selectedSource = null;
         _selectedThemeId = themes.Current?.Id ?? themes.AvailableThemes.FirstOrDefault()?.Id;
         _barPosition = chrome.Status.Position;
         _barVisible = chrome.ShowStatusBar;
@@ -125,9 +124,18 @@ public sealed partial class SettingsViewModel : ObservableObject
 
     public void NarrowSources(int interfaceIndex)
     {
-        Sources = SourceChoices.From(_adapters, interfaceIndex);
-        OnPropertyChanged(nameof(Sources));
-        SelectedSource = SourceChoices.Resolve(Sources, SelectedSource).Address;
+        var keep = SelectedSource;
+        _loading = true;
+        try
+        {
+            Sources = SourceChoices.From(_adapters, interfaceIndex);
+            OnPropertyChanged(nameof(Sources));
+            SelectedSource = SourceChoices.Resolve(Sources, keep).Address;
+        }
+        finally
+        {
+            _loading = false;
+        }
     }
 
     partial void OnSelectedThemeIdChanged(string? value)
