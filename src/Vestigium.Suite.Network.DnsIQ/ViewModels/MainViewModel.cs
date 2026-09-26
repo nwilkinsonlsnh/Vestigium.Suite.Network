@@ -286,7 +286,7 @@ public sealed partial class MainViewModel : ObservableObject
         var med = Median(samples);
         var rate = plan.Seconds == 0 ? 0 : plan.Requests / (double)plan.Seconds;
         var summary =
-            $"Pulse: {plan.Requests} / {plan.Requests} · {FormatServer(server)} · Med {med} ms · {rate:0.0}/s · {timeout} Timeout · {answered} Answered · {refused} Refused · Elapsed {FormatElapsed(elapsed)}";
+            $"Pulse: {plan.Requests} / {plan.Requests} \u00b7 {FormatServer(server)} \u00b7 Med {med} ms \u00b7 {rate:0.0}/s \u00b7 {timeout} Timeout \u00b7 {answered} Answered \u00b7 {refused} Refused \u00b7 Elapsed {FormatElapsed(elapsed)}";
 
         await OnUiAsync(() =>
         {
@@ -301,7 +301,7 @@ public sealed partial class MainViewModel : ObservableObject
         int sent, int total, int inflight, string? server, TimeSpan elapsed, bool draining)
     {
         var phase = draining ? "Drain" : "In Flight";
-        return $"Pulse: {sent} / {total} · {phase} {inflight} · {FormatServer(server)} · Elapsed {FormatElapsed(elapsed)}";
+        return $"Pulse: {sent} / {total} \u00b7 {phase} {inflight} \u00b7 {FormatServer(server)} \u00b7 Elapsed {FormatElapsed(elapsed)}";
     }
 
     private void TickPulseUi(int sent, int total, TimeSpan elapsed, TimeSpan window, string status, bool force)
@@ -401,7 +401,15 @@ public sealed partial class MainViewModel : ObservableObject
     }
 
     private static string FormatElapsed(TimeSpan elapsed)
-        => elapsed.TotalHours >= 1 ? elapsed.ToString(@"h\\:mm\\:ss") : elapsed.ToString(@"mm\\:ss");
+    {
+        var total = Math.Max(0, (int)Math.Floor(elapsed.TotalSeconds));
+        var hours = total / 3600;
+        var minutes = total % 3600 / 60;
+        var seconds = total % 60;
+        return hours > 0
+            ? $"{hours}:{minutes:00}:{seconds:00}"
+            : $"{minutes:00}:{seconds:00}";
+    }
 
     private void ShowProgress(double percent, bool visible)
     {
@@ -470,8 +478,10 @@ public sealed partial class MainViewModel : ObservableObject
     private static string FormatLookupStatus(DnsRcode rcode, string? server, TimeSpan elapsed, int types)
     {
         var ms = Math.Max(0, (int)Math.Round(elapsed.TotalMilliseconds));
-        var line = $"{rcode} · {FormatServer(server)} · {ms} ms";
-        return types > 1 ? $"{line} · {types} Types" : line;
+        var core = $"{FormatServer(server)} \u00b7 {ms} ms";
+        if (types > 1)
+            core += $" \u00b7 {types} Types";
+        return rcode is DnsRcode.NoError ? core : $"{rcode} \u00b7 {core}";
     }
 
     private static string FormatServer(string? server)
