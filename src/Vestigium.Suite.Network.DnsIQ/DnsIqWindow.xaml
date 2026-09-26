@@ -23,15 +23,11 @@
         <Separator Style="{StaticResource Separator.Menu}" />
         <MenuItem Header="Status bar at _Bottom" Style="{StaticResource MenuItem.Standard}" Command="{Binding DockStatusBarBottomCommand}" />
         <MenuItem Header="Status bar at _Top" Style="{StaticResource MenuItem.Standard}" Command="{Binding DockStatusBarTopCommand}" />
-        <Separator Style="{StaticResource Separator.Menu}" />
-        <MenuItem Header="Increase nav _indent" Style="{StaticResource MenuItem.Standard}" Command="{Binding IncreaseNavIndentCommand}" />
-        <MenuItem Header="Decrease nav i_ndent" Style="{StaticResource MenuItem.Standard}" Command="{Binding DecreaseNavIndentCommand}" />
       </MenuItem>
     </Menu>
     <shell:VestigiumShell x:Name="RootShell"
                           Status="{Binding Status}"
                           StatusBarPosition="{Binding Status.Position, Mode=TwoWay}"
-                          ShowStatusBar="{Binding ShowStatusBar}"
-                          NavIndent="{Binding NavIndent, Mode=TwoWay}" />
+                          ShowStatusBar="{Binding ShowStatusBar}" />
   </DockPanel>
 </Window>
