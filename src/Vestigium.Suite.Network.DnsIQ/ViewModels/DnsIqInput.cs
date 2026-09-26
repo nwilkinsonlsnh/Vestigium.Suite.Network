@@ -55,8 +55,18 @@ public static class DnsIqInput
         int interfaceIndex,
         string? sourceAddress,
         out DnsIqQuery? query,
-        out string? reject,
-        int port = DefaultPort)
+        out string? reject)
+        => TryCreate(name, server, recordType, interfaceIndex, sourceAddress, DefaultPort, out query, out reject);
+
+    public static bool TryCreate(
+        string? name,
+        string? server,
+        string? recordType,
+        int interfaceIndex,
+        string? sourceAddress,
+        int port,
+        out DnsIqQuery? query,
+        out string? reject)
     {
         query = null;
         reject = null;
