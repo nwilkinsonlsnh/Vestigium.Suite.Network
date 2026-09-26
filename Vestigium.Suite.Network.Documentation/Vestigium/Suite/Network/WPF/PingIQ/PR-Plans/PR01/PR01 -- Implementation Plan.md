@@ -92,8 +92,8 @@ Build order is the Order column.
 | 2 | PR01-02 | `PingIqInput` + Echo path + `ReplyRow` grid + Cancel + one in-flight. | Done |
 | 3 | PR01-03 | Settings + persist + Interface/Source combos. | Done |
 | 4 | PR01-04 | Probe prelude + `PulsePlan` loop. Dashboard still locked. | Done |
-| 5 | PR01-05 | Dashboard charts + Unlock + legend persist. | Open |
-| 6 | PR01-06 | Host tests. No wire. | Open |
+| 5 | PR01-05 | Dashboard charts + Unlock after Probe. | Done |
+| 6 | PR01-06 | Host tests. No wire. | Done |
 | 7 | PR01-07 | Owner runs the window against Requirements v1.1 §5. | Owner |
 
 ### PR01-01
@@ -193,4 +193,4 @@ When this plan finishes, move the whole `PR01/` folder to `PR-Plans/Completed/PR
 
 ## Next action
 
-PR01-06. Host tests for the remaining seams.
+PR01-07. Owner gate. Requirements v1.1 §5 on the clone. This agent does not mark Rev 1 closed.

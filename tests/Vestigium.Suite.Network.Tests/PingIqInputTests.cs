@@ -107,6 +107,51 @@ public sealed class PingIqInputTests
         Assert.Equal(0, query!.Options.InterfaceIndex);
     }
 
+
+    [Fact]
+    public void Count_sixty_accepts()
+    {
+        var ok = Try(out var query, out var reject, count: 60);
+        Assert.True(ok);
+        Assert.Null(reject);
+        Assert.Equal(60, query!.Options.Count);
+    }
+
+    [Fact]
+    public void Timeout_sixty_seconds_accepts()
+    {
+        var ok = Try(out var query, out var reject, timeoutMs: 60000);
+        Assert.True(ok);
+        Assert.Null(reject);
+        Assert.Equal(TimeSpan.FromMilliseconds(60000), query!.Options.Timeout);
+    }
+
+    [Fact]
+    public void Source_ipv6_accepts()
+    {
+        var ok = Try(out var query, out var reject, source: "::1");
+        Assert.True(ok);
+        Assert.Null(reject);
+        Assert.Equal("::1", query!.Options.SourceAddress);
+    }
+
+    [Fact]
+    public void Target_is_trimmed()
+    {
+        var ok = Try(out var query, out var reject, target: "  8.8.8.8  ");
+        Assert.True(ok);
+        Assert.Equal("8.8.8.8", query!.Target);
+    }
+
+    [Fact]
+    public void Hostname_target_accepts()
+    {
+        var ok = Try(out var query, out var reject, target: "example.com");
+        Assert.True(ok);
+        Assert.Null(reject);
+        Assert.Equal("example.com", query!.Target);
+    }
+
     private static bool Try(
         out PingIqQuery? query,
         out string? reject,

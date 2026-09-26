@@ -52,6 +52,25 @@ public sealed class PingIqSettingsStoreTests
     }
 
     [Fact]
+    public void Legend_flags_round_trip()
+    {
+        var root = NewRoot();
+        var store = new PingIqSettingsStore(root);
+        store.Save(new PingIqSettings
+        {
+            ShowLegendEcho = false,
+            ShowLegendProbeRtt = false,
+            ShowLegendProbeDist = true,
+            ShowLegendProbeControl = false
+        });
+        var loaded = store.Load();
+        Assert.False(loaded.ShowLegendEcho);
+        Assert.False(loaded.ShowLegendProbeRtt);
+        Assert.True(loaded.ShowLegendProbeDist);
+        Assert.False(loaded.ShowLegendProbeControl);
+    }
+
+    [Fact]
     public void Corrupt_json_returns_defaults_without_throwing()
     {
         var root = NewRoot();
