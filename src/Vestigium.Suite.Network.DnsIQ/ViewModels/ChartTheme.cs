@@ -20,6 +20,9 @@ internal enum ChartSlot
 
 internal static class ChartTheme
 {
+    private static readonly SolidColorBrush MenuBack = Brushes.White;
+    private static readonly SolidColorBrush MenuInk = Brushes.Black;
+
     public static bool LookupLegend { get; set; } = true;
     public static bool ProbeRttLegend { get; set; } = true;
     public static bool ProbeDistLegend { get; set; } = true;
@@ -179,9 +182,9 @@ internal static class ChartTheme
 
     private static void PaintMenu(ContextMenu menu)
     {
-        menu.Background = SystemColors.MenuBrush;
-        menu.Foreground = SystemColors.MenuTextBrush;
-        menu.BorderBrush = SystemColors.MenuTextBrush;
+        menu.Background = MenuBack;
+        menu.Foreground = MenuInk;
+        menu.BorderBrush = Brushes.Silver;
         foreach (var raw in menu.Items)
         {
             if (raw is MenuItem item)
@@ -191,8 +194,8 @@ internal static class ChartTheme
 
     private static void PaintItem(MenuItem item)
     {
-        item.Background = SystemColors.MenuBrush;
-        item.Foreground = SystemColors.MenuTextBrush;
+        item.Background = MenuBack;
+        item.Foreground = MenuInk;
     }
 
     private static void SaveImage(FrameworkElement view)
@@ -247,7 +250,7 @@ internal static class ChartTheme
             Title = "DnsIQ Chart",
             Width = Math.Max(900, view.ActualWidth + 80),
             Height = Math.Max(560, view.ActualHeight + 80),
-            Background = SystemColors.WindowBrush,
+            Background = Brushes.White,
             Content = new Image { Source = Capture(view), Stretch = Stretch.Uniform, Margin = new Thickness(8) }
         }.Show();
     }
