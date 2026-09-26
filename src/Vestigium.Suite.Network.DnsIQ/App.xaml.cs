@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Input;
+using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
 using Vestigium.Controls.DependencyInjection;
 using Vestigium.Controls.Shell;
@@ -33,7 +34,11 @@ public partial class App : Application
             var item = Shell?["Dashboard"];
             if (item is not null)
                 item.IsEnabled = enabled;
-            CommandManager.InvalidateRequerySuggested();
+
+            if (Shell?.SelectItemCommand is IRelayCommand relay)
+                relay.NotifyCanExecuteChanged();
+            else
+                CommandManager.InvalidateRequerySuggested();
         }
 
         if (Current is null)
@@ -133,13 +138,7 @@ public partial class App : Application
         if (settingsItem is not null)
             settingsItem.Content = new SettingsView { DataContext = Settings };
 
-        window.Loaded += (_, _) =>
-        {
-            Shell = window.HostShell;
-            var liveDash = window.HostShell["Dashboard"];
-            if (liveDash is not null && liveDash.Content is null)
-                liveDash.Content = new DashboardView { DataContext = dash };
-        };
+        window.Loaded += (_, _) => Shell = window.HostShell;
 
         chrome.Status.Message = "Idle";
         chrome.PropertyChanged += (_, args) =>
