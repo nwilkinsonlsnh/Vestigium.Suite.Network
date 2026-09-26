@@ -2,6 +2,7 @@ using System.IO;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Microsoft.Win32;
@@ -15,7 +16,7 @@ internal static class ChartTheme
 
     public static Action? LegendChanged { get; set; }
 
-    public static ChartOptions Options(string title)
+    public static ChartOptions Options(string title, string? xLabel = null, string? yLabel = null)
     {
         var color = Hex("Vestigium.Brushes.Accent.Primary")
                     ?? Hex("Vestigium.Brushes.Text.Primary")
@@ -23,6 +24,8 @@ internal static class ChartTheme
         return new ChartOptions
         {
             Title = title,
+            XLabel = xLabel,
+            YLabel = yLabel,
             Color = color,
             ShowLegend = ShowLegend,
             ShowGrid = true
@@ -50,7 +53,8 @@ internal static class ChartTheme
         view.MinHeight = 140;
         view.VerticalAlignment = VerticalAlignment.Stretch;
         view.HorizontalAlignment = HorizontalAlignment.Stretch;
-        view.ContextMenu = BuildMenu(view, plot);
+        DisableStockMenu(view);
+        AttachMenu(view, plot);
 
         if (view is Control control)
             control.SetResourceReference(Control.BackgroundProperty, "Vestigium.Brushes.Surface.Card");
@@ -58,14 +62,47 @@ internal static class ChartTheme
         return view;
     }
 
+    private static void DisableStockMenu(FrameworkElement view)
+    {
+        TrySetProp(view, "MenuOnRightClick", false);
+        TrySetProp(view, "EnableContextMenu", false);
+    }
+
+    private static void AttachMenu(FrameworkElement view, object? plot)
+    {
+        void Assign()
+        {
+            DisableStockMenu(view);
+            view.ContextMenu = BuildMenu(view, plot);
+        }
+
+        Assign();
+        view.Loaded -= OnChartLoaded;
+        view.Loaded += OnChartLoaded;
+        view.PreviewMouseRightButtonUp -= OnRightClick;
+        view.PreviewMouseRightButtonUp += OnRightClick;
+
+        void OnChartLoaded(object sender, RoutedEventArgs e) => Assign();
+
+        void OnRightClick(object sender, MouseButtonEventArgs e)
+        {
+            Assign();
+            if (view.ContextMenu is null)
+                return;
+            view.ContextMenu.PlacementTarget = view;
+            view.ContextMenu.IsOpen = true;
+            e.Handled = true;
+        }
+    }
+
     private static ContextMenu BuildMenu(FrameworkElement view, object? plot)
     {
         var menu = new ContextMenu();
         PaintMenu(menu);
-
         menu.Items.Add(Item("Save Image", () => SaveImage(view)));
         menu.Items.Add(Item("Copy to Clipboard", () => CopyImage(view)));
-        menu.Items.Add(Item("Autoscale", () => AutoScale(view, plot)));
+        menu.Items.Add(Item("Auto Scale", () => AutoScale(view, plot)));
+        menu.Items.Add(Item("Open in New Window", () => OpenWindow(view, plot)));
         menu.Items.Add(new Separator());
 
         var legend = new MenuItem { Header = "Show Legend", IsCheckable = true, IsChecked = ShowLegend };
@@ -125,17 +162,13 @@ internal static class ChartTheme
         if (dialog.ShowDialog() != true)
             return;
 
-        var image = Capture(view);
         var encoder = new PngBitmapEncoder();
-        encoder.Frames.Add(BitmapFrame.Create(image));
+        encoder.Frames.Add(BitmapFrame.Create(Capture(view)));
         using var stream = File.Create(dialog.FileName);
         encoder.Save(stream);
     }
 
-    private static void CopyImage(FrameworkElement view)
-    {
-        Clipboard.SetImage(Capture(view));
-    }
+    private static void CopyImage(FrameworkElement view) => Clipboard.SetImage(Capture(view));
 
     private static void AutoScale(FrameworkElement view, object? plot)
     {
@@ -149,6 +182,37 @@ internal static class ChartTheme
         }
 
         view.GetType().GetMethod("Refresh", Type.EmptyTypes)?.Invoke(view, null);
+    }
+
+    private static void OpenWindow(FrameworkElement view, object? plot)
+    {
+        try
+        {
+            var open = view.GetType().GetMethod("OpenInNewWindow", Type.EmptyTypes);
+            if (open is not null)
+            {
+                open.Invoke(view, null);
+                return;
+            }
+        }
+        catch (Exception)
+        {
+        }
+
+        var window = new Window
+        {
+            Title = "DnsIQ Chart",
+            Width = Math.Max(900, view.ActualWidth + 80),
+            Height = Math.Max(560, view.ActualHeight + 80),
+            Background = Brush("Vestigium.Brushes.Surface.Window") ?? Brushes.White
+        };
+        window.Content = new Image
+        {
+            Source = Capture(view),
+            Stretch = Stretch.Uniform,
+            Margin = new Thickness(8)
+        };
+        window.Show();
     }
 
     private static BitmapSource Capture(FrameworkElement view)
@@ -195,18 +259,26 @@ internal static class ChartTheme
         }
     }
 
+    private static void TrySetProp(object target, string name, object value)
+    {
+        try
+        {
+            target.GetType().GetProperty(name)?.SetValue(target, value);
+        }
+        catch (Exception)
+        {
+        }
+    }
+
     private static void SetSlotColor(object target, string slotName, string hex)
     {
         var slot = target.GetType().GetProperty(slotName)?.GetValue(target);
         if (slot is null)
             return;
-
         var colorProp = slot.GetType().GetProperty("Color");
         if (colorProp is null)
             return;
-
-        var colorType = colorProp.PropertyType;
-        var fromHex = colorType.GetMethod("FromHex", BindingFlags.Public | BindingFlags.Static, [typeof(string)]);
+        var fromHex = colorProp.PropertyType.GetMethod("FromHex", BindingFlags.Public | BindingFlags.Static, [typeof(string)]);
         var color = fromHex?.Invoke(null, [hex]);
         if (color is not null)
             colorProp.SetValue(slot, color);
