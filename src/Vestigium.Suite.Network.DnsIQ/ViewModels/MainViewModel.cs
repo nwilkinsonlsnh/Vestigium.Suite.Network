@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Vestigium.Controls.StatusBar;
 using Vestigium.Helpers.Network;
 using Vestigium.Suite.Network.Shell;
 
@@ -12,6 +13,8 @@ public sealed partial class MainViewModel : ObservableObject
     private NetworkJob<DnsProbeResult>? _probeJob;
 
     public BindFields Bind { get; } = new();
+
+    public VestigiumStatusBarViewModel? StatusBar { get; set; }
 
     public IReadOnlyList<string> RecordTypes => DnsIqInput.ComboTypes;
 
@@ -34,6 +37,12 @@ public sealed partial class MainViewModel : ObservableObject
     [NotifyCanExecuteChangedFor(nameof(ProbeCommand))]
     [NotifyCanExecuteChangedFor(nameof(CancelCommand))]
     private bool _isBusy;
+
+    partial void OnStatusChanged(string value)
+    {
+        if (StatusBar is not null)
+            StatusBar.Message = value;
+    }
 
     private bool CanStartJob() => !IsBusy;
 
