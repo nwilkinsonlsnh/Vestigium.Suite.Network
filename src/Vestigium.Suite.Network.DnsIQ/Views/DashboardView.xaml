@@ -2,7 +2,7 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:uc="clr-namespace:Vestigium.Controls.UnderConstruction;assembly=Vestigium.Controls.UnderConstruction">
-  <uc:VestigiumUnderConstruction Title="{Binding Title}"
-                                 Subject="{Binding Subject}"
-                                 Description="{Binding Description}" />
+  <uc:VestigiumUnderConstruction Title="{Binding Title, Mode=OneWay}"
+                                 Subject="{Binding Subject, Mode=OneWay}"
+                                 Description="{Binding Description, Mode=OneWay}" />
 </UserControl>
