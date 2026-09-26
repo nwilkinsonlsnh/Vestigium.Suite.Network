@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Controls;
 using Vestigium.Controls.Shell;
 
 namespace Vestigium.Suite.Network.DnsIQ;
@@ -22,6 +23,15 @@ public partial class DnsIqWindow : Window
     {
         ViewModel.RootShell = RootShell;
         ThemeChrome.Bind(this);
+    }
+
+    private void MainNav_Checked(object sender, RoutedEventArgs e)
+    {
+        if (sender is not RadioButton { DataContext: VestigiumNavItem item })
+            return;
+        if (!item.IsEnabled)
+            return;
+        RootShell.SelectedItem = item;
     }
 
     private void Exit_Click(object sender, RoutedEventArgs e) => Close();

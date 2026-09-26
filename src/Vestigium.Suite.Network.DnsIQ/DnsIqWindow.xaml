@@ -40,8 +40,7 @@
                        IsChecked="{Binding IsSelected, Mode=TwoWay}"
                        IsEnabled="{Binding IsEnabled}"
                        GroupName="DnsIqMainNav"
-                       Command="{Binding SelectItemCommand, Source={x:Reference RootShell}}"
-                       CommandParameter="{Binding}"
+                       Checked="MainNav_Checked"
                        Margin="0,0,8,0" />
         </DataTemplate>
       </ItemsControl.ItemTemplate>

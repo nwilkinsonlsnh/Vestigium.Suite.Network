@@ -69,7 +69,6 @@ public sealed partial class DashboardViewModel : ObservableObject
 
     public void ShowLookup(IReadOnlyList<AnswerRow> rows)
     {
-        Unlock();
         try
         {
             var slices = rows
