@@ -126,7 +126,7 @@ public sealed partial class MainViewModel : ObservableObject
         {
             if (!lookup)
             {
-                ShowProgress(1, visible: false);
+                ShowProgress(0, visible: false);
                 StatusBar?.Engine.SetIdlePolicy(3000, "Idle. . .");
             }
             _cts.Dispose();
@@ -192,39 +192,59 @@ public sealed partial class MainViewModel : ObservableObject
         var timeout = 0;
         var refused = 0;
         string? server = query.Options.Server;
+        var window = TimeSpan.FromSeconds(plan.Seconds);
 
         for (var i = 1; i <= plan.Requests; i++)
         {
             token.ThrowIfCancellationRequested();
-            var wait = plan.DueAt(i) - clock.Elapsed;
-            if (wait > TimeSpan.Zero)
-                await Task.Delay(wait, token).ConfigureAwait(true);
+            var due = plan.DueAt(i);
+            await WaitUntilAsync(clock, due, window, token).ConfigureAwait(true);
 
             var typed = cycle[(i - 1) % cycle.Count];
             var result = await NetworkHelper.LookupAsync(typed.Name, typed.Options, token).ConfigureAwait(true);
             server ??= result.Server;
             Classify(result, ref answered, ref timeout, ref refused, samples);
             var lastMs = (int)Math.Round(result.Elapsed.TotalMilliseconds);
-            var sent = i / (double)plan.Requests;
-            var elapsed = Math.Min(1, clock.Elapsed.TotalSeconds / plan.Seconds);
-            ShowProgress(Math.Max(sent, elapsed), visible: true);
+            ShowProgress(PercentOfWindow(clock.Elapsed, window), visible: true);
             Status = $"pulse {i}/{plan.Requests} · {FormatServer(server)} · {lastMs} ms";
         }
 
-        ShowProgress(1, visible: true);
+        ShowProgress(100, visible: true);
         var med = Median(samples);
         var rate = plan.Seconds == 0 ? 0 : plan.Requests / (double)plan.Seconds;
         Status =
             $"{plan.Requests}/{plan.Requests} · {FormatServer(server)} · med {med} ms · {rate:0.0}/s · {timeout} timeout · {answered} answered · {refused} refused";
     }
 
-    private void ShowProgress(double fraction, bool visible)
+    private async Task WaitUntilAsync(Stopwatch clock, TimeSpan due, TimeSpan window, CancellationToken token)
+    {
+        while (clock.Elapsed < due)
+        {
+            token.ThrowIfCancellationRequested();
+            ShowProgress(PercentOfWindow(clock.Elapsed, window), visible: true);
+            var remaining = due - clock.Elapsed;
+            var slice = remaining > TimeSpan.FromMilliseconds(100)
+                ? TimeSpan.FromMilliseconds(100)
+                : remaining;
+            if (slice > TimeSpan.Zero)
+                await Task.Delay(slice, token).ConfigureAwait(true);
+        }
+    }
+
+    private static double PercentOfWindow(TimeSpan elapsed, TimeSpan window)
+    {
+        if (window <= TimeSpan.Zero)
+            return 100;
+        return Math.Clamp(100.0 * elapsed.TotalSeconds / window.TotalSeconds, 0, 100);
+    }
+
+    private void ShowProgress(double percent, bool visible)
     {
         if (StatusBar is null)
             return;
         StatusBar.Engine.PostImmediate("progress", new StatusBarUpdate
         {
-            Progress = Math.Clamp(fraction, 0, 1),
+            Progress = Math.Clamp(percent, 0, 100),
             IsProgressVisible = visible,
             IsIndeterminate = false
         });
