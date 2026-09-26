@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Windows;
+using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Vestigium.Controls.StatusBar;
@@ -115,9 +117,9 @@ public sealed partial class MainViewModel : ObservableObject
                 return;
             }
 
-            var prelude = await EchoOnceAsync(query!, token).ConfigureAwait(true);
+            var prelude = await EchoOnceAsync(query!, token).ConfigureAwait(false);
             var preludeOk = prelude.Status == NetworkJobStatus.Success;
-            ApplyShot(prelude, sequence: 1, replace: true);
+            await OnUiAsync(() => ApplyShot(prelude, sequence: 1, replace: true)).ConfigureAwait(false);
             if (!PulsePrelude.MayStartPulse(preludeOk))
                 return;
 
@@ -125,14 +127,17 @@ public sealed partial class MainViewModel : ObservableObject
         }
         catch (OperationCanceledException)
         {
-            Status = "Cancelled";
+            await OnUiAsync(() => Status = "Cancelled").ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            Replies.Clear();
-            Summary = string.Empty;
-            Status = "Failed";
-            Summary = ex.Message;
+            var message = ex.Message;
+            await OnUiAsync(() =>
+            {
+                Replies.Clear();
+                Status = "Failed";
+                Summary = message;
+            }).ConfigureAwait(false);
         }
         finally
         {
@@ -157,18 +162,29 @@ public sealed partial class MainViewModel : ObservableObject
         {
             token.ThrowIfCancellationRequested();
             await WaitUntilAsync(clock, TimeSpan.FromTicks(delay.Ticks * (i - 1)), token).ConfigureAwait(false);
-            var shot = await EchoOnceAsync(query, token).ConfigureAwait(true);
-            ApplyShot(shot, sequence: i, replace: false);
+            var shot = await EchoOnceAsync(query, token).ConfigureAwait(false);
             samples.AddRange(SeriesRtts(shot));
-            Status = $"Ping {i} / {n}";
-            PostBar(i, n, clock.Elapsed);
+            var sent = i;
+            var nLocal = n;
+            var elapsed = clock.Elapsed;
+            await OnUiAsync(() =>
+            {
+                ApplyShot(shot, sequence: sent, replace: false);
+                Status = $"Ping {sent} / {nLocal}";
+                PostBar(sent, nLocal, elapsed);
+            }).ConfigureAwait(false);
         }
 
-        WriteSummary();
-        Dashboard?.ShowEcho(samples);
-        Dashboard?.Unlock();
-        Status = $"Ping {n} / {n}";
-        StatusBar?.Engine.SetIdlePolicy(3000, "Idle. . .");
+        var pingSamples = samples;
+        var pingTotal = n;
+        await OnUiAsync(() =>
+        {
+            WriteSummary();
+            Dashboard?.ShowEcho(pingSamples);
+            Dashboard?.Unlock();
+            Status = $"Ping {pingTotal} / {pingTotal}";
+            StatusBar?.Engine.SetIdlePolicy(3000, "Idle. . .");
+        }).ConfigureAwait(false);
     }
 
     private async Task ProbeLoopAsync(PingIqQuery query, CancellationToken token)
@@ -187,16 +203,27 @@ public sealed partial class MainViewModel : ObservableObject
         {
             token.ThrowIfCancellationRequested();
             await WaitUntilAsync(clock, plan.DueAt(i), token).ConfigureAwait(false);
-            last = await EchoOnceAsync(query, token).ConfigureAwait(true);
+            last = await EchoOnceAsync(query, token).ConfigureAwait(false);
             samples.AddRange(SeriesRtts(last));
-            Status = $"Probe {i} / {plan.Requests}";
-            PostBar(i, plan.Requests, clock.Elapsed);
+            var sent = i;
+            var total = plan.Requests;
+            var elapsed = clock.Elapsed;
+            var shot = last;
+            await OnUiAsync(() =>
+            {
+                ApplyShot(shot, sequence: Replies.Count + 1, replace: false);
+                Status = $"Probe {sent} / {total}";
+                PostBar(sent, total, elapsed);
+            }).ConfigureAwait(false);
         }
 
-        if (last is not null)
-            ApplyShot(last, sequence: plan.Requests, replace: true);
-        Dashboard?.ShowProbe(samples);
-        Status = $"Probe {plan.Requests} / {plan.Requests}";
+        var probeSamples = samples;
+        var probeTotal = plan.Requests;
+        await OnUiAsync(() =>
+        {
+            Dashboard?.ShowProbe(probeSamples);
+            Status = $"Probe {probeTotal} / {probeTotal}";
+        }).ConfigureAwait(false);
         StatusBar?.Engine.SetIdlePolicy(3000, "Idle. . .");
     }
 
@@ -298,6 +325,18 @@ public sealed partial class MainViewModel : ObservableObject
         var minutes = total / 60;
         var seconds = total % 60;
         return $"{minutes:00}:{seconds:00}";
+    }
+
+    private static Task OnUiAsync(Action action)
+    {
+        var dispatcher = Application.Current?.Dispatcher;
+        if (dispatcher is null || dispatcher.CheckAccess())
+        {
+            action();
+            return Task.CompletedTask;
+        }
+
+        return dispatcher.InvokeAsync(action, DispatcherPriority.Normal).Task;
     }
 
     public void BeginLoad() => _loading = true;

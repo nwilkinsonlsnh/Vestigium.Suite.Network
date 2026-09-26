@@ -113,9 +113,11 @@ public sealed partial class SettingsViewModel : ObservableObject
         {
             if (!string.IsNullOrWhiteSpace(data.ThemeId))
                 SelectedThemeId = data.ThemeId;
-            DefaultTimeoutMs = data.TimeoutMs is >= PingIqInput.MinDelayMs and <= PingIqInput.MaxDelayMs
-                ? data.TimeoutMs
-                : PingIqInput.DefaultDelayMs;
+            DefaultTimeoutMs = data.TimeoutMs == 4000
+                ? PingIqInput.DefaultDelayMs
+                : data.TimeoutMs is >= PingIqInput.MinDelayMs and <= PingIqInput.MaxDelayMs
+                    ? data.TimeoutMs
+                    : PingIqInput.DefaultDelayMs;
             DefaultRequests = data.Requests;
             DefaultSeconds = data.Seconds;
             BarPosition = string.Equals(data.StatusBarDock, "Top", StringComparison.OrdinalIgnoreCase)

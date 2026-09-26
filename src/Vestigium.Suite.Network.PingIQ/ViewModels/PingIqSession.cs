@@ -89,9 +89,7 @@ public sealed class PingIqSession
         _main.Count = Current.Count is >= PingIqInput.MinCount and <= PingIqInput.MaxCount
             ? Current.Count
             : PingIqInput.DefaultCount;
-        _main.TimeoutMs = Current.TimeoutMs is >= PingIqInput.MinDelayMs and <= PingIqInput.MaxDelayMs
-            ? Current.TimeoutMs
-            : PingIqInput.DefaultDelayMs;
+        _main.TimeoutMs = ResolveDelay(Current.TimeoutMs);
         _main.SelectedInterfaceIndex = _main.Interfaces.Any(i => i.Index == Current.InterfaceIndex)
             ? Current.InterfaceIndex
             : 0;
