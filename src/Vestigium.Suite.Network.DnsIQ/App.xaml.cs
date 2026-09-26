@@ -24,6 +24,30 @@ public partial class App : Application
 
     public static DnsIqSession? Session { get; private set; }
 
+    public static VestigiumShell? Shell { get; set; }
+
+    public static void SetDashboardEnabled(bool enabled)
+    {
+        void Apply()
+        {
+            var item = Shell?["Dashboard"];
+            if (item is not null)
+                item.IsEnabled = enabled;
+            CommandManager.InvalidateRequerySuggested();
+        }
+
+        if (Current is null)
+        {
+            Apply();
+            return;
+        }
+
+        if (Current.Dispatcher.CheckAccess())
+            Apply();
+        else
+            Current.Dispatcher.Invoke(Apply);
+    }
+
     protected override void OnStartup(StartupEventArgs e)
     {
         HostLog.Initialize(HostIds.DnsIQ, cfg =>
@@ -52,6 +76,7 @@ public partial class App : Application
     {
         var chrome = Services.GetRequiredService<VestigiumDefaultWindowViewModel>();
         var window = new DnsIqWindow(chrome);
+        Shell = window.HostShell;
 
         window.HostShell.ApplySpec(new VestigiumShellSpec
         {
@@ -98,27 +123,23 @@ public partial class App : Application
 
         dash.GoToDnsIq = () =>
         {
-            if (dnsItem is not null)
-                window.HostShell.SelectedItem = dnsItem;
+            var item = window.HostShell["DnsIQ"];
+            if (item is not null)
+                window.HostShell.SelectedItem = item;
         };
-        dash.DashboardAvailabilityChanged = available =>
-        {
-            void Apply()
-            {
-                if (dashItem is not null)
-                    dashItem.IsEnabled = available;
-                CommandManager.InvalidateRequerySuggested();
-            }
-
-            if (Current.Dispatcher.CheckAccess())
-                Apply();
-            else
-                Current.Dispatcher.Invoke(Apply);
-        };
+        dash.DashboardAvailabilityChanged = SetDashboardEnabled;
 
         var settingsItem = window.HostShell["Settings"];
         if (settingsItem is not null)
             settingsItem.Content = new SettingsView { DataContext = Settings };
+
+        window.Loaded += (_, _) =>
+        {
+            Shell = window.HostShell;
+            var liveDash = window.HostShell["Dashboard"];
+            if (liveDash is not null && liveDash.Content is null)
+                liveDash.Content = new DashboardView { DataContext = dash };
+        };
 
         chrome.Status.Message = "Idle";
         chrome.PropertyChanged += (_, args) =>
