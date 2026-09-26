@@ -401,7 +401,7 @@ public sealed partial class MainViewModel : ObservableObject
     }
 
     private static string FormatElapsed(TimeSpan elapsed)
-        => elapsed.TotalHours >= 1 ? elapsed.ToString(@"h\:mm\:ss") : elapsed.ToString(@"mm\:ss");
+        => elapsed.TotalHours >= 1 ? elapsed.ToString(@"h\\:mm\\:ss") : elapsed.ToString(@"mm\\:ss");
 
     private void ShowProgress(double percent, bool visible)
     {
@@ -475,15 +475,15 @@ public sealed partial class MainViewModel : ObservableObject
     }
 
     private static string FormatServer(string? server)
-        => string.IsNullOrWhiteSpace(server) ? "—" : server.Trim();
+        => string.IsNullOrWhiteSpace(server) ? "\u2014" : server.Trim();
 
-    private static int Median(List<double> samples)
+    private static int Median(IReadOnlyList<double> samples)
     {
         if (samples.Count == 0)
             return 0;
-        samples.Sort();
-        var mid = samples.Count / 2;
-        var value = samples.Count % 2 == 1 ? samples[mid] : (samples[mid - 1] + samples[mid]) / 2d;
+        var ordered = samples.OrderBy(v => v).ToArray();
+        var mid = ordered.Length / 2;
+        var value = ordered.Length % 2 == 1 ? ordered[mid] : (ordered[mid - 1] + ordered[mid]) / 2d;
         return (int)Math.Round(value);
     }
 }
