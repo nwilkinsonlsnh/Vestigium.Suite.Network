@@ -35,7 +35,7 @@ public readonly record struct PulsePlan(int Requests, int Seconds, TimeSpan Spac
         if (Requests <= 1 || requestIndex <= 1)
             return TimeSpan.Zero;
         if (requestIndex >= Requests)
-            return TimeSpan.FromSeconds(Seconds);
+            return new TimeSpan(TimeSpan.TicksPerSecond * Seconds);
         return TimeSpan.FromSeconds(Seconds * (requestIndex - 1) / (double)(Requests - 1));
     }
 }

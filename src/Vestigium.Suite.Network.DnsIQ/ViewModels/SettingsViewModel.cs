@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using Vestigium.Controls.Shell;
 using Vestigium.Controls.StatusBar;
+using Vestigium.Helpers.Network;
 using Vestigium.Themes;
 
 namespace Vestigium.Suite.Network.DnsIQ.ViewModels;
@@ -16,14 +17,27 @@ public sealed partial class SettingsViewModel : ObservableObject
 
     private readonly ThemeManager _themes;
     private readonly VestigiumDefaultWindowViewModel _chrome;
+    private readonly IReadOnlyList<NetworkAdapter> _adapters;
     private bool _loading;
 
     public SettingsViewModel(ThemeManager themes, VestigiumDefaultWindowViewModel chrome)
     {
         _themes = themes;
         _chrome = chrome;
+        try
+        {
+            _adapters = NetworkHelper.GetAdapters();
+        }
+        catch (Exception)
+        {
+            _adapters = [];
+        }
+
+        Sources = SourceChoices.From(_adapters);
+        _selectedSource = null;
         _selectedThemeId = themes.Current?.Id ?? themes.AvailableThemes.FirstOrDefault()?.Id;
         _barPosition = chrome.Status.Position;
+        _barVisible = chrome.ShowStatusBar;
         themes.ThemeChanged += (_, _) =>
         {
             var id = themes.Current?.Id;
@@ -38,6 +52,8 @@ public sealed partial class SettingsViewModel : ObservableObject
     public DnsIqSession? Session { get; set; }
 
     public IReadOnlyList<ThemeDefinition> Themes => _themes.AvailableThemes;
+
+    public IReadOnlyList<SourceChoice> Sources { get; private set; }
 
     public IReadOnlyList<VestigiumStatusBarPosition> BarPositions { get; } =
     [
@@ -69,6 +85,9 @@ public sealed partial class SettingsViewModel : ObservableObject
     private VestigiumStatusBarPosition _barPosition;
 
     [ObservableProperty]
+    private bool _barVisible;
+
+    [ObservableProperty]
     private decimal _defaultRequests = RequestDefault;
 
     [ObservableProperty]
@@ -76,6 +95,9 @@ public sealed partial class SettingsViewModel : ObservableObject
 
     [ObservableProperty]
     private decimal _defaultPort = DnsIqInput.DefaultPort;
+
+    [ObservableProperty]
+    private string? _selectedSource;
 
     public void LoadFrom(DnsIqSettings data)
     {
@@ -92,11 +114,20 @@ public sealed partial class SettingsViewModel : ObservableObject
             BarPosition = string.Equals(data.StatusBarDock, "Top", StringComparison.OrdinalIgnoreCase)
                 ? VestigiumStatusBarPosition.Top
                 : VestigiumStatusBarPosition.Bottom;
+            BarVisible = data.StatusBarVisible;
+            SelectedSource = SourceChoices.Resolve(Sources, data.Source).Address;
         }
         finally
         {
             _loading = false;
         }
+    }
+
+    public void NarrowSources(int interfaceIndex)
+    {
+        Sources = SourceChoices.From(_adapters, interfaceIndex);
+        OnPropertyChanged(nameof(Sources));
+        SelectedSource = SourceChoices.Resolve(Sources, SelectedSource).Address;
     }
 
     partial void OnSelectedThemeIdChanged(string? value)
@@ -118,11 +149,19 @@ public sealed partial class SettingsViewModel : ObservableObject
         Persist();
     }
 
+    partial void OnBarVisibleChanged(bool value)
+    {
+        _chrome.ShowStatusBar = value;
+        Persist();
+    }
+
     partial void OnDefaultRequestsChanged(decimal value) => Persist();
 
     partial void OnDefaultSecondsChanged(decimal value) => Persist();
 
     partial void OnDefaultPortChanged(decimal value) => Persist();
+
+    partial void OnSelectedSourceChanged(string? value) => Persist();
 
     private void Persist()
     {

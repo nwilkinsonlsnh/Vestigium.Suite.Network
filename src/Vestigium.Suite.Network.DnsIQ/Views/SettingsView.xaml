@@ -33,7 +33,11 @@
                 SelectedValue="{Binding SelectedThemeId, Mode=TwoWay}"
                 Margin="0,0,0,16" />
 
-      <Label Style="{StaticResource Label.Standard}" Content="Status bar" />
+      <CheckBox Content="Status bar visible"
+                IsChecked="{Binding BarVisible}"
+                Margin="0,0,0,16" />
+
+      <Label Style="{StaticResource Label.Standard}" Content="Status bar dock" />
       <ComboBox Style="{StaticResource ComboBox.Standard}"
                 ItemsSource="{Binding BarPositions}"
                 SelectedItem="{Binding BarPosition}" />
@@ -44,9 +48,9 @@
                 Width="480"
                 Visibility="{Binding ProbePageOpen, Converter={StaticResource BoolToVis}}">
       <TextBlock Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap" Margin="0,0,0,16"
-                 Text="N lookups spaced across X seconds. Type All cycles A, AAAA, CNAME, MX, NS, PTR, TXT, SOA. The question is resolver stability, not the record set." />
+                 Text="Requests spaced across Seconds. Type All cycles A, AAAA, CNAME, MX, NS, PTR, TXT, SOA. The question is resolver stability, not the record set." />
 
-      <Label Style="{StaticResource Label.Standard}" Content="Requests (N)" />
+      <Label Style="{StaticResource Label.Standard}" Content="Requests" />
       <nud:VestigiumNumericUpDown Value="{Binding DefaultRequests, Mode=TwoWay}"
                                   SignMode="Unsigned"
                                   Minimum="1" Maximum="10000" Increment="10" PageIncrement="100" DecimalPlaces="0"
@@ -55,15 +59,33 @@
                                   BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
                                   Margin="0,0,0,16" />
 
-      <Label Style="{StaticResource Label.Standard}" Content="Seconds (X)" />
+      <Label Style="{StaticResource Label.Standard}" Content="Seconds" />
       <nud:VestigiumNumericUpDown Value="{Binding DefaultSeconds, Mode=TwoWay}"
                                   SignMode="Unsigned"
                                   Minimum="1" Maximum="600" Increment="1" PageIncrement="30" DecimalPlaces="0"
                                   Background="{DynamicResource Vestigium.Brushes.Surface.Card}"
                                   Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}"
-                                  BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" />
-      <TextBlock Style="{StaticResource TextBlock.Caption}" Margin="0,8,0,0"
-                 Text="Examples: 1000 over 60 s, or 1000 over 180 s." />
+                                  BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
+                                  Margin="0,0,0,16" />
+
+      <Label Style="{StaticResource Label.Standard}" Content="Port" />
+      <nud:VestigiumNumericUpDown Value="{Binding DefaultPort, Mode=TwoWay}"
+                                  SignMode="Unsigned"
+                                  Minimum="1" Maximum="65535" Increment="1" PageIncrement="10" DecimalPlaces="0"
+                                  Background="{DynamicResource Vestigium.Brushes.Surface.Card}"
+                                  Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}"
+                                  BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
+                                  Margin="0,0,0,16" />
+
+      <Label Style="{StaticResource Label.Standard}" Content="Source" />
+      <ComboBox Style="{StaticResource ComboBox.Standard}"
+                IsEditable="False"
+                ItemsSource="{Binding Sources}"
+                DisplayMemberPath="Label"
+                SelectedValuePath="Address"
+                SelectedValue="{Binding SelectedSource, Mode=TwoWay}" />
+      <TextBlock Style="{StaticResource TextBlock.Caption}" Margin="0,8,0,0" TextWrapping="Wrap"
+                 Text="Local bind address from this PC. Any lets Windows pick. This is not spoofing." />
     </StackPanel>
   </DockPanel>
 </UserControl>

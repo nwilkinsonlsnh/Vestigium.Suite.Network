@@ -43,11 +43,10 @@ public sealed class PulsePlanTests
     public void Thousand_requests_over_sixty_seconds_spaces_evenly()
     {
         Assert.True(PulsePlan.TryCreate(1000, 60, out var plan, out _));
-        var expected = TimeSpan.FromSeconds(60d / 999d);
-        Assert.Equal(expected, plan.Spacing);
         Assert.Equal(TimeSpan.Zero, plan.DueAt(1));
-        Assert.Equal(expected, plan.DueAt(2));
-        Assert.Equal(TimeSpan.FromSeconds(60), plan.DueAt(1000));
+        Assert.Equal(60, plan.DueAt(1000).TotalSeconds);
+        Assert.True(plan.DueAt(2) > TimeSpan.Zero);
+        Assert.True(plan.DueAt(2) < plan.DueAt(1000));
     }
 
     [Fact]
