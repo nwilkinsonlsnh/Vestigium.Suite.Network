@@ -67,7 +67,14 @@ public partial class App : Application
             }
         });
 
-        var dns = new MainViewModel { StatusBar = chrome.Status };
+        Settings = new SettingsViewModel(Themes, chrome);
+
+        var dns = new MainViewModel
+        {
+            StatusBar = chrome.Status,
+            BurstCount = Settings.DefaultBursts,
+            DurationSeconds = Settings.DefaultSeconds
+        };
         var dnsItem = window.HostShell["DnsIQ"];
         if (dnsItem is not null)
         {
@@ -79,7 +86,6 @@ public partial class App : Application
         if (dash is not null)
             dash.Content = new DashboardView { DataContext = new DashboardViewModel() };
 
-        Settings = new SettingsViewModel(Themes, chrome);
         var settingsItem = window.HostShell["Settings"];
         if (settingsItem is not null)
             settingsItem.Content = new SettingsView { DataContext = Settings };

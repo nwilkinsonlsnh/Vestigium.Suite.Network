@@ -30,6 +30,12 @@ public sealed partial class MainViewModel : ObservableObject
     private string _recordType = "All";
 
     [ObservableProperty]
+    private decimal _burstCount = SettingsViewModel.PulseDefault;
+
+    [ObservableProperty]
+    private decimal _durationSeconds = SettingsViewModel.PulseDefault;
+
+    [ObservableProperty]
     private string _status = "Idle";
 
     [ObservableProperty]
@@ -86,7 +92,8 @@ public sealed partial class MainViewModel : ObservableObject
         var token = _cts.Token;
         IsBusy = true;
         Status = "Running";
-        Answers.Clear();
+        if (lookup)
+            Answers.Clear();
 
         try
         {
@@ -101,7 +108,8 @@ public sealed partial class MainViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            Answers.Clear();
+            if (lookup)
+                Answers.Clear();
             Status = string.IsNullOrWhiteSpace(ex.Message) ? "Failed" : $"Failed: {ex.Message}";
         }
         finally
@@ -119,25 +127,34 @@ public sealed partial class MainViewModel : ObservableObject
         {
             var result = await NetworkHelper.LookupAsync(query.Name, query.Options, token).ConfigureAwait(true);
             AppendAnswers(result.Answers);
-            Status = result.Rcode.ToString();
+            SortAnswers();
+            Status = FormatLookupStatus(result.Rcode, result.Server ?? query.Options.Server, result.Elapsed, types: 1);
             return;
         }
 
         DnsRcode? last = null;
         var anyOk = false;
+        var elapsed = TimeSpan.Zero;
+        string? server = query.Options.Server;
+        var types = 0;
         foreach (var typed in TypedQueries(query))
         {
             token.ThrowIfCancellationRequested();
             var result = await NetworkHelper.LookupAsync(typed.Name, typed.Options, token).ConfigureAwait(true);
             last = result.Rcode;
+            elapsed += result.Elapsed;
+            server ??= result.Server;
+            types++;
             if (result.Rcode == DnsRcode.NoError)
                 anyOk = true;
             AppendAnswers(result.Answers);
         }
 
-        Status = anyOk || Answers.Count > 0
-            ? DnsRcode.NoError.ToString()
-            : (last ?? DnsRcode.Failed).ToString();
+        SortAnswers();
+        var rcode = anyOk || Answers.Count > 0
+            ? DnsRcode.NoError
+            : (last ?? DnsRcode.Failed);
+        Status = FormatLookupStatus(rcode, server, elapsed, types);
     }
 
     private async Task ProbeAnswersAsync(DnsIqQuery query, CancellationToken token)
@@ -145,7 +162,6 @@ public sealed partial class MainViewModel : ObservableObject
         if (!query.AllTypes)
         {
             var one = await RunProbeAsync(query, token).ConfigureAwait(true);
-            AppendAnswers(one.Lookup.Answers);
             Status = one.Status.ToString();
             return;
         }
@@ -162,7 +178,6 @@ public sealed partial class MainViewModel : ObservableObject
             answered |= probe.Status == DnsProbeStatus.Answered;
             timedOut |= probe.Status == DnsProbeStatus.TimedOut;
             refused |= probe.Status == DnsProbeStatus.Refused;
-            AppendAnswers(probe.Lookup.Answers);
         }
 
         Status = answered
@@ -208,5 +223,25 @@ public sealed partial class MainViewModel : ObservableObject
                 answer.Data,
                 answer.Ttl));
         }
+    }
+
+    private void SortAnswers()
+    {
+        var ordered = Answers
+            .OrderBy(a => a.Type, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(a => a.Name, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(a => a.Data, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+        Answers.Clear();
+        foreach (var row in ordered)
+            Answers.Add(row);
+    }
+
+    private static string FormatLookupStatus(DnsRcode rcode, string? server, TimeSpan elapsed, int types)
+    {
+        var ms = Math.Max(0, (int)Math.Round(elapsed.TotalMilliseconds));
+        var host = string.IsNullOrWhiteSpace(server) ? "—" : server.Trim();
+        var line = $"{rcode} · {host} · {ms} ms";
+        return types > 1 ? $"{line} · {types} types" : line;
     }
 }
