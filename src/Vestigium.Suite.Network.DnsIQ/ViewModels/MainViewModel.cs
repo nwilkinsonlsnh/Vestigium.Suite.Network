@@ -124,6 +124,8 @@ public sealed partial class MainViewModel : ObservableObject
         }
         finally
         {
+            if (!lookup)
+                ShowProgress(1, visible: false);
             _cts.Dispose();
             _cts = null;
             IsBusy = false;
@@ -178,6 +180,9 @@ public sealed partial class MainViewModel : ObservableObject
         if (cycle.Count == 0)
             cycle.Add(query);
 
+        StatusBar?.Engine.SetIdlePolicy(0);
+        ShowProgress(0, visible: true);
+
         var clock = Stopwatch.StartNew();
         var samples = new List<double>();
         var answered = 0;
@@ -197,13 +202,30 @@ public sealed partial class MainViewModel : ObservableObject
             server ??= result.Server;
             Classify(result, ref answered, ref timeout, ref refused, samples);
             var lastMs = (int)Math.Round(result.Elapsed.TotalMilliseconds);
+            var sent = i / (double)plan.Requests;
+            var elapsed = Math.Min(1, clock.Elapsed.TotalSeconds / plan.Seconds);
+            ShowProgress(Math.Max(sent, elapsed), visible: true);
             Status = $"pulse {i}/{plan.Requests} · {FormatServer(server)} · {lastMs} ms";
         }
 
+        ShowProgress(1, visible: true);
         var med = Median(samples);
         var rate = plan.Seconds == 0 ? 0 : plan.Requests / (double)plan.Seconds;
         Status =
             $"{plan.Requests}/{plan.Requests} · {FormatServer(server)} · med {med} ms · {rate:0.0}/s · {timeout} timeout · {answered} answered · {refused} refused";
+        StatusBar?.Engine.SetIdlePolicy(3000, "Idle. . .");
+    }
+
+    private void ShowProgress(double fraction, bool visible)
+    {
+        if (StatusBar is null)
+            return;
+        StatusBar.Engine.PostImmediate("progress", new StatusBarUpdate
+        {
+            Progress = Math.Clamp(fraction, 0, 1),
+            IsProgressVisible = visible,
+            IsIndeterminate = false
+        });
     }
 
     private static void Classify(
