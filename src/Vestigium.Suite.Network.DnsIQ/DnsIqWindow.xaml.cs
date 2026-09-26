@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using Vestigium.Controls.Shell;
 
 namespace Vestigium.Suite.Network.DnsIQ;
@@ -7,6 +8,7 @@ namespace Vestigium.Suite.Network.DnsIQ;
 public partial class DnsIqWindow : Window
 {
     private bool _themeMenuHooked;
+
     public DnsIqWindow(VestigiumDefaultWindowViewModel viewModel)
     {
         ViewModel = viewModel;
@@ -48,17 +50,19 @@ public partial class DnsIqWindow : Window
             {
                 Header = theme.DisplayName,
                 Tag = theme.Id,
-                IsCheckable = true,
-                IsChecked = string.Equals(theme.Id, settings.SelectedThemeId, StringComparison.Ordinal),
+                IsCheckable = false,
                 Style = TryFindResource("MenuItem.Standard") as Style
             };
             item.Click += ThemeItem_Click;
             ThemeMenu.Items.Add(item);
         }
 
+        MarkCurrentTheme();
+
         if (!_themeMenuHooked)
         {
             App.Themes.ThemeChanged += (_, _) => Dispatcher.Invoke(MarkCurrentTheme);
+            ThemeMenu.SubmenuOpened += (_, _) => MarkCurrentTheme();
             _themeMenuHooked = true;
         }
     }
@@ -76,9 +80,31 @@ public partial class DnsIqWindow : Window
         var current = App.Settings?.SelectedThemeId ?? App.Themes.Current?.Id;
         foreach (var raw in ThemeMenu.Items)
         {
-            if (raw is MenuItem item)
-                item.IsChecked = string.Equals(item.Tag as string, current, StringComparison.Ordinal);
+            if (raw is not MenuItem item)
+                continue;
+            var on = string.Equals(item.Tag as string, current, StringComparison.Ordinal);
+            item.Icon = on ? CheckGlyph() : null;
         }
+    }
+
+    private static TextBlock CheckGlyph()
+    {
+        return new TextBlock
+        {
+            Text = "✓",
+            FontSize = 13,
+            FontWeight = FontWeights.SemiBold,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
+            Foreground = TryCheckBrush()
+        };
+    }
+
+    private static Brush TryCheckBrush()
+    {
+        if (Application.Current?.TryFindResource("Vestigium.Brushes.Accent.Primary") is Brush accent)
+            return accent;
+        return Brushes.White;
     }
 
     private void MainNav_Checked(object sender, RoutedEventArgs e)

@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:shell="clr-namespace:Vestigium.Controls.Shell;assembly=Vestigium.Controls"
         Title="DnsIQ"
+        Icon="pack://application:,,,/Assets/DnsIQ.ico"
         Height="720" Width="1100"
         MinHeight="480" MinWidth="720"
         WindowStartupLocation="Manual"

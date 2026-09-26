@@ -9,6 +9,7 @@
       <Setter Property="Background" Value="{DynamicResource Vestigium.Brushes.Surface.Card}" />
       <Setter Property="Foreground" Value="{DynamicResource Vestigium.Brushes.Text.Primary}" />
       <Setter Property="BorderBrush" Value="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" />
+      <Setter Property="TextAlignment" Value="Center" />
     </Style>
     <Style TargetType="{x:Type uc:VestigiumUnderConstruction}"
            BasedOn="{StaticResource {x:Type uc:VestigiumUnderConstruction}}">

@@ -4,10 +4,12 @@
     <RootNamespace>Vestigium.Suite.Network.DnsIQ</RootNamespace>
     <AssemblyName>Vestigium.Suite.Network.DnsIQ</AssemblyName>
     <ApplicationTitle>DnsIQ</ApplicationTitle>
+    <ApplicationIcon>Assets\DnsIQ.ico</ApplicationIcon>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Vestigium.Suite.Network.Shell\Vestigium.Suite.Network.Shell.csproj" />
+    <Resource Include="Assets\DnsIQ.ico" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.12" />
