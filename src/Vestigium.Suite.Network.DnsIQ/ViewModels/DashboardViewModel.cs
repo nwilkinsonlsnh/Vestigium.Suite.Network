@@ -62,8 +62,14 @@ public sealed partial class DashboardViewModel : ObservableObject
     [RelayCommand]
     private void OpenDnsIq() => GoToDnsIq?.Invoke();
 
+    public void Unlock()
+    {
+        DashboardAvailabilityChanged?.Invoke(true);
+    }
+
     public void ShowLookup(IReadOnlyList<AnswerRow> rows)
     {
+        Unlock();
         try
         {
             var slices = rows
@@ -76,7 +82,6 @@ public sealed partial class DashboardViewModel : ObservableObject
             {
                 HasLookupData = false;
                 LookupChart = null;
-                RaiseAvailability();
                 return;
             }
 
@@ -86,14 +91,13 @@ public sealed partial class DashboardViewModel : ObservableObject
         catch (Exception)
         {
             LookupChart = null;
-            HasLookupData = false;
+            HasLookupData = rows.Count > 0;
         }
-
-        RaiseAvailability();
     }
 
     public void ShowProbe(IReadOnlyList<double> rtts)
     {
+        Unlock();
         ProbeCurve = null;
         ProbeShape = null;
         ProbeControl = null;
@@ -102,7 +106,6 @@ public sealed partial class DashboardViewModel : ObservableObject
         if (rtts.Count == 0)
         {
             HasProbeData = false;
-            RaiseAvailability();
             return;
         }
 
@@ -135,16 +138,9 @@ public sealed partial class DashboardViewModel : ObservableObject
         }
         catch (Exception)
         {
-            HasProbeData = false;
+            HasProbeData = true;
         }
 
         OnPropertyChanged(nameof(ShowProbeControl));
-        RaiseAvailability();
-    }
-
-    private void RaiseAvailability()
-    {
-        OnPropertyChanged(nameof(HasAnyChart));
-        DashboardAvailabilityChanged?.Invoke(HasAnyChart);
     }
 }
