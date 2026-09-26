@@ -85,9 +85,9 @@ public sealed partial class DashboardViewModel : ObservableObject
                 return;
             }
 
-            LookupChart = ChartTheme.Paint(ChartView.Pie(
-                slices,
-                ChartTheme.Options("Lookup type mix", "Record type", "Answers")));
+            LookupChart = ChartTheme.Paint(
+                ChartView.Pie(slices, ChartTheme.Options(ChartSlot.Lookup, "Lookup type mix", "Record type", "Answers")),
+                ChartSlot.Lookup);
             HasLookupData = true;
         }
         catch (Exception)
@@ -114,25 +114,27 @@ public sealed partial class DashboardViewModel : ObservableObject
         try
         {
             var series = NumericSeries.From(rtts, "dns-rtt-ms");
-            var line = ChartTheme.Options("Probe RTT (ms)", "Request", "RTT (ms)");
-            var hist = ChartTheme.Options("RTT distribution", "RTT (ms)", "Count") with
+            var line = ChartTheme.Options(ChartSlot.ProbeRtt, "Probe RTT (ms)", "Request", "RTT (ms)");
+            var hist = ChartTheme.Options(ChartSlot.ProbeDist, "RTT distribution", "RTT (ms)", "Count") with
             {
                 ShowBellCurve = true,
                 ShowKde = true
             };
-            ProbeCurve = ChartTheme.Paint(ChartView.Line(series, line));
-            ProbeShape = ChartTheme.Paint(ChartView.Histogram(series, hist));
+            ProbeCurve = ChartTheme.Paint(ChartView.Line(series, line), ChartSlot.ProbeRtt);
+            ProbeShape = ChartTheme.Paint(ChartView.Histogram(series, hist), ChartSlot.ProbeDist);
 
             try
             {
                 var limits = series.ControlLimits(ControlLimitMethod.MovingRange);
                 if (limits.Upper > limits.Center && limits.Center > limits.Lower)
                 {
-                    ProbeControl = ChartTheme.Paint(ChartView.Control(
-                        series,
-                        limits,
-                        series.RunRules(ControlLimitMethod.MovingRange),
-                        ChartTheme.Options("Probe control", "Request", "RTT (ms)")));
+                    ProbeControl = ChartTheme.Paint(
+                        ChartView.Control(
+                            series,
+                            limits,
+                            series.RunRules(ControlLimitMethod.MovingRange),
+                            ChartTheme.Options(ChartSlot.ProbeControl, "Probe control", "Request", "RTT (ms)")),
+                        ChartSlot.ProbeControl);
                 }
             }
             catch (Exception)
