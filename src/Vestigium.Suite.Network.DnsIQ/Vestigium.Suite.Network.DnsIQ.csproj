@@ -2,7 +2,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <RootNamespace>Vestigium.Suite.Network.DnsIQ</RootNamespace>
-    <AssemblyName>Vestigium.Suite.Network.DnsIQ</AssemblyName>
+    <AssemblyName>DnsIQ</AssemblyName>
     <ApplicationTitle>DnsIQ</ApplicationTitle>
     <ApplicationIcon>Assets\DnsIQ.ico</ApplicationIcon>
     <IsPackable>false</IsPackable>
