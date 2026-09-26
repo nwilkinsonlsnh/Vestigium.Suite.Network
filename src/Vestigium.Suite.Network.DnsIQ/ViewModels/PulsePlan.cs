@@ -1,21 +1,26 @@
 namespace Vestigium.Suite.Network.DnsIQ.ViewModels;
 
-public readonly record struct PulsePlan(int Bursts, int Seconds, TimeSpan Spacing)
+public readonly record struct PulsePlan(int Requests, int Seconds, TimeSpan Spacing)
 {
-    public static bool TryCreate(decimal bursts, decimal seconds, out PulsePlan plan, out string? reject)
+    public const int MinRequests = 1;
+    public const int MaxRequests = 10_000;
+    public const int MinSeconds = 1;
+    public const int MaxSeconds = 600;
+
+    public static bool TryCreate(decimal requests, decimal seconds, out PulsePlan plan, out string? reject)
     {
         plan = default;
-        var n = (int)decimal.Truncate(bursts);
+        var n = (int)decimal.Truncate(requests);
         var x = (int)decimal.Truncate(seconds);
-        if (n is < 1 or > 60)
+        if (n is < MinRequests or > MaxRequests)
         {
-            reject = "Bursts must be 1–60.";
+            reject = $"Requests must be {MinRequests}–{MaxRequests}.";
             return false;
         }
 
-        if (x is < 1 or > 60)
+        if (x is < MinSeconds or > MaxSeconds)
         {
-            reject = "Seconds must be 1–60.";
+            reject = $"Seconds must be {MinSeconds}–{MaxSeconds}.";
             return false;
         }
 
@@ -25,10 +30,10 @@ public readonly record struct PulsePlan(int Bursts, int Seconds, TimeSpan Spacin
         return true;
     }
 
-    public TimeSpan DueAt(int burstIndex)
+    public TimeSpan DueAt(int requestIndex)
     {
-        if (Bursts <= 1 || burstIndex <= 1)
+        if (Requests <= 1 || requestIndex <= 1)
             return TimeSpan.Zero;
-        return TimeSpan.FromTicks(Spacing.Ticks * (burstIndex - 1));
+        return TimeSpan.FromTicks(Spacing.Ticks * (requestIndex - 1));
     }
 }
