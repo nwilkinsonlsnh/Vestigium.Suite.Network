@@ -122,11 +122,13 @@ public sealed partial class DashboardViewModel : ObservableObject
                 var limits = series.ControlLimits(ControlLimitMethod.MovingRange);
                 if (limits.Upper > limits.Center && limits.Center > limits.Lower)
                 {
-                    ProbeControl = ChartTheme.Paint(ChartView.Control(
-                        series,
-                        limits,
-                        series.RunRules(ControlLimitMethod.MovingRange),
-                        ChartTheme.Options("Probe control")));
+                    ProbeControl = ChartTheme.Paint(
+                        ChartView.Control(
+                            series,
+                            limits,
+                            series.RunRules(ControlLimitMethod.MovingRange),
+                            ChartTheme.Options("Probe control", showLegend: false)),
+                        showLegend: false);
                 }
             }
             catch (Exception)
