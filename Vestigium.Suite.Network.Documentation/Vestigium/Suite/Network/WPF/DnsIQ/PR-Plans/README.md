@@ -35,8 +35,9 @@ PR-Plans/
 | Paper | Wins on |
 |---|---|
 | [Requirements_v1.0.md](../Requirements_v1.0.md) | First-and-ten lock (PR01). |
-| Requirements 1.1 (this slice) | Tabs, pulse, chrome. |
-| [Design_v1.0.md](../Design_v1.0.md) | Class map until 1.1 lands. |
+| [Requirements_v1.1.md](../Requirements_v1.1.md) | Tabs, pulse N/X, chrome. Window paper for PR02. |
+| [Design_v1.0.md](../Design_v1.0.md) | First-and-ten map. |
+| [Design_v1.1.md](../Design_v1.1.md) | Class and window map for PR02. |
 | Helpers.Network Requirements v1.6 | Protocol facts |
 | Vestigium.Controls / Themes / Converters | Chrome |
 | [PR02 -- Implementation Plan.md](PR02/PR02%20--%20Implementation%20Plan.md) | The slice we are building now |
