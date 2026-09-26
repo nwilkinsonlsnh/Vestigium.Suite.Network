@@ -75,37 +75,25 @@ public sealed partial class MainViewModel : ObservableObject
 
     public bool ShowNameHint => string.IsNullOrWhiteSpace(Name);
 
-    public void BeginLoad()
-    {
-        _loading = true;
-    }
+    public void BeginLoad() => _loading = true;
 
-    public void EndLoad()
-    {
-        _loading = false;
-    }
+    public void EndLoad() => _loading = false;
 
     partial void OnServerChanged(string value) => Persist();
-
     partial void OnRecordTypeChanged(string value) => Persist();
-
     partial void OnPortChanged(decimal value) => Persist();
-
     partial void OnSelectedInterfaceIndexChanged(int value)
     {
         Bind.InterfaceIndex = value;
         Persist();
     }
-
     partial void OnRequestCountChanged(decimal value) => Persist();
-
     partial void OnDurationSecondsChanged(decimal value) => Persist();
 
     private void Persist()
     {
-        if (_loading)
-            return;
-        Session?.Save();
+        if (!_loading)
+            Session?.Save();
     }
 
     partial void OnStatusChanged(string value)
@@ -116,7 +104,6 @@ public sealed partial class MainViewModel : ObservableObject
     }
 
     private bool CanStartJob() => !IsBusy;
-
     private bool CanCancelJob() => IsBusy;
 
     [RelayCommand(CanExecute = nameof(CanStartJob))]
@@ -128,26 +115,15 @@ public sealed partial class MainViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanCancelJob))]
     private void Cancel()
     {
-        try
-        {
-            _cts?.Cancel();
-        }
-        catch (ObjectDisposedException)
-        {
-        }
+        try { _cts?.Cancel(); }
+        catch (ObjectDisposedException) { }
     }
 
     private async Task RunJobAsync(bool lookup)
     {
         if (!DnsIqInput.TryCreate(
-                Name,
-                Server,
-                RecordType,
-                Bind.InterfaceIndex,
-                Bind.SourceAddress,
-                (int)Port,
-                out var query,
-                out var reject))
+                Name, Server, RecordType, Bind.InterfaceIndex, Bind.SourceAddress, (int)Port,
+                out var query, out var reject))
         {
             Status = reject ?? "Failed";
             return;
@@ -163,15 +139,16 @@ public sealed partial class MainViewModel : ObservableObject
         var token = _cts.Token;
         IsBusy = true;
         Status = "Running";
-        if (lookup)
-            Answers.Clear();
+        Answers.Clear();
 
         try
         {
+            var preludeOk = await LookupAnswersAsync(query!, token).ConfigureAwait(true);
             if (lookup)
-                await LookupAnswersAsync(query!, token).ConfigureAwait(true);
-            else
-                await ProbeAnswersAsync(query!, token).ConfigureAwait(true);
+                return;
+            if (!PulsePrelude.MayStartPulse(preludeOk))
+                return;
+            await ProbeAnswersAsync(query!, token).ConfigureAwait(true);
         }
         catch (OperationCanceledException)
         {
@@ -197,15 +174,22 @@ public sealed partial class MainViewModel : ObservableObject
         }
     }
 
-    private async Task LookupAnswersAsync(DnsIqQuery query, CancellationToken token)
+    private async Task<bool> LookupAnswersAsync(DnsIqQuery query, CancellationToken token)
     {
         if (!query.AllTypes)
         {
             var result = await NetworkHelper.LookupAsync(query.Name, query.Options, token).ConfigureAwait(true);
+            if (result.Rcode is DnsRcode.Timeout or DnsRcode.Failed)
+            {
+                Answers.Clear();
+                Status = FormatLookupStatus(result.Rcode, result.Server ?? query.Options.Server, result.Elapsed, types: 1);
+                return false;
+            }
+
             AppendAnswers(result.Answers);
             SortAnswers();
             Status = FormatLookupStatus(result.Rcode, result.Server ?? query.Options.Server, result.Elapsed, types: 1);
-            return;
+            return true;
         }
 
         DnsRcode? last = null;
@@ -221,16 +205,18 @@ public sealed partial class MainViewModel : ObservableObject
             elapsed += result.Elapsed;
             server ??= result.Server;
             types++;
-            if (result.Rcode == DnsRcode.NoError)
+            if (result.Rcode is not DnsRcode.Timeout and not DnsRcode.Failed)
                 anyOk = true;
             AppendAnswers(result.Answers);
         }
 
         SortAnswers();
-        var rcode = anyOk || Answers.Count > 0
-            ? DnsRcode.NoError
-            : (last ?? DnsRcode.Failed);
+        var ok = anyOk || Answers.Count > 0;
+        if (!ok)
+            Answers.Clear();
+        var rcode = ok ? DnsRcode.NoError : (last ?? DnsRcode.Failed);
         Status = FormatLookupStatus(rcode, server, elapsed, types);
+        return ok;
     }
 
     private async Task ProbeAnswersAsync(DnsIqQuery query, CancellationToken token)
@@ -261,8 +247,7 @@ public sealed partial class MainViewModel : ObservableObject
         for (var i = 1; i <= plan.Requests; i++)
         {
             token.ThrowIfCancellationRequested();
-            var due = plan.DueAt(i);
-            await WaitUntilAsync(clock, due, window, sent, plan.Requests, token).ConfigureAwait(true);
+            await WaitUntilAsync(clock, plan.DueAt(i), window, sent, plan.Requests, token).ConfigureAwait(true);
 
             var typed = cycle[(i - 1) % cycle.Count];
             var result = await NetworkHelper.LookupAsync(typed.Name, typed.Options, token).ConfigureAwait(true);
@@ -282,21 +267,14 @@ public sealed partial class MainViewModel : ObservableObject
     }
 
     private async Task WaitUntilAsync(
-        Stopwatch clock,
-        TimeSpan due,
-        TimeSpan window,
-        int sent,
-        int total,
-        CancellationToken token)
+        Stopwatch clock, TimeSpan due, TimeSpan window, int sent, int total, CancellationToken token)
     {
         while (clock.Elapsed < due)
         {
             token.ThrowIfCancellationRequested();
             PostPulseBar(sent, total, clock.Elapsed, window);
             var remaining = due - clock.Elapsed;
-            var slice = remaining > TimeSpan.FromMilliseconds(100)
-                ? TimeSpan.FromMilliseconds(100)
-                : remaining;
+            var slice = remaining > TimeSpan.FromMilliseconds(100) ? TimeSpan.FromMilliseconds(100) : remaining;
             if (slice > TimeSpan.Zero)
                 await Task.Delay(slice, token).ConfigureAwait(true);
         }
@@ -306,7 +284,6 @@ public sealed partial class MainViewModel : ObservableObject
     {
         if (StatusBar is null)
             return;
-
         StatusBar.Engine.PostImmediate("message", new StatusBarUpdate { Text = $"{sent}/{total}" });
         StatusBar.Engine.PostImmediate("progress", new StatusBarUpdate
         {
@@ -325,11 +302,7 @@ public sealed partial class MainViewModel : ObservableObject
     }
 
     private static string FormatElapsed(TimeSpan elapsed)
-    {
-        if (elapsed.TotalHours >= 1)
-            return elapsed.ToString(@"h\:mm\:ss");
-        return elapsed.ToString(@"mm\:ss");
-    }
+        => elapsed.TotalHours >= 1 ? elapsed.ToString(@"h\:mm\:ss") : elapsed.ToString(@"mm\:ss");
 
     private void ShowProgress(double percent, bool visible)
     {
@@ -344,24 +317,18 @@ public sealed partial class MainViewModel : ObservableObject
     }
 
     private static void Classify(
-        DnsLookupResult result,
-        ref int answered,
-        ref int timeout,
-        ref int refused,
-        List<double> samples)
+        DnsLookupResult result, ref int answered, ref int timeout, ref int refused, List<double> samples)
     {
         if (result.Rcode is DnsRcode.Timeout or DnsRcode.Failed)
         {
             timeout++;
             return;
         }
-
         if (result.Rcode == DnsRcode.Refused)
         {
             refused++;
             return;
         }
-
         answered++;
         samples.Add(result.Elapsed.TotalMilliseconds);
     }
@@ -371,14 +338,9 @@ public sealed partial class MainViewModel : ObservableObject
         foreach (var typeName in DnsIqInput.RecordTypes)
         {
             if (DnsIqInput.TryCreate(
-                    query.Name,
-                    query.Options.Server,
-                    typeName,
-                    query.Options.InterfaceIndex,
-                    query.Options.SourceAddress,
-                    query.Options.Port,
-                    out var typed,
-                    out _) && typed is not null)
+                    query.Name, query.Options.Server, typeName,
+                    query.Options.InterfaceIndex, query.Options.SourceAddress, query.Options.Port,
+                    out var typed, out _) && typed is not null)
             {
                 yield return typed;
             }
@@ -390,10 +352,7 @@ public sealed partial class MainViewModel : ObservableObject
         foreach (var answer in records)
         {
             Answers.Add(new AnswerRow(
-                DnsIqInput.DisplayType(answer.Type),
-                answer.Name,
-                answer.Data,
-                answer.Ttl));
+                DnsIqInput.DisplayType(answer.Type), answer.Name, answer.Data, answer.Ttl));
         }
     }
 
@@ -425,9 +384,7 @@ public sealed partial class MainViewModel : ObservableObject
             return 0;
         samples.Sort();
         var mid = samples.Count / 2;
-        var value = samples.Count % 2 == 1
-            ? samples[mid]
-            : (samples[mid - 1] + samples[mid]) / 2d;
+        var value = samples.Count % 2 == 1 ? samples[mid] : (samples[mid - 1] + samples[mid]) / 2d;
         return (int)Math.Round(value);
     }
 }
