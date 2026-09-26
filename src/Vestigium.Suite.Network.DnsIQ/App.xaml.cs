@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Input;
 using Microsoft.Extensions.DependencyInjection;
 using Vestigium.Controls.DependencyInjection;
 using Vestigium.Controls.Shell;
@@ -102,8 +103,17 @@ public partial class App : Application
         };
         dash.DashboardAvailabilityChanged = available =>
         {
-            if (dashItem is not null)
-                dashItem.IsEnabled = available;
+            void Apply()
+            {
+                if (dashItem is not null)
+                    dashItem.IsEnabled = available;
+                CommandManager.InvalidateRequerySuggested();
+            }
+
+            if (Current.Dispatcher.CheckAccess())
+                Apply();
+            else
+                Current.Dispatcher.Invoke(Apply);
         };
 
         var settingsItem = window.HostShell["Settings"];
