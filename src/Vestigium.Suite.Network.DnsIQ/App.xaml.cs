@@ -23,12 +23,7 @@ public partial class App : Application
     {
         HostLog.Initialize(HostIds.DnsIQ);
 
-        Themes.Register(ThemeDefinition.FromPack(
-            "LightBlue", "Light Blue", "Vestigium.Themes.LightBlue", isDark: false,
-            "Default Vestigium diagnostic chrome."));
-        Themes.Register(ThemeDefinition.FromPack(
-            "DarkMode", "Dark Mode", "Vestigium.Themes.DarkMode", isDark: true,
-            "Low-glare dark surfaces."));
+        ThemeCatalog.RegisterAll(Themes);
         Themes.Initialize(this, "LightBlue");
 
         var services = new ServiceCollection();
@@ -69,7 +64,7 @@ public partial class App : Application
         var dns = new MainViewModel
         {
             StatusBar = chrome.Status,
-            BurstCount = Settings.DefaultBursts,
+            RequestCount = Settings.DefaultRequests,
             DurationSeconds = Settings.DefaultSeconds
         };
         var dnsItem = window.HostShell["DnsIQ"];
