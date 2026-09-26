@@ -63,20 +63,27 @@ public sealed partial class SettingsViewModel : ObservableObject
     ];
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(ThemePageOpen))]
+    [NotifyPropertyChangedFor(nameof(DnsIqPageOpen))]
     [NotifyPropertyChangedFor(nameof(ProbePageOpen))]
-    private string _settingsPage = "Theme";
+    [NotifyPropertyChangedFor(nameof(ThemePageOpen))]
+    private string _settingsPage = "DnsIQ";
 
-    public bool ThemePageOpen
+    public bool DnsIqPageOpen
     {
-        get => SettingsPage == "Theme";
-        set { if (value) SettingsPage = "Theme"; }
+        get => SettingsPage == "DnsIQ";
+        set { if (value) SettingsPage = "DnsIQ"; }
     }
 
     public bool ProbePageOpen
     {
         get => SettingsPage == "Probe";
         set { if (value) SettingsPage = "Probe"; }
+    }
+
+    public bool ThemePageOpen
+    {
+        get => SettingsPage == "Theme";
+        set { if (value) SettingsPage = "Theme"; }
     }
 
     [ObservableProperty]

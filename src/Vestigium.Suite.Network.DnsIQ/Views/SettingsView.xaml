@@ -11,36 +11,44 @@
 
     <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,0,12">
       <RadioButton Style="{StaticResource RadioButton.HorizontalTab}"
-                   Content="Theme"
-                   IsChecked="{Binding ThemePageOpen}"
+                   Content="DnsIQ"
+                   IsChecked="{Binding DnsIqPageOpen}"
                    GroupName="SettingsPage"
                    Margin="0,0,8,0" />
       <RadioButton Style="{StaticResource RadioButton.HorizontalTab}"
                    Content="Probe"
                    IsChecked="{Binding ProbePageOpen}"
+                   GroupName="SettingsPage"
+                   Margin="0,0,8,0" />
+      <RadioButton Style="{StaticResource RadioButton.HorizontalTab}"
+                   Content="Theme"
+                   IsChecked="{Binding ThemePageOpen}"
                    GroupName="SettingsPage" />
     </StackPanel>
 
     <StackPanel HorizontalAlignment="Left"
                 VerticalAlignment="Top"
-                Width="420"
-                Visibility="{Binding ThemePageOpen, Converter={StaticResource BoolToVis}}">
-      <Label Style="{StaticResource Label.Standard}" Content="Palette" />
-      <ComboBox Style="{StaticResource ComboBox.Standard}"
-                ItemsSource="{Binding Themes}"
-                DisplayMemberPath="DisplayName"
-                SelectedValuePath="Id"
-                SelectedValue="{Binding SelectedThemeId, Mode=TwoWay}"
-                Margin="0,0,0,16" />
+                Width="480"
+                Visibility="{Binding DnsIqPageOpen, Converter={StaticResource BoolToVis}}">
+      <TextBlock Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap" Margin="0,0,0,16"
+                 Text="Port and Source apply to every Lookup and Probe. Source is the local address this PC sends from. Any lets Windows pick. This is not spoofing." />
 
-      <CheckBox Content="Status bar visible"
-                IsChecked="{Binding BarVisible}"
-                Margin="0,0,0,16" />
+      <Label Style="{StaticResource Label.Standard}" Content="Port" />
+      <nud:VestigiumNumericUpDown Value="{Binding DefaultPort, Mode=TwoWay}"
+                                  SignMode="Unsigned"
+                                  Minimum="1" Maximum="65535" Increment="1" PageIncrement="10" DecimalPlaces="0"
+                                  Background="{DynamicResource Vestigium.Brushes.Surface.Card}"
+                                  Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}"
+                                  BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
+                                  Margin="0,0,0,16" />
 
-      <Label Style="{StaticResource Label.Standard}" Content="Status bar dock" />
+      <Label Style="{StaticResource Label.Standard}" Content="Source" />
       <ComboBox Style="{StaticResource ComboBox.Standard}"
-                ItemsSource="{Binding BarPositions}"
-                SelectedItem="{Binding BarPosition}" />
+                IsEditable="False"
+                ItemsSource="{Binding Sources}"
+                DisplayMemberPath="Label"
+                SelectedValuePath="Address"
+                SelectedValue="{Binding SelectedSource, Mode=TwoWay}" />
     </StackPanel>
 
     <StackPanel HorizontalAlignment="Left"
@@ -65,27 +73,29 @@
                                   Minimum="1" Maximum="600" Increment="1" PageIncrement="30" DecimalPlaces="0"
                                   Background="{DynamicResource Vestigium.Brushes.Surface.Card}"
                                   Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}"
-                                  BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
-                                  Margin="0,0,0,16" />
+                                  BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" />
+    </StackPanel>
 
-      <Label Style="{StaticResource Label.Standard}" Content="Port" />
-      <nud:VestigiumNumericUpDown Value="{Binding DefaultPort, Mode=TwoWay}"
-                                  SignMode="Unsigned"
-                                  Minimum="1" Maximum="65535" Increment="1" PageIncrement="10" DecimalPlaces="0"
-                                  Background="{DynamicResource Vestigium.Brushes.Surface.Card}"
-                                  Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}"
-                                  BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
-                                  Margin="0,0,0,16" />
-
-      <Label Style="{StaticResource Label.Standard}" Content="Source" />
+    <StackPanel HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                Width="420"
+                Visibility="{Binding ThemePageOpen, Converter={StaticResource BoolToVis}}">
+      <Label Style="{StaticResource Label.Standard}" Content="Palette" />
       <ComboBox Style="{StaticResource ComboBox.Standard}"
-                IsEditable="False"
-                ItemsSource="{Binding Sources}"
-                DisplayMemberPath="Label"
-                SelectedValuePath="Address"
-                SelectedValue="{Binding SelectedSource, Mode=TwoWay}" />
-      <TextBlock Style="{StaticResource TextBlock.Caption}" Margin="0,8,0,0" TextWrapping="Wrap"
-                 Text="Local bind address from this PC. Any lets Windows pick. This is not spoofing." />
+                ItemsSource="{Binding Themes}"
+                DisplayMemberPath="DisplayName"
+                SelectedValuePath="Id"
+                SelectedValue="{Binding SelectedThemeId, Mode=TwoWay}"
+                Margin="0,0,0,16" />
+
+      <CheckBox Content="Status bar visible"
+                IsChecked="{Binding BarVisible}"
+                Margin="0,0,0,16" />
+
+      <Label Style="{StaticResource Label.Standard}" Content="Status bar dock" />
+      <ComboBox Style="{StaticResource ComboBox.Standard}"
+                ItemsSource="{Binding BarPositions}"
+                SelectedItem="{Binding BarPosition}" />
     </StackPanel>
   </DockPanel>
 </UserControl>
