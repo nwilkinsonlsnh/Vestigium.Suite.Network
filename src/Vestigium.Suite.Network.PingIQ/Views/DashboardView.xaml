@@ -1,0 +1,9 @@
+<UserControl x:Class="Vestigium.Suite.Network.PingIQ.Views.DashboardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:uc="clr-namespace:Vestigium.Controls.UnderConstruction;assembly=Vestigium.Controls.UnderConstruction"
+             Background="{DynamicResource Vestigium.Brushes.Surface.Window}">
+  <uc:VestigiumUnderConstruction Title="Dashboard"
+                                 Subject="Echo pulse charts"
+                                 Description="Not in this slice. Run Echo on the PingIQ page. Charts land in PR01-05." />
+</UserControl>
