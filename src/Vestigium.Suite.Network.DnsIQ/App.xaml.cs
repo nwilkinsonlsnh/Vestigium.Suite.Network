@@ -60,12 +60,7 @@ public partial class App : Application
                     Subject = "Lookup and pulse",
                     Description = "One name. Lookup writes records. Probe is the resolver pulse."
                 },
-                new VestigiumNavItemSpec("Dashboard")
-                {
-                    Title = "Dashboard",
-                    Subject = "Resolver pulse charts",
-                    Description = "Not in this release. Pulse numbers stay on the DnsIQ page and the status bar."
-                },
+                new VestigiumNavItemSpec("Dashboard"),
                 new VestigiumNavItemSpec("Settings")
                 {
                     Title = "Settings",
@@ -82,6 +77,10 @@ public partial class App : Application
             dnsItem.Content = new DnsIqView { DataContext = dns };
             window.HostShell.SelectedItem = dnsItem;
         }
+
+        var dash = window.HostShell["Dashboard"];
+        if (dash is not null)
+            dash.Content = new DashboardView { DataContext = new DashboardViewModel() };
 
         chrome.Status.Message = "Idle";
         return window;
