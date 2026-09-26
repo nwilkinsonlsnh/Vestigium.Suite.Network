@@ -43,6 +43,23 @@ public sealed partial class SettingsViewModel : ObservableObject
     ];
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ThemePageOpen))]
+    [NotifyPropertyChangedFor(nameof(ProbePageOpen))]
+    private string _settingsPage = "Theme";
+
+    public bool ThemePageOpen
+    {
+        get => SettingsPage == "Theme";
+        set { if (value) SettingsPage = "Theme"; }
+    }
+
+    public bool ProbePageOpen
+    {
+        get => SettingsPage == "Probe";
+        set { if (value) SettingsPage = "Probe"; }
+    }
+
+    [ObservableProperty]
     private string? _selectedThemeId;
 
     [ObservableProperty]
