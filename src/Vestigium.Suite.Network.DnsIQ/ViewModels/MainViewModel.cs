@@ -18,22 +18,25 @@ public sealed partial class MainViewModel : ObservableObject
 
     public IReadOnlyList<string> RecordTypes => DnsIqInput.ComboTypes;
 
+    public IReadOnlyList<ServerOption> ServerOptions { get; } = DnsIqInput.ServerOptions();
+
     public ObservableCollection<AnswerRow> Answers { get; } = [];
 
     [ObservableProperty]
-    private string _name = "localhost";
+    [NotifyPropertyChangedFor(nameof(ShowNameHint))]
+    private string _name = string.Empty;
 
     [ObservableProperty]
-    private string _server = string.Empty;
+    private string _server = DnsIqInput.FirstConfiguredDns() ?? string.Empty;
 
     [ObservableProperty]
     private string _recordType = "All";
 
     [ObservableProperty]
-    private decimal _burstCount = SettingsViewModel.PulseDefault;
+    private decimal _requestCount = SettingsViewModel.RequestDefault;
 
     [ObservableProperty]
-    private decimal _durationSeconds = SettingsViewModel.PulseDefault;
+    private decimal _durationSeconds = SettingsViewModel.SecondsDefault;
 
     [ObservableProperty]
     private string _status = "Idle";
@@ -43,6 +46,8 @@ public sealed partial class MainViewModel : ObservableObject
     [NotifyCanExecuteChangedFor(nameof(ProbeCommand))]
     [NotifyCanExecuteChangedFor(nameof(CancelCommand))]
     private bool _isBusy;
+
+    public bool ShowNameHint => string.IsNullOrWhiteSpace(Name);
 
     partial void OnStatusChanged(string value)
     {
@@ -87,7 +92,7 @@ public sealed partial class MainViewModel : ObservableObject
             return;
         }
 
-        if (!lookup && !PulsePlan.TryCreate(BurstCount, DurationSeconds, out _, out var pulseReject))
+        if (!lookup && !PulsePlan.TryCreate(RequestCount, DurationSeconds, out _, out var pulseReject))
         {
             Status = pulseReject ?? "Failed";
             return;
@@ -163,11 +168,15 @@ public sealed partial class MainViewModel : ObservableObject
 
     private async Task ProbeAnswersAsync(DnsIqQuery query, CancellationToken token)
     {
-        if (!PulsePlan.TryCreate(BurstCount, DurationSeconds, out var plan, out var reject))
+        if (!PulsePlan.TryCreate(RequestCount, DurationSeconds, out var plan, out var reject))
         {
             Status = reject ?? "Failed";
             return;
         }
+
+        var cycle = query.AllTypes ? TypedQueries(query).ToList() : [query];
+        if (cycle.Count == 0)
+            cycle.Add(query);
 
         var clock = Stopwatch.StartNew();
         var samples = new List<double>();
@@ -176,65 +185,48 @@ public sealed partial class MainViewModel : ObservableObject
         var refused = 0;
         string? server = query.Options.Server;
 
-        for (var i = 1; i <= plan.Bursts; i++)
+        for (var i = 1; i <= plan.Requests; i++)
         {
             token.ThrowIfCancellationRequested();
             var wait = plan.DueAt(i) - clock.Elapsed;
             if (wait > TimeSpan.Zero)
                 await Task.Delay(wait, token).ConfigureAwait(true);
 
-            var burst = await RunBurstAsync(query, token).ConfigureAwait(true);
-            server ??= burst.Server;
-            answered += burst.Answered;
-            timeout += burst.Timeout;
-            refused += burst.Refused;
-            samples.AddRange(burst.AnsweredMs);
-            var maxMs = burst.AnsweredMs.Count == 0 ? 0 : (int)Math.Round(burst.AnsweredMs.Max());
-            Status = $"pulse {i}/{plan.Bursts} · {FormatServer(server)} · {maxMs} ms";
+            var typed = cycle[(i - 1) % cycle.Count];
+            var result = await NetworkHelper.LookupAsync(typed.Name, typed.Options, token).ConfigureAwait(true);
+            server ??= result.Server;
+            Classify(result, ref answered, ref timeout, ref refused, samples);
+            var lastMs = (int)Math.Round(result.Elapsed.TotalMilliseconds);
+            Status = $"pulse {i}/{plan.Requests} · {FormatServer(server)} · {lastMs} ms";
         }
 
         var med = Median(samples);
-        var rate = plan.Seconds == 0 ? 0 : plan.Bursts / (double)plan.Seconds;
+        var rate = plan.Seconds == 0 ? 0 : plan.Requests / (double)plan.Seconds;
         Status =
-            $"{plan.Bursts}/{plan.Bursts} · {FormatServer(server)} · med {med} ms · {rate:0.0} burst/s · {timeout} timeout · {answered} answered · {refused} refused";
+            $"{plan.Requests}/{plan.Requests} · {FormatServer(server)} · med {med} ms · {rate:0.0}/s · {timeout} timeout · {answered} answered · {refused} refused";
     }
 
-    private async Task<BurstStats> RunBurstAsync(DnsIqQuery query, CancellationToken token)
+    private static void Classify(
+        DnsLookupResult result,
+        ref int answered,
+        ref int timeout,
+        ref int refused,
+        List<double> samples)
     {
-        IReadOnlyList<DnsIqQuery> questions = query.AllTypes
-            ? TypedQueries(query).ToList()
-            : [query];
-
-        var tasks = questions
-            .Select(q => NetworkHelper.LookupAsync(q.Name, q.Options, token))
-            .ToArray();
-        var results = await Task.WhenAll(tasks).ConfigureAwait(true);
-
-        var answeredMs = new List<double>();
-        var answered = 0;
-        var timeout = 0;
-        var refused = 0;
-        string? server = query.Options.Server;
-        foreach (var result in results)
+        if (result.Rcode is DnsRcode.Timeout or DnsRcode.Failed)
         {
-            server ??= result.Server;
-            if (result.Rcode is DnsRcode.Timeout or DnsRcode.Failed)
-            {
-                timeout++;
-                continue;
-            }
-
-            if (result.Rcode == DnsRcode.Refused)
-            {
-                refused++;
-                continue;
-            }
-
-            answered++;
-            answeredMs.Add(result.Elapsed.TotalMilliseconds);
+            timeout++;
+            return;
         }
 
-        return new BurstStats(server, answered, timeout, refused, answeredMs);
+        if (result.Rcode == DnsRcode.Refused)
+        {
+            refused++;
+            return;
+        }
+
+        answered++;
+        samples.Add(result.Elapsed.TotalMilliseconds);
     }
 
     private static IEnumerable<DnsIqQuery> TypedQueries(DnsIqQuery query)
@@ -300,11 +292,4 @@ public sealed partial class MainViewModel : ObservableObject
             : (samples[mid - 1] + samples[mid]) / 2d;
         return (int)Math.Round(value);
     }
-
-    private sealed record BurstStats(
-        string? Server,
-        int Answered,
-        int Timeout,
-        int Refused,
-        List<double> AnsweredMs);
 }
