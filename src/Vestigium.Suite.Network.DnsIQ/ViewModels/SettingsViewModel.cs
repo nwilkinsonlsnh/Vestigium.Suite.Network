@@ -47,12 +47,7 @@ public sealed partial class SettingsViewModel : ObservableObject
             }
         };
 
-        ChartTheme.LegendChanged = () =>
-        {
-            if (_showChartLegend == ChartTheme.ShowLegend)
-                return;
-            ShowChartLegend = ChartTheme.ShowLegend;
-        };
+        ChartTheme.LegendChanged = () => Persist();
     }
 
     public DnsIqSession? Session { get; set; }
@@ -105,9 +100,6 @@ public sealed partial class SettingsViewModel : ObservableObject
     [ObservableProperty]
     private string? _selectedSource;
 
-    [ObservableProperty]
-    private bool _showChartLegend = true;
-
     public void LoadFrom(DnsIqSettings data)
     {
         _loading = true;
@@ -125,8 +117,7 @@ public sealed partial class SettingsViewModel : ObservableObject
                 : VestigiumStatusBarPosition.Bottom;
             BarVisible = data.StatusBarVisible;
             SelectedSource = SourceChoices.Resolve(Sources, data.Source).Address;
-            ShowChartLegend = data.ShowChartLegend;
-            ChartTheme.ShowLegend = data.ShowChartLegend;
+            ChartTheme.LoadFrom(data);
         }
         finally
         {
@@ -182,12 +173,6 @@ public sealed partial class SettingsViewModel : ObservableObject
     partial void OnDefaultPortChanged(decimal value) => Persist();
 
     partial void OnSelectedSourceChanged(string? value) => Persist();
-
-    partial void OnShowChartLegendChanged(bool value)
-    {
-        ChartTheme.ShowLegend = value;
-        Persist();
-    }
 
     private void Persist()
     {
