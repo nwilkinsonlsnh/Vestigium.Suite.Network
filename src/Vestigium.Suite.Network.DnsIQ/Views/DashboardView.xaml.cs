@@ -5,9 +5,12 @@ namespace Vestigium.Suite.Network.DnsIQ.Views;
 
 public partial class DashboardView : UserControl
 {
+    private readonly PageViewport _viewport;
+
     public DashboardView()
     {
         InitializeComponent();
+        _viewport = new PageViewport(this);
     }
 
     private void Probe_PreviewMouseWheel(object sender, MouseWheelEventArgs e)

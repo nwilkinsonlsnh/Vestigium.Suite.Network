@@ -5,9 +5,12 @@ namespace Vestigium.Suite.Network.DnsIQ.Views;
 
 public partial class DnsIqView : UserControl
 {
+    private readonly PageViewport _viewport;
+
     public DnsIqView()
     {
         InitializeComponent();
+        _viewport = new PageViewport(this);
     }
 
     private void AnswerGrid_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
