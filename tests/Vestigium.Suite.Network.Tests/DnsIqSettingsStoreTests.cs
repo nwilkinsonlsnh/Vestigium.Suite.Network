@@ -1,3 +1,4 @@
+using System.IO;
 using Vestigium.Suite.Network.DnsIQ.ViewModels;
 using Xunit;
 

@@ -12,16 +12,24 @@ public sealed partial class MainViewModel : ObservableObject
 {
     private CancellationTokenSource? _cts;
     private bool _pulseActive;
+    private bool _loading;
 
     public BindFields Bind { get; } = new();
 
     public VestigiumStatusBarViewModel? StatusBar { get; set; }
+
+    public DnsIqSession? Session { get; set; }
 
     public IReadOnlyList<string> RecordTypes => DnsIqInput.ComboTypes;
 
     public IReadOnlyList<ServerOption> ServerOptions { get; } = DnsIqInput.ServerOptions();
 
     public ObservableCollection<AnswerRow> Answers { get; } = [];
+
+    public MainViewModel()
+    {
+        Bind.PropertyChanged += (_, _) => Persist();
+    }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ShowNameHint))]
@@ -32,6 +40,9 @@ public sealed partial class MainViewModel : ObservableObject
 
     [ObservableProperty]
     private string _recordType = "All";
+
+    [ObservableProperty]
+    private decimal _port = DnsIqInput.DefaultPort;
 
     [ObservableProperty]
     private decimal _requestCount = SettingsViewModel.RequestDefault;
@@ -49,6 +60,33 @@ public sealed partial class MainViewModel : ObservableObject
     private bool _isBusy;
 
     public bool ShowNameHint => string.IsNullOrWhiteSpace(Name);
+
+    public void BeginLoad()
+    {
+        _loading = true;
+    }
+
+    public void EndLoad()
+    {
+        _loading = false;
+    }
+
+    partial void OnServerChanged(string value) => Persist();
+
+    partial void OnRecordTypeChanged(string value) => Persist();
+
+    partial void OnPortChanged(decimal value) => Persist();
+
+    partial void OnRequestCountChanged(decimal value) => Persist();
+
+    partial void OnDurationSecondsChanged(decimal value) => Persist();
+
+    private void Persist()
+    {
+        if (_loading)
+            return;
+        Session?.Save();
+    }
 
     partial void OnStatusChanged(string value)
     {
@@ -87,6 +125,7 @@ public sealed partial class MainViewModel : ObservableObject
                 RecordType,
                 Bind.InterfaceIndex,
                 Bind.SourceAddress,
+                (int)Port,
                 out var query,
                 out var reject))
         {
@@ -323,6 +362,7 @@ public sealed partial class MainViewModel : ObservableObject
                     typeName,
                     query.Options.InterfaceIndex,
                     query.Options.SourceAddress,
+                    query.Options.Port,
                     out var typed,
                     out _) && typed is not null)
             {

@@ -149,5 +149,5 @@ public sealed class DnsIqInputTests
         int index = 0,
         string? source = null,
         int port = 53)
-        => DnsIqInput.TryCreate(name, server, type, index, source, out query, out reject, port);
+        => DnsIqInput.TryCreate(name, server, type, index, source, port, out query, out reject);
 }

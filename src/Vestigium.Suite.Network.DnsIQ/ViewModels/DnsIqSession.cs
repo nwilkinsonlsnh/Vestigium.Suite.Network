@@ -31,7 +31,9 @@ public sealed class DnsIqSession
     {
         _main = main;
         _settings = settings;
+        main.BeginLoad();
         ApplyToViews();
+        main.EndLoad();
         _ready = true;
     }
 
@@ -39,6 +41,10 @@ public sealed class DnsIqSession
     {
         if (!_ready || _main is null || _settings is null)
             return;
+
+        _main.RequestCount = _settings.DefaultRequests;
+        _main.DurationSeconds = _settings.DefaultSeconds;
+        _main.Port = _settings.DefaultPort;
 
         Current = new DnsIqSettings
         {
@@ -84,7 +90,6 @@ public sealed class DnsIqSession
             : DnsIqInput.DefaultPort;
         _main.RequestCount = Current.Requests;
         _main.DurationSeconds = Current.Seconds;
-
         _settings.LoadFrom(Current);
     }
 }
