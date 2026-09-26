@@ -11,12 +11,18 @@ public partial class DnsIqWindow : Window
         DataContext = viewModel;
         InitializeComponent();
         viewModel.RootShell = RootShell;
-        Loaded += (_, _) => viewModel.RootShell = RootShell;
+        Loaded += OnLoaded;
     }
 
     public VestigiumDefaultWindowViewModel ViewModel { get; }
 
     public VestigiumShell HostShell => RootShell;
+
+    private void OnLoaded(object sender, RoutedEventArgs e)
+    {
+        ViewModel.RootShell = RootShell;
+        ThemeChrome.Bind(this);
+    }
 
     private void Exit_Click(object sender, RoutedEventArgs e) => Close();
 }

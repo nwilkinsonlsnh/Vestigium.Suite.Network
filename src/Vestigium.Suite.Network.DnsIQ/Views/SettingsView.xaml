@@ -5,9 +5,16 @@
              Background="{DynamicResource Vestigium.Brushes.Surface.Window}">
   <DockPanel Style="{StaticResource DockPanel.Standard}" Margin="12">
     <TextBlock DockPanel.Dock="Top" Style="{StaticResource TextBlock.Heading}" Text="Settings" Margin="0,0,0,12" />
-    <TabControl Style="{StaticResource TabControl.Standard}">
+    <TabControl Style="{StaticResource TabControl.Standard}"
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Left"
+                TabStripPlacement="Top">
       <TabItem Header="Theme" Style="{StaticResource TabItem.Standard}">
-        <StackPanel Style="{StaticResource StackPanel.FormGroup}" Margin="16" MaxWidth="420" HorizontalAlignment="Left">
+        <StackPanel Style="{StaticResource StackPanel.FormGroup}"
+                    Margin="0,16,0,0"
+                    MaxWidth="420"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top">
           <Label Style="{StaticResource Label.Standard}" Content="Palette" />
           <ComboBox Style="{StaticResource ComboBox.Standard}"
                     ItemsSource="{Binding Themes}"
@@ -23,7 +30,11 @@
         </StackPanel>
       </TabItem>
       <TabItem Header="Probe" Style="{StaticResource TabItem.Standard}">
-        <StackPanel Style="{StaticResource StackPanel.FormGroup}" Margin="16" MaxWidth="480" HorizontalAlignment="Left">
+        <StackPanel Style="{StaticResource StackPanel.FormGroup}"
+                    Margin="0,16,0,0"
+                    MaxWidth="480"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top">
           <TextBlock Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap" Margin="0,0,0,16"
                      Text="N lookups spaced across X seconds. Type All cycles A, AAAA, CNAME, MX, NS, PTR, TXT, SOA. The question is resolver stability, not the record set." />
 
