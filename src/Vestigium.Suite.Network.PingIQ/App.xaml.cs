@@ -6,6 +6,8 @@ using Vestigium.Controls.DependencyInjection;
 using Vestigium.Controls.Shell;
 using Vestigium.Converters;
 using Vestigium.Converters.DependencyInjection;
+using Vestigium.Helpers.Analytics;
+using Vestigium.Helpers.Charts;
 using Vestigium.Suite.Network.PingIQ.ViewModels;
 using Vestigium.Suite.Network.PingIQ.Views;
 using Vestigium.Suite.Network.Shell;
@@ -53,7 +55,11 @@ public partial class App : Application
 
     protected override void OnStartup(StartupEventArgs e)
     {
-        HostLog.Initialize(HostIds.PingIQ);
+        HostLog.Initialize(HostIds.PingIQ, cfg =>
+        {
+            AnalyticsCatalog.Register(cfg);
+            ChartsCatalog.Register(cfg);
+        });
 
         ThemeCatalog.RegisterAll(Themes);
         Themes.Initialize(this, "LightBlue");
@@ -97,7 +103,8 @@ public partial class App : Application
         Session = session;
 
         Settings = new SettingsViewModel(Themes, chrome) { Session = session };
-        var ping = new MainViewModel { Session = session };
+        var dash = new DashboardViewModel();
+        var ping = new MainViewModel { Session = session, Dashboard = dash };
         session.Attach(ping, Settings);
 
         var pingItem = window.HostShell["PingIQ"];
@@ -110,9 +117,17 @@ public partial class App : Application
         var dashItem = window.HostShell["Dashboard"];
         if (dashItem is not null)
         {
-            dashItem.Content = new DashboardView();
+            dashItem.Content = new DashboardView { DataContext = dash };
             dashItem.IsEnabled = false;
         }
+
+        dash.GoToPingIq = () =>
+        {
+            var item = window.HostShell["PingIQ"];
+            if (item is not null)
+                window.HostShell.SelectedItem = item;
+        };
+        dash.DashboardAvailabilityChanged = SetDashboardEnabled;
 
         var settingsItem = window.HostShell["Settings"];
         if (settingsItem is not null)

@@ -18,6 +18,8 @@ public sealed partial class MainViewModel : ObservableObject
 
     public PingIqSession? Session { get; set; }
 
+    public DashboardViewModel? Dashboard { get; set; }
+
     public IReadOnlyList<AdapterChoice> Interfaces { get; }
 
     public ObservableCollection<ReplyRow> Replies { get; } = [];
@@ -108,7 +110,10 @@ public sealed partial class MainViewModel : ObservableObject
             var preludeOk = prelude.Status == NetworkJobStatus.Success;
             ApplyResult(prelude);
             if (!probe)
+            {
+                Dashboard?.ShowEcho(SuccessRtts(prelude));
                 return;
+            }
             if (!PulsePrelude.MayStartPulse(preludeOk))
                 return;
 
@@ -145,16 +150,19 @@ public sealed partial class MainViewModel : ObservableObject
 
         var clock = Stopwatch.StartNew();
         var last = default(IcmpEchoResult);
+        var samples = new List<double>();
         for (var i = 1; i <= plan.Requests; i++)
         {
             token.ThrowIfCancellationRequested();
             await WaitUntilAsync(clock, plan.DueAt(i), token).ConfigureAwait(false);
             last = await EchoOnceAsync(query, count: 1, token).ConfigureAwait(true);
+            samples.AddRange(SuccessRtts(last));
             Status = $"Probe {i} / {plan.Requests}";
         }
 
         if (last is not null)
             ApplyResult(last);
+        Dashboard?.ShowProbe(samples);
         Status = $"Probe {plan.Requests} / {plan.Requests}";
     }
 
@@ -182,6 +190,12 @@ public sealed partial class MainViewModel : ObservableObject
                 await Task.Delay(slice, token).ConfigureAwait(false);
         }
     }
+
+    private static List<double> SuccessRtts(IcmpEchoResult result)
+        => result.Replies
+            .Where(r => r.Status == IcmpEchoStatus.Success)
+            .Select(r => (double)r.RoundtripTimeMs)
+            .ToList();
 
     private void ApplyResult(IcmpEchoResult result)
     {

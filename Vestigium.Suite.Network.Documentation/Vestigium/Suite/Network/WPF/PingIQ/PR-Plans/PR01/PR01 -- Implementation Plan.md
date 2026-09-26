@@ -193,4 +193,4 @@ When this plan finishes, move the whole `PR01/` folder to `PR-Plans/Completed/PR
 
 ## Next action
 
-PR01-05. Dashboard charts + Unlock after Probe.
+PR01-06. Host tests for the remaining seams.

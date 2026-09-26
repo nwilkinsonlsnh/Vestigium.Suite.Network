@@ -37,6 +37,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         _selectedThemeId = themes.Current?.Id ?? themes.AvailableThemes.FirstOrDefault()?.Id;
         _barPosition = chrome.Status.Position;
         _barVisible = chrome.ShowStatusBar;
+        ChartTheme.LegendChanged = () => Persist();
         themes.ThemeChanged += (_, _) =>
         {
             var id = themes.Current?.Id;
@@ -122,6 +123,7 @@ public sealed partial class SettingsViewModel : ObservableObject
                 : VestigiumStatusBarPosition.Bottom;
             BarVisible = data.StatusBarVisible;
             SelectedSource = SourceChoices.Resolve(Sources, data.Source).Address;
+            ChartTheme.LoadFrom(data);
         }
         finally
         {

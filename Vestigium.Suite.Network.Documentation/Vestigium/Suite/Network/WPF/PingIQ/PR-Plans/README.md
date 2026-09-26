@@ -3,7 +3,7 @@
 **Host:** `Vestigium.Suite.Network.PingIQ`  
 **APPID:** `PingIQ`  
 **Status:** Live — [PR01 -- Implementation Plan.md](PR01/PR01%20--%20Implementation%20Plan.md)  
-**Next slice:** PR01-05
+**Next slice:** PR01-06
 
 This file is the queue keeper. It is not the plan. Do not delete it when the plan is idle.
 

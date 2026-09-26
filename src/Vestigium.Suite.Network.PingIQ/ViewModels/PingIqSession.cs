@@ -65,6 +65,7 @@ public sealed class PingIqSession
             ShowLegendProbeDist = Current.ShowLegendProbeDist,
             ShowLegendProbeControl = Current.ShowLegendProbeControl
         };
+        ChartTheme.CopyTo(Current);
         _store.Save(Current);
     }
 
