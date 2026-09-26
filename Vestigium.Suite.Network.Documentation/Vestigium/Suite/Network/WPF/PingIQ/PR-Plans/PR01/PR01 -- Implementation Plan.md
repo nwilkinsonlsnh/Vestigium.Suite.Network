@@ -9,7 +9,7 @@
 
 **Goal:** Ship the DnsIQ-shaped PingIQ window: chrome, four-echo grid, persist, Probe N over X, Dashboard charts.
 
-**Not:** A protocol library. Not PathMtu. Not UdpProbe. Not `CreateEchoCampaign`. Not Count = 0. Not a wrap of `NetworkHelper`. Not a project reference to DnsIQ.
+**Not:** A protocol library. Not PathMtu. Not UdpProbe. Not `CreateEchoCampaign`. Not Count = 0. Not a wrap of `NetworkHelper`. Not a project reference to DnsIQ. Not a hop walk and not multipath — that is TraceIQ. Not `Process.Start("ping.exe")`.
 
 ---
 
@@ -60,6 +60,8 @@ Nuget is no longer the fight. Chrome copies DnsIQ Rev 1. Pulse copies DnsIQ `Pul
 | Call `EgressBind.Validate` from the host | Type is internal. Copy bind onto options; library validates. |
 | Reference DnsIQ types from PingIQ | Hosts do not depend on each other. Copy the pattern, new namespace. |
 | Bump package pins | Pins already match DnsIQ Rev 1. |
+| Spawn `ping.exe` and scrape stdout | Second protocol stack. Door is `NetworkHelper.IcmpEcho`. |
+| Hop list / multipath on this window | TraceIQ. PingIQ is echo + RTT. |
 
 ---
 
@@ -185,7 +187,7 @@ When this plan finishes, move the whole `PR01/` folder to `PR-Plans/Completed/PR
 |---|---|
 | Alvin | No façade. No campaign door. No second window. Grid columns match `IcmpEchoReply`. Chrome is a copy, not a remix. |
 | Theodore | Cancel and Failed do not throw out of the UI. CanExecute actually blocks the second click. Tests stay off the wire. |
-| Simon | Probe is a host loop, not a campaign. Source list is `GetAdapters` unicast only. Count 0 stays rejected. |
+| Simon | Probe is a host loop, not a campaign. Source list is `GetAdapters` unicast only. Count 0 stays rejected. No `ping.exe`. No hop list. |
 
 ---
 
