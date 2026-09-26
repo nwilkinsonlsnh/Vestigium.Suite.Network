@@ -1,0 +1,38 @@
+<UserControl x:Class="Vestigium.Suite.Network.DnsIQ.Views.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:nud="clr-namespace:Vestigium.Controls.NumericUpDown;assembly=Vestigium.Controls.NumericUpDown">
+  <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <StackPanel Margin="16" MaxWidth="420" HorizontalAlignment="Left">
+      <TextBlock Text="Settings" FontSize="20" FontWeight="SemiBold" Margin="0,0,0,16" />
+
+      <TextBlock Text="Theme" Margin="0,0,0,4" />
+      <ComboBox ItemsSource="{Binding Themes}"
+                SelectedItem="{Binding SelectedTheme}"
+                DisplayMemberPath="DisplayName"
+                Margin="0,0,0,16" />
+
+      <TextBlock Text="Status bar" Margin="0,0,0,4" />
+      <ComboBox ItemsSource="{Binding BarPositions}"
+                SelectedItem="{Binding BarPosition}"
+                Margin="0,0,0,16" />
+
+      <TextBlock Text="Default bursts (N)" Margin="0,0,0,4" />
+      <nud:VestigiumNumericUpDown Value="{Binding DefaultBursts, Mode=TwoWay}"
+                                  SignMode="Unsigned"
+                                  Minimum="1"
+                                  Maximum="60"
+                                  Increment="1"
+                                  DecimalPlaces="0"
+                                  Margin="0,0,0,16" />
+
+      <TextBlock Text="Default seconds (X)" Margin="0,0,0,4" />
+      <nud:VestigiumNumericUpDown Value="{Binding DefaultSeconds, Mode=TwoWay}"
+                                  SignMode="Unsigned"
+                                  Minimum="1"
+                                  Maximum="60"
+                                  Increment="1"
+                                  DecimalPlaces="0" />
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

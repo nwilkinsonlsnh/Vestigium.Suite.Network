@@ -17,6 +17,8 @@ public partial class App : Application
 
     public static IServiceProvider Services { get; private set; } = null!;
 
+    public static SettingsViewModel? Settings { get; private set; }
+
     protected override void OnStartup(StartupEventArgs e)
     {
         HostLog.Initialize(HostIds.DnsIQ);
@@ -62,11 +64,6 @@ public partial class App : Application
                 },
                 new VestigiumNavItemSpec("Dashboard"),
                 new VestigiumNavItemSpec("Settings")
-                {
-                    Title = "Settings",
-                    Subject = "Theme and defaults",
-                    Description = "Theme, status-bar dock, and default burst count / duration land here."
-                }
             }
         });
 
@@ -81,6 +78,11 @@ public partial class App : Application
         var dash = window.HostShell["Dashboard"];
         if (dash is not null)
             dash.Content = new DashboardView { DataContext = new DashboardViewModel() };
+
+        Settings = new SettingsViewModel(Themes, chrome);
+        var settingsItem = window.HostShell["Settings"];
+        if (settingsItem is not null)
+            settingsItem.Content = new SettingsView { DataContext = Settings };
 
         chrome.Status.Message = "Idle";
         return window;
