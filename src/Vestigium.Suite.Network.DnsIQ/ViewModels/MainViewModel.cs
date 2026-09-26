@@ -261,7 +261,7 @@ public sealed partial class MainViewModel : ObservableObject
             sent = i;
             DrainCompleted(inflight, ref answered, ref timeout, ref refused, samples, ref server);
             PostPulseBar(sent, plan.Requests, clock.Elapsed, window);
-            Status = $"pulse {sent}/{plan.Requests} · in flight {inflight.Count} · {FormatServer(server)}";
+            Status = FormatPulseLive(sent, plan.Requests, inflight.Count, server, clock.Elapsed, draining: false);
         }
 
         PostPulseBar(plan.Requests, plan.Requests, clock.Elapsed, window);
@@ -272,15 +272,23 @@ public sealed partial class MainViewModel : ObservableObject
             var finished = await Task.WhenAny(inflight).ConfigureAwait(true);
             inflight.Remove(finished);
             ApplyResult(await finished.ConfigureAwait(true), ref answered, ref timeout, ref refused, samples, ref server);
-            Status = $"pulse {sent}/{plan.Requests} · drain {inflight.Count} · {FormatServer(server)}";
+            Status = FormatPulseLive(sent, plan.Requests, inflight.Count, server, clock.Elapsed, draining: true);
         }
 
+        var elapsed = clock.Elapsed;
         Dashboard?.Unlock();
         Dashboard?.ShowProbe(samples);
         var med = Median(samples);
         var rate = plan.Seconds == 0 ? 0 : plan.Requests / (double)plan.Seconds;
         Status =
-            $"{plan.Requests}/{plan.Requests} · {FormatServer(server)} · med {med} ms · {rate:0.0}/s · {timeout} timeout · {answered} answered · {refused} refused";
+            $"Pulse: {plan.Requests} / {plan.Requests} · {FormatServer(server)} · Med {med} ms · {rate:0.0}/s · {timeout} Timeout · {answered} Answered · {refused} Refused · Elapsed {FormatElapsed(elapsed)}";
+    }
+
+    private static string FormatPulseLive(
+        int sent, int total, int inflight, string? server, TimeSpan elapsed, bool draining)
+    {
+        var phase = draining ? "Drain" : "In Flight";
+        return $"Pulse: {sent} / {total} · {phase} {inflight} · {FormatServer(server)} · Elapsed {FormatElapsed(elapsed)}";
     }
 
     private static void DrainCompleted(
@@ -331,7 +339,7 @@ public sealed partial class MainViewModel : ObservableObject
     {
         if (StatusBar is null)
             return;
-        StatusBar.Engine.PostImmediate("message", new StatusBarUpdate { Text = $"{sent}/{total}" });
+        StatusBar.Engine.PostImmediate("message", new StatusBarUpdate { Text = $"{sent} / {total}" });
         StatusBar.Engine.PostImmediate("progress", new StatusBarUpdate
         {
             Progress = PercentOfWindow(elapsed, window),
@@ -419,7 +427,7 @@ public sealed partial class MainViewModel : ObservableObject
     {
         var ms = Math.Max(0, (int)Math.Round(elapsed.TotalMilliseconds));
         var line = $"{rcode} · {FormatServer(server)} · {ms} ms";
-        return types > 1 ? $"{line} · {types} types" : line;
+        return types > 1 ? $"{line} · {types} Types" : line;
     }
 
     private static string FormatServer(string? server)
