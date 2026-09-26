@@ -10,6 +10,10 @@ public sealed record ServerOption(string Address, string Label);
 
 public static class DnsIqInput
 {
+    public const int DefaultPort = 53;
+    public const int MinPort = 1;
+    public const int MaxPort = 65535;
+
     public static IReadOnlyList<string> RecordTypes { get; } =
     [
         "A", "AAAA", "CNAME", "MX", "NS", "PTR", "TXT", "SOA"
@@ -51,7 +55,8 @@ public static class DnsIqInput
         int interfaceIndex,
         string? sourceAddress,
         out DnsIqQuery? query,
-        out string? reject)
+        out string? reject,
+        int port = DefaultPort)
     {
         query = null;
         reject = null;
@@ -69,6 +74,12 @@ public static class DnsIqInput
         if (interfaceIndex < 0)
         {
             reject = "Interface index cannot be negative.";
+            return false;
+        }
+
+        if (port is < MinPort or > MaxPort)
+        {
+            reject = "Port must be 1–65535.";
             return false;
         }
 
@@ -93,7 +104,8 @@ public static class DnsIqInput
                 Type = type,
                 Server = trimmedServer ?? FirstConfiguredDns(),
                 InterfaceIndex = interfaceIndex,
-                SourceAddress = trimmedSource
+                SourceAddress = trimmedSource,
+                Port = port
             },
             allTypes);
         return true;

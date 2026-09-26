@@ -31,6 +31,7 @@ public sealed class DnsIqInputTests
         Assert.False(query.AllTypes);
         Assert.Equal(0, query.Options.InterfaceIndex);
         Assert.Null(query.Options.SourceAddress);
+        Assert.Equal(53, query.Options.Port);
     }
 
     [Fact]
@@ -115,6 +116,30 @@ public sealed class DnsIqInputTests
         Assert.Equal("Type is not allowed.", reject);
     }
 
+    [Theory]
+    [InlineData(1)]
+    [InlineData(53)]
+    [InlineData(65535)]
+    public void Port_in_range_accepts(int port)
+    {
+        var ok = Try(out var query, out var reject, port: port);
+        Assert.True(ok);
+        Assert.Null(reject);
+        Assert.Equal(port, query!.Options.Port);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(65536)]
+    [InlineData(-1)]
+    public void Port_outside_range_rejects(int port)
+    {
+        var ok = Try(out var query, out var reject, port: port);
+        Assert.False(ok);
+        Assert.Null(query);
+        Assert.Equal("Port must be 1–65535.", reject);
+    }
+
     private static bool Try(
         out DnsIqQuery? query,
         out string? reject,
@@ -122,6 +147,7 @@ public sealed class DnsIqInputTests
         string? server = "",
         string? type = "A",
         int index = 0,
-        string? source = null)
-        => DnsIqInput.TryCreate(name, server, type, index, source, out query, out reject);
+        string? source = null,
+        int port = 53)
+        => DnsIqInput.TryCreate(name, server, type, index, source, out query, out reject, port);
 }
