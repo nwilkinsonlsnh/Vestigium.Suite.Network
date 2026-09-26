@@ -1,6 +1,7 @@
 <UserControl x:Class="Vestigium.Suite.Network.PingIQ.Views.SettingsView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:nud="clr-namespace:Vestigium.Controls.NumericUpDown;assembly=Vestigium.Controls.NumericUpDown"
              Background="{DynamicResource Vestigium.Brushes.Surface.Window}">
   <UserControl.Resources>
     <BooleanToVisibilityConverter x:Key="BoolToVis" />
@@ -23,17 +24,57 @@
                    GroupName="SettingsPage" />
     </StackPanel>
 
-    <TextBlock Margin="20,0,0,0"
-               Style="{StaticResource TextBlock.Caption}"
-               TextWrapping="Wrap"
-               Text="Timeout seed and Source combo land in PR01-03."
-               Visibility="{Binding PingIqPageOpen, Converter={StaticResource BoolToVis}}" />
+    <StackPanel HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                Width="480"
+                Margin="20,0,0,0"
+                Visibility="{Binding PingIqPageOpen, Converter={StaticResource BoolToVis}}">
+      <TextBlock Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap" Margin="0,0,0,16"
+                 Text="Timeout seeds the PingIQ row. Source is the local address this PC sends from. Any lets Windows pick. This is not spoofing." />
 
-    <TextBlock Margin="20,0,0,0"
-               Style="{StaticResource TextBlock.Caption}"
-               TextWrapping="Wrap"
-               Text="Requests and Seconds land in PR01-03."
-               Visibility="{Binding ProbePageOpen, Converter={StaticResource BoolToVis}}" />
+      <Label Style="{StaticResource Label.Standard}" Content="Timeout (ms)" />
+      <nud:VestigiumNumericUpDown Value="{Binding DefaultTimeoutMs, Mode=TwoWay}"
+                                  SignMode="Unsigned"
+                                  Minimum="10" Maximum="60000" Increment="100" PageIncrement="1000" DecimalPlaces="0"
+                                  Background="{DynamicResource Vestigium.Brushes.Surface.Card}"
+                                  Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}"
+                                  BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
+                                  Margin="0,0,0,16" />
+
+      <Label Style="{StaticResource Label.Standard}" Content="Source" />
+      <ComboBox Style="{StaticResource ComboBox.Standard}"
+                IsEditable="False"
+                ItemsSource="{Binding Sources}"
+                DisplayMemberPath="Label"
+                SelectedValuePath="Address"
+                SelectedValue="{Binding SelectedSource, Mode=TwoWay}" />
+    </StackPanel>
+
+    <StackPanel HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                Width="480"
+                Margin="20,0,0,0"
+                Visibility="{Binding ProbePageOpen, Converter={StaticResource BoolToVis}}">
+      <TextBlock Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap" Margin="0,0,0,16"
+                 Text="Requests spaced across Seconds. Probe lands in PR01-04. These knobs persist now." />
+
+      <Label Style="{StaticResource Label.Standard}" Content="Requests" />
+      <nud:VestigiumNumericUpDown Value="{Binding DefaultRequests, Mode=TwoWay}"
+                                  SignMode="Unsigned"
+                                  Minimum="1" Maximum="10000" Increment="10" PageIncrement="100" DecimalPlaces="0"
+                                  Background="{DynamicResource Vestigium.Brushes.Surface.Card}"
+                                  Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}"
+                                  BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
+                                  Margin="0,0,0,16" />
+
+      <Label Style="{StaticResource Label.Standard}" Content="Seconds" />
+      <nud:VestigiumNumericUpDown Value="{Binding DefaultSeconds, Mode=TwoWay}"
+                                  SignMode="Unsigned"
+                                  Minimum="1" Maximum="600" Increment="1" PageIncrement="30" DecimalPlaces="0"
+                                  Background="{DynamicResource Vestigium.Brushes.Surface.Card}"
+                                  Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}"
+                                  BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" />
+    </StackPanel>
 
     <StackPanel HorizontalAlignment="Left"
                 VerticalAlignment="Top"

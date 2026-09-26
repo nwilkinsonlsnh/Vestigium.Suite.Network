@@ -1,0 +1,104 @@
+using Vestigium.Controls.Shell;
+using Vestigium.Controls.StatusBar;
+using Vestigium.Themes;
+
+namespace Vestigium.Suite.Network.PingIQ.ViewModels;
+
+public sealed class PingIqSession
+{
+    private readonly PingIqSettingsStore _store;
+    private readonly ThemeManager _themes;
+    private readonly VestigiumDefaultWindowViewModel _chrome;
+    private MainViewModel? _main;
+    private SettingsViewModel? _settings;
+    private bool _ready;
+
+    public PingIqSession(
+        PingIqSettingsStore store,
+        ThemeManager themes,
+        VestigiumDefaultWindowViewModel chrome)
+    {
+        _store = store;
+        _themes = themes;
+        _chrome = chrome;
+        Current = store.Load();
+        ApplyThemeAndBar();
+    }
+
+    public PingIqSettings Current { get; private set; }
+
+    public void Attach(MainViewModel main, SettingsViewModel settings)
+    {
+        _main = main;
+        _settings = settings;
+        main.BeginLoad();
+        ApplyToViews();
+        main.EndLoad();
+        _ready = true;
+    }
+
+    public void Save(bool applyTimeoutSeed = false)
+    {
+        if (!_ready || _main is null || _settings is null)
+            return;
+
+        if (applyTimeoutSeed)
+            _main.TimeoutMs = _settings.DefaultTimeoutMs;
+        _main.RequestCount = _settings.DefaultRequests;
+        _main.DurationSeconds = _settings.DefaultSeconds;
+        _main.Bind.SourceAddress = _settings.SelectedSource;
+        _settings.NarrowSources(_main.SelectedInterfaceIndex);
+
+        Current = new PingIqSettings
+        {
+            ThemeId = _settings.SelectedThemeId,
+            Count = (int)_main.Count,
+            TimeoutMs = (int)_main.TimeoutMs,
+            InterfaceIndex = _main.SelectedInterfaceIndex,
+            Requests = (int)_settings.DefaultRequests,
+            Seconds = (int)_settings.DefaultSeconds,
+            StatusBarVisible = _settings.BarVisible,
+            StatusBarDock = _settings.BarPosition == VestigiumStatusBarPosition.Top ? "Top" : "Bottom",
+            Source = _settings.SelectedSource,
+            ShowLegendEcho = Current.ShowLegendEcho,
+            ShowLegendProbeRtt = Current.ShowLegendProbeRtt,
+            ShowLegendProbeDist = Current.ShowLegendProbeDist,
+            ShowLegendProbeControl = Current.ShowLegendProbeControl
+        };
+        _store.Save(Current);
+    }
+
+    private void ApplyThemeAndBar()
+    {
+        if (!string.IsNullOrWhiteSpace(Current.ThemeId))
+            _themes.SwitchTheme(Current.ThemeId);
+
+        _chrome.ShowStatusBar = Current.StatusBarVisible;
+        if (string.Equals(Current.StatusBarDock, "Top", StringComparison.OrdinalIgnoreCase))
+            _chrome.DockStatusBarTopCommand.Execute(null);
+        else
+            _chrome.DockStatusBarBottomCommand.Execute(null);
+    }
+
+    private void ApplyToViews()
+    {
+        if (_main is null || _settings is null)
+            return;
+
+        _main.Count = Current.Count is >= PingIqInput.MinCount and <= PingIqInput.MaxCount
+            ? Current.Count
+            : PingIqInput.DefaultCount;
+        _main.TimeoutMs = Current.TimeoutMs is >= PingIqInput.MinTimeoutMs and <= PingIqInput.MaxTimeoutMs
+            ? Current.TimeoutMs
+            : PingIqInput.DefaultTimeoutMs;
+        _main.SelectedInterfaceIndex = _main.Interfaces.Any(i => i.Index == Current.InterfaceIndex)
+            ? Current.InterfaceIndex
+            : 0;
+        _main.RequestCount = Current.Requests;
+        _main.DurationSeconds = Current.Seconds;
+        _settings.NarrowSources(_main.SelectedInterfaceIndex);
+        _settings.LoadFrom(Current);
+        _main.Bind.SourceAddress = _settings.SelectedSource;
+        _main.Bind.InterfaceIndex = _main.SelectedInterfaceIndex;
+    }
+}

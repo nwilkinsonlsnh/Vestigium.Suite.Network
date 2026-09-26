@@ -14,6 +14,25 @@ public sealed partial class MainViewModel : ObservableObject
 
     public BindFields Bind { get; } = new();
 
+    public PingIqSession? Session { get; set; }
+
+    public IReadOnlyList<AdapterChoice> Interfaces { get; }
+
+    public MainViewModel()
+    {
+        try
+        {
+            Interfaces = AdapterChoices.From(NetworkHelper.GetAdapters());
+        }
+        catch (Exception)
+        {
+            Interfaces = AdapterChoices.From([]);
+        }
+
+        Bind.PropertyChanged += (_, _) => Persist();
+    }
+
+
     public ObservableCollection<ReplyRow> Replies { get; } = [];
 
     [ObservableProperty]
@@ -24,6 +43,15 @@ public sealed partial class MainViewModel : ObservableObject
 
     [ObservableProperty]
     private decimal _timeoutMs = PingIqInput.DefaultTimeoutMs;
+
+    [ObservableProperty]
+    private int _selectedInterfaceIndex;
+
+    [ObservableProperty]
+    private decimal _requestCount = SettingsViewModel.RequestDefault;
+
+    [ObservableProperty]
+    private decimal _durationSeconds = SettingsViewModel.SecondsDefault;
 
     [ObservableProperty]
     private string _status = "Idle";
@@ -112,6 +140,27 @@ public sealed partial class MainViewModel : ObservableObject
         var min = result.MinMs is { } lo ? lo.ToString() : "—";
         var max = result.MaxMs is { } hi ? hi.ToString() : "—";
         Summary = $"sent={result.Sent} recv={result.Received} lost={result.Lost} loss={result.LossPercent:0.#}% min={min} max={max} avg={avg} ms";
+    }
+
+    public void BeginLoad() => _loading = true;
+    public void EndLoad() => _loading = false;
+
+    private bool _loading;
+
+    partial void OnCountChanged(decimal value) => Persist();
+    partial void OnTimeoutMsChanged(decimal value) => Persist();
+    partial void OnSelectedInterfaceIndexChanged(int value)
+    {
+        Bind.InterfaceIndex = value;
+        Persist();
+    }
+    partial void OnRequestCountChanged(decimal value) => Persist();
+    partial void OnDurationSecondsChanged(decimal value) => Persist();
+
+    private void Persist()
+    {
+        if (!_loading)
+            Session?.Save();
     }
 
     private void RaiseBusy()

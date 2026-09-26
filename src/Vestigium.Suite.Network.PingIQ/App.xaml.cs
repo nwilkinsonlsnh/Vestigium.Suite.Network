@@ -21,6 +21,8 @@ public partial class App : Application
 
     public static SettingsViewModel? Settings { get; private set; }
 
+    public static PingIqSession? Session { get; private set; }
+
     public static VestigiumShell? Shell { get; set; }
 
     public static void SetDashboardEnabled(bool enabled)
@@ -90,8 +92,13 @@ public partial class App : Application
             }
         });
 
-        Settings = new SettingsViewModel(Themes, chrome);
-        var ping = new MainViewModel();
+        var store = new PingIqSettingsStore(PingIqSettingsStore.DefaultRoot);
+        var session = new PingIqSession(store, Themes, chrome);
+        Session = session;
+
+        Settings = new SettingsViewModel(Themes, chrome) { Session = session };
+        var ping = new MainViewModel { Session = session };
+        session.Attach(ping, Settings);
 
         var pingItem = window.HostShell["PingIQ"];
         if (pingItem is not null)
@@ -113,6 +120,12 @@ public partial class App : Application
 
         window.Loaded += (_, _) => Shell = window.HostShell;
         chrome.Status.Message = "Idle";
+        chrome.PropertyChanged += (_, args) =>
+        {
+            if (args.PropertyName is nameof(VestigiumDefaultWindowViewModel.ShowStatusBar)
+                or nameof(VestigiumDefaultWindowViewModel.Status))
+                session.Save();
+        };
         return window;
     }
 }

@@ -25,6 +25,7 @@
         <Grid.RowDefinitions>
           <RowDefinition Height="Auto" />
           <RowDefinition Height="Auto" />
+          <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <Label Style="{StaticResource Label.Standard}" Content="Target" VerticalAlignment="Center" Margin="0,0,8,8" />
@@ -51,7 +52,17 @@
                                     BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
                                     Margin="0,0,0,8" />
 
-        <StackPanel Grid.Row="1" Grid.ColumnSpan="6" Style="{StaticResource StackPanel.Toolbar}" Orientation="Horizontal">
+        <Label Grid.Row="1" Style="{StaticResource Label.Standard}" Content="Interface" VerticalAlignment="Center" Margin="0,0,8,8" />
+        <ComboBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3"
+                  Style="{StaticResource ComboBox.Standard}"
+                  IsEditable="False"
+                  ItemsSource="{Binding Interfaces}"
+                  DisplayMemberPath="Label"
+                  SelectedValuePath="Index"
+                  SelectedValue="{Binding SelectedInterfaceIndex, Mode=TwoWay}"
+                  Margin="0,0,16,8" />
+
+        <StackPanel Grid.Row="2" Grid.ColumnSpan="6" Style="{StaticResource StackPanel.Toolbar}" Orientation="Horizontal">
           <Button Content="Echo" Style="{StaticResource Button.Primary}" Command="{Binding EchoCommand}" Padding="16,4" Margin="0,0,8,0" />
           <Button Content="Cancel" Style="{StaticResource Button.Secondary}" Command="{Binding CancelCommand}" Padding="16,4" />
         </StackPanel>
