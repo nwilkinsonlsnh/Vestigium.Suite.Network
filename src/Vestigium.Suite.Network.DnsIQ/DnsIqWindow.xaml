@@ -25,7 +25,29 @@
         <MenuItem Header="Status bar at _Top" Style="{StaticResource MenuItem.Standard}" Command="{Binding DockStatusBarTopCommand}" />
       </MenuItem>
     </Menu>
+    <ItemsControl DockPanel.Dock="Top"
+                  Margin="12,0,12,0"
+                  ItemsSource="{Binding NavItems, ElementName=RootShell}">
+      <ItemsControl.ItemsPanel>
+        <ItemsPanelTemplate>
+          <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" />
+        </ItemsPanelTemplate>
+      </ItemsControl.ItemsPanel>
+      <ItemsControl.ItemTemplate>
+        <DataTemplate>
+          <RadioButton Style="{StaticResource RadioButton.HorizontalTab}"
+                       Content="{Binding Header}"
+                       IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                       IsEnabled="{Binding IsEnabled}"
+                       GroupName="DnsIqMainNav"
+                       Command="{Binding SelectItemCommand, Source={x:Reference RootShell}}"
+                       CommandParameter="{Binding}"
+                       Margin="0,0,8,0" />
+        </DataTemplate>
+      </ItemsControl.ItemTemplate>
+    </ItemsControl>
     <shell:VestigiumShell x:Name="RootShell"
+                          ShowNav="False"
                           Status="{Binding Status}"
                           StatusBarPosition="{Binding Status.Position, Mode=TwoWay}"
                           ShowStatusBar="{Binding ShowStatusBar}" />
