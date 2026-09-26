@@ -46,6 +46,9 @@
                                       Increment="10"
                                       PageIncrement="100"
                                       DecimalPlaces="0"
+                                      Background="{DynamicResource Vestigium.Brushes.Surface.Card}"
+                                      Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}"
+                                      BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
                                       Margin="0,0,0,16" />
 
           <Label Style="{StaticResource Label.Standard}" Content="Seconds (X)" />
@@ -55,7 +58,10 @@
                                       Maximum="600"
                                       Increment="1"
                                       PageIncrement="30"
-                                      DecimalPlaces="0" />
+                                      DecimalPlaces="0"
+                                      Background="{DynamicResource Vestigium.Brushes.Surface.Card}"
+                                      Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}"
+                                      BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" />
           <TextBlock Style="{StaticResource TextBlock.Caption}" Margin="0,8,0,0"
                      Text="Examples: 1000 over 60 s, or 1000 over 180 s." />
         </StackPanel>
