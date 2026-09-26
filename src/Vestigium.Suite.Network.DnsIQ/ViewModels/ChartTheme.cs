@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media;
 using Vestigium.Helpers.Charts;
 
@@ -7,7 +8,7 @@ namespace Vestigium.Suite.Network.DnsIQ.ViewModels;
 
 internal static class ChartTheme
 {
-    public static ChartOptions Options(string title)
+    public static ChartOptions Options(string title, bool showLegend = true)
     {
         var color = Hex("Vestigium.Brushes.Accent.Primary")
                     ?? Hex("Vestigium.Brushes.Text.Primary")
@@ -16,12 +17,12 @@ internal static class ChartTheme
         {
             Title = title,
             Color = color,
-            ShowLegend = true,
+            ShowLegend = showLegend,
             ShowGrid = true
         };
     }
 
-    public static FrameworkElement Paint(FrameworkElement view)
+    public static FrameworkElement Paint(FrameworkElement view, bool showLegend = true)
     {
         var figure = Hex("Vestigium.Brushes.Surface.Window") ?? "#1B1B1B";
         var data = Hex("Vestigium.Brushes.Surface.Card") ?? "#242424";
@@ -34,6 +35,7 @@ internal static class ChartTheme
             SetSlotColor(plot, "FigureBackground", figure);
             SetSlotColor(plot, "DataBackground", data);
             TrySetAxes(plot, ink, grid);
+            TrySetLegend(plot, showLegend);
             view.GetType().GetMethod("Refresh", Type.EmptyTypes)?.Invoke(view, null);
         }
 
@@ -41,11 +43,58 @@ internal static class ChartTheme
         view.MinHeight = 140;
         view.VerticalAlignment = VerticalAlignment.Stretch;
         view.HorizontalAlignment = HorizontalAlignment.Stretch;
+        ThemeContextMenu(view);
 
-        if (view is System.Windows.Controls.Control control)
-            control.SetResourceReference(System.Windows.Controls.Control.BackgroundProperty, "Vestigium.Brushes.Surface.Card");
+        if (view is Control control)
+            control.SetResourceReference(Control.BackgroundProperty, "Vestigium.Brushes.Surface.Card");
 
         return view;
+    }
+
+    private static void ThemeContextMenu(FrameworkElement view)
+    {
+        view.ContextMenuOpening -= OnContextMenuOpening;
+        view.ContextMenuOpening += OnContextMenuOpening;
+        if (view.ContextMenu is not null)
+            PaintMenu(view.ContextMenu);
+    }
+
+    private static void OnContextMenuOpening(object sender, ContextMenuEventArgs e)
+    {
+        if (sender is FrameworkElement { ContextMenu: { } menu })
+            PaintMenu(menu);
+    }
+
+    private static void PaintMenu(ContextMenu menu)
+    {
+        menu.SetResourceReference(Control.BackgroundProperty, "Vestigium.Brushes.Surface.Card");
+        menu.SetResourceReference(Control.ForegroundProperty, "Vestigium.Brushes.Text.Primary");
+        menu.SetResourceReference(Control.BorderBrushProperty, "Vestigium.Brushes.Stroke.Subtle");
+        menu.SetResourceReference(TextElement.ForegroundProperty, "Vestigium.Brushes.Text.Primary");
+
+        foreach (var raw in menu.Items)
+        {
+            if (raw is not MenuItem item)
+                continue;
+            item.SetResourceReference(Control.BackgroundProperty, "Vestigium.Brushes.Surface.Card");
+            item.SetResourceReference(Control.ForegroundProperty, "Vestigium.Brushes.Text.Primary");
+            item.SetResourceReference(TextElement.ForegroundProperty, "Vestigium.Brushes.Text.Primary");
+        }
+    }
+
+    private static void TrySetLegend(object plot, bool show)
+    {
+        try
+        {
+            var legend = plot.GetType().GetProperty("Legend")?.GetValue(plot);
+            if (legend is null)
+                return;
+            var visible = legend.GetType().GetProperty("IsVisible");
+            visible?.SetValue(legend, show);
+        }
+        catch (Exception)
+        {
+        }
     }
 
     private static void TrySetAxes(object plot, string ink, string grid)
