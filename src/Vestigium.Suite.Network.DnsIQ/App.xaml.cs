@@ -51,6 +51,7 @@ public partial class App : Application
         {
             Title = "DnsIQ"
         };
+        HostMenu.StripDemoCommands(window);
 
         window.HostShell.ApplySpec(new VestigiumShellSpec
         {
