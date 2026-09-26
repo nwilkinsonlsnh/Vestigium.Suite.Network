@@ -5,6 +5,7 @@
     <AssemblyName>DnsIQ</AssemblyName>
     <ApplicationTitle>DnsIQ</ApplicationTitle>
     <ApplicationIcon>Assets\DnsIQ.ico</ApplicationIcon>
+    <NoWarn>$(NoWarn);NU1701</NoWarn>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
