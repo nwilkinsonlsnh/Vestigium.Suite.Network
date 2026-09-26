@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Vestigium.Helpers.Network;
@@ -11,12 +12,15 @@ public sealed partial class MainViewModel : ObservableObject
     private CancellationTokenSource? _cts;
     private NetworkJob<IcmpEchoResult>? _job;
     private bool _busy;
+    private bool _loading;
 
     public BindFields Bind { get; } = new();
 
     public PingIqSession? Session { get; set; }
 
     public IReadOnlyList<AdapterChoice> Interfaces { get; }
+
+    public ObservableCollection<ReplyRow> Replies { get; } = [];
 
     public MainViewModel()
     {
@@ -31,9 +35,6 @@ public sealed partial class MainViewModel : ObservableObject
 
         Bind.PropertyChanged += (_, _) => Persist();
     }
-
-
-    public ObservableCollection<ReplyRow> Replies { get; } = [];
 
     [ObservableProperty]
     private string _target = "127.0.0.1";
@@ -59,12 +60,25 @@ public sealed partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private string _summary = string.Empty;
 
-    public bool CanEcho => !_busy;
+    public bool CanStart => !_busy;
 
     public bool CanCancel => _busy;
 
-    [RelayCommand(CanExecute = nameof(CanEcho))]
-    private async Task EchoAsync()
+    [RelayCommand(CanExecute = nameof(CanStart))]
+    private Task EchoAsync() => RunAsync(probe: false);
+
+    [RelayCommand(CanExecute = nameof(CanStart))]
+    private Task ProbeAsync() => RunAsync(probe: true);
+
+    [RelayCommand(CanExecute = nameof(CanCancel))]
+    private void Cancel()
+    {
+        _job?.Cancel();
+        try { _cts?.Cancel(); }
+        catch (ObjectDisposedException) { }
+    }
+
+    private async Task RunAsync(bool probe)
     {
         if (_busy)
             return;
@@ -75,17 +89,30 @@ public sealed partial class MainViewModel : ObservableObject
             return;
         }
 
+        if (probe && !PulsePlan.TryCreate(RequestCount, DurationSeconds, out _, out var pulseReject))
+        {
+            Status = pulseReject ?? "Failed";
+            return;
+        }
+
         _busy = true;
         RaiseBusy();
         Replies.Clear();
         Summary = string.Empty;
         Status = "Running";
         _cts = new CancellationTokenSource();
+        var token = _cts.Token;
         try
         {
-            _job = NetworkHelper.IcmpEcho(query!.Target, query.Options);
-            var result = await _job.RunAsync(_cts.Token).ConfigureAwait(true);
-            ApplyResult(result);
+            var prelude = await EchoOnceAsync(query!, count: probe ? 1 : query!.Options.Count, token).ConfigureAwait(true);
+            var preludeOk = prelude.Status == NetworkJobStatus.Success;
+            ApplyResult(prelude);
+            if (!probe)
+                return;
+            if (!PulsePrelude.MayStartPulse(preludeOk))
+                return;
+
+            await ProbeLoopAsync(query!, token).ConfigureAwait(true);
         }
         catch (OperationCanceledException)
         {
@@ -108,16 +135,51 @@ public sealed partial class MainViewModel : ObservableObject
         }
     }
 
-    [RelayCommand(CanExecute = nameof(CanCancel))]
-    private void Cancel()
+    private async Task ProbeLoopAsync(PingIqQuery query, CancellationToken token)
     {
-        _job?.Cancel();
-        try
+        if (!PulsePlan.TryCreate(RequestCount, DurationSeconds, out var plan, out var reject))
         {
-            _cts?.Cancel();
+            Status = reject ?? "Failed";
+            return;
         }
-        catch (ObjectDisposedException)
+
+        var clock = Stopwatch.StartNew();
+        var last = default(IcmpEchoResult);
+        for (var i = 1; i <= plan.Requests; i++)
         {
+            token.ThrowIfCancellationRequested();
+            await WaitUntilAsync(clock, plan.DueAt(i), token).ConfigureAwait(false);
+            last = await EchoOnceAsync(query, count: 1, token).ConfigureAwait(true);
+            Status = $"Probe {i} / {plan.Requests}";
+        }
+
+        if (last is not null)
+            ApplyResult(last);
+        Status = $"Probe {plan.Requests} / {plan.Requests}";
+    }
+
+    private async Task<IcmpEchoResult> EchoOnceAsync(PingIqQuery query, int count, CancellationToken token)
+    {
+        var options = new IcmpEchoOptions
+        {
+            Count = count,
+            Timeout = query.Options.Timeout,
+            InterfaceIndex = query.Options.InterfaceIndex,
+            SourceAddress = query.Options.SourceAddress
+        };
+        _job = NetworkHelper.IcmpEcho(query.Target, options);
+        return await _job.RunAsync(token).ConfigureAwait(true);
+    }
+
+    private static async Task WaitUntilAsync(Stopwatch clock, TimeSpan due, CancellationToken token)
+    {
+        while (clock.Elapsed < due)
+        {
+            token.ThrowIfCancellationRequested();
+            var remaining = due - clock.Elapsed;
+            var slice = remaining > TimeSpan.FromMilliseconds(15) ? TimeSpan.FromMilliseconds(15) : remaining;
+            if (slice > TimeSpan.Zero)
+                await Task.Delay(slice, token).ConfigureAwait(false);
         }
     }
 
@@ -135,17 +197,15 @@ public sealed partial class MainViewModel : ObservableObject
                 reply.Detail));
         }
 
-        Status = result.Status.ToString();
         var avg = result.AverageMs is { } ms ? $"{ms:0.#}" : "—";
         var min = result.MinMs is { } lo ? lo.ToString() : "—";
         var max = result.MaxMs is { } hi ? hi.ToString() : "—";
         Summary = $"sent={result.Sent} recv={result.Received} lost={result.Lost} loss={result.LossPercent:0.#}% min={min} max={max} avg={avg} ms";
+        Status = result.Status.ToString();
     }
 
     public void BeginLoad() => _loading = true;
     public void EndLoad() => _loading = false;
-
-    private bool _loading;
 
     partial void OnCountChanged(decimal value) => Persist();
     partial void OnTimeoutMsChanged(decimal value) => Persist();
@@ -165,9 +225,10 @@ public sealed partial class MainViewModel : ObservableObject
 
     private void RaiseBusy()
     {
-        OnPropertyChanged(nameof(CanEcho));
+        OnPropertyChanged(nameof(CanStart));
         OnPropertyChanged(nameof(CanCancel));
         EchoCommand.NotifyCanExecuteChanged();
+        ProbeCommand.NotifyCanExecuteChanged();
         CancelCommand.NotifyCanExecuteChanged();
     }
 }

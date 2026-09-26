@@ -64,6 +64,7 @@
 
         <StackPanel Grid.Row="2" Grid.ColumnSpan="6" Style="{StaticResource StackPanel.Toolbar}" Orientation="Horizontal">
           <Button Content="Echo" Style="{StaticResource Button.Primary}" Command="{Binding EchoCommand}" Padding="16,4" Margin="0,0,8,0" />
+          <Button Content="Probe" Style="{StaticResource Button.Success}" Command="{Binding ProbeCommand}" Padding="16,4" Margin="0,0,8,0" />
           <Button Content="Cancel" Style="{StaticResource Button.Secondary}" Command="{Binding CancelCommand}" Padding="16,4" />
         </StackPanel>
       </Grid>

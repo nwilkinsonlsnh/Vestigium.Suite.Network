@@ -8,11 +8,11 @@ namespace Vestigium.Suite.Network.PingIQ.ViewModels;
 
 public sealed partial class SettingsViewModel : ObservableObject
 {
-    public const decimal RequestMin = 1;
-    public const decimal RequestMax = 10_000;
+    public const decimal RequestMin = PulsePlan.MinRequests;
+    public const decimal RequestMax = PulsePlan.MaxRequests;
     public const decimal RequestDefault = 1000m;
-    public const decimal SecondsMin = 1;
-    public const decimal SecondsMax = 600;
+    public const decimal SecondsMin = PulsePlan.MinSeconds;
+    public const decimal SecondsMax = PulsePlan.MaxSeconds;
     public const decimal SecondsDefault = 60m;
 
     private readonly ThemeManager _themes;

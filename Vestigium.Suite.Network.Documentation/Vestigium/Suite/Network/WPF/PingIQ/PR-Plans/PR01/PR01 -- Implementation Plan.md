@@ -91,7 +91,7 @@ Build order is the Order column.
 | 1 | PR01-01 | Chrome. `PingIqWindow`, ThemeCatalog, ThemeChrome, three pages, icon, primary-monitor center. Kill `MainWindow`. Stub Echo/`Log` still on PingIQ page. | Done |
 | 2 | PR01-02 | `PingIqInput` + Echo path + `ReplyRow` grid + Cancel + one in-flight. | Done |
 | 3 | PR01-03 | Settings + persist + Interface/Source combos. | Done |
-| 4 | PR01-04 | Probe prelude + `PulsePlan` loop. Dashboard still locked. | Open |
+| 4 | PR01-04 | Probe prelude + `PulsePlan` loop. Dashboard still locked. | Done |
 | 5 | PR01-05 | Dashboard charts + Unlock + legend persist. | Open |
 | 6 | PR01-06 | Host tests. No wire. | Open |
 | 7 | PR01-07 | Owner runs the window against Requirements v1.1 §5. | Owner |
@@ -193,4 +193,4 @@ When this plan finishes, move the whole `PR01/` folder to `PR-Plans/Completed/PR
 
 ## Next action
 
-PR01-04. Probe prelude + PulsePlan loop. Dashboard stays locked.
+PR01-05. Dashboard charts + Unlock after Probe.
