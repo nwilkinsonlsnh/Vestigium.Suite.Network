@@ -44,6 +44,9 @@ public sealed class DnsIqSession
 
         _main.RequestCount = _settings.DefaultRequests;
         _main.DurationSeconds = _settings.DefaultSeconds;
+        _main.Port = _settings.DefaultPort;
+        _main.Bind.SourceAddress = _settings.SelectedSource;
+        _settings.NarrowSources(_main.SelectedInterfaceIndex);
 
         Current = new DnsIqSettings
         {
@@ -51,12 +54,12 @@ public sealed class DnsIqSession
             Server = _main.Server,
             Type = _main.RecordType,
             InterfaceIndex = _main.SelectedInterfaceIndex,
-            Port = (int)_main.Port,
+            Port = (int)_settings.DefaultPort,
             Requests = (int)_settings.DefaultRequests,
             Seconds = (int)_settings.DefaultSeconds,
-            StatusBarVisible = _chrome.ShowStatusBar,
-            StatusBarDock = _chrome.Status.Position == VestigiumStatusBarPosition.Top ? "Top" : "Bottom",
-            Source = string.IsNullOrWhiteSpace(_main.Bind.SourceAddress) ? null : _main.Bind.SourceAddress
+            StatusBarVisible = _settings.BarVisible,
+            StatusBarDock = _settings.BarPosition == VestigiumStatusBarPosition.Top ? "Top" : "Bottom",
+            Source = _settings.SelectedSource
         };
         _store.Save(Current);
     }
@@ -88,9 +91,10 @@ public sealed class DnsIqSession
         _main.SelectedInterfaceIndex = _main.Interfaces.Any(i => i.Index == Current.InterfaceIndex)
             ? Current.InterfaceIndex
             : 0;
-        _main.Bind.SourceAddress = Current.Source ?? string.Empty;
         _main.RequestCount = Current.Requests;
         _main.DurationSeconds = Current.Seconds;
+        _settings.NarrowSources(_main.SelectedInterfaceIndex);
         _settings.LoadFrom(Current);
+        _main.Bind.SourceAddress = _settings.SelectedSource;
     }
 }
