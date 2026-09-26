@@ -11,6 +11,7 @@ namespace Vestigium.Suite.Network.DnsIQ.ViewModels;
 public sealed partial class MainViewModel : ObservableObject
 {
     private CancellationTokenSource? _cts;
+    private bool _pulseActive;
 
     public BindFields Bind { get; } = new();
 
@@ -51,8 +52,9 @@ public sealed partial class MainViewModel : ObservableObject
 
     partial void OnStatusChanged(string value)
     {
-        if (StatusBar is not null)
-            StatusBar.Message = value;
+        if (_pulseActive || StatusBar is null)
+            return;
+        StatusBar.Message = value;
     }
 
     private bool CanStartJob() => !IsBusy;
@@ -124,6 +126,7 @@ public sealed partial class MainViewModel : ObservableObject
         }
         finally
         {
+            _pulseActive = false;
             if (!lookup)
             {
                 ShowProgress(0, visible: false);
@@ -183,45 +186,54 @@ public sealed partial class MainViewModel : ObservableObject
         if (cycle.Count == 0)
             cycle.Add(query);
 
+        _pulseActive = true;
         StatusBar?.Engine.SetIdlePolicy(0);
-        ShowProgress(0, visible: true);
-
         var clock = Stopwatch.StartNew();
+        PostPulseBar(0, plan.Requests, clock.Elapsed, TimeSpan.FromSeconds(plan.Seconds));
+
         var samples = new List<double>();
         var answered = 0;
         var timeout = 0;
         var refused = 0;
         string? server = query.Options.Server;
         var window = TimeSpan.FromSeconds(plan.Seconds);
+        var sent = 0;
 
         for (var i = 1; i <= plan.Requests; i++)
         {
             token.ThrowIfCancellationRequested();
             var due = plan.DueAt(i);
-            await WaitUntilAsync(clock, due, window, token).ConfigureAwait(true);
+            await WaitUntilAsync(clock, due, window, sent, plan.Requests, token).ConfigureAwait(true);
 
             var typed = cycle[(i - 1) % cycle.Count];
             var result = await NetworkHelper.LookupAsync(typed.Name, typed.Options, token).ConfigureAwait(true);
+            sent = i;
             server ??= result.Server;
             Classify(result, ref answered, ref timeout, ref refused, samples);
             var lastMs = (int)Math.Round(result.Elapsed.TotalMilliseconds);
-            ShowProgress(PercentOfWindow(clock.Elapsed, window), visible: true);
-            Status = $"pulse {i}/{plan.Requests} · {FormatServer(server)} · {lastMs} ms";
+            PostPulseBar(sent, plan.Requests, clock.Elapsed, window);
+            Status = $"pulse {sent}/{plan.Requests} · {FormatServer(server)} · {lastMs} ms";
         }
 
-        ShowProgress(100, visible: true);
+        PostPulseBar(plan.Requests, plan.Requests, clock.Elapsed, window);
         var med = Median(samples);
         var rate = plan.Seconds == 0 ? 0 : plan.Requests / (double)plan.Seconds;
         Status =
             $"{plan.Requests}/{plan.Requests} · {FormatServer(server)} · med {med} ms · {rate:0.0}/s · {timeout} timeout · {answered} answered · {refused} refused";
     }
 
-    private async Task WaitUntilAsync(Stopwatch clock, TimeSpan due, TimeSpan window, CancellationToken token)
+    private async Task WaitUntilAsync(
+        Stopwatch clock,
+        TimeSpan due,
+        TimeSpan window,
+        int sent,
+        int total,
+        CancellationToken token)
     {
         while (clock.Elapsed < due)
         {
             token.ThrowIfCancellationRequested();
-            ShowProgress(PercentOfWindow(clock.Elapsed, window), visible: true);
+            PostPulseBar(sent, total, clock.Elapsed, window);
             var remaining = due - clock.Elapsed;
             var slice = remaining > TimeSpan.FromMilliseconds(100)
                 ? TimeSpan.FromMilliseconds(100)
@@ -231,11 +243,39 @@ public sealed partial class MainViewModel : ObservableObject
         }
     }
 
+    private void PostPulseBar(int sent, int total, TimeSpan elapsed, TimeSpan window)
+    {
+        if (StatusBar is null)
+            return;
+
+        StatusBar.Engine.PostImmediate("message", new StatusBarUpdate
+        {
+            Text = $"{sent}/{total}"
+        });
+        StatusBar.Engine.PostImmediate("progress", new StatusBarUpdate
+        {
+            Progress = PercentOfWindow(elapsed, window),
+            IsProgressVisible = true,
+            IsIndeterminate = false
+        });
+        StatusBar.Engine.PostImmediate("detail", new StatusBarUpdate
+        {
+            Text = FormatElapsed(elapsed)
+        });
+    }
+
     private static double PercentOfWindow(TimeSpan elapsed, TimeSpan window)
     {
         if (window <= TimeSpan.Zero)
             return 100;
         return Math.Clamp(100.0 * elapsed.TotalSeconds / window.TotalSeconds, 0, 100);
+    }
+
+    private static string FormatElapsed(TimeSpan elapsed)
+    {
+        if (elapsed.TotalHours >= 1)
+            return elapsed.ToString(@"h\:mm\:ss");
+        return elapsed.ToString(@"mm\:ss");
     }
 
     private void ShowProgress(double percent, bool visible)
