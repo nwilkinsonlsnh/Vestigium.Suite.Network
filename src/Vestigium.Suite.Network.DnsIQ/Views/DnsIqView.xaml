@@ -6,95 +6,108 @@
   <UserControl.Resources>
     <BooleanToVisibilityConverter x:Key="BoolToVis" />
   </UserControl.Resources>
-  <DockPanel Style="{StaticResource DockPanel.Standard}" Margin="16">
-    <TextBlock DockPanel.Dock="Top" Style="{StaticResource TextBlock.Heading}" Text="DnsIQ" Margin="0,0,0,12" />
+  <Grid Margin="16">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+    </Grid.RowDefinitions>
 
-    <TextBlock DockPanel.Dock="Top" Style="{StaticResource TextBlock.Caption}" Text="{Binding Status}" Margin="0,0,0,12" />
+    <DockPanel Grid.Row="0">
+      <TextBlock DockPanel.Dock="Top" Style="{StaticResource TextBlock.Heading}" Text="DnsIQ" Margin="0,0,0,12" />
+      <TextBlock DockPanel.Dock="Top" Style="{StaticResource TextBlock.Caption}" Text="{Binding Status}" Margin="0,0,0,12" />
 
-    <Grid DockPanel.Dock="Top" Style="{StaticResource Grid.Standard}" Margin="0,0,0,12">
-      <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="Auto" />
-        <ColumnDefinition Width="*" />
-        <ColumnDefinition Width="Auto" />
-        <ColumnDefinition Width="*" />
-        <ColumnDefinition Width="Auto" />
-        <ColumnDefinition Width="100" />
-        <ColumnDefinition Width="Auto" />
-        <ColumnDefinition Width="140" />
-      </Grid.ColumnDefinitions>
-      <Grid.RowDefinitions>
-        <RowDefinition Height="Auto" />
-        <RowDefinition Height="Auto" />
-        <RowDefinition Height="Auto" />
-      </Grid.RowDefinitions>
+      <Grid Style="{StaticResource Grid.Standard}">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="100" />
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="140" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
 
-      <Label Style="{StaticResource Label.Standard}" Content="Name" VerticalAlignment="Center" Margin="0,0,8,8" />
-      <Grid Grid.Column="1" Margin="0,0,16,8">
-        <TextBox Style="{StaticResource TextBox.Standard}" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" />
-        <TextBlock Text="(localhost)"
-                   Style="{StaticResource TextBlock.Caption}"
-                   Margin="8,0,0,0"
-                   VerticalAlignment="Center"
-                   Opacity="0.6"
-                   IsHitTestVisible="False"
-                   Visibility="{Binding ShowNameHint, Converter={StaticResource BoolToVis}}" />
+        <Label Style="{StaticResource Label.Standard}" Content="Name" VerticalAlignment="Center" Margin="0,0,8,8" />
+        <Grid Grid.Column="1" Margin="0,0,16,8">
+          <TextBox Style="{StaticResource TextBox.Standard}" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" />
+          <TextBlock Text="(localhost)"
+                     Style="{StaticResource TextBlock.Caption}"
+                     Margin="8,0,0,0"
+                     VerticalAlignment="Center"
+                     Opacity="0.6"
+                     IsHitTestVisible="False"
+                     Visibility="{Binding ShowNameHint, Converter={StaticResource BoolToVis}}" />
+        </Grid>
+
+        <Label Grid.Column="2" Style="{StaticResource Label.Standard}" Content="Server" VerticalAlignment="Center" Margin="0,0,8,8" />
+        <ComboBox Grid.Column="3"
+                  Style="{StaticResource ComboBox.Editable}"
+                  IsEditable="True"
+                  ItemsSource="{Binding ServerOptions}"
+                  DisplayMemberPath="Label"
+                  SelectedValuePath="Address"
+                  SelectedValue="{Binding Server, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                  Text="{Binding Server, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                  Margin="0,0,16,8" />
+
+        <Label Grid.Column="4" Style="{StaticResource Label.Standard}" Content="Port" VerticalAlignment="Center" Margin="0,0,8,8" />
+        <nud:VestigiumNumericUpDown Grid.Column="5"
+                                    Value="{Binding Port, Mode=TwoWay}"
+                                    SignMode="Unsigned"
+                                    Minimum="1" Maximum="65535" Increment="1" PageIncrement="10" DecimalPlaces="0"
+                                    Background="{DynamicResource Vestigium.Brushes.Surface.Card}"
+                                    Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}"
+                                    BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
+                                    Margin="0,0,16,8" />
+
+        <Label Grid.Column="6" Style="{StaticResource Label.Standard}" Content="Type" VerticalAlignment="Center" Margin="0,0,8,8" />
+        <ComboBox Grid.Column="7" Style="{StaticResource ComboBox.Standard}"
+                  ItemsSource="{Binding RecordTypes}"
+                  SelectedItem="{Binding RecordType}" Margin="0,0,0,8" />
+
+        <Label Grid.Row="1" Style="{StaticResource Label.Standard}" Content="Interface" VerticalAlignment="Center" Margin="0,0,8,8" />
+        <ComboBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3"
+                  Style="{StaticResource ComboBox.Standard}"
+                  IsEditable="False"
+                  ItemsSource="{Binding Interfaces}"
+                  DisplayMemberPath="Label"
+                  SelectedValuePath="Index"
+                  SelectedValue="{Binding SelectedInterfaceIndex, Mode=TwoWay}"
+                  Margin="0,0,16,8" />
+
+        <StackPanel Grid.Row="2" Grid.ColumnSpan="8" Style="{StaticResource StackPanel.Toolbar}" Orientation="Horizontal">
+          <Button Content="Lookup" Style="{StaticResource Button.Primary}" Command="{Binding LookupCommand}" Padding="16,4" Margin="0,0,8,0" />
+          <Button Content="Probe" Style="{StaticResource Button.Success}" Command="{Binding ProbeCommand}" Padding="16,4" Margin="0,0,8,0" />
+          <Button Content="Cancel" Style="{StaticResource Button.Secondary}" Command="{Binding CancelCommand}" Padding="16,4" />
+        </StackPanel>
       </Grid>
+    </DockPanel>
 
-      <Label Grid.Column="2" Style="{StaticResource Label.Standard}" Content="Server" VerticalAlignment="Center" Margin="0,0,8,8" />
-      <ComboBox Grid.Column="3"
-                Style="{StaticResource ComboBox.Editable}"
-                IsEditable="True"
-                ItemsSource="{Binding ServerOptions}"
-                DisplayMemberPath="Label"
-                SelectedValuePath="Address"
-                SelectedValue="{Binding Server, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                Text="{Binding Server, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-                Margin="0,0,16,8" />
-
-      <Label Grid.Column="4" Style="{StaticResource Label.Standard}" Content="Port" VerticalAlignment="Center" Margin="0,0,8,8" />
-      <nud:VestigiumNumericUpDown Grid.Column="5"
-                                  Value="{Binding Port, Mode=TwoWay}"
-                                  SignMode="Unsigned"
-                                  Minimum="1" Maximum="65535" Increment="1" PageIncrement="10" DecimalPlaces="0"
-                                  Background="{DynamicResource Vestigium.Brushes.Surface.Card}"
-                                  Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}"
-                                  BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
-                                  Margin="0,0,16,8" />
-
-      <Label Grid.Column="6" Style="{StaticResource Label.Standard}" Content="Type" VerticalAlignment="Center" Margin="0,0,8,8" />
-      <ComboBox Grid.Column="7" Style="{StaticResource ComboBox.Standard}"
-                ItemsSource="{Binding RecordTypes}"
-                SelectedItem="{Binding RecordType}" Margin="0,0,0,8" />
-
-      <Label Grid.Row="1" Style="{StaticResource Label.Standard}" Content="Interface" VerticalAlignment="Center" Margin="0,0,8,8" />
-      <ComboBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3"
-                Style="{StaticResource ComboBox.Standard}"
-                IsEditable="False"
-                ItemsSource="{Binding Interfaces}"
-                DisplayMemberPath="Label"
-                SelectedValuePath="Index"
-                SelectedValue="{Binding SelectedInterfaceIndex, Mode=TwoWay}"
-                Margin="0,0,16,8" />
-
-      <StackPanel Grid.Row="2" Grid.ColumnSpan="8" Style="{StaticResource StackPanel.Toolbar}" Orientation="Horizontal">
-        <Button Content="Lookup" Style="{StaticResource Button.Primary}" Command="{Binding LookupCommand}" Padding="16,4" Margin="0,0,8,0" />
-        <Button Content="Probe" Style="{StaticResource Button.Success}" Command="{Binding ProbeCommand}" Padding="16,4" Margin="0,0,8,0" />
-        <Button Content="Cancel" Style="{StaticResource Button.Secondary}" Command="{Binding CancelCommand}" Padding="16,4" />
-      </StackPanel>
-    </Grid>
-
-    <DataGrid Style="{StaticResource DataGrid.Compact}"
-              ItemsSource="{Binding Answers}"
-              IsReadOnly="True"
-              AutoGenerateColumns="False"
-              CanUserAddRows="False"
-              HeadersVisibility="Column">
-      <DataGrid.Columns>
-        <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="80" />
-        <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*" />
-        <DataGridTextColumn Header="Data" Binding="{Binding Data}" Width="2*" />
-        <DataGridTextColumn Header="Ttl" Binding="{Binding Ttl}" Width="80" />
-      </DataGrid.Columns>
-    </DataGrid>
-  </DockPanel>
+    <Border Grid.Row="1" Margin="0,12,0,0" BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
+      <DataGrid Style="{StaticResource DataGrid.Compact}"
+                ItemsSource="{Binding Answers}"
+                IsReadOnly="True"
+                AutoGenerateColumns="False"
+                CanUserAddRows="False"
+                HeadersVisibility="Column"
+                VerticalScrollBarVisibility="Visible"
+                HorizontalScrollBarVisibility="Auto"
+                EnableRowVirtualization="True"
+                ScrollViewer.CanContentScroll="True"
+                PreviewMouseWheel="AnswerGrid_PreviewMouseWheel">
+        <DataGrid.Columns>
+          <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="80" />
+          <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*" />
+          <DataGridTextColumn Header="Data" Binding="{Binding Data}" Width="2*" />
+          <DataGridTextColumn Header="Ttl" Binding="{Binding Ttl}" Width="80" />
+        </DataGrid.Columns>
+      </DataGrid>
+    </Border>
+  </Grid>
 </UserControl>

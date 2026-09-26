@@ -5,10 +5,16 @@
   <UserControl.Resources>
     <BooleanToVisibilityConverter x:Key="BoolToVis" />
   </UserControl.Resources>
-  <DockPanel Margin="12">
-    <TextBlock DockPanel.Dock="Top" Style="{StaticResource TextBlock.Heading}" Text="Dashboard" Margin="0,0,0,12" />
+  <Grid Margin="12">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+    </Grid.RowDefinitions>
 
-    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,0,12">
+    <TextBlock Style="{StaticResource TextBlock.Heading}" Text="Dashboard" Margin="0,0,0,12" />
+
+    <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,0,12">
       <RadioButton Style="{StaticResource RadioButton.HorizontalTab}"
                    Content="Lookup"
                    IsChecked="{Binding LookupPageOpen}"
@@ -20,7 +26,7 @@
                    GroupName="DashboardPage" />
     </StackPanel>
 
-    <Grid>
+    <Grid Grid.Row="2">
       <Grid Visibility="{Binding LookupPageOpen, Converter={StaticResource BoolToVis}}">
         <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left"
                     Visibility="{Binding LookupEmpty, Converter={StaticResource BoolToVis}}">
@@ -33,22 +39,29 @@
                         Visibility="{Binding HasLookupData, Converter={StaticResource BoolToVis}}" />
       </Grid>
 
-      <ScrollViewer Visibility="{Binding ProbePageOpen, Converter={StaticResource BoolToVis}}">
-        <StackPanel>
-          <StackPanel Visibility="{Binding ProbeEmpty, Converter={StaticResource BoolToVis}}">
-            <TextBlock Style="{StaticResource TextBlock.Caption}" Text="No Probe chart yet." />
-            <TextBlock Margin="0,8,0,0">
-              <Hyperlink Command="{Binding OpenDnsIqCommand}">Open DnsIQ and run Probe</Hyperlink>
-            </TextBlock>
-          </StackPanel>
-          <ContentControl Content="{Binding ProbeCurve}" Height="220" Margin="0,0,0,16"
-                          Visibility="{Binding HasProbeData, Converter={StaticResource BoolToVis}}" />
-          <ContentControl Content="{Binding ProbeShape}" Height="220" Margin="0,0,0,16"
-                          Visibility="{Binding HasProbeData, Converter={StaticResource BoolToVis}}" />
-          <ContentControl Content="{Binding ProbeControl}" Height="220"
-                          Visibility="{Binding ShowProbeControl, Converter={StaticResource BoolToVis}}" />
+      <Grid Visibility="{Binding ProbePageOpen, Converter={StaticResource BoolToVis}}"
+            PreviewMouseWheel="Probe_PreviewMouseWheel">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="*" />
+          <RowDefinition Height="*" />
+          <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left"
+                    Visibility="{Binding ProbeEmpty, Converter={StaticResource BoolToVis}}">
+          <TextBlock Style="{StaticResource TextBlock.Caption}" Text="No Probe chart yet." />
+          <TextBlock Margin="0,8,0,0">
+            <Hyperlink Command="{Binding OpenDnsIqCommand}">Open DnsIQ and run Probe</Hyperlink>
+          </TextBlock>
         </StackPanel>
-      </ScrollViewer>
+
+        <ContentControl Grid.Row="0" Content="{Binding ProbeCurve}" Margin="0,0,0,8"
+                        Visibility="{Binding HasProbeData, Converter={StaticResource BoolToVis}}" />
+        <ContentControl Grid.Row="1" Content="{Binding ProbeShape}" Margin="0,0,0,8"
+                        Visibility="{Binding HasProbeData, Converter={StaticResource BoolToVis}}" />
+        <ContentControl Grid.Row="2" Content="{Binding ProbeControl}"
+                        Visibility="{Binding ShowProbeControl, Converter={StaticResource BoolToVis}}" />
+      </Grid>
     </Grid>
-  </DockPanel>
+  </Grid>
 </UserControl>
