@@ -37,6 +37,11 @@ internal static class ChartTheme
             view.GetType().GetMethod("Refresh", Type.EmptyTypes)?.Invoke(view, null);
         }
 
+        view.Height = double.NaN;
+        view.MinHeight = 140;
+        view.VerticalAlignment = VerticalAlignment.Stretch;
+        view.HorizontalAlignment = HorizontalAlignment.Stretch;
+
         if (view is System.Windows.Controls.Control control)
             control.SetResourceReference(System.Windows.Controls.Control.BackgroundProperty, "Vestigium.Brushes.Surface.Card");
 
