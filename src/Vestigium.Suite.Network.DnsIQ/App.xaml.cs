@@ -47,11 +47,7 @@ public partial class App : Application
     private static Window CreateMainWindow()
     {
         var chrome = Services.GetRequiredService<VestigiumDefaultWindowViewModel>();
-        var window = new VestigiumDefaultWindow(chrome)
-        {
-            Title = "DnsIQ"
-        };
-        HostMenu.StripDemoCommands(window);
+        var window = new DnsIqWindow(chrome);
 
         window.HostShell.ApplySpec(new VestigiumShellSpec
         {
