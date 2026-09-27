@@ -36,12 +36,15 @@
                         Visibility="{Binding HasEchoData, Converter={StaticResource BoolToVis}}" />
       </Grid>
 
-      <Grid Visibility="{Binding ProbePageOpen, Converter={StaticResource BoolToVis}}"
-            PreviewMouseWheel="Probe_PreviewMouseWheel">
+      <ScrollViewer Visibility="{Binding ProbePageOpen, Converter={StaticResource BoolToVis}}"
+                    VerticalScrollBarVisibility="Auto"
+                    HorizontalScrollBarVisibility="Disabled"
+                    PreviewMouseWheel="Probe_PreviewMouseWheel">
+        <Grid MinHeight="720">
         <Grid.RowDefinitions>
-          <RowDefinition Height="*" />
-          <RowDefinition Height="*" />
-          <RowDefinition Height="*" />
+          <RowDefinition Height="*" MinHeight="240" />
+          <RowDefinition Height="*" MinHeight="240" />
+          <RowDefinition Height="*" MinHeight="240" />
         </Grid.RowDefinitions>
 
         <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left"
@@ -59,6 +62,7 @@
         <ContentControl Grid.Row="2" Content="{Binding ProbeControl}"
                         Visibility="{Binding ShowProbeControl, Converter={StaticResource BoolToVis}}" />
       </Grid>
+      </ScrollViewer>
     </Grid>
   </Grid>
 </UserControl>
