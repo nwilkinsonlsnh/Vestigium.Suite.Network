@@ -16,6 +16,7 @@ public sealed partial class MainViewModel : ObservableObject
     private NetworkJob<IcmpEchoResult>? _job;
     private bool _busy;
     private bool _loading;
+    private readonly Dispatcher _ui;
 
     public BindFields Bind { get; } = new();
 
@@ -41,6 +42,7 @@ public sealed partial class MainViewModel : ObservableObject
         }
 
         Bind.PropertyChanged += (_, _) => Persist();
+        _ui = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
     }
 
     [ObservableProperty]
@@ -141,12 +143,16 @@ public sealed partial class MainViewModel : ObservableObject
         }
         finally
         {
-            HideProgress();
+            await OnUiAsync(() =>
+            {
+                HideProgress();
+                StatusBar?.Engine.SetIdlePolicy(3000, "Idle. . .");
+                _busy = false;
+                RaiseBusy();
+            }).ConfigureAwait(false);
             _job = null;
             _cts.Dispose();
             _cts = null;
-            _busy = false;
-            RaiseBusy();
         }
     }
 
@@ -225,8 +231,8 @@ public sealed partial class MainViewModel : ObservableObject
             Dashboard?.ShowProbe(series);
             Dashboard?.OpenProbePage();
             Status = $"Probe {probeTotal} / {probeTotal}";
+            StatusBar?.Engine.SetIdlePolicy(3000, "Idle. . .");
         }).ConfigureAwait(false);
-        StatusBar?.Engine.SetIdlePolicy(3000, "Idle. . .");
     }
 
     private async Task<IcmpEchoResult> EchoOnceAsync(PingIqQuery query, CancellationToken token)
@@ -338,16 +344,15 @@ public sealed partial class MainViewModel : ObservableObject
         return $"{minutes:00}:{seconds:00}";
     }
 
-    private static Task OnUiAsync(Action action)
+    private Task OnUiAsync(Action action)
     {
-        var dispatcher = Application.Current?.Dispatcher;
-        if (dispatcher is null || dispatcher.CheckAccess())
+        if (_ui.CheckAccess())
         {
             action();
             return Task.CompletedTask;
         }
 
-        return dispatcher.InvokeAsync(action, DispatcherPriority.Normal).Task;
+        return _ui.InvokeAsync(action, DispatcherPriority.Normal).Task;
     }
 
     public void BeginLoad() => _loading = true;
