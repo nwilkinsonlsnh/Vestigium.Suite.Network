@@ -79,6 +79,9 @@ public sealed partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private bool _detailsOpen;
 
+    [ObservableProperty]
+    private string _gateSummary = string.Empty;
+
     public bool CanStart => !_busy;
 
     public bool CanCancel => _busy;
@@ -122,6 +125,7 @@ public sealed partial class MainViewModel : ObservableObject
         Replies.Clear();
         Summary = string.Empty;
         AnalyticsSummary = string.Empty;
+        GateSummary = string.Empty;
         DetailsOpen = true;
         Status = "Running";
         _cts = new CancellationTokenSource();
@@ -222,12 +226,16 @@ public sealed partial class MainViewModel : ObservableObject
     private async Task ProbeLoopAsync(PingIqQuery query, PulsePlan plan, CancellationToken token)
     {
         var clock = Stopwatch.StartNew();
+        var lastSend = TimeSpan.Zero;
+        var lastPacket = TimeSpan.Zero;
         StatusBar?.Engine.SetIdlePolicy(0);
         for (var i = 1; i <= plan.Requests; i++)
         {
             token.ThrowIfCancellationRequested();
             await WaitUntilAsync(clock, plan.DueAt(i), token).ConfigureAwait(false);
+            lastSend = clock.Elapsed;
             var last = await EchoOnceAsync(query, token).ConfigureAwait(false);
+            lastPacket = clock.Elapsed;
             var sent = i;
             var total = plan.Requests;
             var elapsed = clock.Elapsed;
@@ -238,10 +246,16 @@ public sealed partial class MainViewModel : ObservableObject
         }
 
         var probeTotal = plan.Requests;
+        var start = TimeSpan.Zero;
+        var end = TimeSpan.FromMilliseconds(plan.DurationMs);
+        var send = lastSend;
+        var packet = lastPacket;
+        var gates = ProbeGates.Format(start, end, send, packet);
         await OnUiAsync(() =>
         {
             WriteSummary();
             PublishPopulation();
+            GateSummary = gates;
             Dashboard?.OpenProbePage();
             Status = $"Probe {probeTotal} / {probeTotal}";
             StatusBar?.Engine.SetIdlePolicy(3000, "Idle. . .");
