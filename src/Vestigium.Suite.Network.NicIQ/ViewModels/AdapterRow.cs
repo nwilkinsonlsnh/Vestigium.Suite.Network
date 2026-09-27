@@ -19,6 +19,8 @@ public sealed class AdapterRow
 
     public string Status => Source.Status.ToString();
 
+    public bool StatusChanged { get; set; }
+
     public string Type => Source.Type.ToString();
 
     public string? MacAddress => Source.MacAddress;
@@ -37,7 +39,7 @@ public sealed class AdapterRow
                 return Source.Ipv4MetricIsAutomatic == true
                     ? $"{metric} auto"
                     : metric.ToString(CultureInfo.InvariantCulture);
-            return Source.Ipv4MetricIsAutomatic == true ? "auto" : string.Empty;
+            return Source.Ipv4MetricIsAutomatic == true ? "Autoconfigured" : string.Empty;
         }
     }
 
@@ -61,11 +63,7 @@ public sealed class AdapterRow
             text.AppendLine($"Interface index  {index}");
         }
 
-        if (adapter.Ipv4Metric is int metric)
-        {
-            var auto = adapter.Ipv4MetricIsAutomatic == true ? "  automatic" : string.Empty;
-            text.AppendLine($"IPv4 metric      {metric}{auto}");
-        }
+        text.AppendLine($"IPv4 metric      {FormatMetric(adapter)}");
 
         if (adapter.Mtu is int mtu)
             text.AppendLine($"MTU              {mtu}");
@@ -149,7 +147,12 @@ public sealed class AdapterRow
             text.AppendLine(value);
     }
 
-    private static string Yes(bool value) => value ? "Yes" : "No";
+    private static string FormatMetric(NetworkAdapter adapter)
+    {
+        if (adapter.Ipv4Metric is int metric)
+            return adapter.Ipv4MetricIsAutomatic == true ? $"{metric}  Autoconfigured" : metric.ToString(CultureInfo.InvariantCulture);
+        return adapter.Ipv4MetricIsAutomatic == true ? "Autoconfigured" : "—";
+    }
 
     private static string FormatOptional(bool? value)
         => value is null ? "—" : value.Value ? "Yes" : "No";

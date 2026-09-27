@@ -164,8 +164,11 @@ public sealed partial class MainViewModel : ObservableObject
                 Duration = query.Duration
             });
             var result = await _watchJob.RunAsync(token).ConfigureAwait(true);
-            Post(FormatWatch(result));
+            var changed = WatchStatusFlipped(result);
+            Post(FormatWatch(result, changed));
             Dashboard?.ShowWatch(result.Samples.Select(s => s.SpeedBitsPerSecond).ToList());
+            Refresh();
+            MarkStatusChanged(query.AdapterKey, changed);
         }
         catch (OperationCanceledException)
         {
@@ -230,6 +233,37 @@ public sealed partial class MainViewModel : ObservableObject
         SelectedAdapter = Adapters.Count > 0 ? Adapters[0] : null;
     }
 
+    private void MarkStatusChanged(string key, bool changed)
+    {
+        if (!changed)
+            return;
+
+        for (var i = 0; i < Adapters.Count; i++)
+        {
+            var row = Adapters[i];
+            if (!string.Equals(row.Id, key, StringComparison.OrdinalIgnoreCase)
+                && !string.Equals(row.Name, key, StringComparison.OrdinalIgnoreCase)
+                && !string.Equals(row.Source.Description, key, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            row.StatusChanged = true;
+            Adapters.RemoveAt(i);
+            Adapters.Insert(i, row);
+            SelectedAdapter = row;
+            Detail = row.Detail;
+            break;
+        }
+    }
+
+    private static bool WatchStatusFlipped(AdapterWatchResult result)
+    {
+        if (result.FirstStatus != result.LastStatus)
+            return true;
+        return result.Samples.Select(s => s.Status).Distinct().Count() > 1;
+    }
+
     private void Post(string status, string? detail = null)
     {
         Caption = string.IsNullOrWhiteSpace(detail) ? status : $"{status}  {detail}";
@@ -237,12 +271,13 @@ public sealed partial class MainViewModel : ObservableObject
             StatusBar.Message = Caption;
     }
 
-    private static string FormatWatch(AdapterWatchResult result)
+    private static string FormatWatch(AdapterWatchResult result, bool changed)
     {
         var last = result.Samples.Count > 0 ? result.Samples[^1] : null;
-        if (last is null)
-            return result.LastStatus.ToString();
-        return $"{result.LastStatus}  {LinkSpeed.Format(last.SpeedBitsPerSecond)}";
+        var speed = last is null ? result.LastStatus.ToString() : $"{result.LastStatus}  {LinkSpeed.Format(last.SpeedBitsPerSecond)}";
+        if (!changed)
+            return speed;
+        return $"{speed}  {result.FirstStatus} → {result.LastStatus}";
     }
 
     private static string FormatHeader(WorkstationNetwork box)
