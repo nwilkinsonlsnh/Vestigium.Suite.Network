@@ -23,6 +23,8 @@ public partial class App : Application
 
     public static SettingsViewModel? Settings { get; private set; }
 
+    public static NicIqSession? Session { get; private set; }
+
     public static VestigiumShell? Shell { get; set; }
 
     public static void SetDashboardEnabled(bool enabled)
@@ -96,9 +98,21 @@ public partial class App : Application
             }
         });
 
-        Settings = new SettingsViewModel(Themes, chrome);
+        var store = new NicIqSettingsStore(NicIqSettingsStore.DefaultRoot);
+        var session = new NicIqSession(store, Themes, chrome);
+        Session = session;
+
+        Settings = new SettingsViewModel(Themes, chrome) { Session = session };
         var dash = new DashboardViewModel();
-        var nic = new MainViewModel { StatusBar = chrome.Status, Dashboard = dash };
+        var nic = new MainViewModel
+        {
+            StatusBar = chrome.Status,
+            Dashboard = dash,
+            Session = session,
+            Settings = Settings
+        };
+        Settings.Host = nic;
+        session.Attach(nic, Settings);
         nic.RefreshCommand.Execute(null);
 
         var nicItem = window.HostShell["NicIQ"];
@@ -129,6 +143,12 @@ public partial class App : Application
 
         window.Loaded += (_, _) => Shell = window.HostShell;
         chrome.Status.Message = "Idle";
+        chrome.PropertyChanged += (_, args) =>
+        {
+            if (args.PropertyName is nameof(VestigiumDefaultWindowViewModel.ShowStatusBar)
+                or nameof(VestigiumDefaultWindowViewModel.Status))
+                session.Save();
+        };
         return window;
     }
 }

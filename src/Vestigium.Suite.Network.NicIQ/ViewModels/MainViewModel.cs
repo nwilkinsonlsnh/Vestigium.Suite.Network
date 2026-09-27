@@ -11,6 +11,7 @@ public sealed partial class MainViewModel : ObservableObject
     private CancellationTokenSource? _cts;
     private NetworkJob<AdapterWatchResult>? _watchJob;
     private bool _busy;
+    private bool _loading;
 
     public MainViewModel()
     {
@@ -22,6 +23,14 @@ public sealed partial class MainViewModel : ObservableObject
     public VestigiumStatusBarViewModel? StatusBar { get; set; }
 
     public DashboardViewModel? Dashboard { get; set; }
+
+    public NicIqSession? Session { get; set; }
+
+    public SettingsViewModel? Settings { get; set; }
+
+    public void BeginLoad() => _loading = true;
+
+    public void EndLoad() => _loading = false;
 
     [ObservableProperty]
     private string _header = "NicIQ";
@@ -55,9 +64,33 @@ public sealed partial class MainViewModel : ObservableObject
 
     partial void OnIncludeDownChanged(bool value)
     {
+        if (_loading)
+            return;
+        if (Settings is not null)
+        {
+            Settings.BeginLoad();
+            Settings.IncludeDown = value;
+            Settings.EndLoad();
+        }
+
+        Session?.Save();
         if (_busy)
             return;
         Refresh();
+    }
+
+    partial void OnDurationSecondsChanged(decimal value)
+    {
+        if (_loading)
+            return;
+        if (Settings is not null)
+        {
+            Settings.BeginLoad();
+            Settings.DefaultDurationSeconds = NicIqSession.ClampDuration(value);
+            Settings.EndLoad();
+        }
+
+        Session?.Save();
     }
 
     [RelayCommand(CanExecute = nameof(CanRefresh))]

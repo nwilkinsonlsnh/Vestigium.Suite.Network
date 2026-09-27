@@ -9,6 +9,7 @@ public sealed partial class SettingsViewModel : ObservableObject
 {
     private readonly ThemeManager _themes;
     private readonly VestigiumDefaultWindowViewModel _chrome;
+    private bool _loading;
 
     public SettingsViewModel(ThemeManager themes, VestigiumDefaultWindowViewModel chrome)
     {
@@ -27,6 +28,10 @@ public sealed partial class SettingsViewModel : ObservableObject
             }
         };
     }
+
+    public NicIqSession? Session { get; set; }
+
+    public MainViewModel? Host { get; set; }
 
     public IReadOnlyList<ThemeDefinition> Themes => _themes.AvailableThemes;
 
@@ -63,10 +68,25 @@ public sealed partial class SettingsViewModel : ObservableObject
     private bool _barVisible;
 
     [ObservableProperty]
-    private decimal _defaultDurationSeconds = 10m;
+    private decimal _defaultDurationSeconds = NicIqWatchInput.DefaultDurationSeconds;
 
     [ObservableProperty]
     private bool _includeDown = true;
+
+    public void BeginLoad() => _loading = true;
+
+    public void EndLoad() => _loading = false;
+
+    public void LoadFrom(NicIqSettings data)
+    {
+        SelectedThemeId = string.IsNullOrWhiteSpace(data.ThemeId) ? SelectedThemeId : data.ThemeId;
+        DefaultDurationSeconds = NicIqSession.ClampDuration(data.DurationSeconds);
+        IncludeDown = data.IncludeDown;
+        BarPosition = string.Equals(data.StatusBarDock, "Top", StringComparison.OrdinalIgnoreCase)
+            ? VestigiumStatusBarPosition.Top
+            : VestigiumStatusBarPosition.Bottom;
+        BarVisible = data.StatusBarVisible;
+    }
 
     partial void OnSelectedThemeIdChanged(string? value)
     {
@@ -74,6 +94,7 @@ public sealed partial class SettingsViewModel : ObservableObject
             return;
         if (_themes.Current?.Id != value)
             _themes.SwitchTheme(value);
+        Persist();
     }
 
     partial void OnBarPositionChanged(VestigiumStatusBarPosition value)
@@ -83,7 +104,42 @@ public sealed partial class SettingsViewModel : ObservableObject
             _chrome.DockStatusBarBottomCommand.Execute(null);
         else
             _chrome.DockStatusBarTopCommand.Execute(null);
+        Persist();
     }
 
-    partial void OnBarVisibleChanged(bool value) => _chrome.ShowStatusBar = value;
+    partial void OnBarVisibleChanged(bool value)
+    {
+        _chrome.ShowStatusBar = value;
+        Persist();
+    }
+
+    partial void OnDefaultDurationSecondsChanged(decimal value)
+    {
+        if (_loading)
+            return;
+        if (Host is not null)
+        {
+            Host.BeginLoad();
+            Host.DurationSeconds = NicIqSession.ClampDuration(value);
+            Host.EndLoad();
+        }
+
+        Persist();
+    }
+
+    partial void OnIncludeDownChanged(bool value)
+    {
+        if (_loading)
+            return;
+        if (Host is not null)
+            Host.IncludeDown = value;
+        Persist();
+    }
+
+    private void Persist()
+    {
+        if (_loading)
+            return;
+        Session?.Save();
+    }
 }
