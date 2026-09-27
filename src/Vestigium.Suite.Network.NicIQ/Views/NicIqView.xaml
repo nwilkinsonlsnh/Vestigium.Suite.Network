@@ -46,20 +46,34 @@
                 ScrollViewer.VerticalScrollBarVisibility="Visible"
                 MouseDoubleClick="AdapterGrid_MouseDoubleClick">
         <DataGrid.Columns>
+          <DataGridTemplateColumn Header="Status" Width="56" MinWidth="56">
+            <DataGridTemplateColumn.CellTemplate>
+              <DataTemplate>
+                <Grid Width="24" Height="24" ToolTip="{Binding Status}" HorizontalAlignment="Center">
+                  <Ellipse Fill="{Binding StatusFill}">
+                    <Ellipse.Style>
+                      <Style TargetType="Ellipse">
+                        <Setter Property="StrokeThickness" Value="0" />
+                        <Style.Triggers>
+                          <DataTrigger Binding="{Binding StatusChanged}" Value="True">
+                            <Setter Property="Stroke" Value="#FFFFD400" />
+                            <Setter Property="StrokeThickness" Value="2" />
+                          </DataTrigger>
+                        </Style.Triggers>
+                      </Style>
+                    </Ellipse.Style>
+                  </Ellipse>
+                  <TextBlock Text="{Binding StatusGlyph}"
+                             Foreground="White"
+                             FontSize="11"
+                             FontWeight="SemiBold"
+                             HorizontalAlignment="Center"
+                             VerticalAlignment="Center" />
+                </Grid>
+              </DataTemplate>
+            </DataGridTemplateColumn.CellTemplate>
+          </DataGridTemplateColumn>
           <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="2*" MinWidth="180" />
-          <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="90" MinWidth="80">
-            <DataGridTextColumn.ElementStyle>
-              <Style TargetType="TextBlock">
-                <Setter Property="Foreground" Value="{DynamicResource Vestigium.Brushes.Text.Primary}" />
-                <Style.Triggers>
-                  <DataTrigger Binding="{Binding StatusChanged}" Value="True">
-                    <Setter Property="Foreground" Value="#FFFFD400" />
-                    <Setter Property="FontWeight" Value="SemiBold" />
-                  </DataTrigger>
-                </Style.Triggers>
-              </Style>
-            </DataGridTextColumn.ElementStyle>
-          </DataGridTextColumn>
           <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="130" MinWidth="110" />
           <DataGridTextColumn Header="MacAddress" Binding="{Binding MacAddress}" Width="150" MinWidth="130" />
           <DataGridTextColumn Header="Speed" Binding="{Binding Speed}" Width="110" MinWidth="90" />

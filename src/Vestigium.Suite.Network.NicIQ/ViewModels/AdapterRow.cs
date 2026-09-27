@@ -1,5 +1,7 @@
 using System.Globalization;
+using System.Net.NetworkInformation;
 using System.Text;
+using System.Windows.Media;
 using Vestigium.Helpers.Network;
 
 namespace Vestigium.Suite.Network.NicIQ.ViewModels;
@@ -19,7 +21,26 @@ public sealed class AdapterRow
 
     public string Status => Source.Status.ToString();
 
+    public string StatusGlyph => Source.Status == OperationalStatus.Up ? "▲" : "▼";
+
+    public Brush StatusFill => Source.Status == OperationalStatus.Up
+        ? UpFill
+        : Source.Status == OperationalStatus.Down
+            ? DownFill
+            : OtherFill;
+
     public bool StatusChanged { get; set; }
+
+    private static readonly Brush UpFill = BrushFrom("#2E7D32");
+    private static readonly Brush DownFill = BrushFrom("#C62828");
+    private static readonly Brush OtherFill = BrushFrom("#546E7A");
+
+    private static Brush BrushFrom(string hex)
+    {
+        var brush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(hex));
+        brush.Freeze();
+        return brush;
+    }
 
     public string Type => Source.Type.ToString();
 
