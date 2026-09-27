@@ -24,11 +24,12 @@ public partial class PingIqWindow : Window
 
     public VestigiumShell HostShell => RootShell;
 
+    private bool _sizing;
+
     private void OnSourceInitialized(object? sender, EventArgs e)
     {
-        var work = SystemParameters.WorkArea;
-        Left = work.Left + Math.Max(0, (work.Width - Width) / 2);
-        Top = work.Top + Math.Max(0, (work.Height - Height) / 2);
+        FitNormalSize();
+        CenterOnWorkArea();
     }
 
     private void OnLoaded(object sender, RoutedEventArgs e)
@@ -36,29 +37,49 @@ public partial class PingIqWindow : Window
         ViewModel.RootShell = RootShell;
         ThemeChrome.Bind(this);
         BuildThemeMenu();
-        LockNormalSize();
     }
 
     private void OnWindowStateChanged(object? sender, EventArgs e)
     {
+        if (_sizing)
+            return;
+
         if (WindowState == WindowState.Maximized)
         {
-            MinWidth = 0;
-            MinHeight = 0;
+            MinWidth = 720;
+            MinHeight = 600;
             MaxWidth = double.PositiveInfinity;
             MaxHeight = double.PositiveInfinity;
             return;
         }
 
-        Width = 1100;
-        Height = 980;
-        LockNormalSize();
+        if (WindowState == WindowState.Normal)
+        {
+            _sizing = true;
+            FitNormalSize();
+            CenterOnWorkArea();
+            _sizing = false;
+        }
     }
 
-    private void LockNormalSize()
+    private void FitNormalSize()
     {
-        MinWidth = MaxWidth = 1100;
-        MinHeight = MaxHeight = 980;
+        var work = SystemParameters.WorkArea;
+        var width = Math.Min(1100, Math.Max(720, work.Width - 48));
+        var height = Math.Min(980, Math.Max(600, work.Height - 48));
+        MinWidth = 720;
+        MinHeight = 600;
+        MaxWidth = width;
+        MaxHeight = height;
+        Width = width;
+        Height = height;
+    }
+
+    private void CenterOnWorkArea()
+    {
+        var work = SystemParameters.WorkArea;
+        Left = work.Left + Math.Max(0, (work.Width - Width) / 2);
+        Top = work.Top + Math.Max(0, (work.Height - Height) / 2);
     }
 
     private void BuildThemeMenu()

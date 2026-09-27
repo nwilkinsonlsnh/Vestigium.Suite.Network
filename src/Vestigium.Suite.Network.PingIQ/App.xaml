@@ -11,10 +11,9 @@
       <Setter Property="BorderBrush" Value="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" />
       <Setter Property="TextAlignment" Value="Center" />
     </Style>
-    <Style TargetType="ComboBoxItem" BasedOn="{StaticResource ComboBoxItem.Standard}">
-      <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Style TargetType="ComboBoxItem">
+      <Setter Property="HorizontalContentAlignment" Value="Left" />
       <Setter Property="VerticalContentAlignment" Value="Center" />
-      <Setter Property="HorizontalAlignment" Value="Stretch" />
     </Style>
     <Style TargetType="{x:Type uc:VestigiumUnderConstruction}"
            BasedOn="{StaticResource {x:Type uc:VestigiumUnderConstruction}}">
