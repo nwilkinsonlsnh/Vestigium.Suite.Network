@@ -227,30 +227,21 @@ public sealed partial class MainViewModel : ObservableObject
     {
         var clock = Stopwatch.StartNew();
         var lastSend = TimeSpan.Zero;
-        var lastPacket = TimeSpan.Zero;
         StatusBar?.Engine.SetIdlePolicy(0);
+        var inflight = new List<Task>(plan.Requests);
         for (var i = 1; i <= plan.Requests; i++)
         {
             token.ThrowIfCancellationRequested();
             await WaitUntilAsync(clock, plan.DueAt(i), token).ConfigureAwait(false);
             lastSend = clock.Elapsed;
-            var last = await EchoOnceAsync(query, token).ConfigureAwait(false);
-            lastPacket = clock.Elapsed;
             var sent = i;
-            var total = plan.Requests;
-            var elapsed = clock.Elapsed;
-            var shot = last;
-            PostShot(shot, sent, total, elapsed);
-            if (sent == 1 && !PulsePrelude.MayStartPulse(last.Status == NetworkJobStatus.Success))
-                return;
+            inflight.Add(FireShotAsync(query, sent, plan.Requests, clock, token));
         }
 
+        await Task.WhenAll(inflight).ConfigureAwait(false);
+        var lastPacket = clock.Elapsed;
         var probeTotal = plan.Requests;
-        var start = TimeSpan.Zero;
-        var end = TimeSpan.FromMilliseconds(plan.DurationMs);
-        var send = lastSend;
-        var packet = lastPacket;
-        var gates = ProbeGates.Format(start, end, send, packet);
+        var gates = ProbeGates.Format(TimeSpan.Zero, TimeSpan.FromMilliseconds(plan.DurationMs), lastSend, lastPacket);
         await OnUiAsync(() =>
         {
             WriteSummary();
@@ -260,6 +251,12 @@ public sealed partial class MainViewModel : ObservableObject
             Status = $"Probe {probeTotal} / {probeTotal}";
             StatusBar?.Engine.SetIdlePolicy(3000, "Idle. . .");
         }).ConfigureAwait(false);
+    }
+
+    private async Task FireShotAsync(PingIqQuery query, int sent, int total, Stopwatch clock, CancellationToken token)
+    {
+        var shot = await EchoOnceAsync(query, token).ConfigureAwait(false);
+        PostShot(shot, sent, total, clock.Elapsed);
     }
 
     private async Task<IcmpEchoResult> EchoOnceAsync(PingIqQuery query, CancellationToken token)
@@ -274,8 +271,9 @@ public sealed partial class MainViewModel : ObservableObject
         var echoTarget = await EchoAddressAsync(query.Target, token).ConfigureAwait(false);
         if (echoTarget is null)
             throw new InvalidOperationException($"No A/AAAA for {query.Target}.");
-        _job = NetworkHelper.IcmpEcho(echoTarget, options);
-        return await _job.RunAsync(token).ConfigureAwait(false);
+        var job = NetworkHelper.IcmpEcho(echoTarget, options);
+        _job = job;
+        return await job.RunAsync(token).ConfigureAwait(false);
     }
 
     private async Task<string?> EchoAddressAsync(string target, CancellationToken token)
