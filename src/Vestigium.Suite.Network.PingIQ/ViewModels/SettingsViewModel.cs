@@ -248,12 +248,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         => ProbeCalc.Describe((int)DefaultRequests, (int)DefaultSeconds);
 
     [ObservableProperty]
-    private decimal _intervalMs = 100m;
-
-    [ObservableProperty]
-    private decimal _rateHz = 10m;
-
-    private bool _syncingCalc;
+    private decimal _intervalSeconds = 0.1m;
 
     [ObservableProperty]
     private bool _requestsCalcOpen;
@@ -272,7 +267,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     {
         DefaultRequests = RequestDefault;
         DefaultSeconds = SecondsDefault;
-        IntervalMs = 100m;
+        IntervalSeconds = 0.1m;
         Persist();
         OnPropertyChanged(nameof(ProbePlanText));
     }
@@ -280,7 +275,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     [RelayCommand]
     private void ApplyRequestsFromInterval()
     {
-        DefaultRequests = ProbeCalc.RequestsFromInterval((int)DefaultSeconds, (int)IntervalMs);
+        DefaultRequests = ProbeCalc.RequestsFromInterval((int)DefaultSeconds, IntervalSeconds);
         RequestsCalcOpen = false;
         OnPropertyChanged(nameof(ProbePlanText));
     }
@@ -288,7 +283,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     [RelayCommand]
     private void ApplySecondsFromInterval()
     {
-        DefaultSeconds = ProbeCalc.SecondsFromInterval((int)DefaultRequests, (int)IntervalMs);
+        DefaultSeconds = ProbeCalc.SecondsFromInterval((int)DefaultRequests, IntervalSeconds);
         SecondsCalcOpen = false;
         OnPropertyChanged(nameof(ProbePlanText));
     }
@@ -296,45 +291,35 @@ public sealed partial class SettingsViewModel : ObservableObject
     [RelayCommand]
     private void ToggleRequestsCalc()
     {
-        RequestsCalcOpen = !RequestsCalcOpen;
-        if (RequestsCalcOpen)
+        var open = !RequestsCalcOpen;
+        RequestsCalcOpen = open;
+        if (open)
+        {
+            SecondsCalcOpen = false;
             SeedCalcFromPlan();
+        }
     }
 
     [RelayCommand]
     private void ToggleSecondsCalc()
     {
-        SecondsCalcOpen = !SecondsCalcOpen;
-        if (SecondsCalcOpen)
+        var open = !SecondsCalcOpen;
+        SecondsCalcOpen = open;
+        if (open)
+        {
+            RequestsCalcOpen = false;
             SeedCalcFromPlan();
-    }
-
-    partial void OnIntervalMsChanged(decimal value)
-    {
-        if (_syncingCalc)
-            return;
-        _syncingCalc = true;
-        RateHz = ProbeCalc.HzFromInterval((int)value);
-        _syncingCalc = false;
-    }
-
-    partial void OnRateHzChanged(decimal value)
-    {
-        if (_syncingCalc)
-            return;
-        _syncingCalc = true;
-        IntervalMs = ProbeCalc.IntervalFromHz(value);
-        _syncingCalc = false;
+        }
     }
 
     private void SeedCalcFromPlan()
     {
         if (!PulsePlan.TryCreate(DefaultRequests, DefaultSeconds, out var plan, out _) || plan.Requests <= 1)
             return;
-        var ms = (decimal)Math.Round(plan.Spacing.TotalMilliseconds, MidpointRounding.AwayFromZero);
-        if (ms < 10)
-            ms = 10;
-        IntervalMs = ms;
+        var seconds = (decimal)plan.Spacing.TotalSeconds;
+        if (seconds < 0.01m)
+            seconds = 0.01m;
+        IntervalSeconds = Math.Round(seconds, 3, MidpointRounding.AwayFromZero);
     }
 
     partial void OnSelectedSourceChanged(string? value) => Persist();

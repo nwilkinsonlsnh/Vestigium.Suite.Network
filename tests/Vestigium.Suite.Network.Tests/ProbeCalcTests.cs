@@ -6,11 +6,11 @@ namespace Vestigium.Suite.Network.Tests;
 public sealed class ProbeCalcTests
 {
     [Fact]
-    public void Default_300_over_30_is_about_100ms()
+    public void Default_300_over_30_is_about_a_tenth_second()
     {
         Assert.True(PulsePlan.TryCreate(300, 30, out var plan, out _));
-        Assert.InRange(plan.Spacing.TotalMilliseconds, 100.0, 101.0);
-        Assert.Equal(301, ProbeCalc.RequestsFromInterval(30, 100));
-        Assert.Equal(30, ProbeCalc.SecondsFromInterval(300, 100));
+        Assert.InRange(plan.Spacing.TotalSeconds, 0.10, 0.11);
+        Assert.Equal(301, ProbeCalc.RequestsFromInterval(30, 0.1m));
+        Assert.Equal(30, ProbeCalc.SecondsFromInterval(300, 0.1m));
     }
 }
