@@ -29,6 +29,16 @@ public sealed class AdapterRow
         ? string.Empty
         : LinkSpeed.Format(Source.SpeedBitsPerSecond.Value);
 
+    public string Metric
+    {
+        get
+        {
+            if (Source.Ipv4Metric is not int metric)
+                return string.Empty;
+            return Source.Ipv4MetricIsAutomatic == true ? $"{metric} auto" : metric.ToString(CultureInfo.InvariantCulture);
+        }
+    }
+
     public string Detail => FormatDetail(Source);
 
     public static string FormatDetail(NetworkAdapter adapter)
@@ -36,6 +46,22 @@ public sealed class AdapterRow
         var text = new StringBuilder();
         text.AppendLine("Description");
         text.AppendLine(string.IsNullOrWhiteSpace(adapter.Description) ? "—" : adapter.Description.Trim());
+        if (adapter.InterfaceIndex is int index)
+        {
+            text.AppendLine();
+            text.AppendLine($"Interface index  {index}");
+        }
+
+        if (adapter.Ipv4Metric is int metric)
+        {
+            var auto = adapter.Ipv4MetricIsAutomatic == true ? "  automatic" : string.Empty;
+            text.AppendLine($"IPv4 metric      {metric}{auto}");
+        }
+
+        if (adapter.Mtu is int mtu)
+            text.AppendLine($"MTU              {mtu}");
+
+        text.AppendLine($"Autoconfig       {FormatOptional(adapter.Ipv4AutoconfigEnabled)}");
         text.AppendLine();
         text.AppendLine("Unicast addresses");
         if (adapter.UnicastAddresses.Count == 0)
@@ -57,6 +83,13 @@ public sealed class AdapterRow
         text.AppendLine("DNS servers");
         AppendList(text, adapter.DnsServers);
         text.AppendLine();
+        text.AppendLine("DNS suffix");
+        text.AppendLine(string.IsNullOrWhiteSpace(adapter.DnsSuffix) ? "—" : adapter.DnsSuffix.Trim());
+        text.AppendLine($"Register in DNS  {FormatOptional(adapter.DnsRegistrationEnabled)}");
+        text.AppendLine();
+        text.AppendLine("WINS servers");
+        AppendList(text, adapter.WinsServers);
+        text.AppendLine();
         text.AppendLine("DHCP");
         if (adapter.Dhcp.IsEnabled is null && string.IsNullOrWhiteSpace(adapter.Dhcp.Server)
             && adapter.Dhcp.LeaseObtained is null && adapter.Dhcp.LeaseExpires is null)
@@ -72,7 +105,26 @@ public sealed class AdapterRow
 
         text.AppendLine();
         text.AppendLine("NetBIOS-over-TCP");
-        text.Append(adapter.NetbiosOverTcp.ToString());
+        text.AppendLine(adapter.NetbiosOverTcp.ToString());
+        if (adapter.Driver is { } driver)
+        {
+            text.AppendLine();
+            text.AppendLine("Driver");
+            text.AppendLine(driver.Description ?? "—");
+            text.AppendLine($"Provider   {driver.Provider ?? "—"}");
+            text.AppendLine($"Version    {driver.Version ?? "—"}");
+            text.AppendLine($"Date       {FormatTime(driver.Date)}");
+            text.AppendLine($"INF        {driver.Inf ?? "—"}");
+            text.AppendLine($"Hardware   {driver.HardwareId ?? "—"}");
+            text.AppendLine($"Service    {driver.Service ?? "—"}");
+        }
+
+        if (adapter.PhysicalAdapter is not null)
+        {
+            text.AppendLine();
+            text.AppendLine($"Physical adapter  {FormatOptional(adapter.PhysicalAdapter)}");
+        }
+
         return text.ToString();
     }
 

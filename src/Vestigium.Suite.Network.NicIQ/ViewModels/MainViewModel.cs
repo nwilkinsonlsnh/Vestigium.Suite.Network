@@ -228,8 +228,9 @@ public sealed partial class MainViewModel : ObservableObject
     private static string FormatHeader(WorkstationNetwork box)
     {
         var host = string.IsNullOrWhiteSpace(box.HostName) ? "—" : box.HostName.Trim();
-        if (string.IsNullOrWhiteSpace(box.DomainName))
-            return host;
-        return $"{host}  /  {box.DomainName.Trim()}";
+        var line = string.IsNullOrWhiteSpace(box.DomainName) ? host : $"{host}  /  {box.DomainName.Trim()}";
+        if (box.DnsSuffixSearchList.Count == 0)
+            return line;
+        return $"{line}{Environment.NewLine}Search  {string.Join(", ", box.DnsSuffixSearchList)}";
     }
 }

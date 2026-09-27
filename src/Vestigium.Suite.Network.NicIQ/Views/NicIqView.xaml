@@ -12,6 +12,7 @@
 
     <TextBlock Style="{StaticResource TextBlock.Caption}"
                Text="{Binding Header}"
+               TextWrapping="Wrap"
                Margin="0,0,0,8" />
 
     <StackPanel Grid.Row="1" Style="{StaticResource StackPanel.Toolbar}" Orientation="Horizontal" Margin="0,0,0,8">
@@ -49,6 +50,7 @@
           <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="130" MinWidth="110" />
           <DataGridTextColumn Header="MacAddress" Binding="{Binding MacAddress}" Width="150" MinWidth="130" />
           <DataGridTextColumn Header="Speed" Binding="{Binding Speed}" Width="110" MinWidth="90" />
+          <DataGridTextColumn Header="Metric" Binding="{Binding Metric}" Width="80" MinWidth="70" />
           <DataGridTextColumn Header="Id" Binding="{Binding Id}" Width="*" MinWidth="220" />
         </DataGrid.Columns>
       </DataGrid>
