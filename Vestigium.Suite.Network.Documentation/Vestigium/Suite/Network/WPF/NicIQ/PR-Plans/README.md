@@ -2,7 +2,8 @@
 
 **Host:** `Vestigium.Suite.Network.NicIQ`  
 **APPID:** `NicIQ`  
-**Status:** No current implementation plan.
+**Status:** Live — [PR01 -- Implementation Plan.md](PR01/PR01%20--%20Implementation%20Plan.md)  
+**Next slice:** PR01-01
 
 This file is the queue keeper. It is not the plan. Do not delete it when the plan is idle.
 
@@ -11,8 +12,8 @@ This file is the queue keeper. It is not the plan. Do not delete it when the pla
 ```
 PR-Plans/
   README.md                          this file — never a plan
-  PRnn/                              LIVE slice folder (create when a plan opens)
-    PRnn -- Implementation Plan.md   the paper you implement
+  PR01/                              LIVE slice folder
+    PR01 -- Implementation Plan.md   the paper you implement
   Completed/
     PRnn/                            finished slice (needs a file or Git drops it)
 ```
@@ -20,7 +21,7 @@ PR-Plans/
 | Location | Holds |
 |---|---|
 | Queue keeper | `WPF/NicIQ/PR-Plans/README.md` (this file) |
-| Live plan | `WPF/NicIQ/PR-Plans/PRnn/PRnn -- Implementation Plan.md` |
+| Live plan | `WPF/NicIQ/PR-Plans/PR01/PR01 -- Implementation Plan.md` |
 | Finished plan | `WPF/NicIQ/PR-Plans/Completed/PRnn/` |
 
 **Do not** place `PRnn -- Implementation Plan.md` next to this README. Solution Explorer already has a `PRnn` folder. The plan file lives inside it.
@@ -47,7 +48,7 @@ When the slice finishes, move the whole `PRnn/` folder under `Completed/`. Then 
 | [Requirements_v1.0.md](../Requirements_v1.0.md) | The window |
 | [Design_v1.0.md](../Design_v1.0.md) | Class and window map |
 | Helpers.Network Requirements v1.6 | Protocol facts |
-| A live `PRnn` plan under `PR-Plans/PRnn/` | The slice we are building now |
+| [PR01 -- Implementation Plan.md](PR01/PR01%20--%20Implementation%20Plan.md) | The slice we are building now |
 
 If a plan and Requirements disagree on the window, Requirements win.  
 If a plan invents a protocol the library does not own, the plan is wrong.
