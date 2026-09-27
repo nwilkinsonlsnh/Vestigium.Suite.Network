@@ -23,8 +23,8 @@
                                   Minimum="1" Maximum="60" Increment="1" PageIncrement="5" DecimalPlaces="0"
                                   Width="88"
                                   Margin="0,0,8,0" />
-      <Button Content="Watch" Style="{StaticResource Button.Primary}" Padding="16,4" Margin="0,0,8,0" IsEnabled="False" />
-      <Button Content="Cancel" Style="{StaticResource Button.Secondary}" Padding="16,4" IsEnabled="False" />
+      <Button Content="Watch" Style="{StaticResource Button.Primary}" Command="{Binding WatchCommand}" Padding="16,4" Margin="0,0,8,0" />
+      <Button Content="Cancel" Style="{StaticResource Button.Secondary}" Command="{Binding CancelCommand}" Padding="16,4" />
     </StackPanel>
 
     <Grid Grid.Row="2">

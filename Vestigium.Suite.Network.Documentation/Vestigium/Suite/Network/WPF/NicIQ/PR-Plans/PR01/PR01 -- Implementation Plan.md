@@ -221,7 +221,7 @@ Load after Themes.Initialize. Save on change. Tests inject a temp root. Missing 
 | ---: | :--- | :--- | :--- |
 | 1 | PR01-01 | Skeleton. `NicIqWindow`, ThemeCatalog, ThemeChrome, three pages, icon, primary-monitor center, package pins. Kill `MainWindow`. NicIQ page may still stub the job. Dashboard locked. | Done |
 | 2 | PR01-02 | Inventory on NicIQ page. Header, grid, detail, Include down, Refresh, keep-last-list. | Done |
-| 3 | PR01-03 | `NicIqWatchInput` + Watch + Cancel + one in-flight. Status bar posts. | Open |
+| 3 | PR01-03 | `NicIqWatchInput` + Watch + Cancel + one in-flight. Status bar posts. | Done |
 | 4 | PR01-04 | Settings persist + Theme page + Duration / IncludeDown defaults. | Open |
 | 5 | PR01-05 | Dashboard `ChartView` + Unlock after Watch. No `SampleCounters`. | Open |
 | 6 | PR01-06 | Host tests. No inventory call. No watch call. | Open |
@@ -334,4 +334,4 @@ When this plan finishes, move the whole `PR01/` folder to `PR-Plans/Completed/PR
 
 ## Next action
 
-PR01-03. `NicIqWatchInput` + Watch + Cancel + one in-flight. Status bar posts.
+PR01-04. Settings persist + Theme page + Duration / IncludeDown defaults.

@@ -8,6 +8,10 @@ namespace Vestigium.Suite.Network.NicIQ.ViewModels;
 
 public sealed partial class MainViewModel : ObservableObject
 {
+    private CancellationTokenSource? _cts;
+    private NetworkJob<AdapterWatchResult>? _watchJob;
+    private bool _busy;
+
     public MainViewModel()
     {
         Adapters = [];
@@ -16,6 +20,8 @@ public sealed partial class MainViewModel : ObservableObject
     public ObservableCollection<AdapterRow> Adapters { get; }
 
     public VestigiumStatusBarViewModel? StatusBar { get; set; }
+
+    public DashboardViewModel? Dashboard { get; set; }
 
     [ObservableProperty]
     private string _header = "NicIQ";
@@ -30,19 +36,36 @@ public sealed partial class MainViewModel : ObservableObject
     private bool _includeDown = true;
 
     [ObservableProperty]
-    private decimal _durationSeconds = 10m;
+    private decimal _durationSeconds = NicIqWatchInput.DefaultDurationSeconds;
 
     [ObservableProperty]
     private AdapterRow? _selectedAdapter;
 
+    public bool CanRefresh => !_busy;
+
+    public bool CanWatch => !_busy && SelectedAdapter is not null;
+
+    public bool CanCancelWatch => _busy;
+
     partial void OnSelectedAdapterChanged(AdapterRow? value)
-        => Detail = value?.Detail ?? string.Empty;
+    {
+        Detail = value?.Detail ?? string.Empty;
+        WatchCommand.NotifyCanExecuteChanged();
+    }
 
-    partial void OnIncludeDownChanged(bool value) => Refresh();
+    partial void OnIncludeDownChanged(bool value)
+    {
+        if (_busy)
+            return;
+        Refresh();
+    }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanRefresh))]
     private void Refresh()
     {
+        if (_busy)
+            return;
+
         var keep = SelectedAdapter?.Id;
         try
         {
@@ -59,6 +82,73 @@ public sealed partial class MainViewModel : ObservableObject
         }
     }
 
+    [RelayCommand(CanExecute = nameof(CanWatch))]
+    private async Task WatchAsync()
+    {
+        if (_busy)
+            return;
+
+        var key = SelectedAdapter?.Id;
+        if (string.IsNullOrWhiteSpace(key))
+            key = SelectedAdapter?.Name;
+
+        if (!NicIqWatchInput.TryCreate(key, DurationSeconds, out var query, out var reject))
+        {
+            Post("Failed", reject);
+            return;
+        }
+
+        _busy = true;
+        RaiseBusy();
+        Post("Running");
+        _cts = new CancellationTokenSource();
+        var token = _cts.Token;
+        try
+        {
+            _watchJob = NetworkHelper.WatchAdapter(query!.AdapterKey, new AdapterWatchOptions
+            {
+                Duration = query.Duration
+            });
+            var result = await _watchJob.RunAsync(token).ConfigureAwait(true);
+            Post(FormatWatch(result));
+            Dashboard?.Unlock();
+        }
+        catch (OperationCanceledException)
+        {
+            Post("Cancelled");
+        }
+        catch (Exception ex)
+        {
+            Post("Failed", ex.Message);
+        }
+        finally
+        {
+            _busy = false;
+            RaiseBusy();
+            _watchJob = null;
+            _cts.Dispose();
+            _cts = null;
+        }
+    }
+
+    [RelayCommand(CanExecute = nameof(CanCancelWatch))]
+    private void Cancel()
+    {
+        _watchJob?.Cancel();
+        try { _cts?.Cancel(); }
+        catch (ObjectDisposedException) { }
+    }
+
+    private void RaiseBusy()
+    {
+        OnPropertyChanged(nameof(CanRefresh));
+        OnPropertyChanged(nameof(CanWatch));
+        OnPropertyChanged(nameof(CanCancelWatch));
+        RefreshCommand.NotifyCanExecuteChanged();
+        WatchCommand.NotifyCanExecuteChanged();
+        CancelCommand.NotifyCanExecuteChanged();
+    }
+
     private void ReplaceRows(IReadOnlyList<AdapterRow> rows, string? keepId)
     {
         Adapters.Clear();
@@ -67,8 +157,7 @@ public sealed partial class MainViewModel : ObservableObject
 
         if (!string.IsNullOrWhiteSpace(keepId))
         {
-            var match = Adapters.FirstOrDefault(r => string.Equals(r.Id, keepId, StringComparison.Ordinal));
-            SelectedAdapter = match;
+            SelectedAdapter = Adapters.FirstOrDefault(r => string.Equals(r.Id, keepId, StringComparison.Ordinal));
             return;
         }
 
@@ -81,10 +170,16 @@ public sealed partial class MainViewModel : ObservableObject
     private void Post(string status, string? detail = null)
     {
         Caption = string.IsNullOrWhiteSpace(detail) ? status : $"{status}  {detail}";
-        if (StatusBar is null)
-            return;
+        if (StatusBar is not null)
+            StatusBar.Message = Caption;
+    }
 
-        StatusBar.Message = Caption;
+    private static string FormatWatch(AdapterWatchResult result)
+    {
+        var last = result.Samples.Count > 0 ? result.Samples[^1] : null;
+        if (last is null)
+            return result.LastStatus.ToString();
+        return $"{result.LastStatus}  {last.SpeedBitsPerSecond}";
     }
 
     private static string FormatHeader(WorkstationNetwork box)
