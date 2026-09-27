@@ -435,6 +435,37 @@ public sealed partial class MainViewModel : ObservableObject
         Persist();
     }
 
+    public void ReplaceTarget(string current, string next)
+    {
+        var size = Session?.Current.TargetHistorySize ?? TargetHistory.DefaultSize;
+        var kept = Targets.Where(x => !string.Equals(x, current, StringComparison.OrdinalIgnoreCase));
+        var list = TargetHistory.Remember(kept, next, size);
+        Targets.Clear();
+        foreach (var item in list)
+            Targets.Add(item);
+        Target = Targets.Count > 0 ? Targets[0] : next.Trim();
+        Persist();
+    }
+
+    public void RemoveTarget(string current)
+    {
+        var size = Session?.Current.TargetHistorySize ?? TargetHistory.DefaultSize;
+        var kept = Targets.Where(x => !string.Equals(x, current, StringComparison.OrdinalIgnoreCase)).ToList();
+        Targets.Clear();
+        foreach (var item in TargetHistory.Remember(kept, null, size))
+            Targets.Add(item);
+        if (string.Equals(Target, current, StringComparison.OrdinalIgnoreCase))
+            Target = Targets.FirstOrDefault() ?? string.Empty;
+        Persist();
+    }
+
+    public void ClearTargets()
+    {
+        Targets.Clear();
+        Target = string.Empty;
+        Persist();
+    }
+
     public void BeginLoad() => _loading = true;
     public void EndLoad() => _loading = false;
 
