@@ -251,6 +251,11 @@ public sealed partial class SettingsViewModel : ObservableObject
     private decimal _intervalMs = 100m;
 
     [ObservableProperty]
+    private decimal _rateHz = 10m;
+
+    private bool _syncingCalc;
+
+    [ObservableProperty]
     private bool _requestsCalcOpen;
 
     [ObservableProperty]
@@ -289,10 +294,48 @@ public sealed partial class SettingsViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void ToggleRequestsCalc() => RequestsCalcOpen = !RequestsCalcOpen;
+    private void ToggleRequestsCalc()
+    {
+        RequestsCalcOpen = !RequestsCalcOpen;
+        if (RequestsCalcOpen)
+            SeedCalcFromPlan();
+    }
 
     [RelayCommand]
-    private void ToggleSecondsCalc() => SecondsCalcOpen = !SecondsCalcOpen;
+    private void ToggleSecondsCalc()
+    {
+        SecondsCalcOpen = !SecondsCalcOpen;
+        if (SecondsCalcOpen)
+            SeedCalcFromPlan();
+    }
+
+    partial void OnIntervalMsChanged(decimal value)
+    {
+        if (_syncingCalc)
+            return;
+        _syncingCalc = true;
+        RateHz = ProbeCalc.HzFromInterval((int)value);
+        _syncingCalc = false;
+    }
+
+    partial void OnRateHzChanged(decimal value)
+    {
+        if (_syncingCalc)
+            return;
+        _syncingCalc = true;
+        IntervalMs = ProbeCalc.IntervalFromHz(value);
+        _syncingCalc = false;
+    }
+
+    private void SeedCalcFromPlan()
+    {
+        if (!PulsePlan.TryCreate(DefaultRequests, DefaultSeconds, out var plan, out _) || plan.Requests <= 1)
+            return;
+        var ms = (decimal)Math.Round(plan.Spacing.TotalMilliseconds, MidpointRounding.AwayFromZero);
+        if (ms < 10)
+            ms = 10;
+        IntervalMs = ms;
+    }
 
     partial void OnSelectedSourceChanged(string? value) => Persist();
 

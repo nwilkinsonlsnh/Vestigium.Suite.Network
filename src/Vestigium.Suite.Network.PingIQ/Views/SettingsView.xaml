@@ -101,12 +101,20 @@
       </DockPanel>
       <StackPanel Margin="0,0,0,16" Visibility="{Binding RequestsCalcOpen, Converter={StaticResource BoolToVis}}">
         <Label Style="{StaticResource Label.Standard}" Content="Interval (ms)" />
+        <nud:VestigiumNumericUpDown Value="{Binding IntervalMs, Mode=TwoWay}"
+                                    SignMode="Unsigned"
+                                    Minimum="10" Maximum="60000" Increment="10" PageIncrement="100" DecimalPlaces="0"
+                                    Background="{DynamicResource Vestigium.Brushes.Surface.Card}"
+                                    Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}"
+                                    BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
+                                    Margin="0,0,0,8" />
+        <Label Style="{StaticResource Label.Standard}" Content="Rate (/s)" />
         <DockPanel>
           <Button DockPanel.Dock="Right" Content="Apply" Style="{StaticResource Button.Primary}"
                   Command="{Binding ApplyRequestsFromIntervalCommand}" Padding="12,4" Margin="8,0,0,0" />
-          <nud:VestigiumNumericUpDown Value="{Binding IntervalMs, Mode=TwoWay}"
+          <nud:VestigiumNumericUpDown Value="{Binding RateHz, Mode=TwoWay}"
                                       SignMode="Unsigned"
-                                      Minimum="10" Maximum="60000" Increment="10" PageIncrement="100" DecimalPlaces="0"
+                                      Minimum="0.01" Maximum="100" Increment="0.5" PageIncrement="1" DecimalPlaces="2"
                                       Background="{DynamicResource Vestigium.Brushes.Surface.Card}"
                                       Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}"
                                       BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" />
@@ -127,12 +135,20 @@
       </DockPanel>
       <StackPanel Margin="0,0,0,16" Visibility="{Binding SecondsCalcOpen, Converter={StaticResource BoolToVis}}">
         <Label Style="{StaticResource Label.Standard}" Content="Interval (ms)" />
+        <nud:VestigiumNumericUpDown Value="{Binding IntervalMs, Mode=TwoWay}"
+                                    SignMode="Unsigned"
+                                    Minimum="10" Maximum="60000" Increment="10" PageIncrement="100" DecimalPlaces="0"
+                                    Background="{DynamicResource Vestigium.Brushes.Surface.Card}"
+                                    Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}"
+                                    BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
+                                    Margin="0,0,0,8" />
+        <Label Style="{StaticResource Label.Standard}" Content="Rate (/s)" />
         <DockPanel>
           <Button DockPanel.Dock="Right" Content="Apply" Style="{StaticResource Button.Primary}"
                   Command="{Binding ApplySecondsFromIntervalCommand}" Padding="12,4" Margin="8,0,0,0" />
-          <nud:VestigiumNumericUpDown Value="{Binding IntervalMs, Mode=TwoWay}"
+          <nud:VestigiumNumericUpDown Value="{Binding RateHz, Mode=TwoWay}"
                                       SignMode="Unsigned"
-                                      Minimum="10" Maximum="60000" Increment="10" PageIncrement="100" DecimalPlaces="0"
+                                      Minimum="0.01" Maximum="100" Increment="0.5" PageIncrement="1" DecimalPlaces="2"
                                       Background="{DynamicResource Vestigium.Brushes.Surface.Card}"
                                       Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}"
                                       BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" />

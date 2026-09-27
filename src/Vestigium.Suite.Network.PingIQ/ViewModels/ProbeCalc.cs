@@ -24,6 +24,17 @@ public static class ProbeCalc
         return Math.Clamp(seconds, PulsePlan.MinSeconds, PulsePlan.MaxSeconds);
     }
 
+    public static decimal HzFromInterval(int intervalMs)
+        => intervalMs <= 0 ? 0 : Math.Round(1000m / intervalMs, 2, MidpointRounding.AwayFromZero);
+
+    public static int IntervalFromHz(decimal hz)
+    {
+        if (hz <= 0)
+            return 1000;
+        var ms = (int)Math.Round(1000m / hz, MidpointRounding.AwayFromZero);
+        return Math.Clamp(ms, 10, 60_000);
+    }
+
     public static string Describe(int requests, int seconds)
     {
         if (!PulsePlan.TryCreate(requests, seconds, out var plan, out _))
