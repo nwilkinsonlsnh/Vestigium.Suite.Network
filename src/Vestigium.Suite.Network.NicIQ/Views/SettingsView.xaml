@@ -35,11 +35,6 @@
                 Content="IP enabled only"
                 IsChecked="{Binding IpEnabledOnly}"
                 Margin="0,0,0,16" />
-      <TextBlock Style="{StaticResource TextBlock.Caption}" Text="Dashboard counters" Margin="0,8,0,8" />
-      <CheckBox Style="{StaticResource CheckBox.Standard}" Content="Receive" IsChecked="{Binding MonitorReceive}" Margin="0,0,0,8" />
-      <CheckBox Style="{StaticResource CheckBox.Standard}" Content="Send" IsChecked="{Binding MonitorSend}" Margin="0,0,0,8" />
-      <CheckBox Style="{StaticResource CheckBox.Standard}" Content="Errors" IsChecked="{Binding MonitorErrors}" Margin="0,0,0,8" />
-      <CheckBox Style="{StaticResource CheckBox.Standard}" Content="Discards" IsChecked="{Binding MonitorDiscards}" Margin="0,0,0,16" />
 
       <Label Style="{StaticResource Label.Standard}" Content="Duration (s)" />
       <nud:VestigiumNumericUpDown Value="{Binding DefaultDurationSeconds, Mode=TwoWay}"

@@ -27,32 +27,6 @@ public partial class App : Application
 
     public static VestigiumShell? Shell { get; set; }
 
-    public static void SetDashboardEnabled(bool enabled)
-    {
-        void Apply()
-        {
-            var item = Shell?["Dashboard"];
-            if (item is not null)
-                item.IsEnabled = enabled;
-
-            if (Shell?.SelectItemCommand is IRelayCommand relay)
-                relay.NotifyCanExecuteChanged();
-            else
-                CommandManager.InvalidateRequerySuggested();
-        }
-
-        if (Current is null)
-        {
-            Apply();
-            return;
-        }
-
-        if (Current.Dispatcher.CheckAccess())
-            Apply();
-        else
-            Current.Dispatcher.Invoke(Apply);
-    }
-
     protected override void OnStartup(StartupEventArgs e)
     {
         HostLog.Initialize(HostIds.NicIQ, cfg =>
@@ -93,7 +67,6 @@ public partial class App : Application
                     Subject = "Adapters and watch",
                     Description = "Which NIC, is it up, how fast."
                 },
-                new VestigiumNavItemSpec("Dashboard"),
                 new VestigiumNavItemSpec("Settings")
             }
         });
@@ -103,11 +76,9 @@ public partial class App : Application
         Session = session;
 
         Settings = new SettingsViewModel(Themes, chrome) { Session = session };
-        var dash = new DashboardViewModel();
         var nic = new MainViewModel
         {
             StatusBar = chrome.Status,
-            Dashboard = dash,
             Session = session,
             Settings = Settings
         };
@@ -121,21 +92,6 @@ public partial class App : Application
             nicItem.Content = new NicIqView { DataContext = nic };
             window.HostShell.SelectedItem = nicItem;
         }
-
-        var dashItem = window.HostShell["Dashboard"];
-        if (dashItem is not null)
-        {
-            dashItem.Content = new DashboardView { DataContext = dash };
-            dashItem.IsEnabled = false;
-        }
-
-        dash.GoToNicIq = () =>
-        {
-            var item = window.HostShell["NicIQ"];
-            if (item is not null)
-                window.HostShell.SelectedItem = item;
-        };
-        dash.DashboardAvailabilityChanged = SetDashboardEnabled;
 
         var settingsItem = window.HostShell["Settings"];
         if (settingsItem is not null)

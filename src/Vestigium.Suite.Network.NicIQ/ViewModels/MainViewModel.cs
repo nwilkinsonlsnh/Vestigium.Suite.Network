@@ -11,7 +11,6 @@ public sealed partial class MainViewModel : ObservableObject
 {
     private CancellationTokenSource? _cts;
     private NetworkJob<AdapterWatchResult>? _watchJob;
-    private NetworkJob<CounterSampleResult>? _trafficJob;
     private bool _busy;
     private bool _loading;
 
@@ -23,8 +22,6 @@ public sealed partial class MainViewModel : ObservableObject
     public ObservableCollection<AdapterRow> Adapters { get; }
 
     public VestigiumStatusBarViewModel? StatusBar { get; set; }
-
-    public DashboardViewModel? Dashboard { get; set; }
 
     public NicIqSession? Session { get; set; }
 
@@ -137,7 +134,6 @@ public sealed partial class MainViewModel : ObservableObject
         if (_loading)
             return;
         Session?.Save();
-        Dashboard?.Redraw();
     }
 
     [RelayCommand(CanExecute = nameof(CanRefresh))]
@@ -190,19 +186,9 @@ public sealed partial class MainViewModel : ObservableObject
                 Duration = query.Duration,
                 Interval = TimeSpan.FromSeconds(1)
             });
-            _trafficJob = NetworkHelper.SampleCounters(query.AdapterKey, new CounterSampleOptions
-            {
-                Duration = query.Duration,
-                Interval = TimeSpan.FromSeconds(1)
-            });
-            var watchTask = _watchJob.RunAsync(token);
-            var trafficTask = _trafficJob.RunAsync(token);
-            await Task.WhenAll(watchTask, trafficTask).ConfigureAwait(true);
-            var result = watchTask.Result;
-            var traffic = trafficTask.Result;
+            var result = await _watchJob.RunAsync(token).ConfigureAwait(true);
             var changed = WatchStatusFlipped(result);
             Post(FormatWatch(result, changed));
-            Dashboard?.ShowTraffic(traffic, MonitorReceive, MonitorSend, MonitorErrors, MonitorDiscards);
             Refresh();
             MarkStatusChanged(query.AdapterKey, changed);
         }
@@ -219,7 +205,6 @@ public sealed partial class MainViewModel : ObservableObject
             _busy = false;
             RaiseBusy();
             _watchJob = null;
-            _trafficJob = null;
             _cts.Dispose();
             _cts = null;
         }
@@ -229,7 +214,6 @@ public sealed partial class MainViewModel : ObservableObject
     private void Cancel()
     {
         _watchJob?.Cancel();
-        _trafficJob?.Cancel();
         try { _cts?.Cancel(); }
         catch (ObjectDisposedException) { }
     }
