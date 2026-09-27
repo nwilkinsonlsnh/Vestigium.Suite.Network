@@ -99,6 +99,7 @@ public partial class App : Application
         Settings = new SettingsViewModel(Themes, chrome);
         var dash = new DashboardViewModel();
         var nic = new MainViewModel { StatusBar = chrome.Status };
+        nic.RefreshCommand.Execute(null);
 
         var nicItem = window.HostShell["NicIQ"];
         if (nicItem is not null)
