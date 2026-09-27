@@ -5,6 +5,7 @@ using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Vestigium.Controls.StatusBar;
+using Vestigium.Helpers.Analytics;
 using Vestigium.Helpers.Network;
 using Vestigium.Suite.Network.Shell;
 
@@ -69,6 +70,9 @@ public sealed partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private string _summary = string.Empty;
 
+    [ObservableProperty]
+    private string _analyticsSummary = string.Empty;
+
     public bool CanStart => !_busy;
 
     public bool CanCancel => _busy;
@@ -108,6 +112,7 @@ public sealed partial class MainViewModel : ObservableObject
         RaiseBusy();
         Replies.Clear();
         Summary = string.Empty;
+        AnalyticsSummary = string.Empty;
         Status = "Running";
         _cts = new CancellationTokenSource();
         var token = _cts.Token;
@@ -161,7 +166,6 @@ public sealed partial class MainViewModel : ObservableObject
         var n = query.Options.Count;
         var delay = query.Options.Interval;
         var clock = Stopwatch.StartNew();
-        var samples = new List<double>();
         StatusBar?.Engine.SetIdlePolicy(0);
 
         for (var i = 1; i <= n; i++)
@@ -169,7 +173,6 @@ public sealed partial class MainViewModel : ObservableObject
             token.ThrowIfCancellationRequested();
             await WaitUntilAsync(clock, TimeSpan.FromTicks(delay.Ticks * (i - 1)), token).ConfigureAwait(false);
             var shot = await EchoOnceAsync(query, token).ConfigureAwait(false);
-            samples.AddRange(SeriesRtts(shot));
             var sent = i;
             var nLocal = n;
             var elapsed = clock.Elapsed;
@@ -181,12 +184,11 @@ public sealed partial class MainViewModel : ObservableObject
             }).ConfigureAwait(false);
         }
 
-        var pingSamples = samples;
         var pingTotal = n;
         await OnUiAsync(() =>
         {
             WriteSummary();
-            Dashboard?.ShowEcho(pingSamples);
+            PublishPopulation();
             Dashboard?.Unlock();
             Status = $"Ping {pingTotal} / {pingTotal}";
             StatusBar?.Engine.SetIdlePolicy(3000, "Idle. . .");
@@ -202,15 +204,12 @@ public sealed partial class MainViewModel : ObservableObject
         }
 
         var clock = Stopwatch.StartNew();
-        var last = default(IcmpEchoResult);
-        var samples = new List<double>();
         StatusBar?.Engine.SetIdlePolicy(0);
         for (var i = 1; i <= plan.Requests; i++)
         {
             token.ThrowIfCancellationRequested();
             await WaitUntilAsync(clock, plan.DueAt(i), token).ConfigureAwait(false);
-            last = await EchoOnceAsync(query, token).ConfigureAwait(false);
-            samples.AddRange(SeriesRtts(last));
+            var last = await EchoOnceAsync(query, token).ConfigureAwait(false);
             var sent = i;
             var total = plan.Requests;
             var elapsed = clock.Elapsed;
@@ -223,12 +222,11 @@ public sealed partial class MainViewModel : ObservableObject
             }).ConfigureAwait(false);
         }
 
-        var probeSamples = samples;
         var probeTotal = plan.Requests;
         await OnUiAsync(() =>
         {
-            var series = probeSamples.Count > 0 ? probeSamples : GridRtts();
-            Dashboard?.ShowProbe(series);
+            WriteSummary();
+            PublishPopulation();
             Dashboard?.OpenProbePage();
             Status = $"Probe {probeTotal} / {probeTotal}";
             StatusBar?.Engine.SetIdlePolicy(3000, "Idle. . .");
@@ -260,22 +258,6 @@ public sealed partial class MainViewModel : ObservableObject
         }
     }
 
-    private List<double> GridRtts()
-        => Replies
-            .Where(r => r.Status == nameof(IcmpEchoStatus.Success)
-                || r.Status == nameof(IcmpEchoStatus.DestinationUnreachable)
-                || r.Status == nameof(IcmpEchoStatus.TtlExpired))
-            .Select(r => (double)r.RttMs)
-            .ToList();
-
-    private static List<double> SeriesRtts(IcmpEchoResult result)
-        => result.Replies
-            .Where(r => r.Status is IcmpEchoStatus.Success
-                or IcmpEchoStatus.DestinationUnreachable
-                or IcmpEchoStatus.TtlExpired)
-            .Select(r => (double)r.RoundtripTimeMs)
-            .ToList();
-
     private void ApplyShot(IcmpEchoResult result, int sequence, bool replace)
     {
         if (replace)
@@ -295,6 +277,15 @@ public sealed partial class MainViewModel : ObservableObject
 
         WriteSummary();
         Status = result.Status.ToString();
+    }
+
+    private void PublishPopulation()
+    {
+        var rtts = PopulationStats.Rtts(Replies);
+        AnalyticsSummary = PopulationStats.Format(rtts);
+        var points = PopulationStats.ChartPoints(rtts);
+        Dashboard?.ShowEcho(points);
+        Dashboard?.ShowProbe(points);
     }
 
     private void WriteSummary()
