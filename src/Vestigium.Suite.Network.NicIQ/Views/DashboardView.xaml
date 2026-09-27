@@ -1,0 +1,15 @@
+<UserControl x:Class="Vestigium.Suite.Network.NicIQ.Views.DashboardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:uc="clr-namespace:Vestigium.Controls.UnderConstruction;assembly=Vestigium.Controls.UnderConstruction"
+             Background="{DynamicResource Vestigium.Brushes.Surface.Window}">
+  <Grid Margin="16">
+    <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left" Margin="20,0,0,0">
+      <uc:VestigiumUnderConstruction />
+      <TextBlock Style="{StaticResource TextBlock.Caption}" Text="No Watch chart yet." Margin="0,12,0,8" />
+      <TextBlock>
+        <Hyperlink Command="{Binding OpenNicIqCommand}">Open NicIQ</Hyperlink>
+      </TextBlock>
+    </StackPanel>
+  </Grid>
+</UserControl>

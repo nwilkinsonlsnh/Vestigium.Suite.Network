@@ -1,27 +1,15 @@
 using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using Vestigium.Helpers.Network;
+using Vestigium.Controls.StatusBar;
 
 namespace Vestigium.Suite.Network.NicIQ.ViewModels;
 
 public sealed partial class MainViewModel : ObservableObject
 {
     [ObservableProperty]
-    private string _log = string.Empty;
+    private string _header = "NicIQ";
 
-    public MainViewModel() => Refresh();
+    [ObservableProperty]
+    private string _caption = "Idle";
 
-    [RelayCommand]
-    private void Refresh()
-    {
-        try
-        {
-            var adapters = NetworkHelper.GetAdapters();
-            Log = string.Join(Environment.NewLine, adapters.Select(a => $"{a.Name}  {a.Status}  {a.Id}"));
-        }
-        catch (Exception ex)
-        {
-            Log = ex.Message;
-        }
-    }
+    public VestigiumStatusBarViewModel? StatusBar { get; set; }
 }
