@@ -107,32 +107,32 @@
 
     <Grid HorizontalAlignment="Stretch"
           VerticalAlignment="Stretch"
-          Margin="20,0,0,0"
+          Margin="20,0,20,0"
           Visibility="{Binding MruPageOpen, Converter={StaticResource BoolToVis}}">
       <Grid.RowDefinitions>
-        <RowDefinition Height="Auto" />
         <RowDefinition Height="Auto" />
         <RowDefinition Height="*" />
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
-      <TextBlock Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap" Margin="0,0,0,16"
-                 Text="Remembered targets used by the PingIQ combo. Add, change, or remove entries. Cap is the max kept." />
-      <Label Style="{StaticResource Label.Standard}" Content="Remember targets" />
-      <nud:VestigiumNumericUpDown Grid.Row="1" Value="{Binding TargetHistorySize, Mode=TwoWay}"
-                                  SignMode="Unsigned"
-                                  Minimum="1" Maximum="25" Increment="1" PageIncrement="5" DecimalPlaces="0"
-                                  Width="240" HorizontalAlignment="Left"
-                                  Background="{DynamicResource Vestigium.Brushes.Surface.Card}"
-                                  Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}"
-                                  BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
-                                  Margin="0,0,0,16" />
-      <ListBox Grid.Row="2"
+      <StackPanel Grid.Row="0" Margin="0,0,0,12">
+        <TextBlock Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap" Margin="0,0,0,16"
+                   Text="Remembered targets used by the PingIQ combo. Add, change, or remove entries. Cap is the max kept." />
+        <Label Style="{StaticResource Label.Standard}" Content="Remember targets" Margin="0,0,0,4" />
+        <nud:VestigiumNumericUpDown Value="{Binding TargetHistorySize, Mode=TwoWay}"
+                                    SignMode="Unsigned"
+                                    Minimum="1" Maximum="25" Increment="1" PageIncrement="5" DecimalPlaces="0"
+                                    Width="240" HorizontalAlignment="Left"
+                                    Background="{DynamicResource Vestigium.Brushes.Surface.Card}"
+                                    Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}"
+                                    BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" />
+      </StackPanel>
+      <ListBox Grid.Row="1"
                Style="{StaticResource ListBox.Standard}"
                ItemsSource="{Binding Mru}"
                SelectedItem="{Binding SelectedMru, Mode=TwoWay}"
                MinHeight="180"
                Margin="0,0,0,12" />
-      <StackPanel Grid.Row="3">
+      <StackPanel Grid.Row="2">
         <Label Style="{StaticResource Label.Standard}" Content="Entry" />
         <TextBox Style="{StaticResource TextBox.Standard}"
                  Text="{Binding MruDraft, UpdateSourceTrigger=PropertyChanged}"

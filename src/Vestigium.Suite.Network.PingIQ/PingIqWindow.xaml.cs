@@ -17,6 +17,7 @@ public partial class PingIqWindow : Window
         viewModel.RootShell = RootShell;
         SourceInitialized += OnSourceInitialized;
         Loaded += OnLoaded;
+        StateChanged += OnWindowStateChanged;
     }
 
     public VestigiumDefaultWindowViewModel ViewModel { get; }
@@ -35,6 +36,29 @@ public partial class PingIqWindow : Window
         ViewModel.RootShell = RootShell;
         ThemeChrome.Bind(this);
         BuildThemeMenu();
+        LockNormalSize();
+    }
+
+    private void OnWindowStateChanged(object? sender, EventArgs e)
+    {
+        if (WindowState == WindowState.Maximized)
+        {
+            MinWidth = 0;
+            MinHeight = 0;
+            MaxWidth = double.PositiveInfinity;
+            MaxHeight = double.PositiveInfinity;
+            return;
+        }
+
+        Width = 1100;
+        Height = 980;
+        LockNormalSize();
+    }
+
+    private void LockNormalSize()
+    {
+        MinWidth = MaxWidth = 1100;
+        MinHeight = MaxHeight = 980;
     }
 
     private void BuildThemeMenu()

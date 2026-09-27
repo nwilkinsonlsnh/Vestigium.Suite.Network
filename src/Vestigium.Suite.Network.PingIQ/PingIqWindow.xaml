@@ -5,7 +5,9 @@
         Title="PingIQ"
         Icon="pack://application:,,,/Assets/PingIQ.ico"
         Height="980" Width="1100"
-        MinHeight="720" MinWidth="720"
+        MinHeight="980" MinWidth="1100"
+        MaxHeight="980" MaxWidth="1100"
+        ResizeMode="CanResize"
         WindowStartupLocation="Manual"
         Background="{DynamicResource Vestigium.Brushes.Surface.Window}">
   <Window.Resources>
