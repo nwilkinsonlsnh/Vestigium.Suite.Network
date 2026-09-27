@@ -154,17 +154,6 @@ public sealed partial class MainViewModel : ObservableObject
                 return;
             }
 
-            var prelude = await EchoOnceAsync(query!, token).ConfigureAwait(false);
-            var preludeOk = prelude.Status == NetworkJobStatus.Success;
-            await OnUiAsync(() =>
-            {
-                ApplyShot(prelude, sequence: 1, replace: true);
-                Status = $"Probe 1 / {plan.Requests}";
-                PostBar(1, plan.Requests, TimeSpan.Zero);
-            }).ConfigureAwait(false);
-            if (!PulsePrelude.MayStartPulse(preludeOk))
-                return;
-
             await ProbeLoopAsync(query!, plan, token).ConfigureAwait(true);
         }
         catch (OperationCanceledException)
@@ -234,7 +223,7 @@ public sealed partial class MainViewModel : ObservableObject
     {
         var clock = Stopwatch.StartNew();
         StatusBar?.Engine.SetIdlePolicy(0);
-        for (var i = 2; i <= plan.Requests; i++)
+        for (var i = 1; i <= plan.Requests; i++)
         {
             token.ThrowIfCancellationRequested();
             await WaitUntilAsync(clock, plan.DueAt(i), token).ConfigureAwait(false);
@@ -243,12 +232,9 @@ public sealed partial class MainViewModel : ObservableObject
             var total = plan.Requests;
             var elapsed = clock.Elapsed;
             var shot = last;
-            await OnUiAsync(() =>
-            {
-                ApplyShot(shot, sequence: Replies.Count + 1, replace: false);
-                Status = $"Probe {sent} / {total}";
-                PostBar(sent, total, elapsed);
-            }).ConfigureAwait(false);
+            PostShot(shot, sent, total, elapsed);
+            if (sent == 1 && !PulsePrelude.MayStartPulse(last.Status == NetworkJobStatus.Success))
+                return;
         }
 
         var probeTotal = plan.Requests;
@@ -275,7 +261,7 @@ public sealed partial class MainViewModel : ObservableObject
         if (echoTarget is null)
             throw new InvalidOperationException($"No A/AAAA for {query.Target}.");
         _job = NetworkHelper.IcmpEcho(echoTarget, options);
-        return await _job.RunAsync(token).ConfigureAwait(true);
+        return await _job.RunAsync(token).ConfigureAwait(false);
     }
 
     private async Task<string?> EchoAddressAsync(string target, CancellationToken token)
@@ -396,6 +382,21 @@ public sealed partial class MainViewModel : ObservableObject
         var minutes = total / 60;
         var seconds = total % 60;
         return $"{minutes:00}:{seconds:00}";
+    }
+
+    private void PostShot(IcmpEchoResult shot, int sent, int total, TimeSpan elapsed)
+    {
+        void apply()
+        {
+            ApplyShot(shot, sequence: sent, replace: sent == 1);
+            Status = $"Probe {sent} / {total}";
+            PostBar(sent, total, elapsed);
+        }
+
+        if (_ui.CheckAccess())
+            apply();
+        else
+            _ = _ui.BeginInvoke(apply, DispatcherPriority.Background);
     }
 
     private Task OnUiAsync(Action action)
