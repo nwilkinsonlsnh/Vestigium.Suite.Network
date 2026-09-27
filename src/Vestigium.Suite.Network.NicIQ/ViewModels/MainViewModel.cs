@@ -176,6 +176,7 @@ public sealed partial class MainViewModel : ObservableObject
 
         _busy = true;
         RaiseBusy();
+        StatusBar?.Engine.SetIdlePolicy(0);
         var name = SelectedAdapter?.Name ?? query.AdapterKey;
         Post($"Monitoring {name}  status Up ↔ Down");
         _cts = new CancellationTokenSource();
@@ -208,6 +209,7 @@ public sealed partial class MainViewModel : ObservableObject
             _watchJob = null;
             _cts.Dispose();
             _cts = null;
+            StatusBar?.Engine.SetIdlePolicy(3000);
         }
     }
 
