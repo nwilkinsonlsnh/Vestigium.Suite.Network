@@ -12,10 +12,10 @@ public sealed partial class SettingsViewModel : ObservableObject
 {
     public const decimal RequestMin = PulsePlan.MinRequests;
     public const decimal RequestMax = PulsePlan.MaxRequests;
-    public const decimal RequestDefault = 1000m;
+    public const decimal RequestDefault = 300m;
     public const decimal SecondsMin = PulsePlan.MinSeconds;
     public const decimal SecondsMax = PulsePlan.MaxSeconds;
-    public const decimal SecondsDefault = 60m;
+    public const decimal SecondsDefault = 30m;
 
     private readonly ThemeManager _themes;
     private readonly VestigiumDefaultWindowViewModel _chrome;
@@ -238,9 +238,61 @@ public sealed partial class SettingsViewModel : ObservableObject
         Session?.Save(applyTimeoutSeed: true);
     }
 
-    partial void OnDefaultRequestsChanged(decimal value) => Persist();
+    partial void OnDefaultSecondsChanged(decimal value)
+    {
+        Persist();
+        OnPropertyChanged(nameof(ProbePlanText));
+    }
 
-    partial void OnDefaultSecondsChanged(decimal value) => Persist();
+    public string ProbePlanText
+        => ProbeCalc.Describe((int)DefaultRequests, (int)DefaultSeconds);
+
+    [ObservableProperty]
+    private decimal _intervalMs = 100m;
+
+    [ObservableProperty]
+    private bool _requestsCalcOpen;
+
+    [ObservableProperty]
+    private bool _secondsCalcOpen;
+
+    partial void OnDefaultRequestsChanged(decimal value)
+    {
+        Persist();
+        OnPropertyChanged(nameof(ProbePlanText));
+    }
+
+    [RelayCommand]
+    private void RestoreProbeDefaults()
+    {
+        DefaultRequests = RequestDefault;
+        DefaultSeconds = SecondsDefault;
+        IntervalMs = 100m;
+        Persist();
+        OnPropertyChanged(nameof(ProbePlanText));
+    }
+
+    [RelayCommand]
+    private void ApplyRequestsFromInterval()
+    {
+        DefaultRequests = ProbeCalc.RequestsFromInterval((int)DefaultSeconds, (int)IntervalMs);
+        RequestsCalcOpen = false;
+        OnPropertyChanged(nameof(ProbePlanText));
+    }
+
+    [RelayCommand]
+    private void ApplySecondsFromInterval()
+    {
+        DefaultSeconds = ProbeCalc.SecondsFromInterval((int)DefaultRequests, (int)IntervalMs);
+        SecondsCalcOpen = false;
+        OnPropertyChanged(nameof(ProbePlanText));
+    }
+
+    [RelayCommand]
+    private void ToggleRequestsCalc() => RequestsCalcOpen = !RequestsCalcOpen;
+
+    [RelayCommand]
+    private void ToggleSecondsCalc() => SecondsCalcOpen = !SecondsCalcOpen;
 
     partial void OnSelectedSourceChanged(string? value) => Persist();
 
