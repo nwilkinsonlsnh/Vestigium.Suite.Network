@@ -33,9 +33,11 @@ public sealed class AdapterRow
     {
         get
         {
-            if (Source.Ipv4Metric is not int metric)
-                return string.Empty;
-            return Source.Ipv4MetricIsAutomatic == true ? $"{metric} auto" : metric.ToString(CultureInfo.InvariantCulture);
+            if (Source.Ipv4Metric is int metric)
+                return Source.Ipv4MetricIsAutomatic == true
+                    ? $"{metric} auto"
+                    : metric.ToString(CultureInfo.InvariantCulture);
+            return Source.Ipv4MetricIsAutomatic == true ? "auto" : string.Empty;
         }
     }
 
