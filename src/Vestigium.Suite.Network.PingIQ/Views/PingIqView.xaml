@@ -21,15 +21,11 @@
 
       <Label Style="{StaticResource Label.Standard}" Content="Target" VerticalAlignment="Center" Margin="0,0,8,8" />
       <ComboBox Grid.Column="1"
-                IsEditable="True"
+                Style="{StaticResource ComboBox.Editable}"
                 IsTextSearchEnabled="False"
                 StaysOpenOnEdit="True"
-                IsReadOnly="False"
                 ItemsSource="{Binding Targets}"
                 Text="{Binding Target, UpdateSourceTrigger=PropertyChanged}"
-                Background="{DynamicResource Vestigium.Brushes.Surface.Card}"
-                Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}"
-                BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
                 Margin="0,0,0,8" />
 
       <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Style="{StaticResource StackPanel.Toolbar}" Orientation="Horizontal">

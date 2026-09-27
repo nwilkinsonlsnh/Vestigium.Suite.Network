@@ -19,6 +19,11 @@
                    GroupName="SettingsPage"
                    Margin="0,0,8,0" />
       <RadioButton Style="{StaticResource RadioButton.HorizontalTab}"
+                   Content="MRU"
+                   IsChecked="{Binding MruPageOpen}"
+                   GroupName="SettingsPage"
+                   Margin="0,0,8,0" />
+      <RadioButton Style="{StaticResource RadioButton.HorizontalTab}"
                    Content="Theme"
                    IsChecked="{Binding ThemePageOpen}"
                    GroupName="SettingsPage" />
@@ -36,15 +41,6 @@
                 Content="Resolve hostname once per run"
                 IsChecked="{Binding ResolveOnce}"
                 Margin="0,0,0,16" />
-
-      <Label Style="{StaticResource Label.Standard}" Content="Remember targets" />
-      <nud:VestigiumNumericUpDown Value="{Binding TargetHistorySize, Mode=TwoWay}"
-                                  SignMode="Unsigned"
-                                  Minimum="1" Maximum="25" Increment="1" PageIncrement="5" DecimalPlaces="0"
-                                  Background="{DynamicResource Vestigium.Brushes.Surface.Card}"
-                                  Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}"
-                                  BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
-                                  Margin="0,0,0,16" />
 
       <Label Style="{StaticResource Label.Standard}" Content="Count" />
       <nud:VestigiumNumericUpDown Value="{Binding DefaultCount, Mode=TwoWay}"
@@ -107,6 +103,48 @@
                                   Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}"
                                   BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" />
     </StackPanel>
+
+
+    <Grid HorizontalAlignment="Stretch"
+          VerticalAlignment="Stretch"
+          Margin="20,0,0,0"
+          Visibility="{Binding MruPageOpen, Converter={StaticResource BoolToVis}}">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="*" />
+        <RowDefinition Height="Auto" />
+      </Grid.RowDefinitions>
+      <TextBlock Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap" Margin="0,0,0,16"
+                 Text="Remembered targets used by the PingIQ combo. Add, change, or remove entries. Cap is the max kept." />
+      <Label Style="{StaticResource Label.Standard}" Content="Remember targets" />
+      <nud:VestigiumNumericUpDown Grid.Row="1" Value="{Binding TargetHistorySize, Mode=TwoWay}"
+                                  SignMode="Unsigned"
+                                  Minimum="1" Maximum="25" Increment="1" PageIncrement="5" DecimalPlaces="0"
+                                  Width="240" HorizontalAlignment="Left"
+                                  Background="{DynamicResource Vestigium.Brushes.Surface.Card}"
+                                  Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}"
+                                  BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
+                                  Margin="0,0,0,16" />
+      <ListBox Grid.Row="2"
+               Style="{StaticResource ListBox.Standard}"
+               ItemsSource="{Binding Mru}"
+               SelectedItem="{Binding SelectedMru, Mode=TwoWay}"
+               MinHeight="180"
+               Margin="0,0,0,12" />
+      <StackPanel Grid.Row="3">
+        <Label Style="{StaticResource Label.Standard}" Content="Entry" />
+        <TextBox Style="{StaticResource TextBox.Standard}"
+                 Text="{Binding MruDraft, UpdateSourceTrigger=PropertyChanged}"
+                 Margin="0,0,0,8" />
+        <StackPanel Style="{StaticResource StackPanel.Toolbar}" Orientation="Horizontal">
+          <Button Content="Add" Style="{StaticResource Button.Primary}" Command="{Binding AddMruCommand}" Padding="16,4" Margin="0,0,8,0" />
+          <Button Content="Update" Style="{StaticResource Button.Secondary}" Command="{Binding UpdateMruCommand}" Padding="16,4" Margin="0,0,8,0" />
+          <Button Content="Delete" Style="{StaticResource Button.Secondary}" Command="{Binding DeleteMruCommand}" Padding="16,4" Margin="0,0,8,0" />
+          <Button Content="Clear" Style="{StaticResource Button.Secondary}" Command="{Binding ClearMruCommand}" Padding="16,4" />
+        </StackPanel>
+      </StackPanel>
+    </Grid>
 
     <StackPanel HorizontalAlignment="Left"
                 VerticalAlignment="Top"

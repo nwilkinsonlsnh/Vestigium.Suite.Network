@@ -1,4 +1,6 @@
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Vestigium.Controls.Shell;
 using Vestigium.Controls.StatusBar;
 using Vestigium.Helpers.Network;
@@ -52,6 +54,12 @@ public sealed partial class SettingsViewModel : ObservableObject
 
     public PingIqSession? Session { get; set; }
 
+    public MainViewModel? Host { get; set; }
+
+    public ObservableCollection<string> Mru => Host?.Targets ?? EmptyMru;
+
+    private static readonly ObservableCollection<string> EmptyMru = [];
+
     public IReadOnlyList<ThemeDefinition> Themes => _themes.AvailableThemes;
 
     public IReadOnlyList<AdapterChoice> Interfaces { get; }
@@ -68,6 +76,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(PingIqPageOpen))]
     [NotifyPropertyChangedFor(nameof(ProbePageOpen))]
     [NotifyPropertyChangedFor(nameof(ThemePageOpen))]
+    [NotifyPropertyChangedFor(nameof(MruPageOpen))]
     private string _settingsPage = "PingIQ";
 
     public bool PingIqPageOpen
@@ -80,6 +89,12 @@ public sealed partial class SettingsViewModel : ObservableObject
     {
         get => SettingsPage == "Probe";
         set { if (value) SettingsPage = "Probe"; }
+    }
+
+    public bool MruPageOpen
+    {
+        get => SettingsPage == "MRU";
+        set { if (value) SettingsPage = "MRU"; }
     }
 
     public bool ThemePageOpen
@@ -122,6 +137,12 @@ public sealed partial class SettingsViewModel : ObservableObject
 
     [ObservableProperty]
     private bool _resolveOnce = true;
+
+    [ObservableProperty]
+    private string? _selectedMru;
+
+    [ObservableProperty]
+    private string _mruDraft = string.Empty;
 
     public void LoadFrom(PingIqSettings data)
     {
@@ -224,6 +245,52 @@ public sealed partial class SettingsViewModel : ObservableObject
     partial void OnSelectedSourceChanged(string? value) => Persist();
 
     partial void OnResolveOnceChanged(bool value) => Persist();
+
+    partial void OnSelectedMruChanged(string? value)
+    {
+        if (!string.IsNullOrWhiteSpace(value))
+            MruDraft = value;
+    }
+
+    [RelayCommand]
+    private void AddMru()
+    {
+        if (Host is null)
+            return;
+        Host.RememberTarget(MruDraft);
+        SelectedMru = Host.Target;
+        OnPropertyChanged(nameof(Mru));
+    }
+
+    [RelayCommand]
+    private void UpdateMru()
+    {
+        if (Host is null || string.IsNullOrWhiteSpace(MruDraft) || SelectedMru is null)
+            return;
+        Host.ReplaceTarget(SelectedMru, MruDraft.Trim());
+        SelectedMru = Host.Target;
+        OnPropertyChanged(nameof(Mru));
+    }
+
+    [RelayCommand]
+    private void DeleteMru()
+    {
+        if (Host is null || SelectedMru is null)
+            return;
+        Host.RemoveTarget(SelectedMru);
+        SelectedMru = Host.Targets.FirstOrDefault();
+        MruDraft = SelectedMru ?? string.Empty;
+        OnPropertyChanged(nameof(Mru));
+    }
+
+    [RelayCommand]
+    private void ClearMru()
+    {
+        Host?.ClearTargets();
+        SelectedMru = null;
+        MruDraft = string.Empty;
+        OnPropertyChanged(nameof(Mru));
+    }
 
     partial void OnTargetHistorySizeChanged(decimal value)
     {

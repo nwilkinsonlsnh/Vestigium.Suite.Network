@@ -106,6 +106,7 @@ public partial class App : Application
         var dash = new DashboardViewModel();
         var ping = new MainViewModel { Session = session, Dashboard = dash, StatusBar = chrome.Status };
         session.Attach(ping, Settings);
+        Settings.Host = ping;
 
         var pingItem = window.HostShell["PingIQ"];
         if (pingItem is not null)

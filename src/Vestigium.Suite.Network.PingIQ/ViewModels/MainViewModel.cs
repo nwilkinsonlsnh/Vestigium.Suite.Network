@@ -424,7 +424,7 @@ public sealed partial class MainViewModel : ObservableObject
             Target = Targets[0];
     }
 
-    private void RememberTarget(string target)
+    public void RememberTarget(string target)
     {
         var size = Session?.Current.TargetHistorySize ?? TargetHistory.DefaultSize;
         var next = TargetHistory.Remember(Targets, target, size);
