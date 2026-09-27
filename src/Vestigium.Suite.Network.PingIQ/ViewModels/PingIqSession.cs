@@ -64,6 +64,7 @@ public sealed class PingIqSession
             Source = _settings.SelectedSource,
             TargetHistorySize = (int)_settings.TargetHistorySize,
             RecentTargets = _main.Targets.ToArray(),
+            ResolveOnce = _settings.ResolveOnce,
             ShowLegendEcho = Current.ShowLegendEcho,
             ShowLegendProbeRtt = Current.ShowLegendProbeRtt,
             ShowLegendProbeDist = Current.ShowLegendProbeDist,

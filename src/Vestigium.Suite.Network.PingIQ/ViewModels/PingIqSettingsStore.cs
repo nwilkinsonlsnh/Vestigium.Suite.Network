@@ -16,6 +16,7 @@ public sealed class PingIqSettings
     public string? Source { get; set; }
     public int TargetHistorySize { get; set; } = TargetHistory.DefaultSize;
     public string[] RecentTargets { get; set; } = ["127.0.0.1"];
+    public bool ResolveOnce { get; set; } = true;
     public bool ShowLegendEcho { get; set; } = true;
     public bool ShowLegendProbeRtt { get; set; } = true;
     public bool ShowLegendProbeDist { get; set; } = true;

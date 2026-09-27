@@ -30,7 +30,12 @@
                 Margin="20,0,0,0"
                 Visibility="{Binding PingIqPageOpen, Converter={StaticResource BoolToVis}}">
       <TextBlock Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap" Margin="0,0,0,16"
-                 Text="Count, Delay, Interface and Source live here. Delay is the wait between ICMP echoes. Reply wait stays 4000 ms. Source is the local address this PC sends from. Any lets Windows pick. This is not spoofing." />
+                 Text="Count, Delay, Interface and Source live here. Hostnames resolve to an IP before ICMP. Resolve once (default) so RTT is not mixed with DNS. Delay is the wait between ICMP echoes. Reply wait stays 4000 ms. Source is the local address this PC sends from. Any lets Windows pick. This is not spoofing." />
+
+      <CheckBox Style="{StaticResource CheckBox.Standard}"
+                Content="Resolve hostname once per run"
+                IsChecked="{Binding ResolveOnce}"
+                Margin="0,0,0,16" />
 
       <Label Style="{StaticResource Label.Standard}" Content="Remember targets" />
       <nud:VestigiumNumericUpDown Value="{Binding TargetHistorySize, Mode=TwoWay}"

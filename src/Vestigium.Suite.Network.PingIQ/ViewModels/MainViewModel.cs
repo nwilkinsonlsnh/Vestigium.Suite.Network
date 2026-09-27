@@ -18,6 +18,7 @@ public sealed partial class MainViewModel : ObservableObject
     private bool _busy;
     private bool _loading;
     private readonly Dispatcher _ui;
+    private string? _echoTarget;
 
     public BindFields Bind { get; } = new();
 
@@ -108,6 +109,7 @@ public sealed partial class MainViewModel : ObservableObject
         }
 
         RememberTarget(query!.Target);
+        _echoTarget = null;
 
         if (probe && !PulsePlan.TryCreate(RequestCount, DurationSeconds, out _, out var pulseReject))
         {
@@ -126,6 +128,20 @@ public sealed partial class MainViewModel : ObservableObject
         var token = _cts.Token;
         try
         {
+            if (Session?.Current.ResolveOnce != false)
+            {
+                var ip = await ResolveAsync(query!.Target, token).ConfigureAwait(false);
+                if (ip is null)
+                {
+                    await OnUiAsync(() => Status = $"No A/AAAA for {query.Target}.").ConfigureAwait(false);
+                    return;
+                }
+
+                _echoTarget = ip;
+                if (!TargetResolve.IsAddress(query.Target))
+                    await OnUiAsync(() => Status = $"{query.Target} → {ip}").ConfigureAwait(false);
+            }
+
             if (!probe)
             {
                 await PingLoopAsync(query!, token).ConfigureAwait(true);
@@ -255,8 +271,42 @@ public sealed partial class MainViewModel : ObservableObject
             InterfaceIndex = query.Options.InterfaceIndex,
             SourceAddress = query.Options.SourceAddress
         };
-        _job = NetworkHelper.IcmpEcho(query.Target, options);
+        var echoTarget = await EchoAddressAsync(query.Target, token).ConfigureAwait(false);
+        if (echoTarget is null)
+            throw new InvalidOperationException($"No A/AAAA for {query.Target}.");
+        _job = NetworkHelper.IcmpEcho(echoTarget, options);
         return await _job.RunAsync(token).ConfigureAwait(true);
+    }
+
+    private async Task<string?> EchoAddressAsync(string target, CancellationToken token)
+    {
+        if (_echoTarget is not null)
+            return _echoTarget;
+        return await ResolveAsync(target, token).ConfigureAwait(false);
+    }
+
+    private async Task<string?> ResolveAsync(string target, CancellationToken token)
+    {
+        if (TargetResolve.IsAddress(target))
+            return target.Trim();
+
+        var a = await NetworkHelper.LookupAsync(target, new DnsLookupOptions
+        {
+            Type = DnsRecordType.A,
+            InterfaceIndex = Bind.InterfaceIndex,
+            SourceAddress = Bind.SourceAddress
+        }, token).ConfigureAwait(false);
+        var ip = TargetResolve.PickIp(a);
+        if (ip is not null)
+            return ip;
+
+        var aaaa = await NetworkHelper.LookupAsync(target, new DnsLookupOptions
+        {
+            Type = DnsRecordType.Aaaa,
+            InterfaceIndex = Bind.InterfaceIndex,
+            SourceAddress = Bind.SourceAddress
+        }, token).ConfigureAwait(false);
+        return TargetResolve.PickIp(aaaa);
     }
 
     private static async Task WaitUntilAsync(Stopwatch clock, TimeSpan due, CancellationToken token)

@@ -120,6 +120,9 @@ public sealed partial class SettingsViewModel : ObservableObject
 
     public IReadOnlyList<string> RecentTargets { get; set; } = ["127.0.0.1"];
 
+    [ObservableProperty]
+    private bool _resolveOnce = true;
+
     public void LoadFrom(PingIqSettings data)
     {
         _loading = true;
@@ -147,6 +150,7 @@ public sealed partial class SettingsViewModel : ObservableObject
             SelectedSource = SourceChoices.Resolve(Sources, data.Source).Address;
             TargetHistorySize = TargetHistory.ClampSize(data.TargetHistorySize);
             RecentTargets = TargetHistory.Remember(data.RecentTargets, data.RecentTargets?.FirstOrDefault(), (int)TargetHistorySize);
+            ResolveOnce = data.ResolveOnce;
             ChartTheme.LoadFrom(data);
         }
         finally
@@ -218,6 +222,8 @@ public sealed partial class SettingsViewModel : ObservableObject
     partial void OnDefaultSecondsChanged(decimal value) => Persist();
 
     partial void OnSelectedSourceChanged(string? value) => Persist();
+
+    partial void OnResolveOnceChanged(bool value) => Persist();
 
     partial void OnTargetHistorySizeChanged(decimal value)
     {
