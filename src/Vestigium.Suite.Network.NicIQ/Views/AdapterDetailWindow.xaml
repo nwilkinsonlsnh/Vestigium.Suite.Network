@@ -1,0 +1,25 @@
+<Window x:Class="Vestigium.Suite.Network.NicIQ.Views.AdapterDetailWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="{Binding SelectedAdapter.Name, TargetNullValue=Adapter, FallbackValue=Adapter}"
+        Icon="pack://application:,,,/Assets/NicIQ.ico"
+        Height="520" Width="560"
+        MinHeight="320" MinWidth="420"
+        ResizeMode="CanResize"
+        ShowInTaskbar="True"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource Vestigium.Brushes.Surface.Window}">
+  <DockPanel Margin="16">
+    <TextBlock DockPanel.Dock="Top"
+               Style="{StaticResource TextBlock.Caption}"
+               Text="{Binding SelectedAdapter.Name}"
+               Margin="0,0,0,8" />
+    <TextBox Text="{Binding Detail, Mode=OneWay}"
+             IsReadOnly="True"
+             TextWrapping="Wrap"
+             VerticalScrollBarVisibility="Auto"
+             HorizontalScrollBarVisibility="Auto"
+             FontFamily="Consolas"
+             AcceptsReturn="True" />
+  </DockPanel>
+</Window>

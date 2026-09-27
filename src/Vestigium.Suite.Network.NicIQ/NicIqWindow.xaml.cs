@@ -45,7 +45,7 @@ public partial class NicIqWindow : Window
 
         if (WindowState == WindowState.Maximized)
         {
-            MinWidth = 720;
+            MinWidth = 960;
             MinHeight = 600;
             MaxWidth = double.PositiveInfinity;
             MaxHeight = double.PositiveInfinity;
@@ -64,12 +64,12 @@ public partial class NicIqWindow : Window
     private void FitNormalSize()
     {
         var work = SystemParameters.WorkArea;
-        var width = Math.Min(1100, Math.Max(720, work.Width - 48));
+        var width = Math.Min(1440, Math.Max(960, work.Width - 48));
         var height = Math.Min(980, Math.Max(600, work.Height - 48));
-        MinWidth = 720;
+        MinWidth = 960;
         MinHeight = 600;
-        MaxWidth = width;
-        MaxHeight = height;
+        MaxWidth = work.Width;
+        MaxHeight = work.Height;
         Width = width;
         Height = height;
     }

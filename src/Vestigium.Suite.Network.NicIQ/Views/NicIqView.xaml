@@ -27,44 +27,31 @@
       <Button Content="Cancel" Style="{StaticResource Button.Secondary}" Command="{Binding CancelCommand}" Padding="16,4" />
     </StackPanel>
 
-    <Grid Grid.Row="2">
-      <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="*" />
-        <ColumnDefinition Width="12" />
-        <ColumnDefinition Width="*" />
-      </Grid.ColumnDefinitions>
-
-      <Border BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
-        <DataGrid Style="{StaticResource DataGrid.Compact}"
-                  ItemsSource="{Binding Adapters}"
-                  SelectedItem="{Binding SelectedAdapter, Mode=TwoWay}"
-                  IsReadOnly="True"
-                  AutoGenerateColumns="False"
-                  CanUserAddRows="False"
-                  SelectionMode="Single"
-                  HeadersVisibility="Column"
-                  VerticalScrollBarVisibility="Visible"
-                  HorizontalScrollBarVisibility="Auto">
-          <DataGrid.Columns>
-            <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*" />
-            <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="90" />
-            <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="110" />
-            <DataGridTextColumn Header="MacAddress" Binding="{Binding MacAddress}" Width="140" />
-            <DataGridTextColumn Header="Speed" Binding="{Binding Speed}" Width="100" />
-            <DataGridTextColumn Header="Id" Binding="{Binding Id}" Width="160" />
-          </DataGrid.Columns>
-        </DataGrid>
-      </Border>
-
-      <Border Grid.Column="2" BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
-        <TextBox Text="{Binding Detail, Mode=OneWay}"
-                 IsReadOnly="True"
-                 TextWrapping="Wrap"
-                 VerticalScrollBarVisibility="Auto"
-                 BorderThickness="0"
-                 FontFamily="Consolas"
-                 AcceptsReturn="True" />
-      </Border>
-    </Grid>
+    <Border Grid.Row="2" BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
+      <DataGrid x:Name="AdapterGrid"
+                Style="{StaticResource DataGrid.Compact}"
+                ItemsSource="{Binding Adapters}"
+                SelectedItem="{Binding SelectedAdapter, Mode=TwoWay}"
+                IsReadOnly="True"
+                AutoGenerateColumns="False"
+                CanUserAddRows="False"
+                CanUserResizeColumns="True"
+                SelectionMode="Single"
+                HeadersVisibility="Column"
+                VerticalScrollBarVisibility="Visible"
+                HorizontalScrollBarVisibility="Visible"
+                ScrollViewer.HorizontalScrollBarVisibility="Visible"
+                ScrollViewer.VerticalScrollBarVisibility="Visible"
+                MouseDoubleClick="AdapterGrid_MouseDoubleClick">
+        <DataGrid.Columns>
+          <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="2*" MinWidth="180" />
+          <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="90" MinWidth="80" />
+          <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="130" MinWidth="110" />
+          <DataGridTextColumn Header="MacAddress" Binding="{Binding MacAddress}" Width="150" MinWidth="130" />
+          <DataGridTextColumn Header="Speed" Binding="{Binding Speed}" Width="110" MinWidth="90" />
+          <DataGridTextColumn Header="Id" Binding="{Binding Id}" Width="*" MinWidth="220" />
+        </DataGrid.Columns>
+      </DataGrid>
+    </Border>
   </Grid>
 </UserControl>
