@@ -224,7 +224,7 @@ Load after Themes.Initialize. Save on change. Tests inject a temp root. Missing 
 | 3 | PR01-03 | `NicIqWatchInput` + Watch + Cancel + one in-flight. Status bar posts. | Done |
 | 4 | PR01-04 | Settings persist + Theme page + Duration / IncludeDown defaults. | Done |
 | 5 | PR01-05 | Dashboard `ChartView` + Unlock after Watch. No `SampleCounters`. | Done |
-| 6 | PR01-06 | Host tests. No inventory call. No watch call. | Open |
+| 6 | PR01-06 | Host tests. No inventory call. No watch call. | Done |
 | 7 | PR01-07 | Owner gate. Requirements §4 job + chrome smoke. | Owner |
 
 ### PR01-01
@@ -334,4 +334,4 @@ When this plan finishes, move the whole `PR01/` folder to `PR-Plans/Completed/PR
 
 ## Next action
 
-PR01-06. Host tests. No inventory call. No watch call.
+Owner restore and run in VS. All six slices are coded. First-and-ten is not closed until that run is green.
