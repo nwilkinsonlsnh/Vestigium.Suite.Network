@@ -30,7 +30,16 @@
                 Margin="20,0,0,0"
                 Visibility="{Binding PingIqPageOpen, Converter={StaticResource BoolToVis}}">
       <TextBlock Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap" Margin="0,0,0,16"
-                 Text="Delay is the wait between ICMP echoes. Reply wait stays 4000 ms. Source is the local address this PC sends from. Any lets Windows pick. This is not spoofing." />
+                 Text="Count, Delay, Interface and Source live here. Delay is the wait between ICMP echoes. Reply wait stays 4000 ms. Source is the local address this PC sends from. Any lets Windows pick. This is not spoofing." />
+
+      <Label Style="{StaticResource Label.Standard}" Content="Count" />
+      <nud:VestigiumNumericUpDown Value="{Binding DefaultCount, Mode=TwoWay}"
+                                  SignMode="Unsigned"
+                                  Minimum="1" Maximum="99" Increment="1" PageIncrement="4" DecimalPlaces="0"
+                                  Background="{DynamicResource Vestigium.Brushes.Surface.Card}"
+                                  Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}"
+                                  BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
+                                  Margin="0,0,0,16" />
 
       <Label Style="{StaticResource Label.Standard}" Content="Delay (ms)" />
       <nud:VestigiumNumericUpDown Value="{Binding DefaultTimeoutMs, Mode=TwoWay}"
@@ -40,6 +49,15 @@
                                   Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}"
                                   BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
                                   Margin="0,0,0,16" />
+
+      <Label Style="{StaticResource Label.Standard}" Content="Interface" />
+      <ComboBox Style="{StaticResource ComboBox.Standard}"
+                IsEditable="False"
+                ItemsSource="{Binding Interfaces}"
+                DisplayMemberPath="Label"
+                SelectedValuePath="Index"
+                SelectedValue="{Binding SelectedInterfaceIndex, Mode=TwoWay}"
+                Margin="0,0,0,16" />
 
       <Label Style="{StaticResource Label.Standard}" Content="Source" />
       <ComboBox Style="{StaticResource ComboBox.Standard}"

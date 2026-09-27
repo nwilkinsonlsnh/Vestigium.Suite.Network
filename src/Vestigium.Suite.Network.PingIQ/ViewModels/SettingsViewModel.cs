@@ -33,6 +33,7 @@ public sealed partial class SettingsViewModel : ObservableObject
             _adapters = [];
         }
 
+        Interfaces = AdapterChoices.From(_adapters);
         Sources = SourceChoices.From(_adapters);
         _selectedThemeId = themes.Current?.Id ?? themes.AvailableThemes.FirstOrDefault()?.Id;
         _barPosition = chrome.Status.Position;
@@ -52,6 +53,8 @@ public sealed partial class SettingsViewModel : ObservableObject
     public PingIqSession? Session { get; set; }
 
     public IReadOnlyList<ThemeDefinition> Themes => _themes.AvailableThemes;
+
+    public IReadOnlyList<AdapterChoice> Interfaces { get; }
 
     public IReadOnlyList<SourceChoice> Sources { get; private set; }
 
@@ -95,7 +98,13 @@ public sealed partial class SettingsViewModel : ObservableObject
     private bool _barVisible;
 
     [ObservableProperty]
+    private decimal _defaultCount = PingIqInput.DefaultCount;
+
+    [ObservableProperty]
     private decimal _defaultTimeoutMs = PingIqInput.DefaultDelayMs;
+
+    [ObservableProperty]
+    private int _selectedInterfaceIndex;
 
     [ObservableProperty]
     private decimal _defaultRequests = RequestDefault;
@@ -113,6 +122,12 @@ public sealed partial class SettingsViewModel : ObservableObject
         {
             if (!string.IsNullOrWhiteSpace(data.ThemeId))
                 SelectedThemeId = data.ThemeId;
+            DefaultCount = data.Count is >= PingIqInput.MinCount and <= PingIqInput.MaxCount
+                ? data.Count
+                : PingIqInput.DefaultCount;
+            SelectedInterfaceIndex = Interfaces.Any(i => i.Index == data.InterfaceIndex)
+                ? data.InterfaceIndex
+                : 0;
             DefaultTimeoutMs = data.TimeoutMs == 4000
                 ? PingIqInput.DefaultDelayMs
                 : data.TimeoutMs is >= PingIqInput.MinDelayMs and <= PingIqInput.MaxDelayMs
@@ -171,6 +186,16 @@ public sealed partial class SettingsViewModel : ObservableObject
     partial void OnBarVisibleChanged(bool value)
     {
         _chrome.ShowStatusBar = value;
+        Persist();
+    }
+
+    partial void OnDefaultCountChanged(decimal value) => Persist();
+
+    partial void OnSelectedInterfaceIndexChanged(int value)
+    {
+        if (_loading)
+            return;
+        NarrowSources(value);
         Persist();
     }
 

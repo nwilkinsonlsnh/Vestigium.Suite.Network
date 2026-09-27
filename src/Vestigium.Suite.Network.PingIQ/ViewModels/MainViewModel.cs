@@ -124,13 +124,24 @@ public sealed partial class MainViewModel : ObservableObject
                 return;
             }
 
+            if (!PulsePlan.TryCreate(RequestCount, DurationSeconds, out var plan, out var pulsePlanReject))
+            {
+                await OnUiAsync(() => Status = pulsePlanReject ?? "Failed").ConfigureAwait(false);
+                return;
+            }
+
             var prelude = await EchoOnceAsync(query!, token).ConfigureAwait(false);
             var preludeOk = prelude.Status == NetworkJobStatus.Success;
-            await OnUiAsync(() => ApplyShot(prelude, sequence: 1, replace: true)).ConfigureAwait(false);
+            await OnUiAsync(() =>
+            {
+                ApplyShot(prelude, sequence: 1, replace: true);
+                Status = $"Probe 1 / {plan.Requests}";
+                PostBar(1, plan.Requests, TimeSpan.Zero);
+            }).ConfigureAwait(false);
             if (!PulsePrelude.MayStartPulse(preludeOk))
                 return;
 
-            await ProbeLoopAsync(query!, token).ConfigureAwait(true);
+            await ProbeLoopAsync(query!, plan, token).ConfigureAwait(true);
         }
         catch (OperationCanceledException)
         {
@@ -195,17 +206,11 @@ public sealed partial class MainViewModel : ObservableObject
         }).ConfigureAwait(false);
     }
 
-    private async Task ProbeLoopAsync(PingIqQuery query, CancellationToken token)
+    private async Task ProbeLoopAsync(PingIqQuery query, PulsePlan plan, CancellationToken token)
     {
-        if (!PulsePlan.TryCreate(RequestCount, DurationSeconds, out var plan, out var reject))
-        {
-            Status = reject ?? "Failed";
-            return;
-        }
-
         var clock = Stopwatch.StartNew();
         StatusBar?.Engine.SetIdlePolicy(0);
-        for (var i = 1; i <= plan.Requests; i++)
+        for (var i = 2; i <= plan.Requests; i++)
         {
             token.ThrowIfCancellationRequested();
             await WaitUntilAsync(clock, plan.DueAt(i), token).ConfigureAwait(false);

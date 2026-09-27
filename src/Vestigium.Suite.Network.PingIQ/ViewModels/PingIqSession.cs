@@ -42,12 +42,14 @@ public sealed class PingIqSession
         if (!_ready || _main is null || _settings is null)
             return;
 
-        if (applyTimeoutSeed)
-            _main.TimeoutMs = _settings.DefaultTimeoutMs;
+        _main.Count = _settings.DefaultCount;
+        _main.TimeoutMs = _settings.DefaultTimeoutMs;
+        _main.SelectedInterfaceIndex = _settings.SelectedInterfaceIndex;
         _main.RequestCount = _settings.DefaultRequests;
         _main.DurationSeconds = _settings.DefaultSeconds;
         _main.Bind.SourceAddress = _settings.SelectedSource;
-        _settings.NarrowSources(_main.SelectedInterfaceIndex);
+        _main.Bind.InterfaceIndex = _settings.SelectedInterfaceIndex;
+        _settings.NarrowSources(_settings.SelectedInterfaceIndex);
 
         Current = new PingIqSettings
         {
