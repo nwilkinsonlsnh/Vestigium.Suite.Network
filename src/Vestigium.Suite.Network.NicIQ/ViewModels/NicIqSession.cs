@@ -50,6 +50,10 @@ public sealed class NicIqSession
             DurationSeconds = (int)ClampDuration(_main.DurationSeconds),
             IncludeDown = _main.IncludeDown,
             IpEnabledOnly = _main.IpEnabledOnly,
+            MonitorReceive = _main.MonitorReceive,
+            MonitorSend = _main.MonitorSend,
+            MonitorErrors = _main.MonitorErrors,
+            MonitorDiscards = _main.MonitorDiscards,
             StatusBarVisible = _settings.BarVisible,
             StatusBarDock = _settings.BarPosition == VestigiumStatusBarPosition.Top ? "Top" : "Bottom"
         };
@@ -77,6 +81,10 @@ public sealed class NicIqSession
         _main.DurationSeconds = duration;
         _main.IncludeDown = Current.IncludeDown;
         _main.IpEnabledOnly = Current.IpEnabledOnly;
+        _main.MonitorReceive = Current.MonitorReceive;
+        _main.MonitorSend = Current.MonitorSend;
+        _main.MonitorErrors = Current.MonitorErrors;
+        _main.MonitorDiscards = Current.MonitorDiscards;
         _settings.LoadFrom(Current);
     }
 

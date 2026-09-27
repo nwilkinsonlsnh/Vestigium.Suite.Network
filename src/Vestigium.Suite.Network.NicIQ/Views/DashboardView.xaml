@@ -10,12 +10,20 @@
     <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left" Margin="20,0,0,0"
                 Visibility="{Binding WatchEmpty, Converter={StaticResource BoolToVis}}">
       <uc:VestigiumUnderConstruction />
-      <TextBlock Style="{StaticResource TextBlock.Caption}" Text="No Watch chart yet." Margin="0,12,0,8" />
-      <TextBlock>
+      <TextBlock Style="{StaticResource TextBlock.Caption}" Text="No throughput chart yet." Margin="0,12,0,8" />
+      <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}"
+                 Text="Select an adapter on NicIQ and Watch. Settings chooses Receive, Send, Errors, and Discards." />
+      <TextBlock Margin="0,8,0,0">
         <Hyperlink Command="{Binding OpenNicIqCommand}">Open NicIQ</Hyperlink>
       </TextBlock>
     </StackPanel>
-    <ContentControl Content="{Binding WatchChart}"
-                    Visibility="{Binding HasWatchData, Converter={StaticResource BoolToVis}}" />
+    <ScrollViewer Visibility="{Binding HasWatchData, Converter={StaticResource BoolToVis}}"
+                  VerticalScrollBarVisibility="Auto">
+      <StackPanel>
+        <ContentControl Content="{Binding ReceiveChart}" Margin="0,0,0,16" />
+        <ContentControl Content="{Binding SendChart}" Margin="0,0,0,16" />
+        <ContentControl Content="{Binding ErrorChart}" />
+      </StackPanel>
+    </ScrollViewer>
   </Grid>
 </UserControl>

@@ -11,6 +11,7 @@ public sealed partial class MainViewModel : ObservableObject
 {
     private CancellationTokenSource? _cts;
     private NetworkJob<AdapterWatchResult>? _watchJob;
+    private NetworkJob<CounterSampleResult>? _trafficJob;
     private bool _busy;
     private bool _loading;
 
@@ -47,6 +48,18 @@ public sealed partial class MainViewModel : ObservableObject
 
     [ObservableProperty]
     private bool _ipEnabledOnly = true;
+
+    [ObservableProperty]
+    private bool _monitorReceive = true;
+
+    [ObservableProperty]
+    private bool _monitorSend = true;
+
+    [ObservableProperty]
+    private bool _monitorErrors;
+
+    [ObservableProperty]
+    private bool _monitorDiscards;
 
     [ObservableProperty]
     private decimal _durationSeconds = NicIqWatchInput.DefaultDurationSeconds;
@@ -114,6 +127,19 @@ public sealed partial class MainViewModel : ObservableObject
         Session?.Save();
     }
 
+    partial void OnMonitorReceiveChanged(bool value) => PersistMonitors();
+    partial void OnMonitorSendChanged(bool value) => PersistMonitors();
+    partial void OnMonitorErrorsChanged(bool value) => PersistMonitors();
+    partial void OnMonitorDiscardsChanged(bool value) => PersistMonitors();
+
+    private void PersistMonitors()
+    {
+        if (_loading)
+            return;
+        Session?.Save();
+        Dashboard?.Redraw();
+    }
+
     [RelayCommand(CanExecute = nameof(CanRefresh))]
     private void Refresh()
     {
@@ -161,12 +187,22 @@ public sealed partial class MainViewModel : ObservableObject
         {
             _watchJob = NetworkHelper.WatchAdapter(query!.AdapterKey, new AdapterWatchOptions
             {
-                Duration = query.Duration
+                Duration = query.Duration,
+                Interval = TimeSpan.FromSeconds(1)
             });
-            var result = await _watchJob.RunAsync(token).ConfigureAwait(true);
+            _trafficJob = NetworkHelper.SampleCounters(query.AdapterKey, new CounterSampleOptions
+            {
+                Duration = query.Duration,
+                Interval = TimeSpan.FromSeconds(1)
+            });
+            var watchTask = _watchJob.RunAsync(token);
+            var trafficTask = _trafficJob.RunAsync(token);
+            await Task.WhenAll(watchTask, trafficTask).ConfigureAwait(true);
+            var result = watchTask.Result;
+            var traffic = trafficTask.Result;
             var changed = WatchStatusFlipped(result);
             Post(FormatWatch(result, changed));
-            Dashboard?.ShowWatch(result.Samples.Select(s => s.SpeedBitsPerSecond).ToList());
+            Dashboard?.ShowTraffic(traffic, MonitorReceive, MonitorSend, MonitorErrors, MonitorDiscards);
             Refresh();
             MarkStatusChanged(query.AdapterKey, changed);
         }
@@ -183,6 +219,7 @@ public sealed partial class MainViewModel : ObservableObject
             _busy = false;
             RaiseBusy();
             _watchJob = null;
+            _trafficJob = null;
             _cts.Dispose();
             _cts = null;
         }
@@ -192,6 +229,7 @@ public sealed partial class MainViewModel : ObservableObject
     private void Cancel()
     {
         _watchJob?.Cancel();
+        _trafficJob?.Cancel();
         try { _cts?.Cancel(); }
         catch (ObjectDisposedException) { }
     }
