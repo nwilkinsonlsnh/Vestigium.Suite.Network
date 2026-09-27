@@ -144,7 +144,7 @@ public sealed partial class MainViewModel : ObservableObject
             });
             var result = await _watchJob.RunAsync(token).ConfigureAwait(true);
             Post(FormatWatch(result));
-            Dashboard?.Unlock();
+            Dashboard?.ShowWatch(result.Samples.Select(s => (double)s.SpeedBitsPerSecond).ToList());
         }
         catch (OperationCanceledException)
         {
