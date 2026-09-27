@@ -75,6 +75,9 @@ public sealed partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private string _analyticsSummary = string.Empty;
 
+    [ObservableProperty]
+    private bool _detailsOpen;
+
     public bool CanStart => !_busy;
 
     public bool CanCancel => _busy;
@@ -117,6 +120,7 @@ public sealed partial class MainViewModel : ObservableObject
         Replies.Clear();
         Summary = string.Empty;
         AnalyticsSummary = string.Empty;
+        DetailsOpen = true;
         Status = "Running";
         _cts = new CancellationTokenSource();
         var token = _cts.Token;

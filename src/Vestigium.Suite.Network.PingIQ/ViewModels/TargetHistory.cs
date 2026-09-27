@@ -4,7 +4,7 @@ public static class TargetHistory
 {
     public const int DefaultSize = 10;
     public const int MinSize = 1;
-    public const int MaxSize = 50;
+    public const int MaxSize = 25;
 
     public static int ClampSize(int size)
         => size is < MinSize or > MaxSize ? DefaultSize : size;

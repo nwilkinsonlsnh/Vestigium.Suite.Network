@@ -6,40 +6,40 @@
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
       <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
 
-    <DockPanel Grid.Row="0">
-      <TextBlock DockPanel.Dock="Top" Style="{StaticResource TextBlock.Caption}" Text="{Binding Status}" Margin="0,0,0,8" />
-      <TextBlock DockPanel.Dock="Top" Style="{StaticResource TextBlock.Caption}" Text="{Binding Summary}" Margin="0,0,0,4" />
-      <TextBlock DockPanel.Dock="Top" Style="{StaticResource TextBlock.Caption}" Text="{Binding AnalyticsSummary}" Margin="0,0,0,12"
-                 TextWrapping="Wrap" />
+    <Grid Grid.Row="0">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="*" />
+      </Grid.ColumnDefinitions>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+      </Grid.RowDefinitions>
 
-      <Grid>
-        <Grid.ColumnDefinitions>
-          <ColumnDefinition Width="Auto" />
-          <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-          <RowDefinition Height="Auto" />
-          <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
+      <Label Style="{StaticResource Label.Standard}" Content="Target" VerticalAlignment="Center" Margin="0,0,8,8" />
+      <ComboBox Grid.Column="1"
+                IsEditable="True"
+                IsTextSearchEnabled="False"
+                StaysOpenOnEdit="True"
+                IsReadOnly="False"
+                ItemsSource="{Binding Targets}"
+                Text="{Binding Target, UpdateSourceTrigger=PropertyChanged}"
+                Background="{DynamicResource Vestigium.Brushes.Surface.Card}"
+                Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}"
+                BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
+                Margin="0,0,0,8" />
 
-        <Label Style="{StaticResource Label.Standard}" Content="Target" VerticalAlignment="Center" Margin="0,0,8,8" />
-        <ComboBox Grid.Column="1" Style="{StaticResource ComboBox.Standard}"
-                  IsEditable="True"
-                  ItemsSource="{Binding Targets}"
-                  Text="{Binding Target, UpdateSourceTrigger=PropertyChanged}"
-                  Margin="0,0,0,8" />
+      <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Style="{StaticResource StackPanel.Toolbar}" Orientation="Horizontal">
+        <Button Content="Ping" Style="{StaticResource Button.Primary}" Command="{Binding PingCommand}" Padding="16,4" Margin="0,0,8,0" />
+        <Button Content="Probe" Style="{StaticResource Button.Success}" Command="{Binding ProbeCommand}" Padding="16,4" Margin="0,0,8,0" />
+        <Button Content="Cancel" Style="{StaticResource Button.Secondary}" Command="{Binding CancelCommand}" Padding="16,4" />
+      </StackPanel>
+    </Grid>
 
-        <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Style="{StaticResource StackPanel.Toolbar}" Orientation="Horizontal">
-          <Button Content="Ping" Style="{StaticResource Button.Primary}" Command="{Binding PingCommand}" Padding="16,4" Margin="0,0,8,0" />
-          <Button Content="Probe" Style="{StaticResource Button.Success}" Command="{Binding ProbeCommand}" Padding="16,4" Margin="0,0,8,0" />
-          <Button Content="Cancel" Style="{StaticResource Button.Secondary}" Command="{Binding CancelCommand}" Padding="16,4" />
-        </StackPanel>
-      </Grid>
-    </DockPanel>
-
-    <Border Grid.Row="1" Margin="0,12,0,0" BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
+    <Border Grid.Row="1" Margin="0,8,0,8" BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
       <DataGrid Style="{StaticResource DataGrid.Compact}"
                 ItemsSource="{Binding Replies}"
                 IsReadOnly="True"
@@ -62,5 +62,17 @@
         </DataGrid.Columns>
       </DataGrid>
     </Border>
+
+    <Expander Grid.Row="2"
+              Header="Results"
+              IsExpanded="{Binding DetailsOpen, Mode=TwoWay}"
+              Background="{DynamicResource Vestigium.Brushes.Surface.Window}"
+              Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}">
+      <StackPanel Margin="12,8,0,0">
+        <TextBlock Style="{StaticResource TextBlock.Caption}" Text="{Binding Status}" Margin="0,0,0,8" />
+        <TextBlock Style="{StaticResource TextBlock.Caption}" Text="{Binding Summary}" Margin="0,0,0,4" />
+        <TextBlock Style="{StaticResource TextBlock.Caption}" Text="{Binding AnalyticsSummary}" TextWrapping="Wrap" />
+      </StackPanel>
+    </Expander>
   </Grid>
 </UserControl>
