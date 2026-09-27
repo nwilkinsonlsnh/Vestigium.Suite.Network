@@ -176,7 +176,8 @@ public sealed partial class MainViewModel : ObservableObject
 
         _busy = true;
         RaiseBusy();
-        Post("Running");
+        var name = SelectedAdapter?.Name ?? query.AdapterKey;
+        Post($"Monitoring {name}  status Up ↔ Down");
         _cts = new CancellationTokenSource();
         var token = _cts.Token;
         try
