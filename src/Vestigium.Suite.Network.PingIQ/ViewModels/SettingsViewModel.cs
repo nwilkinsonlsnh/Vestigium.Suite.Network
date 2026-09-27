@@ -244,11 +244,22 @@ public sealed partial class SettingsViewModel : ObservableObject
         OnPropertyChanged(nameof(ProbePlanText));
     }
 
+    partial void OnIntervalMsChanged(decimal value)
+    {
+        if (_loading)
+            return;
+        DefaultSeconds = ProbeCalc.SecondsFromInterval((int)DefaultRequests, (int)value);
+        OnPropertyChanged(nameof(ProbePlanText));
+    }
+
     public string ProbePlanText
         => ProbeCalc.Describe((int)DefaultRequests, (int)DefaultSeconds);
 
     [ObservableProperty]
     private decimal _intervalMs = 100m;
+
+    [ObservableProperty]
+    private decimal _calcSeconds = SecondsDefault;
 
     [ObservableProperty]
     private bool _requestsCalcOpen;
@@ -258,6 +269,8 @@ public sealed partial class SettingsViewModel : ObservableObject
 
     partial void OnDefaultRequestsChanged(decimal value)
     {
+        if (!_loading)
+            DefaultSeconds = ProbeCalc.SecondsFromInterval((int)value, (int)IntervalMs);
         Persist();
         OnPropertyChanged(nameof(ProbePlanText));
     }
@@ -266,8 +279,9 @@ public sealed partial class SettingsViewModel : ObservableObject
     private void RestoreProbeDefaults()
     {
         DefaultRequests = RequestDefault;
-        DefaultSeconds = SecondsDefault;
         IntervalMs = 100m;
+        DefaultSeconds = SecondsDefault;
+        CalcSeconds = SecondsDefault;
         Persist();
         OnPropertyChanged(nameof(ProbePlanText));
     }
@@ -275,7 +289,8 @@ public sealed partial class SettingsViewModel : ObservableObject
     [RelayCommand]
     private void ApplyRequestsFromInterval()
     {
-        DefaultRequests = ProbeCalc.RequestsFromInterval((int)DefaultSeconds, (int)IntervalMs);
+        DefaultRequests = ProbeCalc.RequestsFromInterval((int)CalcSeconds, (int)IntervalMs);
+        DefaultSeconds = CalcSeconds;
         RequestsCalcOpen = false;
         OnPropertyChanged(nameof(ProbePlanText));
     }
@@ -283,7 +298,8 @@ public sealed partial class SettingsViewModel : ObservableObject
     [RelayCommand]
     private void ApplySecondsFromInterval()
     {
-        DefaultSeconds = ProbeCalc.SecondsFromInterval((int)DefaultRequests, (int)IntervalMs);
+        DefaultSeconds = CalcSeconds;
+        IntervalMs = ProbeCalc.IntervalMs((int)DefaultRequests, (int)DefaultSeconds);
         SecondsCalcOpen = false;
         OnPropertyChanged(nameof(ProbePlanText));
     }
@@ -296,7 +312,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         if (open)
         {
             SecondsCalcOpen = false;
-            SeedCalcFromPlan();
+            CalcSeconds = DefaultSeconds;
         }
     }
 
@@ -308,15 +324,8 @@ public sealed partial class SettingsViewModel : ObservableObject
         if (open)
         {
             RequestsCalcOpen = false;
-            SeedCalcFromPlan();
+            CalcSeconds = DefaultSeconds;
         }
-    }
-
-    private void SeedCalcFromPlan()
-    {
-        if (!PulsePlan.TryCreate(DefaultRequests, DefaultSeconds, out var plan, out _) || plan.Requests <= 1)
-            return;
-        IntervalMs = ProbeCalc.IntervalMs(plan.Requests, plan.Seconds);
     }
 
     partial void OnSelectedSourceChanged(string? value) => Persist();
