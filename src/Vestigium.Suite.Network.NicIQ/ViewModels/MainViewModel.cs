@@ -46,6 +46,9 @@ public sealed partial class MainViewModel : ObservableObject
     private bool _includeDown = true;
 
     [ObservableProperty]
+    private bool _ipEnabledOnly = true;
+
+    [ObservableProperty]
     private decimal _durationSeconds = NicIqWatchInput.DefaultDurationSeconds;
 
     [ObservableProperty]
@@ -80,6 +83,23 @@ public sealed partial class MainViewModel : ObservableObject
         Refresh();
     }
 
+    partial void OnIpEnabledOnlyChanged(bool value)
+    {
+        if (_loading)
+            return;
+        if (Settings is not null)
+        {
+            Settings.BeginLoad();
+            Settings.IpEnabledOnly = value;
+            Settings.EndLoad();
+        }
+
+        Session?.Save();
+        if (_busy)
+            return;
+        Refresh();
+    }
+
     partial void OnDurationSecondsChanged(decimal value)
     {
         if (_loading)
@@ -105,7 +125,7 @@ public sealed partial class MainViewModel : ObservableObject
         {
             var box = NetworkHelper.GetWorkstation();
             Header = FormatHeader(box);
-            var query = new NetworkAdapterQuery(IncludeDown: IncludeDown);
+            var query = new NetworkAdapterQuery(IncludeDown: IncludeDown, IpEnabledOnly: IpEnabledOnly);
             var rows = NetworkHelper.GetAdapters(query).Select(static a => new AdapterRow(a)).ToList();
             ReplaceRows(rows, keep);
             Post("Idle");
@@ -229,6 +249,12 @@ public sealed partial class MainViewModel : ObservableObject
     {
         var host = string.IsNullOrWhiteSpace(box.HostName) ? "—" : box.HostName.Trim();
         var line = string.IsNullOrWhiteSpace(box.DomainName) ? host : $"{host}  /  {box.DomainName.Trim()}";
+        if (box.Stack is { } stack)
+        {
+            var dns = stack.DhcpNameServers.Count == 0 ? "—" : string.Join(", ", stack.DhcpNameServers);
+            line = $"{line}{Environment.NewLine}DHCP DNS  {dns}  router {(stack.IpEnableRouter == true ? "yes" : "no")}";
+        }
+
         if (box.DnsSuffixSearchList.Count == 0)
             return line;
         return $"{line}{Environment.NewLine}Search  {string.Join(", ", box.DnsSuffixSearchList)}";

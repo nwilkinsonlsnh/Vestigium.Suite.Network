@@ -39,6 +39,10 @@ public sealed class AdapterRow
         }
     }
 
+    public string Ipv4 => Source.HasIpv4Unicast ? "Yes" : Source.SupportsIpv4 ? "bound" : string.Empty;
+
+    public string Ipv6 => Source.HasIpv6Unicast ? "Yes" : Source.SupportsIpv6 ? "bound" : string.Empty;
+
     public string Detail => FormatDetail(Source);
 
     public static string FormatDetail(NetworkAdapter adapter)
@@ -46,6 +50,9 @@ public sealed class AdapterRow
         var text = new StringBuilder();
         text.AppendLine("Description");
         text.AppendLine(string.IsNullOrWhiteSpace(adapter.Description) ? "—" : adapter.Description.Trim());
+        text.AppendLine($"IP enabled       {FormatOptional(adapter.IpEnabled)}");
+        text.AppendLine($"IPv4             bind {Yes(adapter.SupportsIpv4)}  address {Yes(adapter.HasIpv4Unicast)}");
+        text.AppendLine($"IPv6             bind {Yes(adapter.SupportsIpv6)}  address {Yes(adapter.HasIpv6Unicast)}");
         if (adapter.InterfaceIndex is int index)
         {
             text.AppendLine();
@@ -139,6 +146,8 @@ public sealed class AdapterRow
         foreach (var value in values)
             text.AppendLine(value);
     }
+
+    private static string Yes(bool value) => value ? "Yes" : "No";
 
     private static string FormatOptional(bool? value)
         => value is null ? "—" : value.Value ? "Yes" : "No";

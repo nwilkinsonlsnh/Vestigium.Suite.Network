@@ -49,6 +49,7 @@ public sealed class NicIqSession
             ThemeId = _settings.SelectedThemeId,
             DurationSeconds = (int)ClampDuration(_main.DurationSeconds),
             IncludeDown = _main.IncludeDown,
+            IpEnabledOnly = _main.IpEnabledOnly,
             StatusBarVisible = _settings.BarVisible,
             StatusBarDock = _settings.BarPosition == VestigiumStatusBarPosition.Top ? "Top" : "Bottom"
         };
@@ -75,6 +76,7 @@ public sealed class NicIqSession
         var duration = ClampDuration(Current.DurationSeconds);
         _main.DurationSeconds = duration;
         _main.IncludeDown = Current.IncludeDown;
+        _main.IpEnabledOnly = Current.IpEnabledOnly;
         _settings.LoadFrom(Current);
     }
 

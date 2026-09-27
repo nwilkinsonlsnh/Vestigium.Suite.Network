@@ -31,6 +31,10 @@
                 Content="Include down adapters"
                 IsChecked="{Binding IncludeDown}"
                 Margin="0,0,0,16" />
+      <CheckBox Style="{StaticResource CheckBox.Standard}"
+                Content="IP enabled only"
+                IsChecked="{Binding IpEnabledOnly}"
+                Margin="0,0,0,16" />
 
       <Label Style="{StaticResource Label.Standard}" Content="Duration (s)" />
       <nud:VestigiumNumericUpDown Value="{Binding DefaultDurationSeconds, Mode=TwoWay}"

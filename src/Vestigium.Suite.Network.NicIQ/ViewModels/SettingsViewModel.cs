@@ -73,6 +73,9 @@ public sealed partial class SettingsViewModel : ObservableObject
     [ObservableProperty]
     private bool _includeDown = true;
 
+    [ObservableProperty]
+    private bool _ipEnabledOnly = true;
+
     public void BeginLoad() => _loading = true;
 
     public void EndLoad() => _loading = false;
@@ -82,6 +85,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         SelectedThemeId = string.IsNullOrWhiteSpace(data.ThemeId) ? SelectedThemeId : data.ThemeId;
         DefaultDurationSeconds = NicIqSession.ClampDuration(data.DurationSeconds);
         IncludeDown = data.IncludeDown;
+        IpEnabledOnly = data.IpEnabledOnly;
         BarPosition = string.Equals(data.StatusBarDock, "Top", StringComparison.OrdinalIgnoreCase)
             ? VestigiumStatusBarPosition.Top
             : VestigiumStatusBarPosition.Bottom;
@@ -133,6 +137,15 @@ public sealed partial class SettingsViewModel : ObservableObject
             return;
         if (Host is not null)
             Host.IncludeDown = value;
+        Persist();
+    }
+
+    partial void OnIpEnabledOnlyChanged(bool value)
+    {
+        if (_loading)
+            return;
+        if (Host is not null)
+            Host.IpEnabledOnly = value;
         Persist();
     }
 
