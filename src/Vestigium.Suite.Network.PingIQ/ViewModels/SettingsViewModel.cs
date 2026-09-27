@@ -77,8 +77,6 @@ public sealed partial class SettingsViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(ProbePageOpen))]
     [NotifyPropertyChangedFor(nameof(ThemePageOpen))]
     [NotifyPropertyChangedFor(nameof(MruPageOpen))]
-    [NotifyPropertyChangedFor(nameof(ShowRequestsRow))]
-    [NotifyPropertyChangedFor(nameof(ShowIntervalRow))]
     private string _settingsPage = "PingIQ";
 
     public bool PingIqPageOpen
@@ -264,10 +262,18 @@ public sealed partial class SettingsViewModel : ObservableObject
     private decimal _calcMs = 30_000m;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowRequestsRow))]
+    [NotifyPropertyChangedFor(nameof(ShowIntervalRow))]
     private bool _requestsCalcOpen;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowRequestsRow))]
+    [NotifyPropertyChangedFor(nameof(ShowIntervalRow))]
     private bool _secondsCalcOpen;
+
+    public bool ShowRequestsRow => !SecondsCalcOpen;
+
+    public bool ShowIntervalRow => !RequestsCalcOpen;
 
     partial void OnDefaultRequestsChanged(decimal value)
     {
