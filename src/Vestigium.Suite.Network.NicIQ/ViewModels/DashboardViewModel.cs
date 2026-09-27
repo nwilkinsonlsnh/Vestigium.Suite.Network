@@ -26,7 +26,7 @@ public sealed partial class DashboardViewModel : ObservableObject
 
     public void Unlock() => DashboardAvailabilityChanged?.Invoke(true);
 
-    public void ShowWatch(IReadOnlyList<double> speedsBitsPerSecond)
+    public void ShowWatch(IReadOnlyList<long> speedsBitsPerSecond)
     {
         Unlock();
         try
@@ -38,10 +38,12 @@ public sealed partial class DashboardViewModel : ObservableObject
                 return;
             }
 
-            var series = NumericSeries.From(speedsBitsPerSecond, "nic-speed-bps");
+            var scale = LinkSpeed.ScaleFor(speedsBitsPerSecond);
+            var values = speedsBitsPerSecond.Select(v => LinkSpeed.ToUnit(v, scale.Divisor)).ToList();
+            var series = NumericSeries.From(values, scale.SeriesName);
             WatchChart = TryChart(() => ChartView.Line(
                 series,
-                ChartTheme.Options("Watch speed (bits/s)", "Sample", "bits/s")));
+                ChartTheme.Options($"Link speed ({scale.Unit})", "Sample", scale.Unit)));
             HasWatchData = WatchChart is not null;
         }
         catch (Exception)

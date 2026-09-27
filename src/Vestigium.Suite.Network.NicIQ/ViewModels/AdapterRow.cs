@@ -25,6 +25,10 @@ public sealed class AdapterRow
 
     public long? SpeedBitsPerSecond => Source.SpeedBitsPerSecond;
 
+    public string Speed => Source.SpeedBitsPerSecond is null
+        ? string.Empty
+        : LinkSpeed.Format(Source.SpeedBitsPerSecond.Value);
+
     public string Detail => FormatDetail(Source);
 
     public static string FormatDetail(NetworkAdapter adapter)

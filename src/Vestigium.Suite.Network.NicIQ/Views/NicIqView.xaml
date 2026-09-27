@@ -50,7 +50,7 @@
             <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="90" />
             <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="110" />
             <DataGridTextColumn Header="MacAddress" Binding="{Binding MacAddress}" Width="140" />
-            <DataGridTextColumn Header="SpeedBitsPerSecond" Binding="{Binding SpeedBitsPerSecond}" Width="140" />
+            <DataGridTextColumn Header="Speed" Binding="{Binding Speed}" Width="100" />
             <DataGridTextColumn Header="Id" Binding="{Binding Id}" Width="160" />
           </DataGrid.Columns>
         </DataGrid>

@@ -144,7 +144,7 @@ public sealed partial class MainViewModel : ObservableObject
             });
             var result = await _watchJob.RunAsync(token).ConfigureAwait(true);
             Post(FormatWatch(result));
-            Dashboard?.ShowWatch(result.Samples.Select(s => (double)s.SpeedBitsPerSecond).ToList());
+            Dashboard?.ShowWatch(result.Samples.Select(s => s.SpeedBitsPerSecond).ToList());
         }
         catch (OperationCanceledException)
         {
@@ -212,7 +212,7 @@ public sealed partial class MainViewModel : ObservableObject
         var last = result.Samples.Count > 0 ? result.Samples[^1] : null;
         if (last is null)
             return result.LastStatus.ToString();
-        return $"{result.LastStatus}  {last.SpeedBitsPerSecond}";
+        return $"{result.LastStatus}  {LinkSpeed.Format(last.SpeedBitsPerSecond)}";
     }
 
     private static string FormatHeader(WorkstationNetwork box)
