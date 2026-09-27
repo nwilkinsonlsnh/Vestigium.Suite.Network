@@ -5,102 +5,121 @@
 **APPID:** `NicIQ`  
 **Status:** Live  
 **Date:** 27 September 2026  
-**Binding:** Requirements v1.0 wins on the window. Design v1.0 wins on types. Helpers.Network Requirements v1.6 and package **1.2.0** win on protocol. This file wins on the slice.
+**Revised:** 27 September 2026 — owner: suite skeleton, not a bare grid  
+**Binding:** Requirements v1.0 wins on the **job** (list + detail + watch). Helpers.Network 1.2.0 wins on protocol. DnsIQ / PingIQ Rev 1 wins on **chrome**. This file wins on the slice. Design v1.0 is the job map only; it does not describe chrome.
 
-**Goal:** Ship the first usable NicIQ window: workstation header, adapter list, selected detail, Include-down, Refresh, Watch 1–60 s, Cancel, status line.
+**Goal:** Stand NicIQ up as a Vestigium suite host (shell, theme, status bar, pages, package pins) and ship the first-and-ten job on the NicIQ page: which NIC, is it up, how fast.
 
-**Not:** A protocol library. Not `SampleCounters`. Not a chart or sparkline. Not DnsIQ/PingIQ chrome, themes, persist, or dashboard. Not a wrap of `NetworkHelper`. Not disable/rename/DHCP renew. Not a bind-to-this-NIC helper for PingIQ. Not `Get-NetAdapter` / `ipconfig` / `ethtool`.
+**Not:** A protocol library. Not `SampleCounters`. Not a wrap of `NetworkHelper`. Not a project reference to DnsIQ or PingIQ. Not disable/rename/DHCP renew. Not `Get-NetAdapter`. Not live-updating charts during Watch. Not a pin bump.
+
+---
+
+## Owner lock (27 Sep 2026)
+
+Old plan treated chrome as gold plate because Requirements v1.0 said “one window, no tabs, no chart.”
+
+Owner: the application is a suite skeleton. Use the Vestigium packages already pinned in `Directory.Build.props` and already consumed by DnsIQ / PingIQ — Themes, Controls (Shell, StatusBar, NumericUpDown, UnderConstruction), Converters, Analytics, Charts, Network, Logging. Copy the host pattern. New namespace.
+
+Requirements v1.0 is now stale on chrome. Do not rewrite that paper in this slice. Do not invent a NicIQ Requirements v1.1 to justify tabs. The job rules (N1–N10, acceptance 1–8 except “no chart control”) still stand.
 
 ---
 
 ## Starting point (repo as of this plan)
 
-The exe already exists. It is not first-and-ten.
+The exe already exists. It is a stub, not a suite host.
 
 | Piece | Today | Required |
 |---|---|---|
-| `App.OnStartup` | `HostLog.Initialize(HostIds.NicIQ)` | Keep. |
-| Project refs | Shell only | Keep. Packages stay on Shell. |
-| Window | Title + Refresh + `Log` text box | Header + toolbar + grid + detail + Status. No `Log`. |
-| `MainViewModel` | `GetAdapters()` dumped into `Log`. No selection. No watch. No cancel. | Full VM per Design. |
-| Tests | `HostIds` lists Ping/Trace/Dns only | Host clamp + reject tests. Not a protocol suite. |
+| `App.OnStartup` | `HostLog.Initialize(HostIds.NicIQ)` then base | HostLog → Themes → DI → settings → `NicIqWindow`. |
+| Project refs | Shell only. No Themes / Controls / Charts pins on the exe. | Same pins as PingIQ / DnsIQ. Network still flows through Shell. |
+| Window | `MainWindow` + Refresh + `Log` | `NicIqWindow` + `VestigiumShell`. Three pages. No `Log`. |
+| `MainViewModel` | `GetAdapters()` dumped into `Log` | Job VM on the NicIQ page. |
+| Tests | `HostIds` omits NicIQ | Host clamp + settings store. Not a protocol suite. |
 
-Treat the current `Log` property and the read-only `TextBox` as debt. Replace them. Do not keep both surfaces.
+Treat `Log` as debt. Replace it. Do not keep both surfaces.
 
 ---
 
 ## Decision
 
-One PR. Four build slices plus owner gate. The stub is the start, not a second product.
+One PR. Six build slices plus owner gate. The stub is the start, not a second product.
 
-Requirements first-and-ten is “which NIC, is it up, how fast.” That is one window. Copying DnsIQ Rev 1 chrome into this slice is a stunt.
+Chrome copies DnsIQ Rev 1 / PingIQ PR01-01. Job stays Requirements first-and-ten. Dashboard is a hosted `ChartView` skeleton. It does not invent a counter engine.
 
 | Call | Why |
 |---|---|
-| One in-flight watch | N6. Second Watch is ignored, not queued. Refresh disabled while Running. |
-| Watch with no selection does not start | Acceptance 5. `CanExecute` false. Do not invent IfIndex `1`. |
+| Copy chrome, new namespace | Owner. Hosts do not reference each other. |
+| Pins match PingIQ csproj | Already in `Directory.Build.props`. Do not invent versions. |
+| Startup order | HostLog (register Analytics + Charts catalogs) → ThemeCatalog → Themes.Initialize → DI → window. |
+| Pages: NicIQ \| Dashboard (locked) \| Settings | Same shell as DnsIQ. Dashboard unlocks after a completed Watch, not after Refresh. |
+| Duration is `VestigiumNumericUpDown` | Suite control. Default 10. Min 1. Max 60. |
+| Status lives on `VestigiumStatusBar` | Not a homemade TextBlock under the grid. Page caption may echo the same line. |
+| One in-flight watch | N6. Refresh disabled while Running. |
 | Selection key is `Id`, fallback `Name` | N4. Index `0` is not a NIC. |
-| Detail comes from the selected list row | Design §Flow. `GetAdapter` only if that row is stale after a watch or the operator asks Refresh. |
-| Include down default **on** | Requirements. Pass `NetworkAdapterQuery { IncludeDown = flag }`. Library default is already `true`. |
-| Duration default **10 s**. Host clamp **1–60 s** | Requirements. Library floor is 10 ms and ceiling is 1 hour — host clamp is tighter and wins on the form. |
-| Host does not set `AdapterWatchOptions.Interval` | Watch is one duration, not a sample engine. Null interval is the library start/end pair. |
-| Failed inventory keeps the last list | N7, locked: keep. Status = `Failed` plus `ex.Message`. |
-| Failed watch does not wipe the list | List is inventory, not a job grid. Status = `Failed`. Detail stays. |
-| Cancel → Status `Cancelled` | Cancel is not Failed. |
-| Status line after watch uses library fields | `LastStatus` + last sample `SpeedBitsPerSecond` when present. Do not remap `OperationalStatus` names. |
-| Field names match the library | N3. `Status`, not `OperationalStatus`. Speed column is `SpeedBitsPerSecond`. |
-| No `INicService` | Consume contract. Static `NetworkHelper` stays the door. |
-| Host tests do not hit inventory or watch | Suite tests are host contracts. Protocol tests live in Helpers. |
-| No chrome lift this slice | Requirements: one window, no tabs, no `ChartView`. |
+| Detail from the selected list row | `GetAdapter` only if stale. |
+| Include down default **on** | `NetworkAdapterQuery.IncludeDown`. |
+| Host duration clamp **1–60 s** | Form is tighter than the library 10 ms–1 h. |
+| Do not set `AdapterWatchOptions.Interval` | Watch is one duration. |
+| Failed inventory keeps the last list | N7. |
+| Cancel → `Cancelled` | Cancel is not Failed. |
+| No `INicService` | Static `NetworkHelper`. |
+| Dashboard does not call `SampleCounters` | Out of first ten. Empty `ChartView` hosts + UnderConstruction until Watch produces samples. Then `NumericSeries` + `ChartView` + `ChartTheme.Paint`. No ScottPlot usings. |
+| Host tests stay off the wire | Protocol tests live in Helpers. |
 
 ### Rejected alternatives
 
 | Idea | Why out |
 |---|---|
-| Keep the `Log` box “for now” | Design is a grid + detail. Two surfaces is fog. |
-| Wrap `NetworkHelper` so tests can mock adapters | Forbidden façade. Clamp and reject without calling the library. |
-| `SampleCounters` next to Watch | Requirements Out. Second job. |
-| Sparkline / Charts | N9. After counters exist. |
-| Port DnsIQ `PingIqWindow` chrome, ThemeCatalog, persist | Wrong first-and-ten. That is a later host-paper change, not this slice. |
-| Call `GetAdapter` on every click | Design: same record unless stale. Extra round trip invents nothing. |
-| Set `Interval` to 1 s “so the status moves” | That is a live sampler. Out of first ten. |
-| Spawn `Get-NetAdapter` when the library list is empty | N8. Empty list is allowed. |
-| Watch loopback by hard-coded index `1` when nothing is selected | N4. No selection means no watch. |
-| Bill / P95 on speed samples | Watch does not bill. Analytics stays unused. |
+| Bare `MainWindow` grid with no shell | Owner rejected. Suite hosts look like suite hosts. |
+| Keep `Log` “for now” | Two surfaces is fog. |
+| Wrap `NetworkHelper` | Forbidden façade. |
+| ProjectReference DnsIQ or PingIQ | Copy the pattern. New types. |
+| Bump package pins | Pins already match the live hosts. |
+| `SampleCounters` as the Dashboard series | Second job. Watch samples are enough to prove Charts + Analytics wire. |
+| Live sparkline during Watch | DnsIQ lock: paint after the job. |
+| Set `Interval` so the chart moves | Sampler. Out. |
+| Spawn `Get-NetAdapter` | N8. |
+| Unlock Dashboard on Refresh | Refresh is inventory. Unlock is Watch. |
 
 ---
 
-## Library doors this slice may call
+## Package pins this host must list
 
-Pin: `Vestigium.Helpers.Network` **1.2.0** (already in `Directory.Build.props`).
+Copy `Vestigium.Suite.Network.PingIQ.csproj`. Do not invent a third set.
+
+| Package | Pin (Directory.Build.props) | Role on this host |
+|---|---|---|
+| `Vestigium.Helpers.Network` | 1.2.0 | Through Shell. Job doors. |
+| `Vestigium.Logging` | 1.7.1 | Through Shell. `HostLog.Initialize(HostIds.NicIQ)`. |
+| `Vestigium.Helpers.Analytics` | 1.0.1 | `NumericSeries` after Watch. Register catalog at HostLog. |
+| `Vestigium.Helpers.Charts` | 1.0.5 | `ChartView` on Dashboard. No ScottPlot usings. |
+| `Vestigium.Themes` | 1.0.2 | `ThemeCatalog` + `Themes.Initialize`. |
+| `Vestigium.Controls` | 1.0.0 | `VestigiumShell`, default window VM. |
+| `Vestigium.Controls.StatusBar` | 1.0.0 | Status bar. |
+| `Vestigium.Controls.NumericUpDown` | 1.0.1 | Duration. |
+| `Vestigium.Controls.UnderConstruction` | 1.0.0 | Dashboard empty state. |
+| `Vestigium.Converters` | 1.0.0 | DI register. |
+| `CommunityToolkit.Mvvm` | 8.4.0 | Through Shell. |
+| `Microsoft.Extensions.DependencyInjection` | 10.0.12 | Same as PingIQ csproj (not the props token). |
+
+Network stays consumed through Shell. The exe does not add a second Network PackageReference.
+
+---
+
+## Library doors the job may call
 
 ```
-NetworkHelper.GetWorkstation()
-    → WorkstationNetwork          // HostName, DomainName, CapturedUtc
-
-NetworkHelper.GetAdapters(NetworkAdapterQuery?)
-    → IReadOnlyList<NetworkAdapter>
-      NetworkAdapterQuery.IncludeDown   // default true
-
-NetworkHelper.GetAdapter(string nameOrId)
-    → NetworkAdapter              // only when the selected row is stale
-
-NetworkHelper.WatchAdapter(string nameOrId, AdapterWatchOptions?)
-    → NetworkJob<AdapterWatchResult>
-      RunAsync(token) / Cancel()
-      AdapterWatchOptions.Duration      // host sets 1–60 s; do not set Interval
-      AdapterWatchResult.FirstStatus, LastStatus, Samples[], Elapsed
+NetworkHelper.GetWorkstation() → WorkstationNetwork
+NetworkHelper.GetAdapters(NetworkAdapterQuery?) → IReadOnlyList<NetworkAdapter>
+NetworkHelper.GetAdapter(string nameOrId) → NetworkAdapter   // stale row only
+NetworkHelper.WatchAdapter(string nameOrId, AdapterWatchOptions?) → NetworkJob<AdapterWatchResult>
 ```
 
-`NetworkAdapter` fields the window binds:
+`AdapterWatchOptions.Duration` only. Do not set `Interval`.
 
-| Grid | Detail |
-|---|---|
-| `Name`, `Status`, `Type`, `MacAddress`, `SpeedBitsPerSecond`, `Id` | `Description`, `UnicastAddresses`, `Gateways`, `DnsServers`, `Dhcp`, `NetbiosOverTcp` |
+`WatchAdapter` throws `ArgumentException` at create when the adapter is missing. That is Failed.
 
 Do not call `SampleCounters`, `IcmpEcho`, `LookupAsync`, `GetRoutes`, `GetSnapshot`, or OUI lookup.
-
-`WatchAdapter` throws `ArgumentException` at create when the adapter is missing. That is Failed, not a crash.
 
 ---
 
@@ -108,31 +127,52 @@ Do not call `SampleCounters`, `IcmpEcho`, `LookupAsync`, `GetRoutes`, `GetSnapsh
 
 | Type | File | Role |
 |---|---|---|
-| `App` | `App.xaml.cs` | Already correct. Do not add protocol calls. |
-| `MainWindow` | `MainWindow.xaml` / `.cs` | DataContext only. No `NetworkHelper`. |
-| `MainViewModel` | `ViewModels/MainViewModel.cs` | Header, list, detail, Status, Refresh/Watch/Cancel. |
-| `AdapterRow` | `ViewModels/AdapterRow.cs` | Grid projection of `NetworkAdapter`. Holds the source record or the six grid fields plus a detail payload. No protocol. |
-| `NicIqWatchInput` | `ViewModels/NicIqWatchInput.cs` | Pure clamp / reject. No sockets. No `NetworkInterface`. |
+| `App` | `App.xaml` / `.cs` | HostLog → Themes → DI → session → `NicIqWindow`. `SetDashboardEnabled`. |
+| `ThemeCatalog` | `ThemeCatalog.cs` | Same nine packs as DnsIQ. |
+| `ThemeChrome` | `ThemeChrome.cs` | Bind status bar to theme brushes. |
+| `NicIqWindow` | `NicIqWindow.xaml` / `.cs` | Chrome. Primary work area, centered, Manual startup. Builds View → Theme. No protocol. |
+| `MainViewModel` | `ViewModels/MainViewModel.cs` | Header, list, detail, Refresh / Watch / Cancel, status bar posts. |
+| `SettingsViewModel` | `ViewModels/SettingsViewModel.cs` | Pages NicIQ / Theme. Duration default, IncludeDown default, palette, bar. |
+| `DashboardViewModel` | `ViewModels/DashboardViewModel.cs` | Hosts `FrameworkElement` from `ChartView`. `Unlock` after Watch. |
+| `ChartTheme` | `ViewModels/ChartTheme.cs` | Copy PingIQ. Slot colors from theme brushes. |
+| `AdapterRow` | `ViewModels/AdapterRow.cs` | Grid projection. |
+| `NicIqWatchInput` | `ViewModels/NicIqWatchInput.cs` | Clamp / reject. No sockets. |
+| `NicIqSettings` / `NicIqSettingsStore` / `NicIqSession` | `ViewModels/` | Persist under `%ProgramData%\Vestigium\Settings\Diagnostics\NicIQ\`. |
+| `PageViewport` | `Views/PageViewport.cs` | Copy. |
+| Views | `Views/NicIqView.xaml`, `DashboardView.xaml`, `SettingsView.xaml` | Pages. |
 
-`NicIqWatchInput` is the cheapest seam that is not a second Network API. Tests call it. The VM calls it, then the library.
+No `INicService`. No ScottPlot usings.
 
 ---
 
 ## Window map
 
-Header: workstation `HostName` / `DomainName` from `GetWorkstation`. `CapturedUtc` may sit on the same line. It is optional.
+`NicIqWindow` + `VestigiumShell` (`ShowNav=False`)
 
-Toolbar: Refresh, Include down (checked), Duration (default 10), Watch, Cancel.
+```
+menu  File (Exit)
+      View (bar visible, bar Top/Bottom, Theme submenu — one check)
+icon  Assets/NicIQ.ico
+place primary WorkArea, centered, Manual startup
+nav   HorizontalTab  NicIQ | Dashboard (disabled until Watch) | Settings
+client
+  NicIQ
+    caption = live status
+    header  workstation HostName / DomainName
+    Refresh, Include down, Duration (NumericUpDown 1–60, default 10), Watch, Cancel
+    left   adapter grid  Name, Status, Type, MacAddress, SpeedBitsPerSecond, Id
+    right  detail  Description, unicasts, gateways, DNS, DHCP, NetBIOS
+  Dashboard
+    empty + Open NicIQ until unlocked
+    after Watch: speed series via NumericSeries + ChartView (line). Optional status text.
+  Settings
+    indented HorizontalTab  NicIQ | Theme
+    NicIQ:  default Duration, default Include down
+    Theme:  palette, bar visible, dock
+status bar    message | progress | detail | clock
+```
 
-Left: read-only `DataGrid` bound to `Adapters` — columns Name, Status, Type, MacAddress, SpeedBitsPerSecond, Id.
-
-Right: selected detail — Description, unicast addresses, gateways, DNS servers, DHCP server/lease when present, NetBIOS-over-TCP enum. A read-only `TextBox` or stacked `TextBlock`s is enough. Do not invent a second grid of counters.
-
-Bottom: Status line. Idle / Running / Failed / Cancelled plus last watch outcome.
-
-No tab control. No chart host. No counter button. No send-packet button.
-
-Speed cell: number as bits/s when `SpeedBitsPerSecond` has a value; blank when null.
+NumericUpDown host style: centered text, theme card/stroke — copy `App.xaml` from DnsIQ.
 
 ---
 
@@ -140,96 +180,105 @@ Speed cell: number as bits/s when `SpeedBitsPerSecond` has a value; blank when n
 
 ### Input (`NicIqWatchInput.TryCreate`)
 
-Reject and return a message. Do not call the library.
-
 | Input | Rule |
 |---|---|
 | Adapter key | Trim. Blank → reject (“No adapter selected.”). |
-| Duration seconds | Not a number → reject. `< 1` → reject. `> 60` → reject. `1..60` → `TimeSpan.FromSeconds(n)`. |
-
-Refresh has no watch input. Include-down is a bool on the VM, not a reject rule.
+| Duration seconds | `< 1` or `> 60` → reject. `1..60` → `TimeSpan.FromSeconds(n)`. |
 
 ### Inventory
 
-1. On construct and Refresh: `GetWorkstation()` for the header. `GetAdapters(new NetworkAdapterQuery { IncludeDown = IncludeDown })` for the list.
-2. Map each `NetworkAdapter` to `AdapterRow`. Preserve selection by `Id` when the id still exists after reload.
-3. Selection → Detail from that row. Do not call `GetAdapter` unless Refresh left the selected id in the list but the row looks incomplete, or Watch just finished and the operator still has that id selected — then one `GetAdapter(id)` is allowed to refresh detail.
-4. Inventory exception: keep the current `Adapters` collection, Status = `Failed`, error text = `ex.Message`. Do not throw out of the command.
-5. Empty list is legal. Status may stay `Idle`.
+On construct and Refresh: `GetWorkstation()` for the header, `GetAdapters(new NetworkAdapterQuery { IncludeDown = IncludeDown })` for the list. Preserve selection by `Id`. Selection fills detail from that row. Inventory exception keeps the last list and posts `Failed` + `ex.Message` on the status bar.
 
 ### Watch
 
-1. If busy, command does nothing (`CanExecute` false).
-2. Validate via `NicIqWatchInput`. On reject: Status = the message (or `Failed` plus the message). Do not set Running.
-3. Status = `Running`. New `CancellationTokenSource`.
-4. `var job = NetworkHelper.WatchAdapter(key, new AdapterWatchOptions { Duration = duration }); await job.RunAsync(token)`.
-5. Hold the job so Cancel can call `job.Cancel()` as well as cancel the token.
-6. Success: Status = `Idle` is wrong. Status line = `LastStatus` plus speed from the last sample when `Samples` is not empty (format bits/s). Prefix with `Cancelled` only on cancel. A completed watch is not Failed; put the outcome on the line (`Up 1000000000` / `Down` / library status name + speed).
-7. `OperationCanceledException` / `TaskCanceledException` → Status = `Cancelled`.
-8. Any other exception, including create-time `ArgumentException` → Status = `Failed`. Error text = `ex.Message`. List stays.
+1. Busy → command no-ops.
+2. Validate. Reject does not set Running.
+3. Status bar Message = `Running`. New CTS.
+4. `WatchAdapter(key, new AdapterWatchOptions { Duration = duration })` then `RunAsync(token)`.
+5. Hold the job so Cancel calls `job.Cancel()` and the token.
+6. Success: Message = `LastStatus` + last sample speed (bits/s). Push samples to Dashboard as a speed series. Unlock Dashboard.
+7. Cancel → `Cancelled`. Do not unlock.
+8. Exception including create-time `ArgumentException` → `Failed` + `ex.Message`. List stays.
 9. `finally`: dispose token, clear busy, raise CanExecute.
 
-Cancel command: if a `NetworkJob` is live, `job.Cancel()`. Always cancel the token.
+Refresh `CanExecute`: not busy. Watch: not busy and selection present. Cancel: busy.
 
-Refresh `CanExecute`: not busy. Watch `CanExecute`: not busy and selection present. Cancel `CanExecute`: busy.
+### Dashboard
 
-`ConfigureAwait(true)` is acceptable on the VM if the command starts on the UI thread; do not marshal by hand.
+`ChartView` + `NumericSeries.From` watch speeds (or elapsed-indexed speed samples). `ChartTheme.Paint`. No UCL/LCL invention in the host — if `ControlLimits` fails, skip the control chart. Empty state is UnderConstruction + “Open NicIQ”, not a fake series.
+
+### Persist
+
+`%ProgramData%\Vestigium\Settings\Diagnostics\NicIQ\settings.json`
+
+Load after Themes.Initialize. Save on change. Tests inject a temp root. Missing / corrupt file → defaults (Duration 10, IncludeDown true, LightBlue).
 
 ---
 
 ## Implementation table
 
-Build order is the Order column.
-
 | Order | ID | Do | State |
 | ---: | :--- | :--- | :--- |
-| 1 | PR01-01 | Window + types. Replace `Log`. Header, Include down, Duration, Watch, Cancel, adapter grid, detail pane, `AdapterRow`. | Open |
-| 2 | PR01-02 | Inventory path. `GetWorkstation` + `GetAdapters` + IncludeDown + keep-last-list on fail + selection detail. | Open |
-| 3 | PR01-03 | `NicIqWatchInput` + Watch + one in-flight + Cancel. Refresh disabled while Running. | Open |
-| 4 | PR01-04 | Host tests for duration clamp, blank key, APPID. No inventory call. No watch call. | Open |
-| 5 | PR01-05 | Owner runs the window against Requirements §4. | Owner |
+| 1 | PR01-01 | Skeleton. `NicIqWindow`, ThemeCatalog, ThemeChrome, three pages, icon, primary-monitor center, package pins. Kill `MainWindow`. NicIQ page may still stub the job. Dashboard locked. | Open |
+| 2 | PR01-02 | Inventory on NicIQ page. Header, grid, detail, Include down, Refresh, keep-last-list. | Open |
+| 3 | PR01-03 | `NicIqWatchInput` + Watch + Cancel + one in-flight. Status bar posts. | Open |
+| 4 | PR01-04 | Settings persist + Theme page + Duration / IncludeDown defaults. | Open |
+| 5 | PR01-05 | Dashboard `ChartView` + Unlock after Watch. No `SampleCounters`. | Open |
+| 6 | PR01-06 | Host tests. No inventory call. No watch call. | Open |
+| 7 | PR01-07 | Owner gate. Requirements §4 job + chrome smoke. | Owner |
 
 ### PR01-01
 
-Rewrite `MainWindow.xaml` to the Design layout. Delete the `Log` text box and the `Log` property. `MainWindow.xaml.cs` stays DataContext-only. `AdapterRow` is a plain record or small class — no logic. Commands may be stubs that set Status.
+Stand the DnsIQ chrome skeleton under the NicIQ namespace. View → Theme check must work. `MainWindow.xaml` goes away when `NicIqWindow` is the show path. Icon: add `Assets/NicIQ.ico` (owner asset or a copy of an existing suite icon renamed — do not block the slice on art).
+
+`App.xaml` copies DnsIQ NumericUpDown + UnderConstruction styles. `csproj` copies PingIQ package list. Assembly name `NicIQ`.
 
 ### PR01-02
 
-Refresh is the only library traffic in this slice. Watch/Cancel can stay disabled or no-op. Constructor still loads once.
+Refresh is the only library traffic. Watch can stay disabled.
 
 ### PR01-03
 
-`NicIqWatchInput.TryCreate`. One `_busy` / `_cts` / optional `_watchJob` field. `RelayCommand` `CanExecute` tied to busy + selection. Do not queue a second job. Do not set `Interval`.
+One `_busy` / `_cts` / optional `_watchJob`. Do not set `Interval`.
 
 ### PR01-04
 
-Add `tests/Vestigium.Suite.Network.Tests/NicIqWatchInputTests.cs` (name may vary; behavior names, not release ids).
-
-Must assert:
-
-- blank / whitespace adapter key rejects
-- `Ethernet` (any non-blank key) with duration `10` accepts and yields `TimeSpan.FromSeconds(10)`
-- duration `0` rejects; duration `61` rejects; duration `1` accepts; duration `60` accepts
-- duration `-1` rejects
-
-Add `HostIds.NicIQ` to `HostIdsTests` (`NicIQ` is not `Network`).
-
-Add a project reference from the test project to `Vestigium.Suite.Network.NicIQ` so the input type compiles. Do not reference Helpers from the test project for this slice.
-
-Do **not** add tests that call `GetAdapters`, `GetAdapter`, `GetWorkstation`, or `WatchAdapter`. Those belong in Helpers.
+`NicIqSettings` / store / session. Tests inject a temp root.
 
 ### PR01-05
 
+No ScottPlot usings. Unlock only after Watch completes.
+
+### PR01-06
+
+`NicIqWatchInputTests`:
+
+- blank / whitespace key rejects
+- `Ethernet` + duration `10` accepts → `TimeSpan.FromSeconds(10)`
+- `0`, `61`, `-1` reject; `1` and `60` accept
+
+`NicIqSettingsStoreTests`: save → load on a temp directory; corrupt file → defaults.
+
+`HostIdsTests`: add `NicIQ` is not `Network`.
+
+ProjectReference the NicIQ exe from the test project.
+
+Do **not** call `GetAdapters` / `WatchAdapter` from tests.
+
+### PR01-07
+
 Owner on the clone:
 
-1. Window opens. `%ProgramData%\Vestigium\Logs\NicIQ\` exists after first run.
-2. Refresh fills a list without throwing out of the UI (empty list is allowed).
-3. Header shows a host name from `GetWorkstation`.
-4. Selecting a row fills detail (addresses may be empty).
-5. Watch with no selection does not start.
-6. Watch for 1–10 s on a selected up adapter returns a status line (up/down/speed or Failed).
-7. Cancel stops a running watch.
-8. No counter button, no chart, no send-packet button.
+1. Window opens as suite chrome. `%ProgramData%\Vestigium\Logs\NicIQ\` exists after first run.
+2. Theme menu switches palette. Status bar dock works.
+3. Refresh fills a list without throwing (empty list allowed).
+4. Header shows a host name from `GetWorkstation`.
+5. Selecting a row fills detail.
+6. Watch with no selection does not start.
+7. Watch 1–10 s on a selected up adapter returns a status line.
+8. Cancel stops a running watch.
+9. Dashboard stays locked until Watch completes; then a `ChartView` is present.
+10. No counter button. No send-packet button. No `SampleCounters`.
 
 This agent does not mark first-and-ten closed.
 
@@ -238,16 +287,36 @@ This agent does not mark first-and-ten closed.
 ## Files this plan expects to touch
 
 ```
-src/Vestigium.Suite.Network.NicIQ/MainWindow.xaml
+src/Vestigium.Suite.Network.NicIQ/App.xaml
+src/Vestigium.Suite.Network.NicIQ/App.xaml.cs
+src/Vestigium.Suite.Network.NicIQ/Vestigium.Suite.Network.NicIQ.csproj
+src/Vestigium.Suite.Network.NicIQ/NicIqWindow.xaml                 [NEW]
+src/Vestigium.Suite.Network.NicIQ/NicIqWindow.xaml.cs              [NEW]
+src/Vestigium.Suite.Network.NicIQ/ThemeCatalog.cs                   [NEW]
+src/Vestigium.Suite.Network.NicIQ/ThemeChrome.cs                    [NEW]
+src/Vestigium.Suite.Network.NicIQ/Assets/NicIQ.ico                  [NEW]
 src/Vestigium.Suite.Network.NicIQ/ViewModels/MainViewModel.cs
-src/Vestigium.Suite.Network.NicIQ/ViewModels/AdapterRow.cs              [NEW]
-src/Vestigium.Suite.Network.NicIQ/ViewModels/NicIqWatchInput.cs         [NEW]
-tests/Vestigium.Suite.Network.Tests/NicIqWatchInputTests.cs             [NEW]
+src/Vestigium.Suite.Network.NicIQ/ViewModels/AdapterRow.cs          [NEW]
+src/Vestigium.Suite.Network.NicIQ/ViewModels/NicIqWatchInput.cs     [NEW]
+src/Vestigium.Suite.Network.NicIQ/ViewModels/NicIqSettings.cs       [NEW]
+src/Vestigium.Suite.Network.NicIQ/ViewModels/NicIqSettingsStore.cs  [NEW]
+src/Vestigium.Suite.Network.NicIQ/ViewModels/NicIqSession.cs        [NEW]
+src/Vestigium.Suite.Network.NicIQ/ViewModels/SettingsViewModel.cs   [NEW]
+src/Vestigium.Suite.Network.NicIQ/ViewModels/DashboardViewModel.cs  [NEW]
+src/Vestigium.Suite.Network.NicIQ/ViewModels/ChartTheme.cs          [NEW]
+src/Vestigium.Suite.Network.NicIQ/Views/NicIqView.xaml              [NEW]
+src/Vestigium.Suite.Network.NicIQ/Views/DashboardView.xaml          [NEW]
+src/Vestigium.Suite.Network.NicIQ/Views/SettingsView.xaml           [NEW]
+src/Vestigium.Suite.Network.NicIQ/Views/PageViewport.cs             [NEW]
+src/Vestigium.Suite.Network.NicIQ/MainWindow.xaml                   [DELETE after window swap]
+src/Vestigium.Suite.Network.NicIQ/MainWindow.xaml.cs                [DELETE after window swap]
+tests/Vestigium.Suite.Network.Tests/NicIqWatchInputTests.cs         [NEW]
+tests/Vestigium.Suite.Network.Tests/NicIqSettingsStoreTests.cs      [NEW]
 tests/Vestigium.Suite.Network.Tests/HostIdsTests.cs
 tests/Vestigium.Suite.Network.Tests/Vestigium.Suite.Network.Tests.csproj
 ```
 
-Do not edit Shell except the APPID assert already listed. Do not bump package pins. Do not add a project reference from the exe to Helpers — Shell already flows Network through. Do not add Themes / Controls / Charts usings to NicIQ.
+Do not edit Shell except the APPID assert. Do not bump pins in `Directory.Build.props`. Do not add a Network PackageReference on the exe.
 
 When this plan finishes, move the whole `PR01/` folder to `PR-Plans/Completed/PR01/` and idle the queue README.
 
@@ -257,12 +326,12 @@ When this plan finishes, move the whole `PR01/` folder to `PR-Plans/Completed/PR
 
 | Role | Watch |
 |---|---|
-| Alvin | No façade. No chrome lift. No `SampleCounters`. Grid columns match `NetworkAdapter`. Detail is the same record. |
-| Theodore | Cancel and Failed do not throw out of the UI. CanExecute blocks the second Watch. Refresh stays off during watch. Tests stay off inventory. |
-| Simon | Host duration clamp is 1–60 s, not the library 10 ms–1 h. `Interval` stays unset. Status names come from the library. Index `0` is never a selection key. |
+| Alvin | Chrome is a copy, not a remix. No façade. No `SampleCounters`. Grid columns match `NetworkAdapter`. |
+| Theodore | Cancel and Failed stay on the status bar. CanExecute blocks the second Watch. Tests stay off inventory. |
+| Simon | Host clamp 1–60 s. `Interval` unset. Dashboard unlocks on Watch, not Refresh. Status names from the library. |
 
 ---
 
 ## Next action
 
-PR01-01. Kill `Log`. Land the Design window and `AdapterRow`. Inventory and Watch stay the next two slices.
+PR01-01. Skeleton. `NicIqWindow` + pins + three pages. Kill `MainWindow`. Job grid comes in PR01-02.
