@@ -37,9 +37,9 @@ public sealed class AdapterRow
         {
             if (Source.Ipv4Metric is int metric)
                 return Source.Ipv4MetricIsAutomatic == true
-                    ? $"{metric} auto"
+                    ? $"{metric}  OS managed"
                     : metric.ToString(CultureInfo.InvariantCulture);
-            return Source.Ipv4MetricIsAutomatic == true ? "Autoconfigured" : string.Empty;
+            return Source.Ipv4MetricIsAutomatic == true ? "OS managed" : string.Empty;
         }
     }
 
@@ -150,9 +150,11 @@ public sealed class AdapterRow
     private static string FormatMetric(NetworkAdapter adapter)
     {
         if (adapter.Ipv4Metric is int metric)
-            return adapter.Ipv4MetricIsAutomatic == true ? $"{metric}  Autoconfigured" : metric.ToString(CultureInfo.InvariantCulture);
-        return adapter.Ipv4MetricIsAutomatic == true ? "Autoconfigured" : "—";
+            return adapter.Ipv4MetricIsAutomatic == true ? $"{metric}  OS managed" : metric.ToString(CultureInfo.InvariantCulture);
+        return adapter.Ipv4MetricIsAutomatic == true ? "OS managed" : "—";
     }
+
+    private static string Yes(bool value) => value ? "Yes" : "No";
 
     private static string FormatOptional(bool? value)
         => value is null ? "—" : value.Value ? "Yes" : "No";
