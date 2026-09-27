@@ -6,4 +6,17 @@ public sealed record ReplyRow(
     string? Address,
     long RttMs,
     int Ttl,
+    int? Hops,
     string? Detail);
+
+public static class HopEstimate
+{
+    public static int? FromTtl(int ttl)
+    {
+        if (ttl <= 0)
+            return null;
+
+        var initial = ttl <= 64 ? 64 : ttl <= 128 ? 128 : 255;
+        return Math.Max(0, initial - ttl);
+    }
+}

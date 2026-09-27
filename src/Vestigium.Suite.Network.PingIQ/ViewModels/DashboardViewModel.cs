@@ -64,6 +64,8 @@ public sealed partial class DashboardViewModel : ObservableObject
 
     public void Unlock() => DashboardAvailabilityChanged?.Invoke(true);
 
+    public void OpenProbePage() => DashboardPage = "Probe";
+
     public void ShowEcho(IReadOnlyList<double> rtts)
     {
         try

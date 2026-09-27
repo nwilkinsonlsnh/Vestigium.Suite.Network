@@ -88,8 +88,9 @@
           <DataGridTextColumn Header="Seq" Binding="{Binding Sequence}" Width="60" />
           <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="140" />
           <DataGridTextColumn Header="Address" Binding="{Binding Address}" Width="*" />
-          <DataGridTextColumn Header="RttMs" Binding="{Binding RttMs}" Width="80" />
-          <DataGridTextColumn Header="Ttl" Binding="{Binding Ttl}" Width="60" />
+          <DataGridTextColumn Header="RTT (ms)" Binding="{Binding RttMs}" Width="90" />
+          <DataGridTextColumn Header="TTL" Binding="{Binding Ttl}" Width="60" />
+          <DataGridTextColumn Header="Hops" Binding="{Binding Hops}" Width="60" />
           <DataGridTextColumn Header="Detail" Binding="{Binding Detail}" Width="2*" />
         </DataGrid.Columns>
       </DataGrid>

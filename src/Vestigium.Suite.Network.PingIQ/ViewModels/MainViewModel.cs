@@ -221,7 +221,9 @@ public sealed partial class MainViewModel : ObservableObject
         var probeTotal = plan.Requests;
         await OnUiAsync(() =>
         {
-            Dashboard?.ShowProbe(probeSamples);
+            var series = probeSamples.Count > 0 ? probeSamples : GridRtts();
+            Dashboard?.ShowProbe(series);
+            Dashboard?.OpenProbePage();
             Status = $"Probe {probeTotal} / {probeTotal}";
         }).ConfigureAwait(false);
         StatusBar?.Engine.SetIdlePolicy(3000, "Idle. . .");
@@ -252,6 +254,14 @@ public sealed partial class MainViewModel : ObservableObject
         }
     }
 
+    private List<double> GridRtts()
+        => Replies
+            .Where(r => r.Status == nameof(IcmpEchoStatus.Success)
+                || r.Status == nameof(IcmpEchoStatus.DestinationUnreachable)
+                || r.Status == nameof(IcmpEchoStatus.TtlExpired))
+            .Select(r => (double)r.RttMs)
+            .ToList();
+
     private static List<double> SeriesRtts(IcmpEchoResult result)
         => result.Replies
             .Where(r => r.Status is IcmpEchoStatus.Success
@@ -273,6 +283,7 @@ public sealed partial class MainViewModel : ObservableObject
                 reply.Address,
                 reply.RoundtripTimeMs,
                 reply.Ttl,
+                HopEstimate.FromTtl(reply.Ttl),
                 reply.Detail));
         }
 
