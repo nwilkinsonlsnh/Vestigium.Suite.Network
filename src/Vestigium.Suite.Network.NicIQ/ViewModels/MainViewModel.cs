@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Vestigium.Controls.StatusBar;
@@ -170,6 +171,15 @@ public sealed partial class MainViewModel : ObservableObject
         _watchJob?.Cancel();
         try { _cts?.Cancel(); }
         catch (ObjectDisposedException) { }
+    }
+
+    [RelayCommand]
+    private void CopyDetail()
+    {
+        if (string.IsNullOrWhiteSpace(Detail))
+            return;
+        Clipboard.SetText(Detail);
+        Post("Idle", "Copied");
     }
 
     private void RaiseBusy()

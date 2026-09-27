@@ -67,7 +67,7 @@ public sealed class AdapterRow
         {
             text.AppendLine($"Enabled  {FormatOptional(adapter.Dhcp.IsEnabled)}");
             text.AppendLine($"Server   {adapter.Dhcp.Server ?? "—"}");
-            text.AppendLine($"Lease    {FormatTime(adapter.Dhcp.LeaseObtained)} → {FormatTime(adapter.Dhcp.LeaseExpires)}");
+            text.AppendLine($"Lease    {FormatLease(adapter.Dhcp)}");
         }
 
         text.AppendLine();
@@ -91,6 +91,17 @@ public sealed class AdapterRow
     private static string FormatOptional(bool? value)
         => value is null ? "—" : value.Value ? "Yes" : "No";
 
+    private static string FormatLease(DhcpInfo dhcp)
+    {
+        if (dhcp.LeaseObtained is null && dhcp.LeaseExpires is null)
+            return "Not reported";
+        if (dhcp.LeaseObtained is not null && dhcp.LeaseExpires is not null)
+            return $"obtained {FormatTime(dhcp.LeaseObtained)}  expires {FormatTime(dhcp.LeaseExpires)}";
+        if (dhcp.LeaseObtained is not null)
+            return $"obtained {FormatTime(dhcp.LeaseObtained)}";
+        return $"expires {FormatTime(dhcp.LeaseExpires)}";
+    }
+
     private static string FormatTime(DateTimeOffset? value)
-        => value is null ? "—" : value.Value.ToString("u", CultureInfo.InvariantCulture);
+        => value is null ? "—" : value.Value.ToLocalTime().ToString("g", CultureInfo.CurrentCulture);
 }
