@@ -77,6 +77,8 @@ public sealed partial class SettingsViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(ProbePageOpen))]
     [NotifyPropertyChangedFor(nameof(ThemePageOpen))]
     [NotifyPropertyChangedFor(nameof(MruPageOpen))]
+    [NotifyPropertyChangedFor(nameof(ShowRequestsRow))]
+    [NotifyPropertyChangedFor(nameof(ShowIntervalRow))]
     private string _settingsPage = "PingIQ";
 
     public bool PingIqPageOpen
@@ -259,7 +261,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     private decimal _intervalMs = 100m;
 
     [ObservableProperty]
-    private decimal _calcSeconds = SecondsDefault;
+    private decimal _calcMs = 30_000m;
 
     [ObservableProperty]
     private bool _requestsCalcOpen;
@@ -281,7 +283,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         DefaultRequests = RequestDefault;
         IntervalMs = 100m;
         DefaultSeconds = SecondsDefault;
-        CalcSeconds = SecondsDefault;
+        CalcMs = 30_000m;
         Persist();
         OnPropertyChanged(nameof(ProbePlanText));
     }
@@ -289,18 +291,22 @@ public sealed partial class SettingsViewModel : ObservableObject
     [RelayCommand]
     private void ApplyRequestsFromInterval()
     {
-        DefaultRequests = ProbeCalc.RequestsFromInterval((int)CalcSeconds, (int)IntervalMs);
-        DefaultSeconds = CalcSeconds;
+        DefaultRequests = ProbeCalc.RequestsFromDuration((int)CalcMs, (int)IntervalMs);
+        DefaultSeconds = ProbeCalc.SecondsFromInterval((int)DefaultRequests, (int)IntervalMs);
         RequestsCalcOpen = false;
+        OnPropertyChanged(nameof(ShowRequestsRow));
+        OnPropertyChanged(nameof(ShowIntervalRow));
         OnPropertyChanged(nameof(ProbePlanText));
     }
 
     [RelayCommand]
     private void ApplySecondsFromInterval()
     {
-        DefaultSeconds = CalcSeconds;
-        IntervalMs = ProbeCalc.IntervalMs((int)DefaultRequests, (int)DefaultSeconds);
+        IntervalMs = ProbeCalc.IntervalFromDuration((int)CalcMs, (int)DefaultRequests);
+        DefaultSeconds = ProbeCalc.SecondsFromInterval((int)DefaultRequests, (int)IntervalMs);
         SecondsCalcOpen = false;
+        OnPropertyChanged(nameof(ShowRequestsRow));
+        OnPropertyChanged(nameof(ShowIntervalRow));
         OnPropertyChanged(nameof(ProbePlanText));
     }
 
@@ -312,7 +318,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         if (open)
         {
             SecondsCalcOpen = false;
-            CalcSeconds = DefaultSeconds;
+            CalcMs = ProbeCalc.DurationMs((int)DefaultRequests, (int)IntervalMs);
         }
     }
 
@@ -324,7 +330,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         if (open)
         {
             RequestsCalcOpen = false;
-            CalcSeconds = DefaultSeconds;
+            CalcMs = ProbeCalc.DurationMs((int)DefaultRequests, (int)IntervalMs);
         }
     }
 
