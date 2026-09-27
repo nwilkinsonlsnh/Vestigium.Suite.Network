@@ -248,7 +248,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         => ProbeCalc.Describe((int)DefaultRequests, (int)DefaultSeconds);
 
     [ObservableProperty]
-    private decimal _intervalSeconds = 0.1m;
+    private decimal _intervalMs = 100m;
 
     [ObservableProperty]
     private bool _requestsCalcOpen;
@@ -267,7 +267,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     {
         DefaultRequests = RequestDefault;
         DefaultSeconds = SecondsDefault;
-        IntervalSeconds = 0.1m;
+        IntervalMs = 100m;
         Persist();
         OnPropertyChanged(nameof(ProbePlanText));
     }
@@ -275,7 +275,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     [RelayCommand]
     private void ApplyRequestsFromInterval()
     {
-        DefaultRequests = ProbeCalc.RequestsFromInterval((int)DefaultSeconds, IntervalSeconds);
+        DefaultRequests = ProbeCalc.RequestsFromInterval((int)DefaultSeconds, (int)IntervalMs);
         RequestsCalcOpen = false;
         OnPropertyChanged(nameof(ProbePlanText));
     }
@@ -283,7 +283,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     [RelayCommand]
     private void ApplySecondsFromInterval()
     {
-        DefaultSeconds = ProbeCalc.SecondsFromInterval((int)DefaultRequests, IntervalSeconds);
+        DefaultSeconds = ProbeCalc.SecondsFromInterval((int)DefaultRequests, (int)IntervalMs);
         SecondsCalcOpen = false;
         OnPropertyChanged(nameof(ProbePlanText));
     }
@@ -316,10 +316,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     {
         if (!PulsePlan.TryCreate(DefaultRequests, DefaultSeconds, out var plan, out _) || plan.Requests <= 1)
             return;
-        var seconds = (decimal)plan.Spacing.TotalSeconds;
-        if (seconds < 0.01m)
-            seconds = 0.01m;
-        IntervalSeconds = Math.Round(seconds, 3, MidpointRounding.AwayFromZero);
+        IntervalMs = ProbeCalc.IntervalMs(plan.Requests, plan.Seconds);
     }
 
     partial void OnSelectedSourceChanged(string? value) => Persist();

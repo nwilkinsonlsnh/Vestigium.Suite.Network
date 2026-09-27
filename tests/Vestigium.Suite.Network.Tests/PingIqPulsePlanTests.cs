@@ -35,7 +35,7 @@ public sealed class PingIqPulsePlanTests
         Assert.Null(reject);
         Assert.Equal(1, plan.Requests);
         Assert.Equal(60, plan.Seconds);
-        Assert.Equal(TimeSpan.Zero, plan.Spacing);
+        Assert.Equal(TimeSpan.FromSeconds(60), plan.Spacing);
         Assert.Equal(TimeSpan.Zero, plan.DueAt(1));
     }
 
@@ -44,7 +44,8 @@ public sealed class PingIqPulsePlanTests
     {
         Assert.True(PulsePlan.TryCreate(1000, 60, out var plan, out _));
         Assert.Equal(TimeSpan.Zero, plan.DueAt(1));
-        Assert.Equal(60, plan.DueAt(1000).TotalSeconds);
+        Assert.Equal(60, plan.Spacing.TotalMilliseconds);
+        Assert.Equal(59.94, plan.DueAt(1000).TotalSeconds, 3);
         Assert.True(plan.DueAt(2) > TimeSpan.Zero);
         Assert.True(plan.DueAt(2) < plan.DueAt(1000));
     }

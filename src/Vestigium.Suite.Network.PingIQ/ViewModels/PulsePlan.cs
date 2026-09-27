@@ -24,7 +24,7 @@ public readonly record struct PulsePlan(int Requests, int Seconds, TimeSpan Spac
             return false;
         }
 
-        var spacing = n == 1 ? TimeSpan.Zero : TimeSpan.FromSeconds(x / (double)(n - 1));
+        var spacing = TimeSpan.FromMilliseconds(x * 1000.0 / n);
         plan = new PulsePlan(n, x, spacing);
         reject = null;
         return true;
@@ -32,10 +32,10 @@ public readonly record struct PulsePlan(int Requests, int Seconds, TimeSpan Spac
 
     public TimeSpan DueAt(int requestIndex)
     {
-        if (Requests <= 1 || requestIndex <= 1)
+        if (requestIndex <= 1)
             return TimeSpan.Zero;
         if (requestIndex >= Requests)
-            return new TimeSpan(TimeSpan.TicksPerSecond * Seconds);
-        return TimeSpan.FromSeconds(Seconds * (requestIndex - 1) / (double)(Requests - 1));
+            return Spacing * (Requests - 1);
+        return Spacing * (requestIndex - 1);
     }
 }
