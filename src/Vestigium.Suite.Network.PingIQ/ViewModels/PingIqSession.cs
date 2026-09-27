@@ -62,6 +62,8 @@ public sealed class PingIqSession
             StatusBarVisible = _settings.BarVisible,
             StatusBarDock = _settings.BarPosition == VestigiumStatusBarPosition.Top ? "Top" : "Bottom",
             Source = _settings.SelectedSource,
+            TargetHistorySize = (int)_settings.TargetHistorySize,
+            RecentTargets = _main.Targets.ToArray(),
             ShowLegendEcho = Current.ShowLegendEcho,
             ShowLegendProbeRtt = Current.ShowLegendProbeRtt,
             ShowLegendProbeDist = Current.ShowLegendProbeDist,
@@ -99,6 +101,7 @@ public sealed class PingIqSession
         _main.DurationSeconds = Current.Seconds;
         _settings.NarrowSources(_main.SelectedInterfaceIndex);
         _settings.LoadFrom(Current);
+        _main.ReplaceTargets(Current.RecentTargets, Current.TargetHistorySize);
         _main.Bind.SourceAddress = _settings.SelectedSource;
         _main.Bind.InterfaceIndex = _main.SelectedInterfaceIndex;
     }

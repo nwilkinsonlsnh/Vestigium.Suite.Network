@@ -14,6 +14,8 @@ public sealed class PingIqSettings
     public bool StatusBarVisible { get; set; } = true;
     public string StatusBarDock { get; set; } = "Bottom";
     public string? Source { get; set; }
+    public int TargetHistorySize { get; set; } = TargetHistory.DefaultSize;
+    public string[] RecentTargets { get; set; } = ["127.0.0.1"];
     public bool ShowLegendEcho { get; set; } = true;
     public bool ShowLegendProbeRtt { get; set; } = true;
     public bool ShowLegendProbeDist { get; set; } = true;

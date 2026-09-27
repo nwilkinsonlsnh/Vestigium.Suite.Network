@@ -115,6 +115,11 @@ public sealed partial class SettingsViewModel : ObservableObject
     [ObservableProperty]
     private string? _selectedSource;
 
+    [ObservableProperty]
+    private decimal _targetHistorySize = TargetHistory.DefaultSize;
+
+    public IReadOnlyList<string> RecentTargets { get; set; } = ["127.0.0.1"];
+
     public void LoadFrom(PingIqSettings data)
     {
         _loading = true;
@@ -140,6 +145,8 @@ public sealed partial class SettingsViewModel : ObservableObject
                 : VestigiumStatusBarPosition.Bottom;
             BarVisible = data.StatusBarVisible;
             SelectedSource = SourceChoices.Resolve(Sources, data.Source).Address;
+            TargetHistorySize = TargetHistory.ClampSize(data.TargetHistorySize);
+            RecentTargets = TargetHistory.Remember(data.RecentTargets, data.RecentTargets?.FirstOrDefault(), (int)TargetHistorySize);
             ChartTheme.LoadFrom(data);
         }
         finally
@@ -211,6 +218,13 @@ public sealed partial class SettingsViewModel : ObservableObject
     partial void OnDefaultSecondsChanged(decimal value) => Persist();
 
     partial void OnSelectedSourceChanged(string? value) => Persist();
+
+    partial void OnTargetHistorySizeChanged(decimal value)
+    {
+        if (_loading)
+            return;
+        Persist();
+    }
 
     private void Persist()
     {

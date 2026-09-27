@@ -31,6 +31,8 @@ public sealed partial class MainViewModel : ObservableObject
 
     public ObservableCollection<ReplyRow> Replies { get; } = [];
 
+    public ObservableCollection<string> Targets { get; } = ["127.0.0.1"];
+
     public MainViewModel()
     {
         try
@@ -101,6 +103,8 @@ public sealed partial class MainViewModel : ObservableObject
             Status = reject ?? "Failed";
             return;
         }
+
+        RememberTarget(query!.Target);
 
         if (probe && !PulsePlan.TryCreate(RequestCount, DurationSeconds, out _, out var pulseReject))
         {
@@ -349,6 +353,32 @@ public sealed partial class MainViewModel : ObservableObject
         }
 
         return _ui.InvokeAsync(action, DispatcherPriority.Normal).Task;
+    }
+
+    public void ReplaceTargets(IEnumerable<string>? targets, int size, bool selectLatest = true)
+    {
+        var keep = Target;
+        var next = TargetHistory.Remember(targets, targets?.FirstOrDefault(), size);
+        Targets.Clear();
+        foreach (var item in next)
+            Targets.Add(item);
+        if (selectLatest && Targets.Count > 0)
+            Target = Targets[0];
+        else if (Targets.Any(x => string.Equals(x, keep, StringComparison.OrdinalIgnoreCase)))
+            Target = keep;
+        else if (Targets.Count > 0)
+            Target = Targets[0];
+    }
+
+    private void RememberTarget(string target)
+    {
+        var size = Session?.Current.TargetHistorySize ?? TargetHistory.DefaultSize;
+        var next = TargetHistory.Remember(Targets, target, size);
+        Targets.Clear();
+        foreach (var item in next)
+            Targets.Add(item);
+        Target = target;
+        Persist();
     }
 
     public void BeginLoad() => _loading = true;

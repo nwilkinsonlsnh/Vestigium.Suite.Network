@@ -32,6 +32,15 @@
       <TextBlock Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap" Margin="0,0,0,16"
                  Text="Count, Delay, Interface and Source live here. Delay is the wait between ICMP echoes. Reply wait stays 4000 ms. Source is the local address this PC sends from. Any lets Windows pick. This is not spoofing." />
 
+      <Label Style="{StaticResource Label.Standard}" Content="Remember targets" />
+      <nud:VestigiumNumericUpDown Value="{Binding TargetHistorySize, Mode=TwoWay}"
+                                  SignMode="Unsigned"
+                                  Minimum="1" Maximum="50" Increment="1" PageIncrement="5" DecimalPlaces="0"
+                                  Background="{DynamicResource Vestigium.Brushes.Surface.Card}"
+                                  Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}"
+                                  BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
+                                  Margin="0,0,0,16" />
+
       <Label Style="{StaticResource Label.Standard}" Content="Count" />
       <nud:VestigiumNumericUpDown Value="{Binding DefaultCount, Mode=TwoWay}"
                                   SignMode="Unsigned"

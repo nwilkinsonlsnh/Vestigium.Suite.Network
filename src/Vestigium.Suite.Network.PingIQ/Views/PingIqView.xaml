@@ -25,8 +25,11 @@
         </Grid.RowDefinitions>
 
         <Label Style="{StaticResource Label.Standard}" Content="Target" VerticalAlignment="Center" Margin="0,0,8,8" />
-        <TextBox Grid.Column="1" Style="{StaticResource TextBox.Standard}"
-                 Text="{Binding Target, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8" />
+        <ComboBox Grid.Column="1" Style="{StaticResource ComboBox.Standard}"
+                  IsEditable="True"
+                  ItemsSource="{Binding Targets}"
+                  Text="{Binding Target, UpdateSourceTrigger=PropertyChanged}"
+                  Margin="0,0,0,8" />
 
         <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Style="{StaticResource StackPanel.Toolbar}" Orientation="Horizontal">
           <Button Content="Ping" Style="{StaticResource Button.Primary}" Command="{Binding PingCommand}" Padding="16,4" Margin="0,0,8,0" />
