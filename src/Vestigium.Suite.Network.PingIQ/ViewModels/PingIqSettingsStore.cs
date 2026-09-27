@@ -10,7 +10,8 @@ public sealed class PingIqSettings
     public int TimeoutMs { get; set; } = PingIqInput.DefaultDelayMs;
     public int InterfaceIndex { get; set; }
     public int Requests { get; set; } = 300;
-    public int Seconds { get; set; } = 30;
+    public int Seconds { get; set; } = 5;
+    public int DurationMs { get; set; } = 5000;
     public bool StatusBarVisible { get; set; } = true;
     public string StatusBarDock { get; set; } = "Bottom";
     public string? Source { get; set; }

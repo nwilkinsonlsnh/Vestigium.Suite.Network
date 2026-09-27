@@ -1,31 +1,32 @@
 namespace Vestigium.Suite.Network.PingIQ.ViewModels;
 
-public readonly record struct PulsePlan(int Requests, int Seconds, TimeSpan Spacing)
+public readonly record struct PulsePlan(int Requests, int DurationMs, TimeSpan Spacing)
 {
     public const int MinRequests = 1;
     public const int MaxRequests = 10_000;
-    public const int MinSeconds = 1;
-    public const int MaxSeconds = 600;
+    public const int MinDurationMs = 100;
+    public const int MaxDurationMs = 600_000;
 
-    public static bool TryCreate(decimal requests, decimal seconds, out PulsePlan plan, out string? reject)
+    public int Seconds => Math.Max(1, (int)Math.Round(DurationMs / 1000.0, MidpointRounding.AwayFromZero));
+
+    public static bool TryCreate(decimal requests, decimal durationMs, out PulsePlan plan, out string? reject)
     {
         plan = default;
         var n = (int)decimal.Truncate(requests);
-        var x = (int)decimal.Truncate(seconds);
+        var ms = (int)decimal.Truncate(durationMs);
         if (n is < MinRequests or > MaxRequests)
         {
             reject = $"Requests must be {MinRequests}–{MaxRequests}.";
             return false;
         }
 
-        if (x is < MinSeconds or > MaxSeconds)
+        if (ms is < MinDurationMs or > MaxDurationMs)
         {
-            reject = $"Seconds must be {MinSeconds}–{MaxSeconds}.";
+            reject = $"Milliseconds must be {MinDurationMs}–{MaxDurationMs}.";
             return false;
         }
 
-        var spacing = TimeSpan.FromMilliseconds(x * 1000.0 / n);
-        plan = new PulsePlan(n, x, spacing);
+        plan = new PulsePlan(n, ms, TimeSpan.FromMilliseconds(ms / (double)n));
         reject = null;
         return true;
     }

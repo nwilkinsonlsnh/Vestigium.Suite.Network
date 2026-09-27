@@ -65,7 +65,7 @@ public sealed partial class MainViewModel : ObservableObject
     private decimal _requestCount = SettingsViewModel.RequestDefault;
 
     [ObservableProperty]
-    private decimal _durationSeconds = SettingsViewModel.SecondsDefault;
+    private decimal _durationMs = SettingsViewModel.DurationDefault;
 
     [ObservableProperty]
     private string _status = "Idle";
@@ -111,7 +111,7 @@ public sealed partial class MainViewModel : ObservableObject
         RememberTarget(query!.Target);
         _echoTarget = null;
 
-        if (probe && !PulsePlan.TryCreate(RequestCount, DurationSeconds, out _, out var pulseReject))
+        if (probe && !PulsePlan.TryCreate(RequestCount, DurationMs, out _, out var pulseReject))
         {
             Status = pulseReject ?? "Failed";
             return;
@@ -148,7 +148,7 @@ public sealed partial class MainViewModel : ObservableObject
                 return;
             }
 
-            if (!PulsePlan.TryCreate(RequestCount, DurationSeconds, out var plan, out var pulsePlanReject))
+            if (!PulsePlan.TryCreate(RequestCount, DurationMs, out var plan, out var pulsePlanReject))
             {
                 await OnUiAsync(() => Status = pulsePlanReject ?? "Failed").ConfigureAwait(false);
                 return;
@@ -477,7 +477,7 @@ public sealed partial class MainViewModel : ObservableObject
         Persist();
     }
     partial void OnRequestCountChanged(decimal value) => Persist();
-    partial void OnDurationSecondsChanged(decimal value) => Persist();
+    partial void OnDurationMsChanged(decimal value) => Persist();
 
     private void Persist()
     {

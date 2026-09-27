@@ -13,9 +13,9 @@ public sealed partial class SettingsViewModel : ObservableObject
     public const decimal RequestMin = PulsePlan.MinRequests;
     public const decimal RequestMax = PulsePlan.MaxRequests;
     public const decimal RequestDefault = 300m;
-    public const decimal SecondsMin = PulsePlan.MinSeconds;
-    public const decimal SecondsMax = PulsePlan.MaxSeconds;
-    public const decimal SecondsDefault = 30m;
+    public const decimal DurationMin = PulsePlan.MinDurationMs;
+    public const decimal DurationMax = PulsePlan.MaxDurationMs;
+    public const decimal DurationDefault = 5000m;
 
     private readonly ThemeManager _themes;
     private readonly VestigiumDefaultWindowViewModel _chrome;
@@ -125,7 +125,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     private decimal _defaultRequests = RequestDefault;
 
     [ObservableProperty]
-    private decimal _defaultSeconds = SecondsDefault;
+    private decimal _defaultDurationMs = DurationDefault;
 
     [ObservableProperty]
     private string? _selectedSource;
@@ -163,7 +163,11 @@ public sealed partial class SettingsViewModel : ObservableObject
                     ? data.TimeoutMs
                     : PingIqInput.DefaultDelayMs;
             DefaultRequests = data.Requests;
-            DefaultSeconds = data.Seconds;
+            DefaultDurationMs = data.DurationMs is >= PulsePlan.MinDurationMs and <= PulsePlan.MaxDurationMs
+                ? data.DurationMs
+                : data.Seconds is >= 1 and <= 600
+                    ? data.Seconds * 1000
+                    : (int)DurationDefault;
             BarPosition = string.Equals(data.StatusBarDock, "Top", StringComparison.OrdinalIgnoreCase)
                 ? VestigiumStatusBarPosition.Top
                 : VestigiumStatusBarPosition.Bottom;
@@ -238,47 +242,17 @@ public sealed partial class SettingsViewModel : ObservableObject
         Session?.Save(applyTimeoutSeed: true);
     }
 
-    partial void OnDefaultSecondsChanged(decimal value)
+    public string ProbePlanText
+        => ProbeCalc.Describe((int)DefaultRequests, (int)DefaultDurationMs);
+
+    partial void OnDefaultRequestsChanged(decimal value)
     {
         Persist();
         OnPropertyChanged(nameof(ProbePlanText));
     }
 
-    partial void OnIntervalMsChanged(decimal value)
+    partial void OnDefaultDurationMsChanged(decimal value)
     {
-        if (_loading)
-            return;
-        DefaultSeconds = ProbeCalc.SecondsFromInterval((int)DefaultRequests, (int)value);
-        OnPropertyChanged(nameof(ProbePlanText));
-    }
-
-    public string ProbePlanText
-        => ProbeCalc.Describe((int)DefaultRequests, (int)DefaultSeconds);
-
-    [ObservableProperty]
-    private decimal _intervalMs = 100m;
-
-    [ObservableProperty]
-    private decimal _calcMs = 30_000m;
-
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(ShowRequestsRow))]
-    [NotifyPropertyChangedFor(nameof(ShowIntervalRow))]
-    private bool _requestsCalcOpen;
-
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(ShowRequestsRow))]
-    [NotifyPropertyChangedFor(nameof(ShowIntervalRow))]
-    private bool _secondsCalcOpen;
-
-    public bool ShowRequestsRow => !SecondsCalcOpen;
-
-    public bool ShowIntervalRow => !RequestsCalcOpen;
-
-    partial void OnDefaultRequestsChanged(decimal value)
-    {
-        if (!_loading)
-            DefaultSeconds = ProbeCalc.SecondsFromInterval((int)value, (int)IntervalMs);
         Persist();
         OnPropertyChanged(nameof(ProbePlanText));
     }
@@ -287,57 +261,9 @@ public sealed partial class SettingsViewModel : ObservableObject
     private void RestoreProbeDefaults()
     {
         DefaultRequests = RequestDefault;
-        IntervalMs = 100m;
-        DefaultSeconds = SecondsDefault;
-        CalcMs = 30_000m;
+        DefaultDurationMs = DurationDefault;
         Persist();
         OnPropertyChanged(nameof(ProbePlanText));
-    }
-
-    [RelayCommand]
-    private void ApplyRequestsFromInterval()
-    {
-        DefaultRequests = ProbeCalc.RequestsFromDuration((int)CalcMs, (int)IntervalMs);
-        DefaultSeconds = ProbeCalc.SecondsFromInterval((int)DefaultRequests, (int)IntervalMs);
-        RequestsCalcOpen = false;
-        OnPropertyChanged(nameof(ShowRequestsRow));
-        OnPropertyChanged(nameof(ShowIntervalRow));
-        OnPropertyChanged(nameof(ProbePlanText));
-    }
-
-    [RelayCommand]
-    private void ApplySecondsFromInterval()
-    {
-        IntervalMs = ProbeCalc.IntervalFromDuration((int)CalcMs, (int)DefaultRequests);
-        DefaultSeconds = ProbeCalc.SecondsFromInterval((int)DefaultRequests, (int)IntervalMs);
-        SecondsCalcOpen = false;
-        OnPropertyChanged(nameof(ShowRequestsRow));
-        OnPropertyChanged(nameof(ShowIntervalRow));
-        OnPropertyChanged(nameof(ProbePlanText));
-    }
-
-    [RelayCommand]
-    private void ToggleRequestsCalc()
-    {
-        var open = !RequestsCalcOpen;
-        RequestsCalcOpen = open;
-        if (open)
-        {
-            SecondsCalcOpen = false;
-            CalcMs = ProbeCalc.DurationMs((int)DefaultRequests, (int)IntervalMs);
-        }
-    }
-
-    [RelayCommand]
-    private void ToggleSecondsCalc()
-    {
-        var open = !SecondsCalcOpen;
-        SecondsCalcOpen = open;
-        if (open)
-        {
-            RequestsCalcOpen = false;
-            CalcMs = ProbeCalc.DurationMs((int)DefaultRequests, (int)IntervalMs);
-        }
     }
 
     partial void OnSelectedSourceChanged(string? value) => Persist();

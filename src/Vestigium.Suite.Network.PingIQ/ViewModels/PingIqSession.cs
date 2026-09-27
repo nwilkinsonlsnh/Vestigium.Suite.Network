@@ -46,7 +46,7 @@ public sealed class PingIqSession
         _main.TimeoutMs = _settings.DefaultTimeoutMs;
         _main.SelectedInterfaceIndex = _settings.SelectedInterfaceIndex;
         _main.RequestCount = _settings.DefaultRequests;
-        _main.DurationSeconds = _settings.DefaultSeconds;
+        _main.DurationMs = _settings.DefaultDurationMs;
         _main.Bind.SourceAddress = _settings.SelectedSource;
         _main.Bind.InterfaceIndex = _settings.SelectedInterfaceIndex;
         _settings.NarrowSources(_settings.SelectedInterfaceIndex);
@@ -58,7 +58,8 @@ public sealed class PingIqSession
             TimeoutMs = (int)_main.TimeoutMs,
             InterfaceIndex = _main.SelectedInterfaceIndex,
             Requests = (int)_settings.DefaultRequests,
-            Seconds = (int)_settings.DefaultSeconds,
+            Seconds = Math.Max(1, (int)_settings.DefaultDurationMs / 1000),
+            DurationMs = (int)_settings.DefaultDurationMs,
             StatusBarVisible = _settings.BarVisible,
             StatusBarDock = _settings.BarPosition == VestigiumStatusBarPosition.Top ? "Top" : "Bottom",
             Source = _settings.SelectedSource,
@@ -99,7 +100,7 @@ public sealed class PingIqSession
             ? Current.InterfaceIndex
             : 0;
         _main.RequestCount = Current.Requests;
-        _main.DurationSeconds = Current.Seconds;
+        _main.DurationMs = Current.DurationMs > 0 ? Current.DurationMs : Current.Seconds * 1000;
         _settings.NarrowSources(_main.SelectedInterfaceIndex);
         _settings.LoadFrom(Current);
         _main.ReplaceTargets(Current.RecentTargets, Current.TargetHistorySize);
