@@ -4,8 +4,8 @@
         xmlns:shell="clr-namespace:Vestigium.Controls.Shell;assembly=Vestigium.Controls"
         Title="NicIQ"
         Icon="pack://application:,,,/Assets/NicIQ.ico"
-        Height="980" Width="1440"
-        MinHeight="600" MinWidth="960"
+        Height="980" Width="1680"
+        MinHeight="600" MinWidth="1480"
         ResizeMode="CanResize"
         WindowStartupLocation="Manual"
         Background="{DynamicResource Vestigium.Brushes.Surface.Window}">

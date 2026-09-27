@@ -66,7 +66,7 @@
           <DataGridTextColumn Header="Metric" Binding="{Binding Metric}" Width="80" MinWidth="70" />
           <DataGridTextColumn Header="IPv4" Binding="{Binding Ipv4}" Width="70" MinWidth="60" />
           <DataGridTextColumn Header="IPv6" Binding="{Binding Ipv6}" Width="70" MinWidth="60" />
-          <DataGridTextColumn Header="Id" Binding="{Binding Id}" Width="*" MinWidth="220" />
+          <DataGridTextColumn Header="Id" Binding="{Binding Id}" Width="360" MinWidth="320" />
         </DataGrid.Columns>
       </DataGrid>
     </Border>

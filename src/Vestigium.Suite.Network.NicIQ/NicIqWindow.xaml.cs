@@ -64,9 +64,9 @@ public partial class NicIqWindow : Window
     private void FitNormalSize()
     {
         var work = SystemParameters.WorkArea;
-        var width = Math.Min(1440, Math.Max(960, work.Width - 48));
+        var width = Math.Min(1680, Math.Max(1280, work.Width - 48));
         var height = Math.Min(980, Math.Max(600, work.Height - 48));
-        MinWidth = 960;
+        MinWidth = Math.Min(1480, width);
         MinHeight = 600;
         MaxWidth = work.Width;
         MaxHeight = work.Height;
