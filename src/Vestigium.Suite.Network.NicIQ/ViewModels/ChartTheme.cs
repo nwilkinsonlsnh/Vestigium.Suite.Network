@@ -6,7 +6,10 @@ namespace Vestigium.Suite.Network.NicIQ.ViewModels;
 
 internal enum ChartSlot
 {
-    WatchSpeed
+    Throughput,
+    Packets,
+    Integrity,
+    Utilization
 }
 
 internal static class ChartTheme
@@ -41,9 +44,9 @@ internal static class ChartTheme
         };
     }
 
-    public static FrameworkElement Paint(FrameworkElement view)
+    public static FrameworkElement Paint(FrameworkElement view, ChartSlot slot = ChartSlot.Throughput)
     {
-        view.Tag = ChartSlot.WatchSpeed;
+        view.Tag = slot;
         ChartView.SetLegendVisible(view, WatchLegend);
         return view;
     }
