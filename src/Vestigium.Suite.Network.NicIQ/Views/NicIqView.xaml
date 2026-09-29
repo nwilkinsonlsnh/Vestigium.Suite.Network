@@ -40,17 +40,19 @@
                 CanUserResizeColumns="True"
                 SelectionMode="Single"
                 HeadersVisibility="Column"
+                RowHeight="36"
+                MinRowHeight="36"
                 VerticalScrollBarVisibility="Visible"
                 HorizontalScrollBarVisibility="Visible"
                 ScrollViewer.HorizontalScrollBarVisibility="Visible"
                 ScrollViewer.VerticalScrollBarVisibility="Visible"
                 MouseDoubleClick="AdapterGrid_MouseDoubleClick">
         <DataGrid.Columns>
-          <DataGridTemplateColumn Header="Status" Width="56" MinWidth="56">
+          <DataGridTemplateColumn Header="Status" Width="72" MinWidth="72">
             <DataGridTemplateColumn.CellTemplate>
               <DataTemplate>
-                <Grid Width="24" Height="24" ToolTip="{Binding Status}" HorizontalAlignment="Center">
-                  <Ellipse Fill="{Binding StatusFill}">
+                <Grid Width="28" Height="28" ToolTip="{Binding Status}" HorizontalAlignment="Center" VerticalAlignment="Center" ClipToBounds="False">
+                  <Ellipse Width="22" Height="22" Fill="{Binding StatusFill}" HorizontalAlignment="Center" VerticalAlignment="Center">
                     <Ellipse.Style>
                       <Style TargetType="Ellipse">
                         <Setter Property="StrokeThickness" Value="0" />
@@ -65,10 +67,11 @@
                   </Ellipse>
                   <TextBlock Text="{Binding StatusGlyph}"
                              Foreground="White"
-                             FontSize="11"
+                             FontSize="10"
                              FontWeight="SemiBold"
                              HorizontalAlignment="Center"
-                             VerticalAlignment="Center" />
+                             VerticalAlignment="Center"
+                             Margin="0,-1,0,0" />
                 </Grid>
               </DataTemplate>
             </DataGridTemplateColumn.CellTemplate>
