@@ -49,10 +49,10 @@ public sealed class NicIqSession
             ThemeId = _settings.SelectedThemeId,
             DurationSeconds = (int)ClampDuration(_main.DurationSeconds),
             IncludeDown = _main.ShowDown,
-            IpEnabledOnly = _main.IpEnabled,
+            IpEnabledOnly = _main.ShowIpv4 || _main.ShowIpv6,
             ShowUp = _main.ShowUp,
             ShowDown = _main.ShowDown,
-            IpEnabled = _main.IpEnabled,
+            IpEnabled = _main.ShowIpv4 || _main.ShowIpv6,
             ShowIpv4 = _main.ShowIpv4,
             ShowIpv6 = _main.ShowIpv6,
             MonitorReceive = _main.MonitorReceive,
@@ -87,18 +87,12 @@ public sealed class NicIqSession
             return;
 
         var duration = ClampDuration(Current.DurationSeconds);
+        var ip = Current.IpEnabled ?? Current.IpEnabledOnly;
         _main.DurationSeconds = duration;
         _main.ShowUp = Current.ShowUp ?? true;
         _main.ShowDown = Current.ShowDown ?? Current.IncludeDown;
-        _main.IpEnabled = Current.IpEnabled ?? Current.IpEnabledOnly;
-        _main.ShowIpv4 = Current.IpEnabled == false ? false : Current.ShowIpv4 ?? (Current.IpEnabled ?? Current.IpEnabledOnly);
-        _main.ShowIpv6 = Current.IpEnabled == false ? false : Current.ShowIpv6 ?? (Current.IpEnabled ?? Current.IpEnabledOnly);
-        if (!_main.IpEnabled)
-        {
-            _main.ShowIpv4 = false;
-            _main.ShowIpv6 = false;
-        }
-
+        _main.ShowIpv4 = Current.ShowIpv4 ?? ip;
+        _main.ShowIpv6 = Current.ShowIpv6 ?? ip;
         _main.MonitorReceive = Current.MonitorReceive;
         _main.MonitorSend = Current.MonitorSend;
         _main.MonitorErrors = Current.MonitorErrors;
