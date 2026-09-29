@@ -18,6 +18,8 @@ public sealed partial class MainViewModel : ObservableObject
     private bool _busy;
     private bool _loading;
     private bool _syncingNic;
+    private int _paintSkip;
+    private readonly MonitorRing _ring = new();
 
     public MainViewModel()
     {
@@ -83,6 +85,49 @@ public sealed partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private bool _isMonitoring;
 
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ThroughputPageOpen))]
+    [NotifyPropertyChangedFor(nameof(PacketsPageOpen))]
+    [NotifyPropertyChangedFor(nameof(IntegrityPageOpen))]
+    [NotifyPropertyChangedFor(nameof(UtilizationPageOpen))]
+    private string _chartPage = MonitorChartPages.Throughput;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasChart))]
+    [NotifyPropertyChangedFor(nameof(ChartEmpty))]
+    private FrameworkElement? _liveChart;
+
+    [ObservableProperty]
+    private string _chartStrip = "Waiting for samples.";
+
+    public bool HasChart => LiveChart is not null;
+
+    public bool ChartEmpty => LiveChart is null;
+
+    public bool ThroughputPageOpen
+    {
+        get => ChartPage == MonitorChartPages.Throughput;
+        set { if (value) ChartPage = MonitorChartPages.Throughput; }
+    }
+
+    public bool PacketsPageOpen
+    {
+        get => ChartPage == MonitorChartPages.Packets;
+        set { if (value) ChartPage = MonitorChartPages.Packets; }
+    }
+
+    public bool IntegrityPageOpen
+    {
+        get => ChartPage == MonitorChartPages.Integrity;
+        set { if (value) ChartPage = MonitorChartPages.Integrity; }
+    }
+
+    public bool UtilizationPageOpen
+    {
+        get => ChartPage == MonitorChartPages.Utilization;
+        set { if (value) ChartPage = MonitorChartPages.Utilization; }
+    }
+
     public bool CanRefresh => !_busy;
 
     public bool CanWatch => !_busy && SelectedAdapter is not null;
@@ -111,6 +156,8 @@ public sealed partial class MainViewModel : ObservableObject
             Session?.Save();
         RestartMonitoring();
     }
+
+    partial void OnChartPageChanged(string value) => PaintChart();
 
     partial void OnIncludeDownChanged(bool value)
     {
@@ -343,6 +390,10 @@ public sealed partial class MainViewModel : ObservableObject
 
     public void RestartMonitoring()
     {
+        _ring.Clear();
+        LiveChart = null;
+        ChartStrip = "Waiting for samples.";
+        _paintSkip = 0;
         StopMonitoring();
         StartMonitoring();
     }
@@ -381,9 +432,10 @@ public sealed partial class MainViewModel : ObservableObject
                     continue;
                 }
 
-                var counters = Settings is null
+                var selected = Settings is null
                     ? MonitorCounterList.FromSettings(Session?.Current ?? new NicIqSettings())
                     : MonitorCounterList.Sanitize(Settings.MonitorCounters);
+                var counters = MonitorCounterList.ForSample(selected);
                 if (counters.Count == 0)
                     counters = MonitorCounterList.Sanitize(MonitorCounterList.SeedReceiveSend);
 
@@ -431,7 +483,24 @@ public sealed partial class MainViewModel : ObservableObject
             .ToList();
         Samples.Clear();
         foreach (var row in latest)
+        {
             Samples.Add(new MonitorSampleRow(row));
+            _ring.Add(row);
+        }
+
+        _paintSkip++;
+        if (_paintSkip >= 3 || LiveChart is null)
+        {
+            _paintSkip = 0;
+            PaintChart();
+        }
+    }
+
+    private void PaintChart()
+    {
+        var (view, strip) = MonitorChart.Paint(ChartPage, _ring);
+        LiveChart = view;
+        ChartStrip = strip;
     }
 
     private void MarkStatusChanged(string key, bool changed)
