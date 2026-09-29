@@ -14,7 +14,9 @@ public sealed class NicIqSettings
     public bool MonitorErrors { get; set; }
     public bool MonitorDiscards { get; set; }
     public List<string> MonitorCounters { get; set; } = [];
+    public bool ShowLegend { get; set; } = true;
     public string? SelectedAdapterId { get; set; }
+    public string? SelectedMonitorNicId { get; set; }
     public bool StatusBarVisible { get; set; } = true;
     public string StatusBarDock { get; set; } = "Bottom";
 }
@@ -59,7 +61,13 @@ public sealed class NicIqSettingsStore
 
     public void Save(NicIqSettings settings)
     {
-        Directory.CreateDirectory(RootDirectory);
-        File.WriteAllText(FilePath, JsonSerializer.Serialize(settings, Json));
+        try
+        {
+            Directory.CreateDirectory(RootDirectory);
+            File.WriteAllText(FilePath, JsonSerializer.Serialize(settings, Json));
+        }
+        catch (Exception)
+        {
+        }
     }
 }

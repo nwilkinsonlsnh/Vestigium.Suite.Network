@@ -55,7 +55,9 @@ public sealed class NicIqSession
             MonitorErrors = _main.MonitorErrors,
             MonitorDiscards = _main.MonitorDiscards,
             MonitorCounters = [.. _settings.MonitorCounters],
-            SelectedAdapterId = _main.SelectedAdapter?.Id,
+            ShowLegend = _settings.ShowLegend,
+            SelectedAdapterId = _main.SelectedAdapter?.Id ?? _main.PreferredAdapterId,
+            SelectedMonitorNicId = _main.SelectedMonitorNic?.Id ?? _main.PreferredMonitorNicId,
             StatusBarVisible = _settings.BarVisible,
             StatusBarDock = _settings.BarPosition == VestigiumStatusBarPosition.Top ? "Top" : "Bottom"
         };
@@ -88,6 +90,8 @@ public sealed class NicIqSession
         _main.MonitorErrors = Current.MonitorErrors;
         _main.MonitorDiscards = Current.MonitorDiscards;
         _main.PreferredAdapterId = Current.SelectedAdapterId;
+        _main.PreferredMonitorNicId = Current.SelectedMonitorNicId ?? Current.SelectedAdapterId;
+        ChartTheme.WatchLegend = Current.ShowLegend;
         _settings.LoadFrom(Current);
     }
 
