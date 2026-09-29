@@ -30,15 +30,7 @@ internal static class MonitorChart
                 ChartTheme.Options("Packets", "60 s", "Packets/sec"),
                 scale: 1m,
                 rates: true),
-            MonitorChartPages.Integrity => Pair(
-                ring,
-                NetworkInterface.PacketsReceivedErrors,
-                NetworkInterface.PacketsOutboundErrors,
-                "Receive errors",
-                "Send errors",
-                ChartTheme.Options("Integrity", "60 s", "count"),
-                scale: 1m,
-                rates: false),
+            MonitorChartPages.Integrity => Integrity(ring),
             MonitorChartPages.Utilization => Utilization(ring),
             _ => Pair(
                 ring,
@@ -64,23 +56,39 @@ internal static class MonitorChart
     {
         var left = Window(ring.Of(leftCounter), leftName, scale);
         var right = Window(ring.Of(rightCounter), rightName, scale);
-        var rows = new List<NumericSeries>();
-        if (left is not null)
-            rows.Add(left);
-        if (right is not null)
-            rows.Add(right);
-        if (rows.Count == 0)
-            return (null, "Waiting for samples.");
+        return Draw(left, right, leftName, rightName, options, rates);
+    }
 
-        try
-        {
-            var view = ChartTheme.Paint(ChartView.Line(rows, options));
-            return (view, Strip(left, leftName, right, rightName, rates));
-        }
-        catch (Exception ex)
-        {
-            return (null, ex.Message);
-        }
+    private static (FrameworkElement? View, string Strip) Integrity(MonitorRing ring)
+    {
+        var receive = Window(
+            Sum(
+                ring,
+                NetworkInterface.PacketsReceivedErrors,
+                NetworkInterface.PacketsReceivedDiscarded,
+                NetworkInterface.PacketsReceivedUnknown),
+            "Receive faults",
+            1m);
+        var send = Window(
+            Sum(
+                ring,
+                NetworkInterface.PacketsOutboundErrors,
+                NetworkInterface.PacketsOutboundDiscarded,
+                NetworkInterface.OutputQueueLength),
+            "Send faults + queue",
+            1m);
+        var drawn = Draw(
+            receive,
+            send,
+            "Receive faults",
+            "Send faults + queue",
+            ChartTheme.Options("Integrity", "60 s", "count"),
+            rates: false);
+        if (drawn.View is null)
+            return drawn;
+        if (IsClean(receive) && IsClean(send))
+            return (drawn.View, "Clean  no errors, discards, or queue.");
+        return drawn;
     }
 
     private static (FrameworkElement? View, string Strip) Utilization(MonitorRing ring)
@@ -116,6 +124,60 @@ internal static class MonitorChart
         }
     }
 
+    private static (FrameworkElement? View, string Strip) Draw(
+        NumericSeries? left,
+        NumericSeries? right,
+        string leftName,
+        string rightName,
+        ChartOptions options,
+        bool rates)
+    {
+        var rows = new List<NumericSeries>();
+        if (left is not null)
+            rows.Add(left);
+        if (right is not null)
+            rows.Add(right);
+        if (rows.Count == 0)
+            return (null, "Waiting for samples.");
+
+        try
+        {
+            var view = ChartTheme.Paint(ChartView.Line(rows, options));
+            return (view, Strip(left, leftName, right, rightName, rates));
+        }
+        catch (Exception ex)
+        {
+            return (null, ex.Message);
+        }
+    }
+
+    private static List<Observation> Sum(MonitorRing ring, params string[] counters)
+    {
+        var rows = counters.Select(ring.Of).Where(list => list.Count > 0).ToList();
+        if (rows.Count == 0)
+            return [];
+
+        var n = rows.Max(list => list.Count);
+        var points = new List<Observation>(n);
+        for (var i = 0; i < n; i++)
+        {
+            decimal total = 0;
+            DateTimeOffset? at = null;
+            foreach (var list in rows)
+            {
+                var index = i - (n - list.Count);
+                if (index < 0)
+                    continue;
+                total += list[index].Value;
+                at ??= list[index].At;
+            }
+
+            points.Add(new Observation(total, at));
+        }
+
+        return points;
+    }
+
     private static NumericSeries? Window(IReadOnlyList<Observation> points, string name, decimal scale)
     {
         if (points.Count == 0)
@@ -137,6 +199,9 @@ internal static class MonitorChart
             return null;
         }
     }
+
+    private static bool IsClean(NumericSeries? series)
+        => series is null || series.Full.Max is null || series.Full.Max <= 0;
 
     private static string Strip(NumericSeries? left, string leftName, NumericSeries? right, string rightName, bool rates)
     {
