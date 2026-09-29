@@ -29,7 +29,9 @@ internal static class MonitorChart
                 NetworkInterface.PacketsSentPerSec,
                 "Receive",
                 "Send",
-                ChartTheme.Options("Packets", "60 s", "Packets/sec"),
+                "Packets",
+                "60 s",
+                "Packets/sec",
                 scale: 1m,
                 rates: true),
             MonitorChartPages.Integrity => Integrity(ring),
@@ -40,7 +42,9 @@ internal static class MonitorChart
                 NetworkInterface.BytesSentPerSec,
                 "Receive",
                 "Send",
-                ChartTheme.Options("Throughput", "60 s", "Kbps"),
+                "Throughput",
+                "60 s",
+                "Kbps",
                 scale: 8m / 1000m,
                 rates: true)
         };
@@ -52,12 +56,20 @@ internal static class MonitorChart
         string rightCounter,
         string leftName,
         string rightName,
-        ChartOptions options,
+        string title,
+        string xLabel,
+        string yLabel,
         decimal scale,
         bool rates)
     {
-        var left = Window(ring.Of(leftCounter), leftName, scale);
-        var right = Window(ring.Of(rightCounter), rightName, scale);
+        var leftPoints = Scale(ring.Of(leftCounter), scale);
+        var rightPoints = Scale(ring.Of(rightCounter), scale);
+        var left = Window(leftPoints, leftName);
+        var right = Window(rightPoints, rightName);
+        var options = WithLimits(
+            ChartTheme.Options(title, xLabel, yLabel),
+            LimitsOf(leftPoints),
+            LimitsOf(rightPoints));
         return Draw(left, right, leftName, rightName, options, rates);
     }
 
@@ -77,11 +89,13 @@ internal static class MonitorChart
         var values = new double[rows.Length];
         var parts = new List<string>(rows.Length);
         var peak = 0d;
+        var counts = new List<decimal>(rows.Length);
         for (var i = 0; i < rows.Length; i++)
         {
             var last = Last(ring.Of(rows[i].Counter));
             labels[i] = rows[i].Label;
             values[i] = Math.Max(0, (double)decimal.Truncate(last));
+            counts.Add((decimal)values[i]);
             parts.Add(string.Create(CultureInfo.InvariantCulture, $"{rows[i].Label} {N(last)}"));
             if (values[i] > peak)
                 peak = values[i];
@@ -106,8 +120,10 @@ internal static class MonitorChart
                 Options = ChartTheme.Options("Integrity", null, "count")
             };
             var view = ChartTheme.Paint(ChartView.From(spec));
-            FitCountAxis(view, peak);
-            return (view, peak <= 0 ? "Clean  no errors, discards, or queue." : string.Join("   ·   ", parts));
+            var limits = LimitsOf(counts);
+            FitCountAxis(view, peak, limits);
+            var strip = peak <= 0 ? "Clean  no errors, discards, or queue." : string.Join("   ·   ", parts);
+            return (view, AppendLimits(strip, limits));
         }
         catch (Exception ex)
         {
@@ -115,20 +131,40 @@ internal static class MonitorChart
         }
     }
 
-    private static void FitCountAxis(FrameworkElement view, double peak)
+    private static void FitCountAxis(FrameworkElement view, double peak, ControlLimits? limits)
     {
         if (view is not WpfPlot plot)
             return;
 
         var max = peak <= 10 ? 10 : CountCeiling(peak);
+        if (limits is not null && limits.Upper > max)
+            max = CountCeiling(limits.Upper);
         var step = max <= 10 ? 1 : CountStep(max);
         plot.Plot.Axes.SetLimitsY(-1, max);
         plot.Plot.Axes.Left.TickGenerator = new NumericFixedInterval(step);
+        DrawLimitLines(plot, limits);
         plot.Refresh();
+    }
+
+    private static void DrawLimitLines(WpfPlot plot, ControlLimits? limits)
+    {
+        if (limits is null)
+            return;
+        var ucl = plot.Plot.Add.HorizontalLine(limits.Upper);
+        ucl.LinePattern = ScottPlot.LinePattern.Dashed;
+        ucl.LegendText = "UCL";
+        var lcl = plot.Plot.Add.HorizontalLine(limits.Lower);
+        lcl.LinePattern = ScottPlot.LinePattern.Dashed;
+        lcl.LegendText = "LCL";
+        var cl = plot.Plot.Add.HorizontalLine(limits.Center);
+        cl.LinePattern = ScottPlot.LinePattern.Dotted;
+        cl.LegendText = "CL";
     }
 
     private static double CountCeiling(double peak)
     {
+        if (peak <= 10)
+            return 10;
         if (peak <= 20)
             return 20;
         if (peak <= 50)
@@ -166,12 +202,13 @@ internal static class MonitorChart
             points.Add(new Observation(pct, bytes[i].At ?? band[i].At));
         }
 
-        var series = Window(points, "Utilization", 1m);
+        var series = Window(points, "Utilization");
+        var options = WithLimits(ChartTheme.Options("Utilization", "60 s", "%"), LimitsOf(points));
         try
         {
-            var view = ChartTheme.Paint(
-                ChartView.Line(series, ChartTheme.Options("Utilization", "60 s", "%")));
-            return (view, points.Count == 0 ? "Waiting for samples." : RateStrip(series, "Utilization"));
+            var view = ChartTheme.Paint(ChartView.Line(series, options));
+            var strip = points.Count == 0 ? "Waiting for samples." : RateStrip(series, "Utilization");
+            return (view, AppendLimits(strip, options.Limits));
         }
         catch (Exception ex)
         {
@@ -198,7 +235,7 @@ internal static class MonitorChart
         try
         {
             var view = ChartTheme.Paint(ChartView.Line(rows, options));
-            return (view, Strip(left, leftName, right, rightName, rates));
+            return (view, AppendLimits(Strip(left, leftName, right, rightName, rates), options.Limits));
         }
         catch (Exception ex)
         {
@@ -206,7 +243,47 @@ internal static class MonitorChart
         }
     }
 
-    private static NumericSeries Window(IReadOnlyList<Observation> points, string name, decimal scale)
+    private static ChartOptions WithLimits(ChartOptions options, params ControlLimits?[] candidates)
+    {
+        foreach (var limits in candidates)
+        {
+            if (limits is not null)
+                return options with { Limits = limits };
+        }
+
+        return options;
+    }
+
+    private static ControlLimits? LimitsOf(IReadOnlyList<Observation> points)
+    {
+        if (points.Count < 2)
+            return null;
+        return LimitsOf(points.Select(p => p.Value).ToList());
+    }
+
+    private static ControlLimits? LimitsOf(IReadOnlyList<decimal> values)
+    {
+        if (values.Count < 2)
+            return null;
+        try
+        {
+            return NumericSeries.FromDecimal(values, "limits")
+                .ControlLimits(ControlLimitMethod.MeanPlusKSigma, 3, floor: 0);
+        }
+        catch (Exception)
+        {
+            return null;
+        }
+    }
+
+    private static List<Observation> Scale(IReadOnlyList<Observation> points, decimal scale)
+    {
+        if (scale == 1m || points.Count == 0)
+            return [.. points];
+        return points.Select(p => new Observation(p.Value * scale, p.At)).ToList();
+    }
+
+    private static NumericSeries Window(IReadOnlyList<Observation> points, string name)
     {
         var values = new decimal[MonitorRing.Cap];
         if (points.Count > 0)
@@ -215,7 +292,7 @@ internal static class MonitorChart
             var dest = MonitorRing.Cap - take;
             var src = points.Count - take;
             for (var i = 0; i < take; i++)
-                values[dest + i] = points[src + i].Value * scale;
+                values[dest + i] = points[src + i].Value;
         }
 
         return NumericSeries.FromDecimal(values, name);
@@ -223,6 +300,15 @@ internal static class MonitorChart
 
     private static decimal Last(IReadOnlyList<Observation> points)
         => points.Count == 0 ? 0 : points[^1].Value;
+
+    private static string AppendLimits(string strip, ControlLimits? limits)
+    {
+        if (limits is null)
+            return strip;
+        return string.Create(
+            CultureInfo.InvariantCulture,
+            $"{strip}   ·   CL {N((decimal)limits.Center)}  UCL {N((decimal)limits.Upper)}  LCL {N((decimal)limits.Lower)}");
+    }
 
     private static string Strip(NumericSeries? left, string leftName, NumericSeries? right, string rightName, bool rates)
     {
@@ -264,5 +350,5 @@ internal static class MonitorChart
         => value is null ? "\u2014" : value.Value.ToString("0.###", CultureInfo.InvariantCulture);
 
     private static string N(decimal? value)
-        => value is null ? "\u2014" : decimal.Truncate(value.Value).ToString("0", CultureInfo.InvariantCulture);
+        => value is null ? "\u2014" : value.Value.ToString("0.###", CultureInfo.InvariantCulture);
 }

@@ -2,7 +2,7 @@ using Vestigium.Helpers.PerfMon.Network;
 
 namespace Vestigium.Suite.Network.NicIQ.ViewModels;
 
-/// <summary>Selected Network Interface counters. Bool knobs from v1.0 seed the first list.</summary>
+/// <summary>Network Interface counters the four monitor charts need.</summary>
 public static class MonitorCounterList
 {
     public static readonly string[] SeedReceiveSend =
@@ -23,40 +23,15 @@ public static class MonitorCounterList
         NetworkInterface.PacketsOutboundErrors,
         NetworkInterface.PacketsReceivedDiscarded,
         NetworkInterface.PacketsOutboundDiscarded,
+        NetworkInterface.PacketsReceivedUnknown,
+        NetworkInterface.OutputQueueLength,
         NetworkInterface.CurrentBandwidth
     ];
 
     public static IReadOnlyList<string> FromSettings(NicIqSettings settings)
     {
         ArgumentNullException.ThrowIfNull(settings);
-        if (settings.MonitorCounters is { Count: > 0 })
-            return Sanitize(settings.MonitorCounters);
-
-        var rows = new List<string>();
-        if (settings.MonitorReceive || settings.MonitorSend)
-            rows.AddRange(SeedReceiveSend);
-        else
-        {
-            if (settings.MonitorReceive)
-                rows.Add(NetworkInterface.BytesReceivedPerSec);
-            if (settings.MonitorSend)
-                rows.Add(NetworkInterface.BytesSentPerSec);
-        }
-
-        if (settings.MonitorErrors)
-        {
-            rows.Add(NetworkInterface.PacketsReceivedErrors);
-            rows.Add(NetworkInterface.PacketsOutboundErrors);
-        }
-
-        if (settings.MonitorDiscards)
-        {
-            rows.Add(NetworkInterface.PacketsReceivedDiscarded);
-            rows.Add(NetworkInterface.PacketsOutboundDiscarded);
-        }
-
-        var clean = Sanitize(rows);
-        return clean.Count > 0 ? clean : Sanitize(SeedReceiveSend);
+        return Sanitize(ChartNeed);
     }
 
     public static IReadOnlyList<string> ForSample(IEnumerable<string> selected)
