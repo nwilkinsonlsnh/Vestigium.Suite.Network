@@ -167,14 +167,11 @@ internal static class MonitorChart
         }
 
         var series = Window(points, "Utilization", 1m);
-        if (series is null)
-            return (null, "Need Bytes Total/sec and Current Bandwidth.");
-
         try
         {
             var view = ChartTheme.Paint(
                 ChartView.Line(series, ChartTheme.Options("Utilization", "60 s", "%")));
-            return (view, RateStrip(series, "Utilization"));
+            return (view, points.Count == 0 ? "Waiting for samples." : RateStrip(series, "Utilization"));
         }
         catch (Exception ex)
         {
@@ -209,26 +206,19 @@ internal static class MonitorChart
         }
     }
 
-    private static NumericSeries? Window(IReadOnlyList<Observation> points, string name, decimal scale)
+    private static NumericSeries Window(IReadOnlyList<Observation> points, string name, decimal scale)
     {
-        if (points.Count == 0)
-            return null;
-
         var values = new decimal[MonitorRing.Cap];
-        var take = Math.Min(points.Count, MonitorRing.Cap);
-        var dest = MonitorRing.Cap - take;
-        var src = points.Count - take;
-        for (var i = 0; i < take; i++)
-            values[dest + i] = points[src + i].Value * scale;
+        if (points.Count > 0)
+        {
+            var take = Math.Min(points.Count, MonitorRing.Cap);
+            var dest = MonitorRing.Cap - take;
+            var src = points.Count - take;
+            for (var i = 0; i < take; i++)
+                values[dest + i] = points[src + i].Value * scale;
+        }
 
-        try
-        {
-            return NumericSeries.FromDecimal(values, name);
-        }
-        catch (Exception)
-        {
-            return null;
-        }
+        return NumericSeries.FromDecimal(values, name);
     }
 
     private static decimal Last(IReadOnlyList<Observation> points)
