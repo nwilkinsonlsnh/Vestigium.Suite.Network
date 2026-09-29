@@ -95,6 +95,7 @@ public partial class App : Application
         Settings.Host = nic;
         session.Attach(nic, Settings);
         nic.RefreshCommand.Execute(null);
+        nic.StartMonitoring();
 
         var nicItem = window.HostShell["NicIQ"];
         if (nicItem is not null)
@@ -116,7 +117,11 @@ public partial class App : Application
             Shell = window.HostShell;
             nic.StartMonitoring();
         };
-        window.Closed += (_, _) => nic.StopMonitoring();
+        window.Closed += (_, _) =>
+        {
+            session.Save();
+            nic.StopMonitoring();
+        };
         chrome.Status.Message = "Idle";
         chrome.PropertyChanged += (_, args) =>
         {
