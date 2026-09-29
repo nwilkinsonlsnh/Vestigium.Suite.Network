@@ -85,10 +85,19 @@ public sealed partial class SettingsViewModel : ObservableObject
     private decimal _defaultDurationSeconds = NicIqWatchInput.DefaultDurationSeconds;
 
     [ObservableProperty]
-    private bool _includeDown = true;
+    private bool _showUp = true;
 
     [ObservableProperty]
-    private bool _ipEnabledOnly = true;
+    private bool _showDown = true;
+
+    [ObservableProperty]
+    private bool _ipEnabled = true;
+
+    [ObservableProperty]
+    private bool _showIpv4 = true;
+
+    [ObservableProperty]
+    private bool _showIpv6 = true;
 
     [ObservableProperty]
     private bool _monitorReceive = true;
@@ -119,8 +128,11 @@ public sealed partial class SettingsViewModel : ObservableObject
     {
         SelectedThemeId = string.IsNullOrWhiteSpace(data.ThemeId) ? SelectedThemeId : data.ThemeId;
         DefaultDurationSeconds = NicIqSession.ClampDuration(data.DurationSeconds);
-        IncludeDown = data.IncludeDown;
-        IpEnabledOnly = data.IpEnabledOnly;
+        ShowUp = data.ShowUp ?? true;
+        ShowDown = data.ShowDown ?? data.IncludeDown;
+        IpEnabled = data.IpEnabled ?? data.IpEnabledOnly;
+        ShowIpv4 = IpEnabled && (data.ShowIpv4 ?? IpEnabled);
+        ShowIpv6 = IpEnabled && (data.ShowIpv6 ?? IpEnabled);
         MonitorReceive = data.MonitorReceive;
         MonitorSend = data.MonitorSend;
         MonitorErrors = data.MonitorErrors;
@@ -209,28 +221,43 @@ public sealed partial class SettingsViewModel : ObservableObject
         Persist();
     }
 
-    partial void OnIncludeDownChanged(bool value)
-    {
-        if (_loading)
-            return;
-        if (Host is not null)
-            Host.IncludeDown = value;
-        Persist();
-    }
+    partial void OnShowUpChanged(bool value) => PushFilter(host => host.ShowUp = value);
+    partial void OnShowDownChanged(bool value) => PushFilter(host => host.ShowDown = value);
+    partial void OnShowIpv4Changed(bool value) => PushFilter(host => host.ShowIpv4 = value);
+    partial void OnShowIpv6Changed(bool value) => PushFilter(host => host.ShowIpv6 = value);
 
-    partial void OnIpEnabledOnlyChanged(bool value)
+    partial void OnIpEnabledChanged(bool value)
     {
-        if (_loading)
-            return;
-        if (Host is not null)
-            Host.IpEnabledOnly = value;
-        Persist();
+        if (!value)
+        {
+            ShowIpv4 = false;
+            ShowIpv6 = false;
+        }
+
+        PushFilter(host =>
+        {
+            host.IpEnabled = value;
+            if (!value)
+            {
+                host.ShowIpv4 = false;
+                host.ShowIpv6 = false;
+            }
+        });
     }
 
     partial void OnMonitorReceiveChanged(bool value) => PushMonitor(value, v => { if (Host is not null) Host.MonitorReceive = v; });
     partial void OnMonitorSendChanged(bool value) => PushMonitor(value, v => { if (Host is not null) Host.MonitorSend = v; });
     partial void OnMonitorErrorsChanged(bool value) => PushMonitor(value, v => { if (Host is not null) Host.MonitorErrors = v; });
     partial void OnMonitorDiscardsChanged(bool value) => PushMonitor(value, v => { if (Host is not null) Host.MonitorDiscards = v; });
+
+    private void PushFilter(Action<MainViewModel> apply)
+    {
+        if (_loading)
+            return;
+        if (Host is not null)
+            apply(Host);
+        Persist();
+    }
 
     private void PushMonitor(bool value, Action<bool> apply)
     {
