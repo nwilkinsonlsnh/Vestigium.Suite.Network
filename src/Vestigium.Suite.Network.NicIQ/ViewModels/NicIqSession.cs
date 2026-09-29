@@ -48,8 +48,13 @@ public sealed class NicIqSession
         {
             ThemeId = _settings.SelectedThemeId,
             DurationSeconds = (int)ClampDuration(_main.DurationSeconds),
-            IncludeDown = _main.IncludeDown,
-            IpEnabledOnly = _main.IpEnabledOnly,
+            IncludeDown = _main.ShowDown,
+            IpEnabledOnly = _main.IpEnabled,
+            ShowUp = _main.ShowUp,
+            ShowDown = _main.ShowDown,
+            IpEnabled = _main.IpEnabled,
+            ShowIpv4 = _main.ShowIpv4,
+            ShowIpv6 = _main.ShowIpv6,
             MonitorReceive = _main.MonitorReceive,
             MonitorSend = _main.MonitorSend,
             MonitorErrors = _main.MonitorErrors,
@@ -83,8 +88,17 @@ public sealed class NicIqSession
 
         var duration = ClampDuration(Current.DurationSeconds);
         _main.DurationSeconds = duration;
-        _main.IncludeDown = Current.IncludeDown;
-        _main.IpEnabledOnly = Current.IpEnabledOnly;
+        _main.ShowUp = Current.ShowUp ?? true;
+        _main.ShowDown = Current.ShowDown ?? Current.IncludeDown;
+        _main.IpEnabled = Current.IpEnabled ?? Current.IpEnabledOnly;
+        _main.ShowIpv4 = Current.IpEnabled == false ? false : Current.ShowIpv4 ?? (Current.IpEnabled ?? Current.IpEnabledOnly);
+        _main.ShowIpv6 = Current.IpEnabled == false ? false : Current.ShowIpv6 ?? (Current.IpEnabled ?? Current.IpEnabledOnly);
+        if (!_main.IpEnabled)
+        {
+            _main.ShowIpv4 = false;
+            _main.ShowIpv6 = false;
+        }
+
         _main.MonitorReceive = Current.MonitorReceive;
         _main.MonitorSend = Current.MonitorSend;
         _main.MonitorErrors = Current.MonitorErrors;

@@ -9,6 +9,11 @@ public sealed class NicIqSettings
     public int DurationSeconds { get; set; } = NicIqWatchInput.DefaultDurationSeconds;
     public bool IncludeDown { get; set; } = true;
     public bool IpEnabledOnly { get; set; } = true;
+    public bool? ShowUp { get; set; }
+    public bool? ShowDown { get; set; }
+    public bool? IpEnabled { get; set; }
+    public bool? ShowIpv4 { get; set; }
+    public bool? ShowIpv6 { get; set; }
     public bool MonitorReceive { get; set; } = true;
     public bool MonitorSend { get; set; } = true;
     public bool MonitorErrors { get; set; }
