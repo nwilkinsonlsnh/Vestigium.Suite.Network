@@ -18,6 +18,10 @@ public sealed partial class MainViewModel : ObservableObject
     private CancellationTokenSource? _monitorCts;
     private NetworkJob<AdapterWatchResult>? _watchJob;
     private CachedPdhSource? _pdh;
+    private IReadOnlyList<string>? _live;
+    private DateTimeOffset _liveAt;
+    private string? _pdhInstance;
+    private string? _pdhKey;
     private bool _busy;
     private bool _loading;
     private bool _syncingNic;
@@ -397,6 +401,7 @@ public sealed partial class MainViewModel : ObservableObject
             return;
         _monitorCts = new CancellationTokenSource();
         IsMonitoring = true;
+        PaintChart(force: true);
         _ = RunMonitorLoopAsync(_monitorCts.Token);
     }
 
@@ -409,6 +414,9 @@ public sealed partial class MainViewModel : ObservableObject
         IsMonitoring = false;
         _pdh?.Dispose();
         _pdh = null;
+        _live = null;
+        _pdhInstance = null;
+        _pdhKey = null;
     }
 
     public void RestartMonitoring()
@@ -456,7 +464,7 @@ public sealed partial class MainViewModel : ObservableObject
                 if (tick.Primed)
                 {
                     Note($"Monitoring {name}", tick.Instance);
-                    await Task.Delay(TimeSpan.FromSeconds(1), token).ConfigureAwait(true);
+                    await Task.Delay(TimeSpan.FromMilliseconds(250), token).ConfigureAwait(true);
                     continue;
                 }
 
@@ -487,17 +495,35 @@ public sealed partial class MainViewModel : ObservableObject
     private SampleTick TakeTick(string name, string description, IReadOnlyList<string> selected, CancellationToken token)
     {
         token.ThrowIfCancellationRequested();
-        IReadOnlyList<string> live;
-        try
+        var key = name + "\u001f" + description;
+        if (_live is null || DateTimeOffset.UtcNow - _liveAt > TimeSpan.FromSeconds(30))
         {
-            live = NetworkCounterCatalog.LiveInstances(PdhNic.Category);
-        }
-        catch (Exception)
-        {
-            live = [];
+            try
+            {
+                _live = NetworkCounterCatalog.LiveInstances(PdhNic.Category);
+            }
+            catch (Exception)
+            {
+                _live = [];
+            }
+
+            _liveAt = DateTimeOffset.UtcNow;
+            _pdhInstance = null;
+            _pdhKey = null;
         }
 
-        var instance = NicPdhInstance.Resolve(name, description, live);
+        string? instance;
+        if (string.Equals(_pdhKey, key, StringComparison.Ordinal) && !string.IsNullOrWhiteSpace(_pdhInstance))
+        {
+            instance = _pdhInstance;
+        }
+        else
+        {
+            instance = NicPdhInstance.Resolve(name, description, _live);
+            _pdhKey = key;
+            _pdhInstance = instance;
+        }
+
         if (string.IsNullOrWhiteSpace(instance))
             return new SampleTick(null, null, $"No PDH instance for {name}", false);
 
