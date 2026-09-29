@@ -103,6 +103,9 @@ public sealed partial class SettingsViewModel : ObservableObject
     private bool _monitorDiscards;
 
     [ObservableProperty]
+    private bool _showLegend = true;
+
+    [ObservableProperty]
     private string? _selectedAvailableCounter;
 
     [ObservableProperty]
@@ -122,6 +125,8 @@ public sealed partial class SettingsViewModel : ObservableObject
         MonitorSend = data.MonitorSend;
         MonitorErrors = data.MonitorErrors;
         MonitorDiscards = data.MonitorDiscards;
+        ShowLegend = data.ShowLegend;
+        ChartTheme.WatchLegend = data.ShowLegend;
         RefreshCounterLists(MonitorCounterList.FromSettings(data));
         BarPosition = string.Equals(data.StatusBarDock, "Top", StringComparison.OrdinalIgnoreCase)
             ? VestigiumStatusBarPosition.Top
@@ -178,6 +183,15 @@ public sealed partial class SettingsViewModel : ObservableObject
     partial void OnBarVisibleChanged(bool value)
     {
         _chrome.ShowStatusBar = value;
+        Persist();
+    }
+
+    partial void OnShowLegendChanged(bool value)
+    {
+        if (_loading)
+            return;
+        ChartTheme.WatchLegend = value;
+        Host?.ApplyLegend(value);
         Persist();
     }
 
