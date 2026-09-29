@@ -492,7 +492,7 @@ public sealed partial class MainViewModel : ObservableObject
 
         var instance = NicPdhInstance.Resolve(name, description, live);
         if (string.IsNullOrWhiteSpace(instance))
-            return new SampleTick(null, null, $"No PDH instance for {name}", primed: false);
+            return new SampleTick(null, null, $"No PDH instance for {name}", false);
 
         var counters = MonitorCounterList.ForSample(selected);
         if (counters.Count == 0)
@@ -500,7 +500,7 @@ public sealed partial class MainViewModel : ObservableObject
 
         var paths = NetworkCounterCatalog.Paths(PdhNic.Category, instance, counters);
         if (paths.Count == 0)
-            return new SampleTick(instance, null, "No counters selected", primed: false);
+            return new SampleTick(instance, null, "No counters selected", false);
 
         _pdh ??= new CachedPdhSource();
         var primed = false;
@@ -514,7 +514,7 @@ public sealed partial class MainViewModel : ObservableObject
         }
 
         if (primed)
-            return new SampleTick(instance, null, null, primed: true);
+            return new SampleTick(instance, null, null, true);
 
         var rows = new List<SampleRecord>(paths.Count);
         foreach (var path in paths)
@@ -523,7 +523,7 @@ public sealed partial class MainViewModel : ObservableObject
             rows.Add(_pdh.Read(path));
         }
 
-        return new SampleTick(instance, new SampleJobResult(SampleStatus.Ok, rows), null, primed: false);
+        return new SampleTick(instance, new SampleJobResult(SampleStatus.Ok, rows), null, false);
     }
 
     private void ApplySamples(SampleJobResult result)
