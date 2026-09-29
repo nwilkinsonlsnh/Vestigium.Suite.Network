@@ -27,7 +27,8 @@ internal static class MonitorChart
                 NetworkInterface.PacketsSentPerSec,
                 "Receive",
                 "Send",
-                ChartTheme.Options("Packets", "s", "Packets/sec"),
+                ChartTheme.Options("Packets", "60 s", "Packets/sec"),
+                scale: 1m,
                 rates: true),
             MonitorChartPages.Integrity => Pair(
                 ring,
@@ -35,7 +36,8 @@ internal static class MonitorChart
                 NetworkInterface.PacketsOutboundErrors,
                 "Receive errors",
                 "Send errors",
-                ChartTheme.Options("Integrity", "s", "count"),
+                ChartTheme.Options("Integrity", "60 s", "count"),
+                scale: 1m,
                 rates: false),
             MonitorChartPages.Utilization => Utilization(ring),
             _ => Pair(
@@ -44,7 +46,8 @@ internal static class MonitorChart
                 NetworkInterface.BytesSentPerSec,
                 "Receive",
                 "Send",
-                ChartTheme.Options("Throughput", "s", "Bytes/sec"),
+                ChartTheme.Options("Throughput", "60 s", "Kbps"),
+                scale: 8m / 1000m,
                 rates: true)
         };
     }
@@ -56,10 +59,11 @@ internal static class MonitorChart
         string leftName,
         string rightName,
         ChartOptions options,
+        decimal scale,
         bool rates)
     {
-        var left = Series(ring.Of(leftCounter), leftName);
-        var right = Series(ring.Of(rightCounter), rightName);
+        var left = Window(ring.Of(leftCounter), leftName, scale);
+        var right = Window(ring.Of(rightCounter), rightName, scale);
         var rows = new List<NumericSeries>();
         if (left is not null)
             rows.Add(left);
@@ -96,14 +100,14 @@ internal static class MonitorChart
             points.Add(new Observation(pct, bytes[i].At ?? band[i].At));
         }
 
-        var series = Series(points, "Utilization");
+        var series = Window(points, "Utilization", 1m);
         if (series is null)
             return (null, "Need Bytes Total/sec and Current Bandwidth.");
 
         try
         {
             var view = ChartTheme.Paint(
-                ChartView.Line(series, ChartTheme.Options("Utilization", "s", "%")));
+                ChartView.Line(series, ChartTheme.Options("Utilization", "60 s", "%")));
             return (view, RateStrip(series, "Utilization"));
         }
         catch (Exception ex)
@@ -112,13 +116,21 @@ internal static class MonitorChart
         }
     }
 
-    private static NumericSeries? Series(IReadOnlyList<Observation> points, string name)
+    private static NumericSeries? Window(IReadOnlyList<Observation> points, string name, decimal scale)
     {
-        if (points.Count < 2)
+        if (points.Count == 0)
             return null;
+
+        var values = new decimal[MonitorRing.Cap];
+        var take = Math.Min(points.Count, MonitorRing.Cap);
+        var dest = MonitorRing.Cap - take;
+        var src = points.Count - take;
+        for (var i = 0; i < take; i++)
+            values[dest + i] = points[src + i].Value * scale;
+
         try
         {
-            return NumericSeries.FromObservations(points, name);
+            return NumericSeries.FromDecimal(values, name);
         }
         catch (Exception)
         {
@@ -163,8 +175,8 @@ internal static class MonitorChart
     }
 
     private static string N(double? value)
-        => value is null ? "—" : value.Value.ToString("0.###", CultureInfo.InvariantCulture);
+        => value is null ? "\u2014" : value.Value.ToString("0.###", CultureInfo.InvariantCulture);
 
     private static string N(decimal? value)
-        => value is null ? "—" : value.Value.ToString("0.###", CultureInfo.InvariantCulture);
+        => value is null ? "\u2014" : value.Value.ToString("0.###", CultureInfo.InvariantCulture);
 }
