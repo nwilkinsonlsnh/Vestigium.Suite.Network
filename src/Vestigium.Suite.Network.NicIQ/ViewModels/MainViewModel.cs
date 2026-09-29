@@ -7,6 +7,7 @@ using Vestigium.Controls.StatusBar;
 using Vestigium.Helpers.Network;
 using Vestigium.Helpers.PerfMon;
 using Vestigium.Helpers.PerfMon.Network;
+using PdhNic = Vestigium.Helpers.PerfMon.Network.NetworkInterface;
 
 namespace Vestigium.Suite.Network.NicIQ.ViewModels;
 
@@ -419,7 +420,7 @@ public sealed partial class MainViewModel : ObservableObject
                 IReadOnlyList<string> live;
                 try
                 {
-                    live = NetworkCounterCatalog.LiveInstances(NetworkInterface.Category);
+                    live = NetworkCounterCatalog.LiveInstances(PdhNic.Category);
                 }
                 catch (Exception)
                 {
@@ -442,7 +443,7 @@ public sealed partial class MainViewModel : ObservableObject
                 if (counters.Count == 0)
                     counters = MonitorCounterList.Sanitize(MonitorCounterList.SeedReceiveSend);
 
-                var paths = NetworkCounterCatalog.Paths(NetworkInterface.Category, instance, counters);
+                var paths = NetworkCounterCatalog.Paths(PdhNic.Category, instance, counters);
                 if (paths.Count == 0)
                 {
                     Post("Failed", "No counters selected");
