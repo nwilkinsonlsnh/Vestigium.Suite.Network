@@ -12,6 +12,20 @@ public static class MonitorCounterList
         NetworkInterface.BytesTotalPerSec
     ];
 
+    public static readonly string[] ChartNeed =
+    [
+        NetworkInterface.BytesReceivedPerSec,
+        NetworkInterface.BytesSentPerSec,
+        NetworkInterface.BytesTotalPerSec,
+        NetworkInterface.PacketsReceivedPerSec,
+        NetworkInterface.PacketsSentPerSec,
+        NetworkInterface.PacketsReceivedErrors,
+        NetworkInterface.PacketsOutboundErrors,
+        NetworkInterface.PacketsReceivedDiscarded,
+        NetworkInterface.PacketsOutboundDiscarded,
+        NetworkInterface.CurrentBandwidth
+    ];
+
     public static IReadOnlyList<string> FromSettings(NicIqSettings settings)
     {
         ArgumentNullException.ThrowIfNull(settings);
@@ -44,6 +58,9 @@ public static class MonitorCounterList
         var clean = Sanitize(rows);
         return clean.Count > 0 ? clean : Sanitize(SeedReceiveSend);
     }
+
+    public static IReadOnlyList<string> ForSample(IEnumerable<string> selected)
+        => Sanitize(selected.Concat(ChartNeed));
 
     public static IReadOnlyList<string> Sanitize(IEnumerable<string?> names)
     {
