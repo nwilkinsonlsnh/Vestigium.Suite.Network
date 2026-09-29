@@ -4,6 +4,7 @@ using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Vestigium.Controls.StatusBar;
+using Vestigium.Helpers.Charts;
 using Vestigium.Helpers.Network;
 using Vestigium.Helpers.PerfMon;
 using Vestigium.Helpers.PerfMon.Network;
@@ -37,6 +38,8 @@ public sealed partial class MainViewModel : ObservableObject
     public ObservableCollection<MonitorSampleRow> Samples { get; }
 
     public string? PreferredAdapterId { get; set; }
+
+    public string? PreferredMonitorNicId { get; set; }
 
     public VestigiumStatusBarViewModel? StatusBar { get; set; }
 
@@ -146,20 +149,17 @@ public sealed partial class MainViewModel : ObservableObject
     {
         Detail = value?.Detail ?? string.Empty;
         WatchCommand.NotifyCanExecuteChanged();
-        if (_syncingNic)
+        if (_loading || _syncingNic)
             return;
-        if (value is not null && value.Source.Status == OperationalStatus.Up)
-            SelectedMonitorNic = ActiveNics.FirstOrDefault(r => string.Equals(r.Id, value.Id, StringComparison.Ordinal));
+        PreferredAdapterId = value?.Id;
+        Session?.Save();
     }
 
     partial void OnSelectedMonitorNicChanged(AdapterRow? value)
     {
         if (_syncingNic || value is null)
             return;
-        _syncingNic = true;
-        SelectedAdapter = Adapters.FirstOrDefault(r => string.Equals(r.Id, value.Id, StringComparison.Ordinal)) ?? value;
-        _syncingNic = false;
-        PreferredAdapterId = value.Id;
+        PreferredMonitorNicId = value.Id;
         if (!_loading)
             Session?.Save();
         RestartMonitoring();
@@ -171,6 +171,14 @@ public sealed partial class MainViewModel : ObservableObject
     {
         if (value)
             PaintChart(force: true);
+    }
+
+    public void ApplyLegend(bool visible)
+    {
+        ChartTheme.WatchLegend = visible;
+        if (LiveChart is not null)
+            ChartView.SetLegendVisible(LiveChart, visible);
+        PaintChart(force: true);
     }
 
     partial void OnIncludeDownChanged(bool value)
@@ -239,7 +247,7 @@ public sealed partial class MainViewModel : ObservableObject
         if (_busy)
             return;
 
-        var keep = SelectedAdapter?.Id;
+        var keep = SelectedAdapter?.Id ?? PreferredAdapterId;
         try
         {
             var box = NetworkHelper.GetWorkstation();
@@ -361,7 +369,7 @@ public sealed partial class MainViewModel : ObservableObject
 
     private void SyncActiveNics()
     {
-        var keep = SelectedMonitorNic?.Id ?? PreferredAdapterId ?? SelectedAdapter?.Id;
+        var keep = SelectedMonitorNic?.Id ?? PreferredMonitorNicId;
         ActiveNics.Clear();
         foreach (var row in Adapters.Where(r => r.Source.Status == OperationalStatus.Up))
             ActiveNics.Add(row);
@@ -369,10 +377,9 @@ public sealed partial class MainViewModel : ObservableObject
         AdapterRow? next = null;
         if (!string.IsNullOrWhiteSpace(keep))
             next = ActiveNics.FirstOrDefault(r => string.Equals(r.Id, keep, StringComparison.Ordinal));
-        next ??= ActiveNics.FirstOrDefault(r => SelectedAdapter is not null && string.Equals(r.Id, SelectedAdapter.Id, StringComparison.Ordinal));
         if (next is null)
         {
-            var primary = NicPrimaryAdapter.Pick(ActiveNics.Select(r => r.Source), PreferredAdapterId);
+            var primary = NicPrimaryAdapter.Pick(ActiveNics.Select(r => r.Source), PreferredMonitorNicId);
             if (primary is not null)
                 next = ActiveNics.FirstOrDefault(r => string.Equals(r.Id, primary.Id, StringComparison.Ordinal));
         }
@@ -381,7 +388,7 @@ public sealed partial class MainViewModel : ObservableObject
         SelectedMonitorNic = next;
         _syncingNic = false;
         if (next is not null)
-            PreferredAdapterId = next.Id;
+            PreferredMonitorNicId = next.Id;
     }
 
     public void StartMonitoring()
@@ -421,7 +428,7 @@ public sealed partial class MainViewModel : ObservableObject
         {
             try
             {
-                var nic = SelectedMonitorNic ?? SelectedAdapter;
+                var nic = SelectedMonitorNic;
                 if (nic is null)
                 {
                     MonitorInstance = string.Empty;
