@@ -2,8 +2,8 @@
 
 **Host:** `Vestigium.Suite.Network.NicIQ`  
 **APPID:** `NicIQ`  
-**Status:** Live — [PR01 -- Implementation Plan.md](PR01/PR01%20--%20Implementation%20Plan.md)  
-**Next slice:** none — PR01 slices coded. Owner verify.
+**Status:** Live — [PR02 -- Implementation Plan.md](PR02/PR02%20--%20Implementation%20Plan.md)  
+**Next slice:** owner verify monitoring on a box with more than one NIC.
 
 This file is the queue keeper. It is not the plan. Do not delete it when the plan is idle.
 
@@ -12,16 +12,17 @@ This file is the queue keeper. It is not the plan. Do not delete it when the pla
 ```
 PR-Plans/
   README.md                          this file — never a plan
-  PR01/                              LIVE slice folder
-    PR01 -- Implementation Plan.md   the paper you implement
+  PR02/                              LIVE slice folder
+    PR02 -- Implementation Plan.md   the paper you implement
   Completed/
+    PR01/                            first and ten
     PRnn/                            finished slice (needs a file or Git drops it)
 ```
 
 | Location | Holds |
 |---|---|
 | Queue keeper | `WPF/NicIQ/PR-Plans/README.md` (this file) |
-| Live plan | `WPF/NicIQ/PR-Plans/PR01/PR01 -- Implementation Plan.md` |
+| Live plan | `WPF/NicIQ/PR-Plans/PR02/PR02 -- Implementation Plan.md` |
 | Finished plan | `WPF/NicIQ/PR-Plans/Completed/PRnn/` |
 
 **Do not** place `PRnn -- Implementation Plan.md` next to this README. Solution Explorer already has a `PRnn` folder. The plan file lives inside it.
@@ -43,18 +44,19 @@ When the slice finishes, move the whole `PRnn/` folder under `Completed/`. Then 
 
 | Paper | Wins on |
 |---|---|
-| [Requirements_v1.0.md](../Requirements_v1.0.md) | The job: list + detail + watch |
+| [Requirements_v1.1.md](../Requirements_v1.1.md) | Monitoring job |
+| [Requirements_v1.0.md](../Requirements_v1.0.md) | List + detail + watch |
 | [Design_v1.0.md](../Design_v1.0.md) | Job types. Not chrome. |
 | DnsIQ / PingIQ Rev 1 | Chrome, pins, startup order |
-| [PR01 -- Implementation Plan.md](PR01/PR01%20--%20Implementation%20Plan.md) | Slice order |
-| Helpers.Network 1.2.0 | Protocol |
-| Analytics 1.0.1 / Charts 1.0.5 / Themes 1.0.2 / Controls 1.0.0 | Skeleton |
+| [PR02 -- Implementation Plan.md](PR02/PR02%20--%20Implementation%20Plan.md) | Slice order |
+| Helpers.PerfMon 0.1.1 / Helpers.PerfMon.Network 0.1.1 | Sample clock and catalog |
+| Helpers.Network | Inventory + status watch |
 
 If a plan and Requirements disagree on the **job**, Requirements win.  
 If a plan and the owner lock disagree on **chrome**, the owner lock wins.  
 If a plan invents a protocol the library does not own, the plan is wrong.
 
-## This host (PR01)
+## This host (PR02)
 
-Suite skeleton + which NIC, is it up, how fast. No `SampleCounters`. No packet send.  
+Open already sampling the primary NIC. Pick list. Settings \ Monitoring counters.  
 Source: `src/Vestigium.Suite.Network.NicIQ`

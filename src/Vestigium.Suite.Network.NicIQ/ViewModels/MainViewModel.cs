@@ -1,25 +1,38 @@
 using System.Collections.ObjectModel;
+using System.Net.NetworkInformation;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Vestigium.Controls.StatusBar;
 using Vestigium.Helpers.Network;
+using Vestigium.Helpers.PerfMon;
+using Vestigium.Helpers.PerfMon.Network;
 
 namespace Vestigium.Suite.Network.NicIQ.ViewModels;
 
 public sealed partial class MainViewModel : ObservableObject
 {
     private CancellationTokenSource? _cts;
+    private CancellationTokenSource? _monitorCts;
     private NetworkJob<AdapterWatchResult>? _watchJob;
     private bool _busy;
     private bool _loading;
+    private bool _syncingNic;
 
     public MainViewModel()
     {
         Adapters = [];
+        ActiveNics = [];
+        Samples = [];
     }
 
     public ObservableCollection<AdapterRow> Adapters { get; }
+
+    public ObservableCollection<AdapterRow> ActiveNics { get; }
+
+    public ObservableCollection<MonitorSampleRow> Samples { get; }
+
+    public string? PreferredAdapterId { get; set; }
 
     public VestigiumStatusBarViewModel? StatusBar { get; set; }
 
@@ -62,7 +75,13 @@ public sealed partial class MainViewModel : ObservableObject
     private decimal _durationSeconds = NicIqWatchInput.DefaultDurationSeconds;
 
     [ObservableProperty]
-    private AdapterRow? _selectedAdapter;
+    private AdapterRow? _selectedMonitorNic;
+
+    [ObservableProperty]
+    private string _monitorInstance = string.Empty;
+
+    [ObservableProperty]
+    private bool _isMonitoring;
 
     public bool CanRefresh => !_busy;
 
@@ -74,6 +93,23 @@ public sealed partial class MainViewModel : ObservableObject
     {
         Detail = value?.Detail ?? string.Empty;
         WatchCommand.NotifyCanExecuteChanged();
+        if (_syncingNic)
+            return;
+        if (value is not null && value.Source.Status == OperationalStatus.Up)
+            SelectedMonitorNic = ActiveNics.FirstOrDefault(r => string.Equals(r.Id, value.Id, StringComparison.Ordinal));
+    }
+
+    partial void OnSelectedMonitorNicChanged(AdapterRow? value)
+    {
+        if (_syncingNic || value is null)
+            return;
+        _syncingNic = true;
+        SelectedAdapter = Adapters.FirstOrDefault(r => string.Equals(r.Id, value.Id, StringComparison.Ordinal)) ?? value;
+        _syncingNic = false;
+        PreferredAdapterId = value.Id;
+        if (!_loading)
+            Session?.Save();
+        RestartMonitoring();
     }
 
     partial void OnIncludeDownChanged(bool value)
@@ -150,6 +186,7 @@ public sealed partial class MainViewModel : ObservableObject
             var query = new NetworkAdapterQuery(IncludeDown: IncludeDown, IpEnabledOnly: IpEnabledOnly);
             var rows = NetworkHelper.GetAdapters(query).Select(static a => new AdapterRow(a)).ToList();
             ReplaceRows(rows, keep);
+            SyncActiveNics();
             Post("Idle");
         }
         catch (Exception ex)
@@ -255,7 +292,146 @@ public sealed partial class MainViewModel : ObservableObject
         if (SelectedAdapter is not null && Adapters.Contains(SelectedAdapter))
             return;
 
-        SelectedAdapter = Adapters.Count > 0 ? Adapters[0] : null;
+        var preferred = NicPrimaryAdapter.Pick(Adapters.Select(r => r.Source), PreferredAdapterId);
+        SelectedAdapter = preferred is null
+            ? null
+            : Adapters.FirstOrDefault(r => string.Equals(r.Id, preferred.Id, StringComparison.Ordinal));
+    }
+
+    private void SyncActiveNics()
+    {
+        var keep = SelectedMonitorNic?.Id ?? PreferredAdapterId ?? SelectedAdapter?.Id;
+        ActiveNics.Clear();
+        foreach (var row in Adapters.Where(r => r.Source.Status == OperationalStatus.Up))
+            ActiveNics.Add(row);
+
+        AdapterRow? next = null;
+        if (!string.IsNullOrWhiteSpace(keep))
+            next = ActiveNics.FirstOrDefault(r => string.Equals(r.Id, keep, StringComparison.Ordinal));
+        next ??= ActiveNics.FirstOrDefault(r => SelectedAdapter is not null && string.Equals(r.Id, SelectedAdapter.Id, StringComparison.Ordinal));
+        if (next is null)
+        {
+            var primary = NicPrimaryAdapter.Pick(ActiveNics.Select(r => r.Source), PreferredAdapterId);
+            if (primary is not null)
+                next = ActiveNics.FirstOrDefault(r => string.Equals(r.Id, primary.Id, StringComparison.Ordinal));
+        }
+
+        _syncingNic = true;
+        SelectedMonitorNic = next;
+        _syncingNic = false;
+        if (next is not null)
+            PreferredAdapterId = next.Id;
+    }
+
+    public void StartMonitoring()
+    {
+        if (_monitorCts is not null)
+            return;
+        _monitorCts = new CancellationTokenSource();
+        IsMonitoring = true;
+        _ = RunMonitorLoopAsync(_monitorCts.Token);
+    }
+
+    public void StopMonitoring()
+    {
+        try { _monitorCts?.Cancel(); }
+        catch (ObjectDisposedException) { }
+        _monitorCts?.Dispose();
+        _monitorCts = null;
+        IsMonitoring = false;
+    }
+
+    public void RestartMonitoring()
+    {
+        StopMonitoring();
+        StartMonitoring();
+    }
+
+    private async Task RunMonitorLoopAsync(CancellationToken token)
+    {
+        while (!token.IsCancellationRequested)
+        {
+            try
+            {
+                var nic = SelectedMonitorNic ?? SelectedAdapter;
+                if (nic is null)
+                {
+                    MonitorInstance = string.Empty;
+                    Post("Idle", "No active NIC");
+                    await Task.Delay(TimeSpan.FromSeconds(1), token).ConfigureAwait(true);
+                    continue;
+                }
+
+                IReadOnlyList<string> live;
+                try
+                {
+                    live = NetworkCounterCatalog.LiveInstances(NetworkInterface.Category);
+                }
+                catch (Exception)
+                {
+                    live = [];
+                }
+
+                var instance = NicPdhInstance.Resolve(nic.Name, nic.Source.Description, live);
+                MonitorInstance = instance ?? string.Empty;
+                if (string.IsNullOrWhiteSpace(instance))
+                {
+                    Post("Failed", $"No PDH instance for {nic.Name}");
+                    await Task.Delay(TimeSpan.FromSeconds(2), token).ConfigureAwait(true);
+                    continue;
+                }
+
+                var counters = Settings is null
+                    ? MonitorCounterList.FromSettings(Session?.Current ?? new NicIqSettings())
+                    : MonitorCounterList.Sanitize(Settings.MonitorCounters);
+                if (counters.Count == 0)
+                    counters = MonitorCounterList.Sanitize(MonitorCounterList.SeedReceiveSend);
+
+                var paths = NetworkCounterCatalog.Paths(NetworkInterface.Category, instance, counters);
+                if (paths.Count == 0)
+                {
+                    Post("Failed", "No counters selected");
+                    await Task.Delay(TimeSpan.FromSeconds(2), token).ConfigureAwait(true);
+                    continue;
+                }
+
+                var job = new SampleJob(paths, new SampleJobOptions
+                {
+                    Interval = TimeSpan.FromSeconds(1),
+                    Count = 1
+                });
+                var result = await job.RunAsync(token).ConfigureAwait(true);
+                ApplySamples(result);
+                Post($"Monitoring {nic.Name}", instance);
+            }
+            catch (OperationCanceledException)
+            {
+                return;
+            }
+            catch (Exception ex)
+            {
+                Post("Failed", ex.Message);
+                try
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(2), token).ConfigureAwait(true);
+                }
+                catch (OperationCanceledException)
+                {
+                    return;
+                }
+            }
+        }
+    }
+
+    private void ApplySamples(SampleJobResult result)
+    {
+        var latest = result.Samples
+            .GroupBy(s => s.Counter, StringComparer.OrdinalIgnoreCase)
+            .Select(g => g.Last())
+            .ToList();
+        Samples.Clear();
+        foreach (var row in latest)
+            Samples.Add(new MonitorSampleRow(row));
     }
 
     private void MarkStatusChanged(string key, bool changed)

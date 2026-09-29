@@ -14,6 +14,11 @@
                    GroupName="SettingsPage"
                    Margin="0,0,8,0" />
       <RadioButton Style="{StaticResource RadioButton.HorizontalTab}"
+                   Content="Monitoring"
+                   IsChecked="{Binding MonitoringPageOpen}"
+                   GroupName="SettingsPage"
+                   Margin="0,0,8,0" />
+      <RadioButton Style="{StaticResource RadioButton.HorizontalTab}"
                    Content="Theme"
                    IsChecked="{Binding ThemePageOpen}"
                    GroupName="SettingsPage" />
@@ -41,6 +46,40 @@
                                   SignMode="Unsigned"
                                   Minimum="1" Maximum="60" Increment="1" PageIncrement="5" DecimalPlaces="0" />
     </StackPanel>
+
+    <Grid HorizontalAlignment="Left"
+          VerticalAlignment="Top"
+          Width="720"
+          Margin="20,0,0,0"
+          Visibility="{Binding MonitoringPageOpen, Converter={StaticResource BoolToVis}}">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="*" />
+      </Grid.ColumnDefinitions>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="*" MinHeight="240" />
+      </Grid.RowDefinitions>
+      <TextBlock Grid.ColumnSpan="3" Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap" Margin="0,0,0,12"
+                 Text="Counters sampled on the selected NIC. Add or remove from the Network Interface catalog." />
+      <DockPanel Grid.Row="1" Grid.Column="0" LastChildFill="True">
+        <Label DockPanel.Dock="Top" Style="{StaticResource Label.Standard}" Content="Available" />
+        <ListBox ItemsSource="{Binding AvailableCounters}"
+                 SelectedItem="{Binding SelectedAvailableCounter, Mode=TwoWay}"
+                 MinHeight="220" />
+      </DockPanel>
+      <StackPanel Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" Margin="12,0">
+        <Button Content="Add →" Style="{StaticResource Button.Secondary}" Command="{Binding AddCounterCommand}" Margin="0,0,0,8" Padding="12,4" />
+        <Button Content="← Remove" Style="{StaticResource Button.Secondary}" Command="{Binding RemoveCounterCommand}" Padding="12,4" />
+      </StackPanel>
+      <DockPanel Grid.Row="1" Grid.Column="2" LastChildFill="True">
+        <Label DockPanel.Dock="Top" Style="{StaticResource Label.Standard}" Content="Selected" />
+        <ListBox ItemsSource="{Binding MonitorCounters}"
+                 SelectedItem="{Binding SelectedMonitorCounter, Mode=TwoWay}"
+                 MinHeight="220" />
+      </DockPanel>
+    </Grid>
 
     <StackPanel HorizontalAlignment="Left"
                 VerticalAlignment="Top"

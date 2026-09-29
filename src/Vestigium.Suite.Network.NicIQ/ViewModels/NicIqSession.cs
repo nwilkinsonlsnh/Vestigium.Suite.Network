@@ -54,6 +54,8 @@ public sealed class NicIqSession
             MonitorSend = _main.MonitorSend,
             MonitorErrors = _main.MonitorErrors,
             MonitorDiscards = _main.MonitorDiscards,
+            MonitorCounters = [.. _settings.MonitorCounters],
+            SelectedAdapterId = _main.SelectedAdapter?.Id,
             StatusBarVisible = _settings.BarVisible,
             StatusBarDock = _settings.BarPosition == VestigiumStatusBarPosition.Top ? "Top" : "Bottom"
         };
@@ -85,6 +87,7 @@ public sealed class NicIqSession
         _main.MonitorSend = Current.MonitorSend;
         _main.MonitorErrors = Current.MonitorErrors;
         _main.MonitorDiscards = Current.MonitorDiscards;
+        _main.PreferredAdapterId = Current.SelectedAdapterId;
         _settings.LoadFrom(Current);
     }
 

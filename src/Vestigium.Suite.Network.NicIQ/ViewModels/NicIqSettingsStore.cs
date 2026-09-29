@@ -13,6 +13,8 @@ public sealed class NicIqSettings
     public bool MonitorSend { get; set; } = true;
     public bool MonitorErrors { get; set; }
     public bool MonitorDiscards { get; set; }
+    public List<string> MonitorCounters { get; set; } = [];
+    public string? SelectedAdapterId { get; set; }
     public bool StatusBarVisible { get; set; } = true;
     public string StatusBarDock { get; set; } = "Bottom";
 }

@@ -8,6 +8,8 @@ using Vestigium.Converters;
 using Vestigium.Converters.DependencyInjection;
 using Vestigium.Helpers.Analytics;
 using Vestigium.Helpers.Charts;
+using Vestigium.Helpers.PerfMon;
+using Vestigium.Helpers.PerfMon.Network;
 using Vestigium.Suite.Network.NicIQ.ViewModels;
 using Vestigium.Suite.Network.NicIQ.Views;
 using Vestigium.Suite.Network.Shell;
@@ -33,6 +35,8 @@ public partial class App : Application
         {
             AnalyticsCatalog.Register(cfg);
             ChartsCatalog.Register(cfg);
+            PerfMonCatalog.Register(cfg);
+            NetworkPerfCatalog.Register(cfg);
         });
 
         ThemeCatalog.RegisterAll(Themes);
@@ -63,9 +67,9 @@ public partial class App : Application
             {
                 new VestigiumNavItemSpec("NicIQ")
                 {
-                    Title = "NicIQ",
-                    Subject = "Adapters and watch",
-                    Description = "Which NIC, is it up, how fast."
+                    Title = "Monitoring",
+                    Subject = "Adapters and counters",
+                    Description = "Primary NIC first. Pick another active adapter to switch."
                 },
                 new VestigiumNavItemSpec("Settings")
             }
@@ -85,6 +89,7 @@ public partial class App : Application
         Settings.Host = nic;
         session.Attach(nic, Settings);
         nic.RefreshCommand.Execute(null);
+        nic.StartMonitoring();
 
         var nicItem = window.HostShell["NicIQ"];
         if (nicItem is not null)
@@ -98,6 +103,7 @@ public partial class App : Application
             settingsItem.Content = new SettingsView { DataContext = Settings };
 
         window.Loaded += (_, _) => Shell = window.HostShell;
+        window.Closed += (_, _) => nic.StopMonitoring();
         chrome.Status.Message = "Idle";
         chrome.PropertyChanged += (_, args) =>
         {

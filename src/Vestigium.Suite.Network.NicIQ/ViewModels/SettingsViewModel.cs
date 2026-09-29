@@ -1,4 +1,6 @@
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Vestigium.Controls.Shell;
 using Vestigium.Controls.StatusBar;
 using Vestigium.Themes;
@@ -27,6 +29,7 @@ public sealed partial class SettingsViewModel : ObservableObject
                 OnPropertyChanged(nameof(SelectedThemeId));
             }
         };
+        RefreshCounterLists(MonitorCounterList.FromSettings(new NicIqSettings()));
     }
 
     public NicIqSession? Session { get; set; }
@@ -41,8 +44,13 @@ public sealed partial class SettingsViewModel : ObservableObject
         VestigiumStatusBarPosition.Top
     ];
 
+    public ObservableCollection<string> AvailableCounters { get; } = [];
+
+    public ObservableCollection<string> MonitorCounters { get; } = [];
+
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(NicIqPageOpen))]
+    [NotifyPropertyChangedFor(nameof(MonitoringPageOpen))]
     [NotifyPropertyChangedFor(nameof(ThemePageOpen))]
     private string _settingsPage = "NicIQ";
 
@@ -50,6 +58,12 @@ public sealed partial class SettingsViewModel : ObservableObject
     {
         get => SettingsPage == "NicIQ";
         set { if (value) SettingsPage = "NicIQ"; }
+    }
+
+    public bool MonitoringPageOpen
+    {
+        get => SettingsPage == "Monitoring";
+        set { if (value) SettingsPage = "Monitoring"; }
     }
 
     public bool ThemePageOpen
@@ -88,6 +102,12 @@ public sealed partial class SettingsViewModel : ObservableObject
     [ObservableProperty]
     private bool _monitorDiscards;
 
+    [ObservableProperty]
+    private string? _selectedAvailableCounter;
+
+    [ObservableProperty]
+    private string? _selectedMonitorCounter;
+
     public void BeginLoad() => _loading = true;
 
     public void EndLoad() => _loading = false;
@@ -102,10 +122,38 @@ public sealed partial class SettingsViewModel : ObservableObject
         MonitorSend = data.MonitorSend;
         MonitorErrors = data.MonitorErrors;
         MonitorDiscards = data.MonitorDiscards;
+        RefreshCounterLists(MonitorCounterList.FromSettings(data));
         BarPosition = string.Equals(data.StatusBarDock, "Top", StringComparison.OrdinalIgnoreCase)
             ? VestigiumStatusBarPosition.Top
             : VestigiumStatusBarPosition.Bottom;
         BarVisible = data.StatusBarVisible;
+    }
+
+    [RelayCommand]
+    private void AddCounter()
+    {
+        var name = SelectedAvailableCounter;
+        if (string.IsNullOrWhiteSpace(name))
+            return;
+        if (MonitorCounters.Contains(name, StringComparer.OrdinalIgnoreCase))
+            return;
+        MonitorCounters.Add(name);
+        RefreshCounterLists(MonitorCounters);
+        PersistCounters();
+    }
+
+    [RelayCommand]
+    private void RemoveCounter()
+    {
+        var name = SelectedMonitorCounter;
+        if (string.IsNullOrWhiteSpace(name))
+            return;
+        var match = MonitorCounters.FirstOrDefault(c => c.Equals(name, StringComparison.OrdinalIgnoreCase));
+        if (match is null)
+            return;
+        MonitorCounters.Remove(match);
+        RefreshCounterLists(MonitorCounters);
+        PersistCounters();
     }
 
     partial void OnSelectedThemeIdChanged(string? value)
@@ -178,10 +226,38 @@ public sealed partial class SettingsViewModel : ObservableObject
         Persist();
     }
 
+    private void PersistCounters()
+    {
+        if (_loading)
+            return;
+        Session?.Save();
+        Host?.RestartMonitoring();
+    }
+
     private void Persist()
     {
         if (_loading)
             return;
         Session?.Save();
+    }
+
+    private void RefreshCounterLists(IEnumerable<string> selected)
+    {
+        var picked = MonitorCounterList.Sanitize(selected);
+        MonitorCounters.Clear();
+        foreach (var name in picked)
+            MonitorCounters.Add(name);
+
+        AvailableCounters.Clear();
+        foreach (var name in MonitorCounterList.Available(picked))
+            AvailableCounters.Add(name);
+
+        if (SelectedAvailableCounter is not null
+            && !AvailableCounters.Contains(SelectedAvailableCounter, StringComparer.OrdinalIgnoreCase))
+            SelectedAvailableCounter = AvailableCounters.FirstOrDefault();
+
+        if (SelectedMonitorCounter is not null
+            && !MonitorCounters.Contains(SelectedMonitorCounter, StringComparer.OrdinalIgnoreCase))
+            SelectedMonitorCounter = MonitorCounters.FirstOrDefault();
     }
 }

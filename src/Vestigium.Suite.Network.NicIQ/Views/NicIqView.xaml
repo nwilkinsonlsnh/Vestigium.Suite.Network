@@ -7,6 +7,7 @@
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
       <RowDefinition Height="*" />
     </Grid.RowDefinitions>
 
@@ -27,9 +28,37 @@
                                   Margin="0,0,8,0" />
       <Button Content="Watch (Status)" Style="{StaticResource Button.Primary}" Command="{Binding WatchCommand}" Padding="16,4" Margin="0,0,8,0" />
       <Button Content="Cancel" Style="{StaticResource Button.Secondary}" Command="{Binding CancelCommand}" Padding="16,4" />
+      <Label Style="{StaticResource Label.Standard}" Content="Active NIC" VerticalAlignment="Center" Margin="16,0,8,0" />
+      <ComboBox Style="{StaticResource ComboBox.Standard}"
+                ItemsSource="{Binding ActiveNics}"
+                DisplayMemberPath="Name"
+                SelectedItem="{Binding SelectedMonitorNic, Mode=TwoWay}"
+                Width="320"
+                Margin="0,0,8,0" />
+      <TextBlock Style="{StaticResource TextBlock.Caption}"
+                 Text="{Binding MonitorInstance, StringFormat=PDH  {0}}"
+                 VerticalAlignment="Center" />
     </StackPanel>
 
-    <Border Grid.Row="2" BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
+    <Border Grid.Row="2" BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1" Margin="0,0,0,8" Height="160">
+      <DataGrid Style="{StaticResource DataGrid.Compact}"
+                ItemsSource="{Binding Samples}"
+                IsReadOnly="True"
+                AutoGenerateColumns="False"
+                CanUserAddRows="False"
+                HeadersVisibility="Column"
+                VerticalScrollBarVisibility="Auto">
+        <DataGrid.Columns>
+          <DataGridTextColumn Header="Counter" Binding="{Binding Counter}" Width="2*" MinWidth="180" />
+          <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="120" MinWidth="90" />
+          <DataGridTextColumn Header="Unit" Binding="{Binding Unit}" Width="80" MinWidth="60" />
+          <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="100" MinWidth="80" />
+          <DataGridTextColumn Header="Time" Binding="{Binding Utc}" Width="90" MinWidth="80" />
+        </DataGrid.Columns>
+      </DataGrid>
+    </Border>
+
+    <Border Grid.Row="3" BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
       <DataGrid x:Name="AdapterGrid"
                 Style="{StaticResource DataGrid.Compact}"
                 ItemsSource="{Binding Adapters}"
