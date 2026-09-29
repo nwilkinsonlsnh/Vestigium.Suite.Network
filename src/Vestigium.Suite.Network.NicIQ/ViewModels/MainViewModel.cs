@@ -1,8 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Net.NetworkInformation;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Vestigium.Controls.StatusBar;
@@ -22,7 +20,6 @@ public sealed partial class MainViewModel : ObservableObject
     private bool _busy;
     private bool _loading;
     private bool _syncingNic;
-    private int _paintSkip;
     private string? _lastMonitorNote;
     private readonly MonitorRing _ring = new();
 
@@ -412,7 +409,6 @@ public sealed partial class MainViewModel : ObservableObject
         _ring.Clear();
         LiveChart = null;
         ChartStrip = "Waiting for samples.";
-        _paintSkip = 0;
         _lastMonitorNote = null;
         StopMonitoring();
         StartMonitoring();
@@ -558,42 +554,10 @@ public sealed partial class MainViewModel : ObservableObject
             return;
 
         var (view, strip) = MonitorChart.Paint(ChartPage, _ring);
+        if (view is not null)
+            LiveChart = view;
         if (!string.Equals(ChartStrip, strip, StringComparison.Ordinal))
             ChartStrip = strip;
-        if (view is null)
-            return;
-        if (!force && LiveChart is not null && (MenuOpen() || ++_paintSkip < 5))
-            return;
-        _paintSkip = 0;
-        LiveChart = view;
-    }
-
-    private static bool MenuOpen()
-    {
-        foreach (PresentationSource source in PresentationSource.CurrentSources)
-        {
-            if (source.RootVisual is DependencyObject root && TreeHasOpenMenu(root))
-                return true;
-        }
-
-        return false;
-    }
-
-    private static bool TreeHasOpenMenu(DependencyObject root)
-    {
-        if (root is ContextMenu { IsOpen: true })
-            return true;
-        if (root is FrameworkElement { ContextMenu.IsOpen: true })
-            return true;
-
-        var n = VisualTreeHelper.GetChildrenCount(root);
-        for (var i = 0; i < n; i++)
-        {
-            if (TreeHasOpenMenu(VisualTreeHelper.GetChild(root, i)))
-                return true;
-        }
-
-        return false;
     }
 
     private void MarkStatusChanged(string key, bool changed)
