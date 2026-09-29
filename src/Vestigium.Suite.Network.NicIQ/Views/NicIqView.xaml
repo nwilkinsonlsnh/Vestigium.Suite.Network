@@ -3,6 +3,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:nud="clr-namespace:Vestigium.Controls.NumericUpDown;assembly=Vestigium.Controls.NumericUpDown"
              Background="{DynamicResource Vestigium.Brushes.Surface.Window}">
+  <UserControl.Resources>
+    <BooleanToVisibilityConverter x:Key="BoolToVis" />
+  </UserControl.Resources>
   <Grid Margin="16">
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
@@ -15,19 +18,32 @@
                TextWrapping="Wrap"
                Margin="0,0,0,8" />
 
-    <StackPanel Grid.Row="1" Style="{StaticResource StackPanel.Toolbar}" Orientation="Horizontal" Margin="0,0,0,8">
-      <Button Content="Refresh" Style="{StaticResource Button.Secondary}" Command="{Binding RefreshCommand}" Padding="16,4" Margin="0,0,8,0" />
-      <CheckBox Style="{StaticResource CheckBox.Standard}" Content="Include down" IsChecked="{Binding IncludeDown}" Margin="0,0,16,0" />
-      <CheckBox Style="{StaticResource CheckBox.Standard}" Content="IP enabled only" IsChecked="{Binding IpEnabledOnly}" Margin="0,0,16,0" />
-      <Label Style="{StaticResource Label.Standard}" Content="Duration" VerticalAlignment="Center" Margin="0,0,8,0" />
-      <nud:VestigiumNumericUpDown Value="{Binding DurationSeconds, Mode=TwoWay}"
-                                  SignMode="Unsigned"
-                                  Minimum="1" Maximum="60" Increment="1" PageIncrement="5" DecimalPlaces="0"
-                                  Width="88"
-                                  Margin="0,0,8,0" />
-      <Button Content="Watch (Status)" Style="{StaticResource Button.Primary}" Command="{Binding WatchCommand}" Padding="16,4" Margin="0,0,8,0" />
-      <Button Content="Cancel" Style="{StaticResource Button.Secondary}" Command="{Binding CancelCommand}" Padding="16,4" />
-    </StackPanel>
+    <Grid Grid.Row="1" Margin="0,0,0,8">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="Auto" />
+      </Grid.ColumnDefinitions>
+
+      <StackPanel Style="{StaticResource StackPanel.Toolbar}" Orientation="Horizontal" VerticalAlignment="Center">
+        <Button Content="Refresh" Style="{StaticResource Button.Secondary}" Command="{Binding RefreshCommand}" Padding="16,4" Margin="0,0,8,0" />
+        <CheckBox Style="{StaticResource CheckBox.Standard}" Content="Show Down" IsChecked="{Binding ShowDown}" Margin="0,0,12,0" />
+        <CheckBox Style="{StaticResource CheckBox.Standard}" Content="Show Up" IsChecked="{Binding ShowUp}" Margin="0,0,12,0" />
+        <CheckBox Style="{StaticResource CheckBox.Standard}" Content="IP Enabled" IsChecked="{Binding IpEnabled}" Margin="0,0,12,0" />
+        <CheckBox Style="{StaticResource CheckBox.Standard}" Content="Show IPv4" IsChecked="{Binding ShowIpv4}" Visibility="{Binding IpEnabled, Converter={StaticResource BoolToVis}}" Margin="0,0,12,0" />
+        <CheckBox Style="{StaticResource CheckBox.Standard}" Content="Show IPv6" IsChecked="{Binding ShowIpv6}" Visibility="{Binding IpEnabled, Converter={StaticResource BoolToVis}}" />
+      </StackPanel>
+
+      <StackPanel Grid.Column="1" Style="{StaticResource StackPanel.Toolbar}" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+        <Label Style="{StaticResource Label.Standard}" Content="Duration" VerticalAlignment="Center" Margin="0,0,8,0" />
+        <nud:VestigiumNumericUpDown Value="{Binding DurationSeconds, Mode=TwoWay}"
+                                    SignMode="Unsigned"
+                                    Minimum="1" Maximum="60" Increment="1" PageIncrement="5" DecimalPlaces="0"
+                                    Width="88"
+                                    Margin="0,0,8,0" />
+        <Button Content="Watch (Status)" Style="{StaticResource Button.Primary}" Command="{Binding WatchCommand}" Padding="16,4" Margin="0,0,8,0" />
+        <Button Content="Cancel" Style="{StaticResource Button.Secondary}" Command="{Binding CancelCommand}" Padding="16,4" />
+      </StackPanel>
+    </Grid>
 
     <Border Grid.Row="2" BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
       <DataGrid x:Name="AdapterGrid"
