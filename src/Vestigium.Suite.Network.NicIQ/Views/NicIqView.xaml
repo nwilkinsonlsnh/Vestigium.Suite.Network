@@ -3,15 +3,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:nud="clr-namespace:Vestigium.Controls.NumericUpDown;assembly=Vestigium.Controls.NumericUpDown"
              Background="{DynamicResource Vestigium.Brushes.Surface.Window}">
-  <UserControl.Resources>
-    <BooleanToVisibilityConverter x:Key="BoolToVis" />
-  </UserControl.Resources>
   <Grid Margin="16">
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
-      <RowDefinition Height="Auto" />
-      <RowDefinition Height="260" MinHeight="200" />
       <RowDefinition Height="*" />
     </Grid.RowDefinitions>
 
@@ -32,56 +27,9 @@
                                   Margin="0,0,8,0" />
       <Button Content="Watch (Status)" Style="{StaticResource Button.Primary}" Command="{Binding WatchCommand}" Padding="16,4" Margin="0,0,8,0" />
       <Button Content="Cancel" Style="{StaticResource Button.Secondary}" Command="{Binding CancelCommand}" Padding="16,4" />
-      <Label Style="{StaticResource Label.Standard}" Content="Active NIC" VerticalAlignment="Center" Margin="16,0,8,0" />
-      <ComboBox Style="{StaticResource ComboBox.Standard}"
-                ItemsSource="{Binding ActiveNics}"
-                DisplayMemberPath="Name"
-                SelectedItem="{Binding SelectedMonitorNic, Mode=TwoWay}"
-                Width="320"
-                Margin="0,0,8,0" />
-      <TextBlock Style="{StaticResource TextBlock.Caption}"
-                 Text="{Binding MonitorInstance, StringFormat=PDH  {0}}"
-                 VerticalAlignment="Center" />
     </StackPanel>
 
-    <Border Grid.Row="2" BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1" Margin="0,0,0,8" Height="120">
-      <DataGrid Style="{StaticResource DataGrid.Compact}"
-                ItemsSource="{Binding Samples}"
-                IsReadOnly="True"
-                AutoGenerateColumns="False"
-                CanUserAddRows="False"
-                HeadersVisibility="Column"
-                VerticalScrollBarVisibility="Auto">
-        <DataGrid.Columns>
-          <DataGridTextColumn Header="Counter" Binding="{Binding Counter}" Width="2*" MinWidth="180" />
-          <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="120" MinWidth="90" />
-          <DataGridTextColumn Header="Unit" Binding="{Binding Unit}" Width="80" MinWidth="60" />
-          <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="100" MinWidth="80" />
-          <DataGridTextColumn Header="Time" Binding="{Binding Utc}" Width="90" MinWidth="80" />
-        </DataGrid.Columns>
-      </DataGrid>
-    </Border>
-
-    <DockPanel Grid.Row="3" Margin="0,0,0,8">
-      <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
-        <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="Throughput" IsChecked="{Binding ThroughputPageOpen}" GroupName="NicMonitorChart" Margin="0,0,8,0" />
-        <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="Packets" IsChecked="{Binding PacketsPageOpen}" GroupName="NicMonitorChart" Margin="0,0,8,0" />
-        <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="Integrity" IsChecked="{Binding IntegrityPageOpen}" GroupName="NicMonitorChart" Margin="0,0,8,0" />
-        <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="Utilization" IsChecked="{Binding UtilizationPageOpen}" GroupName="NicMonitorChart" />
-      </StackPanel>
-      <TextBlock DockPanel.Dock="Bottom" Style="{StaticResource TextBlock.Caption}" Text="{Binding ChartStrip}" TextWrapping="Wrap" Margin="0,8,0,0" />
-      <Border BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
-        <Grid>
-          <TextBlock Style="{StaticResource TextBlock.Caption}" Text="Waiting for samples."
-                     VerticalAlignment="Center" HorizontalAlignment="Left" Margin="12,0,0,0"
-                     Visibility="{Binding ChartEmpty, Converter={StaticResource BoolToVis}}" />
-          <ContentControl Content="{Binding LiveChart}"
-                          Visibility="{Binding HasChart, Converter={StaticResource BoolToVis}}" />
-        </Grid>
-      </Border>
-    </DockPanel>
-
-    <Border Grid.Row="4" BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
+    <Border Grid.Row="2" BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
       <DataGrid x:Name="AdapterGrid"
                 Style="{StaticResource DataGrid.Compact}"
                 ItemsSource="{Binding Adapters}"

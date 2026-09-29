@@ -67,8 +67,14 @@ public partial class App : Application
             {
                 new VestigiumNavItemSpec("NicIQ")
                 {
+                    Title = "NicIQ",
+                    Subject = "Adapters",
+                    Description = "Workstation adapters. Watch status. Double-click a row for detail."
+                },
+                new VestigiumNavItemSpec("Monitoring")
+                {
                     Title = "Monitoring",
-                    Subject = "Adapters and counters",
+                    Subject = "Live counters",
                     Description = "Primary NIC first. Pick another active adapter to switch."
                 },
                 new VestigiumNavItemSpec("Settings")
@@ -96,6 +102,10 @@ public partial class App : Application
             nicItem.Content = new NicIqView { DataContext = nic };
             window.HostShell.SelectedItem = nicItem;
         }
+
+        var monitorItem = window.HostShell["Monitoring"];
+        if (monitorItem is not null)
+            monitorItem.Content = new MonitoringView { DataContext = nic };
 
         var settingsItem = window.HostShell["Settings"];
         if (settingsItem is not null)
