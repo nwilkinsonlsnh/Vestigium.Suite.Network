@@ -16,10 +16,10 @@ public sealed partial class MainViewModel : ObservableObject
     private CancellationTokenSource? _cts;
     private CancellationTokenSource? _monitorCts;
     private NetworkJob<AdapterWatchResult>? _watchJob;
+    private CachedPdhSource? _pdh;
     private bool _busy;
     private bool _loading;
     private bool _syncingNic;
-    private int _paintSkip;
     private string? _lastMonitorNote;
     private readonly MonitorRing _ring = new();
 
@@ -400,6 +400,8 @@ public sealed partial class MainViewModel : ObservableObject
         _monitorCts?.Dispose();
         _monitorCts = null;
         IsMonitoring = false;
+        _pdh?.Dispose();
+        _pdh = null;
     }
 
     public void RestartMonitoring()
@@ -407,7 +409,6 @@ public sealed partial class MainViewModel : ObservableObject
         _ring.Clear();
         LiveChart = null;
         ChartStrip = "Waiting for samples.";
-        _paintSkip = 0;
         _lastMonitorNote = null;
         StopMonitoring();
         StartMonitoring();
@@ -445,9 +446,17 @@ public sealed partial class MainViewModel : ObservableObject
                     continue;
                 }
 
+                if (tick.Primed)
+                {
+                    Note($"Monitoring {name}", tick.Instance);
+                    await Task.Delay(TimeSpan.FromSeconds(1), token).ConfigureAwait(true);
+                    continue;
+                }
+
                 if (tick.Result is not null)
                     ApplySamples(tick.Result);
                 Note($"Monitoring {name}", tick.Instance);
+                await Task.Delay(TimeSpan.FromSeconds(1), token).ConfigureAwait(true);
             }
             catch (OperationCanceledException)
             {
@@ -468,7 +477,7 @@ public sealed partial class MainViewModel : ObservableObject
         }
     }
 
-    private static SampleTick TakeTick(string name, string description, IReadOnlyList<string> selected, CancellationToken token)
+    private SampleTick TakeTick(string name, string description, IReadOnlyList<string> selected, CancellationToken token)
     {
         token.ThrowIfCancellationRequested();
         IReadOnlyList<string> live;
@@ -483,7 +492,7 @@ public sealed partial class MainViewModel : ObservableObject
 
         var instance = NicPdhInstance.Resolve(name, description, live);
         if (string.IsNullOrWhiteSpace(instance))
-            return new SampleTick(null, null, $"No PDH instance for {name}");
+            return new SampleTick(null, null, $"No PDH instance for {name}", primed: false);
 
         var counters = MonitorCounterList.ForSample(selected);
         if (counters.Count == 0)
@@ -491,15 +500,30 @@ public sealed partial class MainViewModel : ObservableObject
 
         var paths = NetworkCounterCatalog.Paths(PdhNic.Category, instance, counters);
         if (paths.Count == 0)
-            return new SampleTick(instance, null, "No counters selected");
+            return new SampleTick(instance, null, "No counters selected", primed: false);
 
-        var job = new SampleJob(paths, new SampleJobOptions
+        _pdh ??= new CachedPdhSource();
+        var primed = false;
+        foreach (var path in paths)
         {
-            Interval = TimeSpan.FromSeconds(1),
-            Count = 1
-        });
-        var result = job.RunAsync(token).GetAwaiter().GetResult();
-        return new SampleTick(instance, result, null);
+            token.ThrowIfCancellationRequested();
+            if (!_pdh.NeedsPrime(path))
+                continue;
+            _ = _pdh.Read(path);
+            primed = true;
+        }
+
+        if (primed)
+            return new SampleTick(instance, null, null, primed: true);
+
+        var rows = new List<SampleRecord>(paths.Count);
+        foreach (var path in paths)
+        {
+            token.ThrowIfCancellationRequested();
+            rows.Add(_pdh.Read(path));
+        }
+
+        return new SampleTick(instance, new SampleJobResult(SampleStatus.Ok, rows), null, primed: false);
     }
 
     private void ApplySamples(SampleJobResult result)
@@ -521,18 +545,7 @@ public sealed partial class MainViewModel : ObservableObject
         while (Samples.Count > latest.Count)
             Samples.RemoveAt(Samples.Count - 1);
 
-        _paintSkip++;
-        if (LiveChart is null || _paintSkip >= 5)
-        {
-            _paintSkip = 0;
-            PaintChart(force: false);
-        }
-        else if (MonitorPageVisible)
-        {
-            var (_, strip) = MonitorChart.Paint(ChartPage, _ring);
-            if (!string.Equals(ChartStrip, strip, StringComparison.Ordinal))
-                ChartStrip = strip;
-        }
+        PaintChart(force: false);
     }
 
     private void PaintChart(bool force)
@@ -620,5 +633,5 @@ public sealed partial class MainViewModel : ObservableObject
         return $"{line}{Environment.NewLine}Search  {string.Join(", ", box.DnsSuffixSearchList)}";
     }
 
-    private readonly record struct SampleTick(string? Instance, SampleJobResult? Result, string? Error);
+    private readonly record struct SampleTick(string? Instance, SampleJobResult? Result, string? Error, bool Primed);
 }
