@@ -71,9 +71,6 @@ public sealed partial class MainViewModel : ObservableObject
     private bool _showDown = true;
 
     [ObservableProperty]
-    private bool _ipEnabled = true;
-
-    [ObservableProperty]
     private bool _showIpv4 = true;
 
     [ObservableProperty]
@@ -199,17 +196,6 @@ public sealed partial class MainViewModel : ObservableObject
     partial void OnShowIpv4Changed(bool value) => PersistFilter();
     partial void OnShowIpv6Changed(bool value) => PersistFilter();
 
-    partial void OnIpEnabledChanged(bool value)
-    {
-        if (!value && !_loading)
-        {
-            ShowIpv4 = false;
-            ShowIpv6 = false;
-        }
-
-        PersistFilter();
-    }
-
     partial void OnDurationSecondsChanged(decimal value)
     {
         if (_loading)
@@ -238,7 +224,6 @@ public sealed partial class MainViewModel : ObservableObject
             Settings.BeginLoad();
             Settings.ShowUp = ShowUp;
             Settings.ShowDown = ShowDown;
-            Settings.IpEnabled = IpEnabled;
             Settings.ShowIpv4 = ShowIpv4;
             Settings.ShowIpv6 = ShowIpv6;
             Settings.EndLoad();
@@ -273,7 +258,6 @@ public sealed partial class MainViewModel : ObservableObject
                 NetworkHelper.GetAdapters(query),
                 ShowUp,
                 ShowDown,
-                IpEnabled,
                 ShowIpv4,
                 ShowIpv6);
             ReplaceRows(rows, keep);
