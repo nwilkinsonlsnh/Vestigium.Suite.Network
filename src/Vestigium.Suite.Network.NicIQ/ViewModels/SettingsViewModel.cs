@@ -91,9 +91,6 @@ public sealed partial class SettingsViewModel : ObservableObject
     private bool _showDown = true;
 
     [ObservableProperty]
-    private bool _ipEnabled = true;
-
-    [ObservableProperty]
     private bool _showIpv4 = true;
 
     [ObservableProperty]
@@ -130,9 +127,9 @@ public sealed partial class SettingsViewModel : ObservableObject
         DefaultDurationSeconds = NicIqSession.ClampDuration(data.DurationSeconds);
         ShowUp = data.ShowUp ?? true;
         ShowDown = data.ShowDown ?? data.IncludeDown;
-        IpEnabled = data.IpEnabled ?? data.IpEnabledOnly;
-        ShowIpv4 = IpEnabled && (data.ShowIpv4 ?? IpEnabled);
-        ShowIpv6 = IpEnabled && (data.ShowIpv6 ?? IpEnabled);
+        var ip = data.IpEnabled ?? data.IpEnabledOnly;
+        ShowIpv4 = data.ShowIpv4 ?? ip;
+        ShowIpv6 = data.ShowIpv6 ?? ip;
         MonitorReceive = data.MonitorReceive;
         MonitorSend = data.MonitorSend;
         MonitorErrors = data.MonitorErrors;
@@ -225,25 +222,6 @@ public sealed partial class SettingsViewModel : ObservableObject
     partial void OnShowDownChanged(bool value) => PushFilter(host => host.ShowDown = value);
     partial void OnShowIpv4Changed(bool value) => PushFilter(host => host.ShowIpv4 = value);
     partial void OnShowIpv6Changed(bool value) => PushFilter(host => host.ShowIpv6 = value);
-
-    partial void OnIpEnabledChanged(bool value)
-    {
-        if (!value)
-        {
-            ShowIpv4 = false;
-            ShowIpv6 = false;
-        }
-
-        PushFilter(host =>
-        {
-            host.IpEnabled = value;
-            if (!value)
-            {
-                host.ShowIpv4 = false;
-                host.ShowIpv6 = false;
-            }
-        });
-    }
 
     partial void OnMonitorReceiveChanged(bool value) => PushMonitor(value, v => { if (Host is not null) Host.MonitorReceive = v; });
     partial void OnMonitorSendChanged(bool value) => PushMonitor(value, v => { if (Host is not null) Host.MonitorSend = v; });
