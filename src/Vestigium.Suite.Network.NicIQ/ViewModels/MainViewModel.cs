@@ -404,6 +404,7 @@ public sealed partial class MainViewModel : ObservableObject
 
     private async Task RunMonitorLoopAsync(CancellationToken token)
     {
+        await Task.Yield();
         while (!token.IsCancellationRequested)
         {
             try
@@ -417,48 +418,24 @@ public sealed partial class MainViewModel : ObservableObject
                     continue;
                 }
 
-                IReadOnlyList<string> live;
-                try
-                {
-                    live = NetworkCounterCatalog.LiveInstances(PdhNic.Category);
-                }
-                catch (Exception)
-                {
-                    live = [];
-                }
-
-                var instance = NicPdhInstance.Resolve(nic.Name, nic.Source.Description, live);
-                MonitorInstance = instance ?? string.Empty;
-                if (string.IsNullOrWhiteSpace(instance))
-                {
-                    Post("Failed", $"No PDH instance for {nic.Name}");
-                    await Task.Delay(TimeSpan.FromSeconds(2), token).ConfigureAwait(true);
-                    continue;
-                }
-
+                var name = nic.Name;
+                var description = nic.Source.Description;
                 var selected = Settings is null
                     ? MonitorCounterList.FromSettings(Session?.Current ?? new NicIqSettings())
                     : MonitorCounterList.Sanitize(Settings.MonitorCounters);
-                var counters = MonitorCounterList.ForSample(selected);
-                if (counters.Count == 0)
-                    counters = MonitorCounterList.Sanitize(MonitorCounterList.SeedReceiveSend);
 
-                var paths = NetworkCounterCatalog.Paths(PdhNic.Category, instance, counters);
-                if (paths.Count == 0)
+                var tick = await Task.Run(() => TakeTick(name, description, selected, token), token).ConfigureAwait(true);
+                MonitorInstance = tick.Instance ?? string.Empty;
+                if (!string.IsNullOrWhiteSpace(tick.Error))
                 {
-                    Post("Failed", "No counters selected");
+                    Post("Failed", tick.Error);
                     await Task.Delay(TimeSpan.FromSeconds(2), token).ConfigureAwait(true);
                     continue;
                 }
 
-                var job = new SampleJob(paths, new SampleJobOptions
-                {
-                    Interval = TimeSpan.FromSeconds(1),
-                    Count = 1
-                });
-                var result = await job.RunAsync(token).ConfigureAwait(true);
-                ApplySamples(result);
-                Post($"Monitoring {nic.Name}", instance);
+                if (tick.Result is not null)
+                    ApplySamples(tick.Result);
+                Post($"Monitoring {name}", tick.Instance);
             }
             catch (OperationCanceledException)
             {
@@ -477,6 +454,40 @@ public sealed partial class MainViewModel : ObservableObject
                 }
             }
         }
+    }
+
+    private static SampleTick TakeTick(string name, string description, IReadOnlyList<string> selected, CancellationToken token)
+    {
+        token.ThrowIfCancellationRequested();
+        IReadOnlyList<string> live;
+        try
+        {
+            live = NetworkCounterCatalog.LiveInstances(PdhNic.Category);
+        }
+        catch (Exception)
+        {
+            live = [];
+        }
+
+        var instance = NicPdhInstance.Resolve(name, description, live);
+        if (string.IsNullOrWhiteSpace(instance))
+            return new SampleTick(null, null, $"No PDH instance for {name}");
+
+        var counters = MonitorCounterList.ForSample(selected);
+        if (counters.Count == 0)
+            counters = MonitorCounterList.Sanitize(MonitorCounterList.SeedReceiveSend);
+
+        var paths = NetworkCounterCatalog.Paths(PdhNic.Category, instance, counters);
+        if (paths.Count == 0)
+            return new SampleTick(instance, null, "No counters selected");
+
+        var job = new SampleJob(paths, new SampleJobOptions
+        {
+            Interval = TimeSpan.FromSeconds(1),
+            Count = 1
+        });
+        var result = job.RunAsync(token).GetAwaiter().GetResult();
+        return new SampleTick(instance, result, null);
     }
 
     private void ApplySamples(SampleJobResult result)
@@ -568,4 +579,6 @@ public sealed partial class MainViewModel : ObservableObject
             return line;
         return $"{line}{Environment.NewLine}Search  {string.Join(", ", box.DnsSuffixSearchList)}";
     }
+
+    private readonly record struct SampleTick(string? Instance, SampleJobResult? Result, string? Error);
 }
