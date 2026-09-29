@@ -22,6 +22,7 @@ public sealed partial class MainViewModel : ObservableObject
     private bool _busy;
     private bool _loading;
     private bool _syncingNic;
+    private int _paintSkip;
     private string? _lastMonitorNote;
     private readonly MonitorRing _ring = new();
 
@@ -411,6 +412,7 @@ public sealed partial class MainViewModel : ObservableObject
         _ring.Clear();
         LiveChart = null;
         ChartStrip = "Waiting for samples.";
+        _paintSkip = 0;
         _lastMonitorNote = null;
         StopMonitoring();
         StartMonitoring();
@@ -560,18 +562,17 @@ public sealed partial class MainViewModel : ObservableObject
             ChartStrip = strip;
         if (view is null)
             return;
-        if (!force && MenuOpen())
+        if (!force && LiveChart is not null && (MenuOpen() || ++_paintSkip < 5))
             return;
+        _paintSkip = 0;
         LiveChart = view;
     }
 
     private static bool MenuOpen()
     {
-        if (Application.Current is null)
-            return false;
-        foreach (Window window in Application.Current.Windows)
+        foreach (PresentationSource source in PresentationSource.CurrentSources)
         {
-            if (TreeHasOpenMenu(window))
+            if (source.RootVisual is DependencyObject root && TreeHasOpenMenu(root))
                 return true;
         }
 
