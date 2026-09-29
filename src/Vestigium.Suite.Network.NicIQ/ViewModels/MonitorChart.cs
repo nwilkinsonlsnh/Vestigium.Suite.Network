@@ -120,21 +120,15 @@ internal static class MonitorChart
         if (view is not WpfPlot plot)
             return;
 
-        var max = CountCeiling(peak);
-        var step = CountStep(max);
-        plot.Plot.Axes.SetLimitsY(0, max);
+        var max = peak <= 10 ? 10 : CountCeiling(peak);
+        var step = max <= 10 ? 1 : CountStep(max);
+        plot.Plot.Axes.SetLimitsY(-1, max);
         plot.Plot.Axes.Left.TickGenerator = new NumericFixedInterval(step);
         plot.Refresh();
     }
 
     private static double CountCeiling(double peak)
     {
-        if (peak <= 0)
-            return 4;
-        if (peak <= 4)
-            return 4;
-        if (peak <= 8)
-            return 8;
         if (peak <= 20)
             return 20;
         if (peak <= 50)
@@ -146,8 +140,6 @@ internal static class MonitorChart
 
     private static double CountStep(double max)
     {
-        if (max <= 8)
-            return 1;
         if (max <= 20)
             return 2;
         if (max <= 50)
