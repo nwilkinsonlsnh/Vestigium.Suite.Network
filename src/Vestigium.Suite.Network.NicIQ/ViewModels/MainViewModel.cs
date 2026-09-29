@@ -77,6 +77,9 @@ public sealed partial class MainViewModel : ObservableObject
     private decimal _durationSeconds = NicIqWatchInput.DefaultDurationSeconds;
 
     [ObservableProperty]
+    private AdapterRow? _selectedAdapter;
+
+    [ObservableProperty]
     private AdapterRow? _selectedMonitorNic;
 
     [ObservableProperty]
@@ -543,8 +546,7 @@ public sealed partial class MainViewModel : ObservableObject
 
     private static string FormatWatch(AdapterWatchResult result, bool changed)
     {
-        var last = result.Samples.Count > 0 ? result.Samples[^1] : null;
-        var speed = last is null ? result.LastStatus.ToString() : $"{result.LastStatus}  {LinkSpeed.Format(last.SpeedBitsPerSecond)}";
+        var last = result.Samples.Count == 0 ? result.LastStatus.ToString() : $"{result.LastStatus}  {LinkSpeed.Format(last.SpeedBitsPerSecond)}";
         if (!changed)
             return speed;
         return $"{speed}  {result.FirstStatus} → {result.LastStatus}";
