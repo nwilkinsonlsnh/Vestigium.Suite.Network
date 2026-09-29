@@ -33,12 +33,26 @@
                  Text="Defaults for the NicIQ page. Duration is seconds." />
 
       <CheckBox Style="{StaticResource CheckBox.Standard}"
-                Content="Include down adapters"
-                IsChecked="{Binding IncludeDown}"
-                Margin="0,0,0,16" />
+                Content="Show Down"
+                IsChecked="{Binding ShowDown}"
+                Margin="0,0,0,12" />
       <CheckBox Style="{StaticResource CheckBox.Standard}"
-                Content="IP enabled only"
-                IsChecked="{Binding IpEnabledOnly}"
+                Content="Show Up"
+                IsChecked="{Binding ShowUp}"
+                Margin="0,0,0,12" />
+      <CheckBox Style="{StaticResource CheckBox.Standard}"
+                Content="IP Enabled"
+                IsChecked="{Binding IpEnabled}"
+                Margin="0,0,0,12" />
+      <CheckBox Style="{StaticResource CheckBox.Standard}"
+                Content="Show IPv4"
+                IsChecked="{Binding ShowIpv4}"
+                Visibility="{Binding IpEnabled, Converter={StaticResource BoolToVis}}"
+                Margin="0,0,0,12" />
+      <CheckBox Style="{StaticResource CheckBox.Standard}"
+                Content="Show IPv6"
+                IsChecked="{Binding ShowIpv6}"
+                Visibility="{Binding IpEnabled, Converter={StaticResource BoolToVis}}"
                 Margin="0,0,0,16" />
 
       <Label Style="{StaticResource Label.Standard}" Content="Duration (s)" />
