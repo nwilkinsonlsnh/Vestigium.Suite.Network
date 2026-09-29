@@ -65,10 +65,19 @@ public sealed partial class MainViewModel : ObservableObject
     private string _detail = string.Empty;
 
     [ObservableProperty]
-    private bool _includeDown = true;
+    private bool _showUp = true;
 
     [ObservableProperty]
-    private bool _ipEnabledOnly = true;
+    private bool _showDown = true;
+
+    [ObservableProperty]
+    private bool _ipEnabled = true;
+
+    [ObservableProperty]
+    private bool _showIpv4 = true;
+
+    [ObservableProperty]
+    private bool _showIpv6 = true;
 
     [ObservableProperty]
     private bool _monitorReceive = true;
@@ -185,38 +194,20 @@ public sealed partial class MainViewModel : ObservableObject
         PaintChart(force: true);
     }
 
-    partial void OnIncludeDownChanged(bool value)
+    partial void OnShowUpChanged(bool value) => PersistFilter();
+    partial void OnShowDownChanged(bool value) => PersistFilter();
+    partial void OnShowIpv4Changed(bool value) => PersistFilter();
+    partial void OnShowIpv6Changed(bool value) => PersistFilter();
+
+    partial void OnIpEnabledChanged(bool value)
     {
-        if (_loading)
-            return;
-        if (Settings is not null)
+        if (!value && !_loading)
         {
-            Settings.BeginLoad();
-            Settings.IncludeDown = value;
-            Settings.EndLoad();
+            ShowIpv4 = false;
+            ShowIpv6 = false;
         }
 
-        Session?.Save();
-        if (_busy)
-            return;
-        Refresh();
-    }
-
-    partial void OnIpEnabledOnlyChanged(bool value)
-    {
-        if (_loading)
-            return;
-        if (Settings is not null)
-        {
-            Settings.BeginLoad();
-            Settings.IpEnabledOnly = value;
-            Settings.EndLoad();
-        }
-
-        Session?.Save();
-        if (_busy)
-            return;
-        Refresh();
+        PersistFilter();
     }
 
     partial void OnDurationSecondsChanged(decimal value)
@@ -238,6 +229,27 @@ public sealed partial class MainViewModel : ObservableObject
     partial void OnMonitorErrorsChanged(bool value) => PersistMonitors();
     partial void OnMonitorDiscardsChanged(bool value) => PersistMonitors();
 
+    private void PersistFilter()
+    {
+        if (_loading)
+            return;
+        if (Settings is not null)
+        {
+            Settings.BeginLoad();
+            Settings.ShowUp = ShowUp;
+            Settings.ShowDown = ShowDown;
+            Settings.IpEnabled = IpEnabled;
+            Settings.ShowIpv4 = ShowIpv4;
+            Settings.ShowIpv6 = ShowIpv6;
+            Settings.EndLoad();
+        }
+
+        Session?.Save();
+        if (_busy)
+            return;
+        Refresh();
+    }
+
     private void PersistMonitors()
     {
         if (_loading)
@@ -256,8 +268,14 @@ public sealed partial class MainViewModel : ObservableObject
         {
             var box = NetworkHelper.GetWorkstation();
             Header = FormatHeader(box);
-            var query = new NetworkAdapterQuery(IncludeDown: IncludeDown, IpEnabledOnly: IpEnabledOnly);
-            var rows = NetworkHelper.GetAdapters(query).Select(static a => new AdapterRow(a)).ToList();
+            var query = new NetworkAdapterQuery(IncludeDown: true, IpEnabledOnly: false);
+            var rows = AdapterListFilter.Apply(
+                NetworkHelper.GetAdapters(query),
+                ShowUp,
+                ShowDown,
+                IpEnabled,
+                ShowIpv4,
+                ShowIpv6);
             ReplaceRows(rows, keep);
             SyncActiveNics();
             Post("Idle");
