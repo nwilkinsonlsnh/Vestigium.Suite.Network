@@ -1,5 +1,7 @@
 using System.Globalization;
 using System.Windows;
+using ScottPlot.TickGenerators;
+using ScottPlot.WPF;
 using Vestigium.Helpers.Analytics;
 using Vestigium.Helpers.Charts;
 using Vestigium.Helpers.PerfMon.Network;
@@ -74,15 +76,15 @@ internal static class MonitorChart
         var labels = new string[rows.Length];
         var values = new double[rows.Length];
         var parts = new List<string>(rows.Length);
-        var clean = true;
+        var peak = 0d;
         for (var i = 0; i < rows.Length; i++)
         {
             var last = Last(ring.Of(rows[i].Counter));
             labels[i] = rows[i].Label;
-            values[i] = (double)last;
+            values[i] = Math.Max(0, (double)decimal.Truncate(last));
             parts.Add(string.Create(CultureInfo.InvariantCulture, $"{rows[i].Label} {N(last)}"));
-            if (last > 0)
-                clean = false;
+            if (values[i] > peak)
+                peak = values[i];
         }
 
         try
@@ -104,12 +106,55 @@ internal static class MonitorChart
                 Options = ChartTheme.Options("Integrity", null, "count")
             };
             var view = ChartTheme.Paint(ChartView.From(spec));
-            return (view, clean ? "Clean  no errors, discards, or queue." : string.Join("   ·   ", parts));
+            FitCountAxis(view, peak);
+            return (view, peak <= 0 ? "Clean  no errors, discards, or queue." : string.Join("   ·   ", parts));
         }
         catch (Exception ex)
         {
             return (null, ex.Message);
         }
+    }
+
+    private static void FitCountAxis(FrameworkElement view, double peak)
+    {
+        if (view is not WpfPlot plot)
+            return;
+
+        var max = CountCeiling(peak);
+        var step = CountStep(max);
+        plot.Plot.Axes.SetLimitsY(0, max);
+        plot.Plot.Axes.Left.TickGenerator = new NumericFixedInterval(step);
+        plot.Refresh();
+    }
+
+    private static double CountCeiling(double peak)
+    {
+        if (peak <= 0)
+            return 4;
+        if (peak <= 4)
+            return 4;
+        if (peak <= 8)
+            return 8;
+        if (peak <= 20)
+            return 20;
+        if (peak <= 50)
+            return 50;
+        if (peak <= 100)
+            return 100;
+        return Math.Ceiling(peak / 50d) * 50d;
+    }
+
+    private static double CountStep(double max)
+    {
+        if (max <= 8)
+            return 1;
+        if (max <= 20)
+            return 2;
+        if (max <= 50)
+            return 5;
+        if (max <= 100)
+            return 10;
+        return 25;
     }
 
     private static (FrameworkElement? View, string Strip) Utilization(MonitorRing ring)
@@ -237,5 +282,5 @@ internal static class MonitorChart
         => value is null ? "\u2014" : value.Value.ToString("0.###", CultureInfo.InvariantCulture);
 
     private static string N(decimal? value)
-        => value is null ? "\u2014" : value.Value.ToString("0.###", CultureInfo.InvariantCulture);
+        => value is null ? "\u2014" : decimal.Truncate(value.Value).ToString("0", CultureInfo.InvariantCulture);
 }

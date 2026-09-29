@@ -40,7 +40,7 @@ internal static class ChartTheme
             ShowLegend = WatchLegend,
             ShowGrid = true,
             Stretch = true,
-            HostMenu = true
+            HostMenu = false
         };
     }
 

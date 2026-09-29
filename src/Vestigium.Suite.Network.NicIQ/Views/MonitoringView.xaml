@@ -11,7 +11,6 @@
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
-      <RowDefinition Height="120" />
       <RowDefinition Height="*" MinHeight="240" />
     </Grid.RowDefinitions>
 
@@ -33,27 +32,7 @@
                  VerticalAlignment="Center" />
     </StackPanel>
 
-    <Border Grid.Row="2" BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1" Margin="0,0,0,8">
-      <DataGrid Style="{StaticResource DataGrid.Compact}"
-                ItemsSource="{Binding Samples}"
-                IsReadOnly="True"
-                AutoGenerateColumns="False"
-                CanUserAddRows="False"
-                HeadersVisibility="Column"
-                EnableRowVirtualization="True"
-                EnableColumnVirtualization="True"
-                VerticalScrollBarVisibility="Auto">
-        <DataGrid.Columns>
-          <DataGridTextColumn Header="Counter" Binding="{Binding Counter}" Width="2*" MinWidth="180" />
-          <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="120" MinWidth="90" />
-          <DataGridTextColumn Header="Unit" Binding="{Binding Unit}" Width="80" MinWidth="60" />
-          <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="100" MinWidth="80" />
-          <DataGridTextColumn Header="Time" Binding="{Binding Utc}" Width="90" MinWidth="80" />
-        </DataGrid.Columns>
-      </DataGrid>
-    </Border>
-
-    <DockPanel Grid.Row="3">
+    <DockPanel Grid.Row="2">
       <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
         <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="Throughput" IsChecked="{Binding ThroughputPageOpen}" GroupName="NicMonitorChart" Margin="0,0,8,0" />
         <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="Packets" IsChecked="{Binding PacketsPageOpen}" GroupName="NicMonitorChart" Margin="0,0,8,0" />
