@@ -9,7 +9,6 @@ internal static class AdapterListFilter
         IEnumerable<NetworkAdapter> source,
         bool showUp,
         bool showDown,
-        bool ipEnabled,
         bool showIpv4,
         bool showIpv6)
     {
@@ -22,17 +21,12 @@ internal static class AdapterListFilter
                 continue;
             if (!up && !showDown)
                 continue;
-            if (ipEnabled)
+            if (showIpv4 || showIpv6)
             {
-                if (!adapter.IpEnabled)
+                var v4 = showIpv4 && adapter.IpEnabled && (adapter.SupportsIpv4 || adapter.HasIpv4Unicast);
+                var v6 = showIpv6 && adapter.IpEnabled && (adapter.SupportsIpv6 || adapter.HasIpv6Unicast);
+                if (!v4 && !v6)
                     continue;
-                if (showIpv4 || showIpv6)
-                {
-                    var v4 = showIpv4 && (adapter.SupportsIpv4 || adapter.HasIpv4Unicast);
-                    var v6 = showIpv6 && (adapter.SupportsIpv6 || adapter.HasIpv6Unicast);
-                    if (!v4 && !v6)
-                        continue;
-                }
             }
 
             rows.Add(new AdapterRow(adapter));
