@@ -20,6 +20,7 @@ public sealed partial class MainViewModel : ObservableObject
     private bool _loading;
     private bool _syncingNic;
     private int _paintSkip;
+    private string? _lastMonitorNote;
     private readonly MonitorRing _ring = new();
 
     public MainViewModel()
@@ -88,6 +89,9 @@ public sealed partial class MainViewModel : ObservableObject
 
     [ObservableProperty]
     private bool _isMonitoring;
+
+    [ObservableProperty]
+    private bool _monitorPageVisible;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ThroughputPageOpen))]
@@ -161,7 +165,13 @@ public sealed partial class MainViewModel : ObservableObject
         RestartMonitoring();
     }
 
-    partial void OnChartPageChanged(string value) => PaintChart();
+    partial void OnChartPageChanged(string value) => PaintChart(force: true);
+
+    partial void OnMonitorPageVisibleChanged(bool value)
+    {
+        if (value)
+            PaintChart(force: true);
+    }
 
     partial void OnIncludeDownChanged(bool value)
     {
@@ -266,7 +276,7 @@ public sealed partial class MainViewModel : ObservableObject
         RaiseBusy();
         StatusBar?.Engine.SetIdlePolicy(0);
         var name = SelectedAdapter?.Name ?? query.AdapterKey;
-        Post($"Monitoring {name}  status Up ↔ Down");
+        Post($"Monitoring {name}  status Up \u2194 Down");
         _cts = new CancellationTokenSource();
         var token = _cts.Token;
         try
@@ -398,6 +408,7 @@ public sealed partial class MainViewModel : ObservableObject
         LiveChart = null;
         ChartStrip = "Waiting for samples.";
         _paintSkip = 0;
+        _lastMonitorNote = null;
         StopMonitoring();
         StartMonitoring();
     }
@@ -413,7 +424,7 @@ public sealed partial class MainViewModel : ObservableObject
                 if (nic is null)
                 {
                     MonitorInstance = string.Empty;
-                    Post("Idle", "No active NIC");
+                    Note("Idle", "No active NIC");
                     await Task.Delay(TimeSpan.FromSeconds(1), token).ConfigureAwait(true);
                     continue;
                 }
@@ -425,17 +436,18 @@ public sealed partial class MainViewModel : ObservableObject
                     : MonitorCounterList.Sanitize(Settings.MonitorCounters);
 
                 var tick = await Task.Run(() => TakeTick(name, description, selected, token), token).ConfigureAwait(true);
-                MonitorInstance = tick.Instance ?? string.Empty;
+                if (!string.Equals(MonitorInstance, tick.Instance, StringComparison.Ordinal))
+                    MonitorInstance = tick.Instance ?? string.Empty;
                 if (!string.IsNullOrWhiteSpace(tick.Error))
                 {
-                    Post("Failed", tick.Error);
+                    Note("Failed", tick.Error);
                     await Task.Delay(TimeSpan.FromSeconds(2), token).ConfigureAwait(true);
                     continue;
                 }
 
                 if (tick.Result is not null)
                     ApplySamples(tick.Result);
-                Post($"Monitoring {name}", tick.Instance);
+                Note($"Monitoring {name}", tick.Instance);
             }
             catch (OperationCanceledException)
             {
@@ -443,7 +455,7 @@ public sealed partial class MainViewModel : ObservableObject
             }
             catch (Exception ex)
             {
-                Post("Failed", ex.Message);
+                Note("Failed", ex.Message);
                 try
                 {
                     await Task.Delay(TimeSpan.FromSeconds(2), token).ConfigureAwait(true);
@@ -496,26 +508,43 @@ public sealed partial class MainViewModel : ObservableObject
             .GroupBy(s => s.Counter, StringComparer.OrdinalIgnoreCase)
             .Select(g => g.Last())
             .ToList();
-        Samples.Clear();
-        foreach (var row in latest)
+
+        for (var i = 0; i < latest.Count; i++)
         {
-            Samples.Add(new MonitorSampleRow(row));
-            _ring.Add(row);
+            if (i < Samples.Count)
+                Samples[i].Apply(latest[i]);
+            else
+                Samples.Add(new MonitorSampleRow(latest[i]));
+            _ring.Add(latest[i]);
         }
 
+        while (Samples.Count > latest.Count)
+            Samples.RemoveAt(Samples.Count - 1);
+
         _paintSkip++;
-        if (_paintSkip >= 3 || LiveChart is null)
+        if (LiveChart is null || _paintSkip >= 5)
         {
             _paintSkip = 0;
-            PaintChart();
+            PaintChart(force: false);
+        }
+        else if (MonitorPageVisible)
+        {
+            var (_, strip) = MonitorChart.Paint(ChartPage, _ring);
+            if (!string.Equals(ChartStrip, strip, StringComparison.Ordinal))
+                ChartStrip = strip;
         }
     }
 
-    private void PaintChart()
+    private void PaintChart(bool force)
     {
+        if (!force && !MonitorPageVisible)
+            return;
+
         var (view, strip) = MonitorChart.Paint(ChartPage, _ring);
-        LiveChart = view;
-        ChartStrip = strip;
+        if (view is not null)
+            LiveChart = view;
+        if (!string.Equals(ChartStrip, strip, StringComparison.Ordinal))
+            ChartStrip = strip;
     }
 
     private void MarkStatusChanged(string key, bool changed)
@@ -556,13 +585,24 @@ public sealed partial class MainViewModel : ObservableObject
             StatusBar.Message = Caption;
     }
 
+    private void Note(string status, string? detail = null)
+    {
+        var text = string.IsNullOrWhiteSpace(detail) ? status : $"{status}  {detail}";
+        if (string.Equals(_lastMonitorNote, text, StringComparison.Ordinal))
+            return;
+        _lastMonitorNote = text;
+        Caption = text;
+        if (StatusBar is not null)
+            StatusBar.Message = text;
+    }
+
     private static string FormatWatch(AdapterWatchResult result, bool changed)
     {
         var last = result.Samples.Count > 0 ? result.Samples[^1] : null;
         var speed = last is null ? result.LastStatus.ToString() : $"{result.LastStatus}  {LinkSpeed.Format(last.SpeedBitsPerSecond)}";
         if (!changed)
             return speed;
-        return $"{speed}  {result.FirstStatus} → {result.LastStatus}";
+        return $"{speed}  {result.FirstStatus} \u2192 {result.LastStatus}";
     }
 
     private static string FormatHeader(WorkstationNetwork box)
