@@ -546,7 +546,8 @@ public sealed partial class MainViewModel : ObservableObject
 
     private static string FormatWatch(AdapterWatchResult result, bool changed)
     {
-        var last = result.Samples.Count == 0 ? result.LastStatus.ToString() : $"{result.LastStatus}  {LinkSpeed.Format(last.SpeedBitsPerSecond)}";
+        var last = result.Samples.Count > 0 ? result.Samples[^1] : null;
+        var speed = last is null ? result.LastStatus.ToString() : $"{result.LastStatus}  {LinkSpeed.Format(last.SpeedBitsPerSecond)}";
         if (!changed)
             return speed;
         return $"{speed}  {result.FirstStatus} → {result.LastStatus}";
@@ -554,11 +555,11 @@ public sealed partial class MainViewModel : ObservableObject
 
     private static string FormatHeader(WorkstationNetwork box)
     {
-        var host = string.IsNullOrWhiteSpace(box.HostName) ? "—" : box.HostName.Trim();
+        var host = string.IsNullOrWhiteSpace(box.HostName) ? "\u2014" : box.HostName.Trim();
         var line = string.IsNullOrWhiteSpace(box.DomainName) ? host : $"{host}  /  {box.DomainName.Trim()}";
         if (box.Stack is { } stack)
         {
-            var dns = stack.DhcpNameServers.Count == 0 ? "—" : string.Join(", ", stack.DhcpNameServers);
+            var dns = stack.DhcpNameServers.Count == 0 ? "\u2014" : string.Join(", ", stack.DhcpNameServers);
             line = $"{line}{Environment.NewLine}DHCP DNS  {dns}  router {(stack.IpEnableRouter == true ? "yes" : "no")}";
         }
 
