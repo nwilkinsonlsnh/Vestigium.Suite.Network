@@ -51,10 +51,10 @@ internal static class MonitorDetailCard
         var columns = new MonitorFactColumn[]
         {
             Column(Row("In use", phys.InUse), Row("Total", phys.Total)),
-            Column(Row("Committed", GbFromBytes(committed))),
-            Column(Row("Commit limit", GbFromBytes(limit))),
-            Column(Row("Cached", GbFromBytes(cached))),
-            Column(Row("Commit in use", Pct(pct)))
+            Column(Row("Committed", GbFromBytes(committed)), Row("Commit peak", phys.Peak)),
+            Column(Row("Commit limit", GbFromBytes(limit)), Row("Commit in use", Pct(pct))),
+            Column(Row("Cached", GbFromBytes(cached)), Row("Paged pool", phys.Paged)),
+            Column(Row("Non-paged pool", phys.Nonpaged))
         };
         return ("Available", GbFromMb(availableMb), columns);
     }
