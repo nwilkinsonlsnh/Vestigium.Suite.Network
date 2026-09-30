@@ -103,7 +103,7 @@ public sealed class NicIqSession
         _settings.LoadFrom(Current);
     }
 
-    internal static decimal ClampDuration(decimal seconds)
+    public static decimal ClampDuration(decimal seconds)
     {
         if (seconds < NicIqWatchInput.MinDurationSeconds)
             return NicIqWatchInput.MinDurationSeconds;
