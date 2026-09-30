@@ -126,6 +126,7 @@ public sealed partial class MainViewModel
 
             ChartHorizon.Review = true;
             _ring.Replace(file.Series);
+            ReviewImportedClock(file.Series);
             PaintChart(force: true);
             RefreshMonitorFacts();
             RaiseReadingsCommands();
@@ -144,6 +145,7 @@ public sealed partial class MainViewModel
     {
         MonitorPaused = true;
         ChartHorizon.Review = true;
+        HoldMonitorClock();
         PaintChart(force: true);
         Note("Paused", "Monitoring held");
         RaiseReadingsCommands();
@@ -156,6 +158,7 @@ public sealed partial class MainViewModel
         LiveChart = null;
         ChartStrip = "Waiting for samples.";
         MonitorPaused = false;
+        BeginMonitorClock();
         BeginWarm("Resuming monitor\u2026");
         PaintChart(force: true);
         Note("Idle", "Monitoring resumed");
