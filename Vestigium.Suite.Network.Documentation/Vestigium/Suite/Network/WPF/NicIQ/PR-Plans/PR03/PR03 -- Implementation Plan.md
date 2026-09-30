@@ -3,47 +3,40 @@
 **Host:** `Vestigium.Suite.Network.NicIQ`  
 **Status:** Live plan — papers only this slice  
 **Date:** 30 September 2026  
-**Baseline:** Rev1 host on `main` after PR02 monitoring  
-**Binding:** [Published NugetPackages.md](../../../../../Published%20NugetPackages.md) wins on domain. These papers win on what leaves the exe.
+**Binding:** Published NugetPackages.md wins on domain.
 
 ## Goal
 
-NicIQ Rev1 stays shippable. PR03 does not add a tab. It names every host type that already belongs in a published package, writes the requirements for that package, and sequences the consume-back so the host shrinks.
+Move host-local library work out of NicIQ. Rev1 window stays shippable.
 
-This version is not a new host, not a plot API on Network, not `perfmon.exe`, not a tenth palette, and not `Vestigium.SystemInfo.Network`.
+This version is not a new host, not `perfmon.exe`, not a tenth palette, not a root `Vestigium.SystemInfo` prefix, and not `Vestigium.Helpers.SystemInfo.Network`.
 
 ## Decision
 
-Extract by **existing family** when the job already has a package. Mint a family only when the job fails that test. Owner named `Vestigium.SystemInfo` for machine facts that are not PDH and not protocol. That destination is accepted. The Network satellite is not.
+Owner lock: SystemInfo helper class libraries live in **`Vestigium.Helpers`**, IDs `Vestigium.Helpers.SystemInfo*`.
 
-| Letter | Package | Host evidence | Verdict |
-|---|---|---|---|
-| PR03a | `Vestigium.Helpers.Charts` | ScottPlot reach-through in `MonitorChart` | Extract |
-| PR03b | `Vestigium.Themes` | `ThemeCatalog` copied in three hosts | Extract |
-| PR03c | `Vestigium.Helpers.PerfMon` | `CachedPdhSource` | Extract |
-| PR03d | `PerfMon.Cpu` + `PerfMon.Memory` | `HostCounters` strings | PDH catalogs only |
-| PR03e | `Vestigium.Helpers.Network` | `WirelessLink` / wlanapi | Parked. Not SystemInfo |
-| PR03f | `Vestigium.Controls*` | `ThemeChrome`, copied `PageViewport` | Extract |
-| PR03g | **NEW** `Vestigium.SystemInfo` + `.Cpu` + `.Memory` | `CpuHostFacts` / `MemoryHostFacts` | New family. No `.Network` |
+| Letter | Package | Verdict |
+|---|---|---|
+| PR03a | `Vestigium.Helpers.Charts` | Extract ScottPlot leak |
+| PR03b | `Vestigium.Themes` | Extract copied ThemeCatalog |
+| PR03c | `Vestigium.Helpers.PerfMon` | Cached PDH source |
+| PR03d | `PerfMon.Cpu` / `Memory` | PDH path catalogs only |
+| PR03e | `Vestigium.Helpers.Network` | WLAN parked on Network |
+| PR03f | `Vestigium.Controls*` | ThemeChrome / viewport |
+| PR03g | **NEW** `Vestigium.Helpers.SystemInfo` + `.Cpu` + `.Memory` | Snapshots. Helpers repo. |
 
-Rejected: `Helpers.Plots`, `Themes.Nord2`, CPU-into-Network, `SystemInfo.Network`, stuffing topology into PerfMon.Cpu.
+Rejected: root `Vestigium.SystemInfo`, `Helpers.SystemInfo.Network`, topology stuffed into PerfMon.Cpu.
 
 ## Sequence
 
-1. PR03c PerfMon cached source
-2. PR03a Charts
-3. PR03d PDH catalogs
-4. PR03g SystemInfo core + Cpu + Memory (Helpers repo is fine to start)
-5. PR03b Themes
-6. PR03f Controls
-7. PR03e only if owner expands `NetworkAdapter`
-
-## Watch
-
-Alvin: SystemInfo mirrors PerfMon (core + satellites). No fourth network package.  
-Theodore: after consume, NicIQ has no `GetLogicalProcessorInformationEx` / `GlobalMemoryStatusEx` / `using ScottPlot`.  
-Simon: WLAN is Network or nothing. Topology is SystemInfo, not PerfMon.
+1. PR03c cached PDH  
+2. PR03a Charts  
+3. PR03d PDH catalogs  
+4. PR03g `src/Vestigium.Helpers.SystemInfo*`  
+5. PR03b Themes  
+6. PR03f Controls  
+7. PR03e only if `NetworkAdapter` grows wireless
 
 ## Next action
 
-Owner accepts or amends. Add a SystemInfo row to Published NugetPackages.md before the first nupkg. Implement in Helpers / Themes, not this exe.
+Stand the three projects up in Vestigium.Helpers. Add the family row to the catalog before the first nupkg.
