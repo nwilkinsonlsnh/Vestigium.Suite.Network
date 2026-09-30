@@ -112,6 +112,8 @@ public sealed partial class MainViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(PacketsPageOpen))]
     [NotifyPropertyChangedFor(nameof(IntegrityPageOpen))]
     [NotifyPropertyChangedFor(nameof(UtilizationPageOpen))]
+    [NotifyPropertyChangedFor(nameof(CpuPageOpen))]
+    [NotifyPropertyChangedFor(nameof(MemoryPageOpen))]
     private string _chartPage = MonitorChartPages.Throughput;
 
     [ObservableProperty]
@@ -176,7 +178,11 @@ public sealed partial class MainViewModel : ObservableObject
         RestartMonitoring();
     }
 
-    partial void OnChartPageChanged(string value) => PaintChart(force: true);
+    partial void OnChartPageChanged(string value)
+    {
+        RaiseMonitorPages();
+        PaintChart(force: true);
+    }
 
     partial void OnMonitorPageVisibleChanged(bool value)
     {
@@ -547,7 +553,9 @@ public sealed partial class MainViewModel : ObservableObject
         if (counters.Count == 0)
             counters = MonitorCounterList.Sanitize(MonitorCounterList.SeedReceiveSend);
 
-        var paths = NetworkCounterCatalog.Paths(PdhNic.Category, instance, counters);
+        var paths = NetworkCounterCatalog.Paths(PdhNic.Category, instance, counters)
+            .Concat(HostCounters.Preferred)
+            .ToList();
         if (paths.Count == 0)
             return new SampleTick(instance, null, "No counters selected", false);
 
