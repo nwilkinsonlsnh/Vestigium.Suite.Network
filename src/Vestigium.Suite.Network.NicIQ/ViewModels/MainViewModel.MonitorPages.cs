@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace Vestigium.Suite.Network.NicIQ.ViewModels;
 
@@ -17,6 +18,8 @@ public sealed partial class MainViewModel
 
     public bool HasMonitorHeadlineTitle => !string.IsNullOrWhiteSpace(MonitorHeadlineTitle);
 
+    public string LegendButtonText => ChartTheme.WatchLegend ? "Hide Legend" : "Show Legend";
+
     public bool CpuPageOpen
     {
         get => ChartPage == MonitorChartPages.Cpu;
@@ -28,6 +31,20 @@ public sealed partial class MainViewModel
         get => ChartPage == MonitorChartPages.Memory;
         set { if (value) ChartPage = MonitorChartPages.Memory; }
     }
+
+    [RelayCommand]
+    private void ToggleLegend()
+    {
+        var next = !ChartTheme.WatchLegend;
+        if (Settings is not null)
+            Settings.ShowLegend = next;
+        else
+            ApplyLegend(next);
+        RefreshLegendButton();
+    }
+
+    public void RefreshLegendButton()
+        => OnPropertyChanged(nameof(LegendButtonText));
 
     private void RaiseMonitorPages()
     {
