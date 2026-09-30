@@ -71,11 +71,13 @@ public sealed partial class MainViewModel
         if (!CanExportReadings)
             return;
 
+        var folder = MonitorReadingsIo.DefaultFolder;
         var dialog = new SaveFileDialog
         {
             Title = "Export readings",
             Filter = "NicIQ readings (*.json)|*.json|All files (*.*)|*.*",
             FileName = "niciq-readings.json",
+            InitialDirectory = folder,
             AddExtension = true,
             DefaultExt = ".json"
         };
@@ -107,7 +109,8 @@ public sealed partial class MainViewModel
         var dialog = new OpenFileDialog
         {
             Title = "Import readings",
-            Filter = "NicIQ readings (*.json)|*.json|All files (*.*)|*.*"
+            Filter = "NicIQ readings (*.json)|*.json|All files (*.*)|*.*",
+            InitialDirectory = MonitorReadingsIo.DefaultFolder
         };
         if (dialog.ShowDialog() != true)
             return;
@@ -121,6 +124,7 @@ public sealed partial class MainViewModel
                 return;
             }
 
+            ChartHorizon.Review = true;
             _ring.Replace(file.Series);
             PaintChart(force: true);
             RefreshMonitorFacts();
@@ -139,12 +143,15 @@ public sealed partial class MainViewModel
     private void PauseMonitoring()
     {
         MonitorPaused = true;
+        ChartHorizon.Review = true;
+        PaintChart(force: true);
         Note("Paused", "Monitoring held");
         RaiseReadingsCommands();
     }
 
     private void ResumeMonitoring()
     {
+        ChartHorizon.Review = false;
         _ring.Clear();
         LiveChart = null;
         ChartStrip = "Waiting for samples.";
