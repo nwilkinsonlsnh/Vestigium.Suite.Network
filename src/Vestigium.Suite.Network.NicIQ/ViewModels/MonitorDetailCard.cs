@@ -7,7 +7,7 @@ namespace Vestigium.Suite.Network.NicIQ.ViewModels;
 
 internal static class MonitorDetailCard
 {
-    public static (string Headline, IReadOnlyList<MonitorFactColumn> Columns) Build(
+    public static (string Title, string Value, IReadOnlyList<MonitorFactColumn> Columns) Build(
         string page,
         AdapterRow? nic,
         MonitorRing ring)
@@ -24,7 +24,7 @@ internal static class MonitorDetailCard
         };
     }
 
-    private static (string, IReadOnlyList<MonitorFactColumn>) Cpu(MonitorRing ring)
+    private static (string, string, IReadOnlyList<MonitorFactColumn>) Cpu(MonitorRing ring)
     {
         var total = Last(ring, HostCounters.ProcessorTime);
         var live = CpuHostFacts.Live();
@@ -37,10 +37,10 @@ internal static class MonitorDetailCard
             Column(Row("L1 cache", host.L1), Row("L2 cache", host.L2)),
             Column(Row("L3 cache", host.L3), Row("L4 cache", host.L4))
         };
-        return (Pct(total), columns);
+        return ("Utilization", Pct(total), columns);
     }
 
-    private static (string, IReadOnlyList<MonitorFactColumn>) Memory(MonitorRing ring)
+    private static (string, string, IReadOnlyList<MonitorFactColumn>) Memory(MonitorRing ring)
     {
         var availableMb = Last(ring, HostCounters.AvailableMBytes);
         var committed = Last(ring, HostCounters.CommittedBytes);
@@ -55,38 +55,38 @@ internal static class MonitorDetailCard
             Column(Row("Cached", GbFromBytes(cached))),
             Column(Row("Commit in use", Pct(pct)))
         };
-        return (GbFromMb(availableMb) + " free", columns);
+        return ("Available", GbFromMb(availableMb), columns);
     }
 
-    private static (string, IReadOnlyList<MonitorFactColumn>) Network(AdapterRow? nic, MonitorRing ring)
+    private static (string, string, IReadOnlyList<MonitorFactColumn>) Network(AdapterRow? nic, MonitorRing ring)
     {
         var rx = Last(ring, PdhNic.BytesReceivedPerSec) * 8m / 1000m;
         var tx = Last(ring, PdhNic.BytesSentPerSec) * 8m / 1000m;
-        return (Rate(rx + tx, "Kbps"), NicColumns(nic, Row("Send", Rate(tx, "Kbps")), Row("Receive", Rate(rx, "Kbps"))));
+        return ("Kbps", Number(rx + tx), NicColumns(nic, Row("Send", Rate(tx, "Kbps")), Row("Receive", Rate(rx, "Kbps"))));
     }
 
-    private static (string, IReadOnlyList<MonitorFactColumn>) Packets(AdapterRow? nic, MonitorRing ring)
+    private static (string, string, IReadOnlyList<MonitorFactColumn>) Packets(AdapterRow? nic, MonitorRing ring)
     {
         var rx = Last(ring, PdhNic.PacketsReceivedPerSec);
         var tx = Last(ring, PdhNic.PacketsSentPerSec);
-        return (Rate(rx + tx, "pkt/s"), NicColumns(nic, Row("Send", Rate(tx, "pkt/s")), Row("Receive", Rate(rx, "pkt/s"))));
+        return ("pkt/s", Number(rx + tx), NicColumns(nic, Row("Send", Rate(tx, "pkt/s")), Row("Receive", Rate(rx, "pkt/s"))));
     }
 
-    private static (string, IReadOnlyList<MonitorFactColumn>) Utilization(AdapterRow? nic, MonitorRing ring)
+    private static (string, string, IReadOnlyList<MonitorFactColumn>) Utilization(AdapterRow? nic, MonitorRing ring)
     {
         var bytes = Last(ring, PdhNic.BytesTotalPerSec);
         var band = Last(ring, PdhNic.CurrentBandwidth);
         var pct = band > 0 ? 8m * bytes / band * 100m : 0m;
-        return (Pct(pct), NicColumns(nic, Row("Total", Rate(bytes * 8m / 1000m, "Kbps")), null));
+        return ("Utilization", Pct(pct), NicColumns(nic, Row("Total", Rate(bytes * 8m / 1000m, "Kbps")), null));
     }
 
-    private static (string, IReadOnlyList<MonitorFactColumn>) Integrity(AdapterRow? nic, MonitorRing ring)
+    private static (string, string, IReadOnlyList<MonitorFactColumn>) Integrity(AdapterRow? nic, MonitorRing ring)
     {
         var errors = Last(ring, PdhNic.PacketsReceivedErrors) + Last(ring, PdhNic.PacketsOutboundErrors);
         var discards = Last(ring, PdhNic.PacketsReceivedDiscarded) + Last(ring, PdhNic.PacketsOutboundDiscarded);
         var queue = Last(ring, PdhNic.OutputQueueLength);
-        var headline = errors + discards + queue <= 0 ? "Clean" : "Attention";
-        return (headline, NicColumns(nic, Row("Errors", Whole(errors)), Row("Discards", Whole(discards))));
+        var value = errors + discards + queue <= 0 ? "Clean" : "Attention";
+        return (string.Empty, value, NicColumns(nic, Row("Errors", Whole(errors)), Row("Discards", Whole(discards))));
     }
 
     private static IReadOnlyList<MonitorFactColumn> NicColumns(AdapterRow? nic, MonitorDetailRow? topLive, MonitorDetailRow? bottomLive)
@@ -167,7 +167,12 @@ internal static class MonitorDetailCard
     }
 
     private static string Pct(decimal value)
-        => value.ToString("0.#", CultureInfo.InvariantCulture) + "%";
+        => value < 1m
+            ? value.ToString("0.###", CultureInfo.InvariantCulture) + "%"
+            : value.ToString("0.#", CultureInfo.InvariantCulture) + "%";
+
+    private static string Number(decimal value)
+        => value.ToString("0.###", CultureInfo.InvariantCulture);
 
     private static string Rate(decimal value, string unit)
         => value.ToString("0.###", CultureInfo.InvariantCulture) + " " + unit;
