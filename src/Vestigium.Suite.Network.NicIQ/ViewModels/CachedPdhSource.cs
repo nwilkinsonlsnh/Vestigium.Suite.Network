@@ -16,6 +16,16 @@ internal sealed class CachedPdhSource : ICounterSource, IDisposable
 
     public bool HasFreshPrime { get; private set; }
 
+    public int OpenedCount
+    {
+        get { lock (_gate) return _live.Count; }
+    }
+
+    public int PrimedCount
+    {
+        get { lock (_gate) return _primed.Count; }
+    }
+
     public SampleRecord Read(CounterPath path)
     {
         ArgumentNullException.ThrowIfNull(path);
