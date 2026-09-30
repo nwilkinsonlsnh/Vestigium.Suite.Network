@@ -45,6 +45,14 @@ public sealed partial class MainViewModel
         set { if (value) ChartPage = MonitorChartPages.Memory; }
     }
 
+    public void ApplyMonitorArchive(int seconds)
+    {
+        MonitorRing.ApplyArchive(seconds);
+        _ring.Trim();
+        PaintChart(force: true);
+        PublishMonitorProgress();
+    }
+
     [RelayCommand]
     private void ToggleLegend()
     {
