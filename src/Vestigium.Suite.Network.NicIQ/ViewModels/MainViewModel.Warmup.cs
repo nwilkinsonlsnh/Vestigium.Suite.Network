@@ -44,6 +44,7 @@ public sealed partial class MainViewModel
 
     public void PollWarm()
     {
+        PublishMonitorProgress();
         if (!ChartWarming)
             return;
 
