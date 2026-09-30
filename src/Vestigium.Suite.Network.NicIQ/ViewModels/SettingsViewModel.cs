@@ -112,6 +112,21 @@ public sealed partial class SettingsViewModel : ObservableObject
     private bool _showLegend = true;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ArchiveWindowLabel))]
+    private decimal _archiveMinutes = MonitorRing.DefaultArchiveSeconds / 60;
+
+    public string ArchiveWindowLabel
+    {
+        get
+        {
+            var seconds = MonitorRing.ClampArchive((int)Math.Round(ArchiveMinutes, MidpointRounding.AwayFromZero) * 60);
+            var minutes = seconds / 60;
+            var rest = seconds % 60;
+            return $"{minutes} minutes {rest} seconds";
+        }
+    }
+
+    [ObservableProperty]
     private string? _selectedAvailableCounter;
 
     [ObservableProperty]
@@ -137,6 +152,8 @@ public sealed partial class SettingsViewModel : ObservableObject
         ShowLegend = data.ShowLegend;
         ChartTheme.WatchLegend = data.ShowLegend;
         Host?.RefreshLegendButton();
+        ArchiveMinutes = MonitorRing.ClampArchive(
+            data.ArchiveSeconds == 0 ? MonitorRing.DefaultArchiveSeconds : data.ArchiveSeconds) / 60m;
         RefreshCounterLists(MonitorCounterList.FromSettings(data));
         BarPosition = string.Equals(data.StatusBarDock, "Top", StringComparison.OrdinalIgnoreCase)
             ? VestigiumStatusBarPosition.Top
@@ -203,6 +220,22 @@ public sealed partial class SettingsViewModel : ObservableObject
         ChartTheme.WatchLegend = value;
         Host?.ApplyLegend(value);
         Host?.RefreshLegendButton();
+        Persist();
+    }
+
+    partial void OnArchiveMinutesChanged(decimal value)
+    {
+        var minutes = MonitorRing.ClampArchive((int)Math.Round(value, MidpointRounding.AwayFromZero) * 60) / 60m;
+        if (minutes != value)
+        {
+            ArchiveMinutes = minutes;
+            return;
+        }
+
+        OnPropertyChanged(nameof(ArchiveWindowLabel));
+        if (_loading)
+            return;
+        Host?.ApplyMonitorArchive((int)minutes * 60);
         Persist();
     }
 
