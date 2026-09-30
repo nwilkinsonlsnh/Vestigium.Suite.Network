@@ -10,10 +10,10 @@ public sealed class PingIqSettingsStoreTests
     public void Missing_file_returns_defaults()
     {
         var loaded = new PingIqSettingsStore(NewRoot()).Load();
-        Assert.Equal(4, loaded.Count);
-        Assert.Equal(1000, loaded.TimeoutMs);
-        Assert.Equal(1000, loaded.Requests);
-        Assert.Equal(60, loaded.Seconds);
+        Assert.Equal(PingIqInput.DefaultCount, loaded.Count);
+        Assert.Equal(PingIqInput.DefaultDelayMs, loaded.TimeoutMs);
+        Assert.Equal(300, loaded.Requests);
+        Assert.Equal(5, loaded.Seconds);
         Assert.True(loaded.StatusBarVisible);
         Assert.Equal("Bottom", loaded.StatusBarDock);
         Assert.Null(loaded.Source);
@@ -77,8 +77,8 @@ public sealed class PingIqSettingsStoreTests
         Directory.CreateDirectory(root);
         File.WriteAllText(Path.Combine(root, "settings.json"), "{ not json");
         var loaded = new PingIqSettingsStore(root).Load();
-        Assert.Equal(1000, loaded.TimeoutMs);
-        Assert.Equal(4, loaded.Count);
+        Assert.Equal(PingIqInput.DefaultDelayMs, loaded.TimeoutMs);
+        Assert.Equal(PingIqInput.DefaultCount, loaded.Count);
     }
 
     [Fact]
