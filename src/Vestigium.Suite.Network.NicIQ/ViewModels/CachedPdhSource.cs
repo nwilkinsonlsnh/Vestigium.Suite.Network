@@ -22,9 +22,9 @@ internal sealed class CachedPdhSource : ICounterSource, IDisposable
         lock (_gate)
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
+            var key = Key(path);
             try
             {
-                var key = Key(path);
                 if (!_live.TryGetValue(key, out var counter))
                 {
                     counter = Open(path);
@@ -38,10 +38,17 @@ internal sealed class CachedPdhSource : ICounterSource, IDisposable
             }
             catch (InvalidOperationException)
             {
+                _primed.Add(key);
                 return SampleRecord.Unavailable(path);
             }
             catch (ArgumentException)
             {
+                _primed.Add(key);
+                return SampleRecord.Unavailable(path);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                _primed.Add(key);
                 return SampleRecord.Unavailable(path);
             }
         }
