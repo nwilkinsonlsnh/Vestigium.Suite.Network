@@ -17,6 +17,9 @@ internal static class HostCounters
         new CounterPath("Processor Information", ProcessorTime, "_Total", "%"),
         new CounterPath("Processor Information", UserTime, "_Total", "%"),
         new CounterPath("Processor Information", PrivilegedTime, "_Total", "%"),
+        new CounterPath("Processor", ProcessorTime, "_Total", "%"),
+        new CounterPath("Processor", UserTime, "_Total", "%"),
+        new CounterPath("Processor", PrivilegedTime, "_Total", "%"),
         new CounterPath("Memory", AvailableMBytes, string.Empty, "MB"),
         new CounterPath("Memory", CommittedBytes, string.Empty, "bytes"),
         new CounterPath("Memory", CommittedPct, string.Empty, "%")
