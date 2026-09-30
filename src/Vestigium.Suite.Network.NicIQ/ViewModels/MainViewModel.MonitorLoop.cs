@@ -5,12 +5,14 @@ public sealed partial class MainViewModel
     private async Task RunMonitorLoopAsync(CancellationToken token)
     {
         await Task.Yield();
+        BeginMonitorClock();
         while (!token.IsCancellationRequested)
         {
             try
             {
                 if (MonitorPaused)
                 {
+                    PublishMonitorProgress();
                     await Task.Delay(TimeSpan.FromMilliseconds(250), token).ConfigureAwait(true);
                     continue;
                 }
@@ -20,6 +22,7 @@ public sealed partial class MainViewModel
                 {
                     MonitorInstance = string.Empty;
                     Note("Idle", "No active NIC");
+                    PublishMonitorProgress();
                     await Task.Delay(TimeSpan.FromSeconds(1), token).ConfigureAwait(true);
                     continue;
                 }
@@ -36,6 +39,7 @@ public sealed partial class MainViewModel
                 if (!string.IsNullOrWhiteSpace(tick.Error))
                 {
                     Note("Failed", tick.Error);
+                    PublishMonitorProgress();
                     await Task.Delay(TimeSpan.FromSeconds(2), token).ConfigureAwait(true);
                     continue;
                 }
@@ -43,6 +47,7 @@ public sealed partial class MainViewModel
                 if (tick.Primed)
                 {
                     Note($"Monitoring {name}", tick.Instance);
+                    PublishMonitorProgress();
                     await Task.Delay(TimeSpan.FromMilliseconds(250), token).ConfigureAwait(true);
                     continue;
                 }
@@ -50,6 +55,7 @@ public sealed partial class MainViewModel
                 if (tick.Result is not null)
                     ApplySamples(tick.Result);
                 Note($"Monitoring {name}", tick.Instance);
+                PublishMonitorProgress();
                 await Task.Delay(TimeSpan.FromSeconds(1), token).ConfigureAwait(true);
             }
             catch (OperationCanceledException)
@@ -61,6 +67,7 @@ public sealed partial class MainViewModel
                 Note("Failed", ex.Message);
                 try
                 {
+                    PublishMonitorProgress();
                     await Task.Delay(TimeSpan.FromSeconds(2), token).ConfigureAwait(true);
                 }
                 catch (OperationCanceledException)
