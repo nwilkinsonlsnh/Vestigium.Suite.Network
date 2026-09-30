@@ -51,15 +51,23 @@
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
           </Grid.ColumnDefinitions>
-          <TextBlock Text="{Binding MonitorHeadline}"
-                     FontSize="22"
-                     FontWeight="SemiBold"
-                     Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}"
-                     VerticalAlignment="Center"
-                     Margin="0,0,24,0"
-                     MaxWidth="160"
-                     TextWrapping="Wrap" />
-          <ItemsControl Grid.Column="1" ItemsSource="{Binding MonitorFacts}">
+          <StackPanel VerticalAlignment="Center"
+                      HorizontalAlignment="Center"
+                      Margin="4,0,24,0"
+                      MinWidth="92">
+            <TextBlock Text="{Binding MonitorHeadlineTitle}"
+                       FontSize="12"
+                       HorizontalAlignment="Center"
+                       Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}"
+                       Visibility="{Binding HasMonitorHeadlineTitle, Converter={StaticResource BoolToVis}}" />
+            <TextBlock Text="{Binding MonitorHeadline}"
+                       FontSize="22"
+                       FontWeight="SemiBold"
+                       HorizontalAlignment="Center"
+                       Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}"
+                       TextWrapping="Wrap" />
+          </StackPanel>
+          <ItemsControl Grid.Column="1" ItemsSource="{Binding MonitorFacts}" VerticalAlignment="Center">
             <ItemsControl.ItemsPanel>
               <ItemsPanelTemplate>
                 <StackPanel Orientation="Horizontal" />
