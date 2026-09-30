@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using Vestigium.Helpers.PerfMon.Network;
 
@@ -60,7 +61,7 @@ internal static class MonitorDetailCard
     {
         var rx = Last(ring, NetworkInterface.BytesReceivedPerSec) * 8m / 1000m;
         var tx = Last(ring, NetworkInterface.BytesSentPerSec) * 8m / 1000m;
-        return (nic?.Name ?? "Network", BaseNic(nic, ring, [
+        return (Rate(rx + tx, "Kbps"), NicFacts(nic, [
             new("Receive", Rate(rx, "Kbps")),
             new("Send", Rate(tx, "Kbps"))
         ]));
@@ -70,7 +71,7 @@ internal static class MonitorDetailCard
     {
         var rx = Last(ring, NetworkInterface.PacketsReceivedPerSec);
         var tx = Last(ring, NetworkInterface.PacketsSentPerSec);
-        return (nic?.Name ?? "Packets", BaseNic(nic, ring, [
+        return (Rate(rx + tx, "pkt/s"), NicFacts(nic, [
             new("Receive", Rate(rx, "pkt/s")),
             new("Send", Rate(tx, "pkt/s"))
         ]));
@@ -81,8 +82,7 @@ internal static class MonitorDetailCard
         var bytes = Last(ring, NetworkInterface.BytesTotalPerSec);
         var band = Last(ring, NetworkInterface.CurrentBandwidth);
         var pct = band > 0 ? 8m * bytes / band * 100m : 0m;
-        return (Pct(pct), BaseNic(nic, ring, [
-            new("Bandwidth", nic?.Speed ?? Dash),
+        return (Pct(pct), NicFacts(nic, [
             new("Total", Rate(bytes * 8m / 1000m, "Kbps"))
         ]));
     }
@@ -93,37 +93,72 @@ internal static class MonitorDetailCard
         var discards = Last(ring, NetworkInterface.PacketsReceivedDiscarded) + Last(ring, NetworkInterface.PacketsOutboundDiscarded);
         var queue = Last(ring, NetworkInterface.OutputQueueLength);
         var headline = errors + discards + queue <= 0 ? "Clean" : "Attention";
-        return (headline, BaseNic(nic, ring, [
+        return (headline, NicFacts(nic, [
             new("Errors", Whole(errors)),
             new("Discards", Whole(discards)),
             new("Queue", Whole(queue))
         ]));
     }
 
-    private static IReadOnlyList<MonitorDetailRow> BaseNic(AdapterRow? nic, MonitorRing ring, IEnumerable<MonitorDetailRow> extra)
+    private static IReadOnlyList<MonitorDetailRow> NicFacts(AdapterRow? nic, IEnumerable<MonitorDetailRow> live)
     {
-        var rows = extra.ToList();
+        var rows = live.ToList();
         if (nic is null)
             return rows;
 
-        rows.Add(new("Status", nic.Status));
-        rows.Add(new("Type", nic.Type));
-        if (!string.IsNullOrWhiteSpace(nic.Speed))
-            rows.Add(new("Link", nic.Speed));
+        var wireless = WirelessLinkLookup.TryRead(nic);
+        if (wireless is not null)
+        {
+            rows.Add(new("SSID", wireless.Ssid));
+            rows.Add(new("Connection type", wireless.ConnectionType));
+            rows.Add(new("Signal", wireless.Signal));
+        }
+        else
+        {
+            rows.Add(new("Connection type", ConnectionType(nic)));
+        }
+
+        rows.Add(new("Domain", DomainName(nic)));
         var ip = FirstAddress(nic, AddressFamily.InterNetwork);
         if (!string.IsNullOrWhiteSpace(ip))
             rows.Add(new("IPv4", ip));
-        var ip6 = FirstAddress(nic, AddressFamily.InterNetworkV6);
-        if (!string.IsNullOrWhiteSpace(ip6))
-            rows.Add(new("IPv6", ShortIp6(ip6)));
         return rows;
+    }
+
+    private static string ConnectionType(AdapterRow nic)
+    {
+        if (!string.IsNullOrWhiteSpace(nic.Type) && !string.Equals(nic.Type, nic.Source.Type.ToString(), StringComparison.Ordinal))
+            return nic.Type;
+        return nic.Source.Type switch
+        {
+            NetworkInterfaceType.Ethernet or NetworkInterfaceType.GigabitEthernet => "Ethernet",
+            NetworkInterfaceType.Wireless80211 => "Wi-Fi",
+            NetworkInterfaceType.Loopback => "Loopback",
+            NetworkInterfaceType.Tunnel => "Tunnel",
+            NetworkInterfaceType.Ppp => "PPP",
+            _ => nic.Type
+        };
+    }
+
+    private static string DomainName(AdapterRow nic)
+    {
+        if (!string.IsNullOrWhiteSpace(nic.Source.DnsSuffix))
+            return nic.Source.DnsSuffix.Trim();
+        try
+        {
+            var domain = IPGlobalProperties.GetIPGlobalProperties().DomainName;
+            if (!string.IsNullOrWhiteSpace(domain))
+                return domain.Trim();
+        }
+        catch (NetworkInformationException)
+        {
+        }
+
+        return "—";
     }
 
     private static string FirstAddress(AdapterRow nic, AddressFamily family)
         => nic.Source.UnicastAddresses.FirstOrDefault(a => a.Family == family)?.Address ?? string.Empty;
-
-    private static string ShortIp6(string value)
-        => value.Length <= 24 ? value : value[..22] + "\u2026";
 
     private static decimal Last(MonitorRing ring, string counter)
     {
@@ -145,6 +180,4 @@ internal static class MonitorDetailCard
 
     private static string GbFromBytes(decimal bytes)
         => (bytes / 1073741824m).ToString("0.0", CultureInfo.InvariantCulture) + " GB";
-
-    private const string Dash = "\u2014";
 }
