@@ -14,6 +14,8 @@ public static class MonitorChartPages
     public const string Packets = "Packets";
     public const string Integrity = "Integrity";
     public const string Utilization = "Utilization";
+    public const string Cpu = "CPU";
+    public const string Memory = "Memory";
 }
 
 internal static class MonitorChart
@@ -32,10 +34,35 @@ internal static class MonitorChart
                 "Packets",
                 "60 s",
                 "Packets/sec",
-                scale: 1m,
+                scaleLeft: 1m,
+                scaleRight: 1m,
                 rates: true),
             MonitorChartPages.Integrity => Integrity(ring),
             MonitorChartPages.Utilization => Utilization(ring),
+            MonitorChartPages.Cpu => Pair(
+                ring,
+                HostCounters.UserTime,
+                HostCounters.PrivilegedTime,
+                "User",
+                "Privileged",
+                "CPU",
+                "60 s",
+                "%",
+                scaleLeft: 1m,
+                scaleRight: 1m,
+                rates: true),
+            MonitorChartPages.Memory => Pair(
+                ring,
+                HostCounters.CommittedBytes,
+                HostCounters.AvailableMBytes,
+                "Committed",
+                "Available",
+                "Memory",
+                "60 s",
+                "GB",
+                scaleLeft: 1m / 1073741824m,
+                scaleRight: 1m / 1024m,
+                rates: true),
             _ => Pair(
                 ring,
                 NetworkInterface.BytesReceivedPerSec,
@@ -45,7 +72,8 @@ internal static class MonitorChart
                 "Throughput",
                 "60 s",
                 "Kbps",
-                scale: 8m / 1000m,
+                scaleLeft: 8m / 1000m,
+                scaleRight: 8m / 1000m,
                 rates: true)
         };
     }
@@ -59,11 +87,12 @@ internal static class MonitorChart
         string title,
         string xLabel,
         string yLabel,
-        decimal scale,
+        decimal scaleLeft,
+        decimal scaleRight,
         bool rates)
     {
-        var leftPoints = Scale(ring.Of(leftCounter), scale);
-        var rightPoints = Scale(ring.Of(rightCounter), scale);
+        var leftPoints = Scale(ring.Of(leftCounter), scaleLeft);
+        var rightPoints = Scale(ring.Of(rightCounter), scaleRight);
         var left = Window(leftPoints, leftName);
         var right = Window(rightPoints, rightName);
         var options = WithLimits(
