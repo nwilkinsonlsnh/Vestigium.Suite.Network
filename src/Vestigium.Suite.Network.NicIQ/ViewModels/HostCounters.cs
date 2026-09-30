@@ -11,6 +11,8 @@ internal static class HostCounters
     public const string AvailableMBytes = "Available MBytes";
     public const string CommittedBytes = "Committed Bytes";
     public const string CommittedPct = "% Committed Bytes In Use";
+    public const string CommitLimit = "Commit Limit";
+    public const string CacheBytes = "Cache Bytes";
 
     public static IReadOnlyList<CounterPath> Preferred { get; } =
     [
@@ -22,7 +24,9 @@ internal static class HostCounters
         new CounterPath("Processor", PrivilegedTime, "_Total", "%"),
         new CounterPath("Memory", AvailableMBytes, string.Empty, "MB"),
         new CounterPath("Memory", CommittedBytes, string.Empty, "bytes"),
-        new CounterPath("Memory", CommittedPct, string.Empty, "%")
+        new CounterPath("Memory", CommittedPct, string.Empty, "%"),
+        new CounterPath("Memory", CommitLimit, string.Empty, "bytes"),
+        new CounterPath("Memory", CacheBytes, string.Empty, "bytes")
     ];
 
     public static IReadOnlyList<CounterPath> ProcessorFallback { get; } =
