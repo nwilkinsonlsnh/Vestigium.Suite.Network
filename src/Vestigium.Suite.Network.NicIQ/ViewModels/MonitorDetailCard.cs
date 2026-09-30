@@ -27,14 +27,22 @@ internal static class MonitorDetailCard
     private static (string, IReadOnlyList<MonitorDetailRow>) Cpu(MonitorRing ring)
     {
         var total = Last(ring, HostCounters.ProcessorTime);
-        var user = Last(ring, HostCounters.UserTime);
-        var priv = Last(ring, HostCounters.PrivilegedTime);
+        var live = CpuHostFacts.Live();
+        var host = CpuHostFacts.Host;
         var rows = new List<MonitorDetailRow>
         {
-            new("User", Pct(user)),
-            new("Privileged", Pct(priv)),
-            new("Logical processors", Environment.ProcessorCount.ToString(CultureInfo.InvariantCulture)),
-            new("64-bit OS", Environment.Is64BitOperatingSystem ? "Yes" : "No")
+            new("Utilization", Pct(total)),
+            new("Processes", Count(live.Processes)),
+            new("Speed", live.Speed),
+            new("Threads", Count(live.Threads)),
+            new("Handles", Count(live.Handles)),
+            new("Sockets", Count(host.Sockets)),
+            new("Cores", Count(host.Cores)),
+            new("Logical processors", Count(host.Logical)),
+            new("L1 cache", host.L1),
+            new("L2 cache", host.L2),
+            new("L3 cache", host.L3),
+            new("L4 cache", host.L4)
         };
         return (Pct(total), rows);
     }
@@ -159,6 +167,9 @@ internal static class MonitorDetailCard
 
     private static string Whole(decimal value)
         => decimal.Truncate(value).ToString("0", CultureInfo.InvariantCulture);
+
+    private static string Count(int value)
+        => value.ToString("N0", CultureInfo.CurrentCulture);
 
     private static string GbFromMb(decimal megaBytes)
         => (megaBytes / 1024m).ToString("0.0", CultureInfo.InvariantCulture) + " GB";
