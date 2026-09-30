@@ -21,6 +21,7 @@
 
       <StackPanel VerticalAlignment="Top">
         <TextBlock Style="{StaticResource TextBlock.Caption}"
+                   Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}"
                    Text="Live counters. Network charts follow Active NIC. CPU and Memory are the machine."
                    TextWrapping="Wrap"
                    Margin="0,0,16,8" />
@@ -34,11 +35,13 @@
                     Margin="0,0,12,0" />
         </StackPanel>
         <TextBlock Style="{StaticResource TextBlock.Caption}"
+                   Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}"
                    Text="{Binding MonitorInstance, StringFormat=PDH  {0}}"
                    Margin="0,6,0,0" />
       </StackPanel>
 
       <Border Grid.Column="1"
+              Background="{DynamicResource Vestigium.Brushes.Surface.Card}"
               BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
               BorderThickness="1"
               Padding="16,10"
@@ -51,25 +54,28 @@
           <TextBlock Text="{Binding MonitorHeadline}"
                      FontSize="22"
                      FontWeight="SemiBold"
+                     Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}"
                      VerticalAlignment="Center"
-                     Margin="0,0,20,0"
-                     MaxWidth="220"
+                     Margin="0,0,24,0"
+                     MaxWidth="160"
                      TextWrapping="Wrap" />
           <ItemsControl Grid.Column="1" ItemsSource="{Binding MonitorFacts}">
             <ItemsControl.ItemsPanel>
               <ItemsPanelTemplate>
-                <WrapPanel Orientation="Horizontal" />
+                <UniformGrid Columns="4" />
               </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
               <DataTemplate>
-                <StackPanel Margin="0,0,28,8" MinWidth="110">
+                <StackPanel Margin="0,0,16,6">
                   <TextBlock Text="{Binding Label}"
-                             Style="{StaticResource TextBlock.Caption}"
-                             Opacity="0.7" />
+                             FontSize="11"
+                             Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
                   <TextBlock Text="{Binding Value}"
                              FontSize="14"
-                             FontWeight="SemiBold" />
+                             FontWeight="SemiBold"
+                             Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}"
+                             TextWrapping="Wrap" />
                 </StackPanel>
               </DataTemplate>
             </ItemsControl.ItemTemplate>
@@ -87,10 +93,10 @@
         <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="CPU" IsChecked="{Binding CpuPageOpen}" GroupName="NicMonitorChart" Margin="0,0,8,0" />
         <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="Memory" IsChecked="{Binding MemoryPageOpen}" GroupName="NicMonitorChart" />
       </StackPanel>
-      <TextBlock DockPanel.Dock="Bottom" Style="{StaticResource TextBlock.Caption}" Text="{Binding ChartStrip}" TextWrapping="Wrap" Margin="0,8,0,0" />
+      <TextBlock DockPanel.Dock="Bottom" Style="{StaticResource TextBlock.Caption}" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" Text="{Binding ChartStrip}" TextWrapping="Wrap" Margin="0,8,0,0" />
       <Border BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
         <Grid>
-          <TextBlock Style="{StaticResource TextBlock.Caption}" Text="Waiting for samples."
+          <TextBlock Style="{StaticResource TextBlock.Caption}" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" Text="Waiting for samples."
                      VerticalAlignment="Center" HorizontalAlignment="Left" Margin="12,0,0,0"
                      Visibility="{Binding ChartEmpty, Converter={StaticResource BoolToVis}}" />
           <ContentControl Content="{Binding LiveChart}"
