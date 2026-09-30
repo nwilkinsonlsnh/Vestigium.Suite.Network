@@ -10,7 +10,6 @@
   <Grid Margin="16">
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
-      <RowDefinition Height="Auto" />
       <RowDefinition Height="*" MinHeight="240" />
     </Grid.RowDefinitions>
 
@@ -79,7 +78,7 @@
       </Border>
     </Grid>
 
-    <DockPanel Grid.Row="2">
+    <DockPanel Grid.Row="1">
       <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
         <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="Throughput" IsChecked="{Binding ThroughputPageOpen}" GroupName="NicMonitorChart" Margin="0,0,8,0" />
         <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="Packets" IsChecked="{Binding PacketsPageOpen}" GroupName="NicMonitorChart" Margin="0,0,8,0" />
