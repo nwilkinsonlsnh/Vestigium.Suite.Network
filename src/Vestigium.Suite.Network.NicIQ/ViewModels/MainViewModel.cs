@@ -9,6 +9,7 @@ using Vestigium.Helpers.Network;
 using Vestigium.Helpers.PerfMon;
 using Vestigium.Helpers.PerfMon.Network;
 using PdhNic = Vestigium.Helpers.PerfMon.Network.NetworkInterface;
+using InventoryAdapter = Vestigium.Helpers.Network.NetworkAdapter;
 
 namespace Vestigium.Suite.Network.NicIQ.ViewModels;
 
@@ -374,7 +375,7 @@ public sealed partial class MainViewModel : ObservableObject
             : Adapters.FirstOrDefault(r => string.Equals(r.Id, preferred.Id, StringComparison.Ordinal));
     }
 
-    private void SyncActiveNics(IReadOnlyList<NetworkAdapter> inventory)
+    private void SyncActiveNics(IReadOnlyList<InventoryAdapter> inventory)
     {
         var keep = SelectedMonitorNic?.Id ?? PreferredMonitorNicId;
         ActiveNics.Clear();
