@@ -1,7 +1,7 @@
 using System.Globalization;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
-using Vestigium.Helpers.PerfMon.Network;
+using PdhNic = Vestigium.Helpers.PerfMon.Network.NetworkInterface;
 
 namespace Vestigium.Suite.Network.NicIQ.ViewModels;
 
@@ -59,8 +59,8 @@ internal static class MonitorDetailCard
 
     private static (string, IReadOnlyList<MonitorDetailRow>) Network(AdapterRow? nic, MonitorRing ring)
     {
-        var rx = Last(ring, NetworkInterface.BytesReceivedPerSec) * 8m / 1000m;
-        var tx = Last(ring, NetworkInterface.BytesSentPerSec) * 8m / 1000m;
+        var rx = Last(ring, PdhNic.BytesReceivedPerSec) * 8m / 1000m;
+        var tx = Last(ring, PdhNic.BytesSentPerSec) * 8m / 1000m;
         return (Rate(rx + tx, "Kbps"), NicFacts(nic, [
             new("Receive", Rate(rx, "Kbps")),
             new("Send", Rate(tx, "Kbps"))
@@ -69,8 +69,8 @@ internal static class MonitorDetailCard
 
     private static (string, IReadOnlyList<MonitorDetailRow>) Packets(AdapterRow? nic, MonitorRing ring)
     {
-        var rx = Last(ring, NetworkInterface.PacketsReceivedPerSec);
-        var tx = Last(ring, NetworkInterface.PacketsSentPerSec);
+        var rx = Last(ring, PdhNic.PacketsReceivedPerSec);
+        var tx = Last(ring, PdhNic.PacketsSentPerSec);
         return (Rate(rx + tx, "pkt/s"), NicFacts(nic, [
             new("Receive", Rate(rx, "pkt/s")),
             new("Send", Rate(tx, "pkt/s"))
@@ -79,8 +79,8 @@ internal static class MonitorDetailCard
 
     private static (string, IReadOnlyList<MonitorDetailRow>) Utilization(AdapterRow? nic, MonitorRing ring)
     {
-        var bytes = Last(ring, NetworkInterface.BytesTotalPerSec);
-        var band = Last(ring, NetworkInterface.CurrentBandwidth);
+        var bytes = Last(ring, PdhNic.BytesTotalPerSec);
+        var band = Last(ring, PdhNic.CurrentBandwidth);
         var pct = band > 0 ? 8m * bytes / band * 100m : 0m;
         return (Pct(pct), NicFacts(nic, [
             new("Total", Rate(bytes * 8m / 1000m, "Kbps"))
@@ -89,9 +89,9 @@ internal static class MonitorDetailCard
 
     private static (string, IReadOnlyList<MonitorDetailRow>) Integrity(AdapterRow? nic, MonitorRing ring)
     {
-        var errors = Last(ring, NetworkInterface.PacketsReceivedErrors) + Last(ring, NetworkInterface.PacketsOutboundErrors);
-        var discards = Last(ring, NetworkInterface.PacketsReceivedDiscarded) + Last(ring, NetworkInterface.PacketsOutboundDiscarded);
-        var queue = Last(ring, NetworkInterface.OutputQueueLength);
+        var errors = Last(ring, PdhNic.PacketsReceivedErrors) + Last(ring, PdhNic.PacketsOutboundErrors);
+        var discards = Last(ring, PdhNic.PacketsReceivedDiscarded) + Last(ring, PdhNic.PacketsOutboundDiscarded);
+        var queue = Last(ring, PdhNic.OutputQueueLength);
         var headline = errors + discards + queue <= 0 ? "Clean" : "Attention";
         return (headline, NicFacts(nic, [
             new("Errors", Whole(errors)),
@@ -154,7 +154,7 @@ internal static class MonitorDetailCard
         {
         }
 
-        return "—";
+        return "\u2014";
     }
 
     private static string FirstAddress(AdapterRow nic, AddressFamily family)
