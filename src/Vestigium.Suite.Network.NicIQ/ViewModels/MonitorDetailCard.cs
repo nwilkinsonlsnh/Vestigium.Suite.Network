@@ -29,14 +29,14 @@ internal static class MonitorDetailCard
         var total = Last(ring, HostCounters.ProcessorTime);
         var live = CpuHostFacts.Live();
         var host = CpuHostFacts.Host;
-        MonitorFactColumn[] columns =
-        [
-            Column(new("Speed", live.Speed), new("Utilization", Pct(total))),
-            Column(new("Processes", Count(live.Processes)), new("Threads", Count(live.Threads)), new("Handles", Count(live.Handles))),
-            Column(new("Sockets", Count(host.Sockets)), new("Cores", Count(host.Cores)), new("Logical processors", Count(host.Logical))),
-            Column(new("L1 cache", host.L1), new("L2 cache", host.L2)),
-            Column(new("L3 cache", host.L3), new("L4 cache", host.L4))
-        ];
+        var columns = new MonitorFactColumn[]
+        {
+            Column(Row("Speed", live.Speed), Row("Utilization", Pct(total))),
+            Column(Row("Processes", Count(live.Processes)), Row("Threads", Count(live.Threads)), Row("Handles", Count(live.Handles))),
+            Column(Row("Sockets", Count(host.Sockets)), Row("Cores", Count(host.Cores)), Row("Logical processors", Count(host.Logical))),
+            Column(Row("L1 cache", host.L1), Row("L2 cache", host.L2)),
+            Column(Row("L3 cache", host.L3), Row("L4 cache", host.L4))
+        };
         return (Pct(total), columns);
     }
 
@@ -47,14 +47,14 @@ internal static class MonitorDetailCard
         var limit = Last(ring, HostCounters.CommitLimit);
         var cached = Last(ring, HostCounters.CacheBytes);
         var pct = Last(ring, HostCounters.CommittedPct);
-        MonitorFactColumn[] columns =
-        [
-            Column(new("Available", GbFromMb(availableMb))),
-            Column(new("Committed", GbFromBytes(committed))),
-            Column(new("Commit limit", GbFromBytes(limit))),
-            Column(new("Cached", GbFromBytes(cached))),
-            Column(new("Commit in use", Pct(pct)))
-        ];
+        var columns = new MonitorFactColumn[]
+        {
+            Column(Row("Available", GbFromMb(availableMb))),
+            Column(Row("Committed", GbFromBytes(committed))),
+            Column(Row("Commit limit", GbFromBytes(limit))),
+            Column(Row("Cached", GbFromBytes(cached))),
+            Column(Row("Commit in use", Pct(pct)))
+        };
         return (GbFromMb(availableMb) + " free", columns);
     }
 
@@ -62,14 +62,14 @@ internal static class MonitorDetailCard
     {
         var rx = Last(ring, PdhNic.BytesReceivedPerSec) * 8m / 1000m;
         var tx = Last(ring, PdhNic.BytesSentPerSec) * 8m / 1000m;
-        return (Rate(rx + tx, "Kbps"), NicColumns(nic, new("Send", Rate(tx, "Kbps")), new("Receive", Rate(rx, "Kbps"))));
+        return (Rate(rx + tx, "Kbps"), NicColumns(nic, Row("Send", Rate(tx, "Kbps")), Row("Receive", Rate(rx, "Kbps"))));
     }
 
     private static (string, IReadOnlyList<MonitorFactColumn>) Packets(AdapterRow? nic, MonitorRing ring)
     {
         var rx = Last(ring, PdhNic.PacketsReceivedPerSec);
         var tx = Last(ring, PdhNic.PacketsSentPerSec);
-        return (Rate(rx + tx, "pkt/s"), NicColumns(nic, new("Send", Rate(tx, "pkt/s")), new("Receive", Rate(rx, "pkt/s"))));
+        return (Rate(rx + tx, "pkt/s"), NicColumns(nic, Row("Send", Rate(tx, "pkt/s")), Row("Receive", Rate(rx, "pkt/s"))));
     }
 
     private static (string, IReadOnlyList<MonitorFactColumn>) Utilization(AdapterRow? nic, MonitorRing ring)
@@ -77,7 +77,7 @@ internal static class MonitorDetailCard
         var bytes = Last(ring, PdhNic.BytesTotalPerSec);
         var band = Last(ring, PdhNic.CurrentBandwidth);
         var pct = band > 0 ? 8m * bytes / band * 100m : 0m;
-        return (Pct(pct), NicColumns(nic, new("Total", Rate(bytes * 8m / 1000m, "Kbps")), null));
+        return (Pct(pct), NicColumns(nic, Row("Total", Rate(bytes * 8m / 1000m, "Kbps")), null));
     }
 
     private static (string, IReadOnlyList<MonitorFactColumn>) Integrity(AdapterRow? nic, MonitorRing ring)
@@ -86,7 +86,7 @@ internal static class MonitorDetailCard
         var discards = Last(ring, PdhNic.PacketsReceivedDiscarded) + Last(ring, PdhNic.PacketsOutboundDiscarded);
         var queue = Last(ring, PdhNic.OutputQueueLength);
         var headline = errors + discards + queue <= 0 ? "Clean" : "Attention";
-        return (headline, NicColumns(nic, new("Errors", Whole(errors)), new("Discards", Whole(discards))));
+        return (headline, NicColumns(nic, Row("Errors", Whole(errors)), Row("Discards", Whole(discards))));
     }
 
     private static IReadOnlyList<MonitorFactColumn> NicColumns(AdapterRow? nic, MonitorDetailRow? topLive, MonitorDetailRow? bottomLive)
@@ -97,28 +97,33 @@ internal static class MonitorDetailCard
         if (topLive is not null || bottomLive is not null)
         {
             var live = new List<MonitorDetailRow>();
-            if (topLive is not null) live.Add(topLive);
-            if (bottomLive is not null) live.Add(bottomLive);
+            if (topLive is not null)
+                live.Add(topLive);
+            if (bottomLive is not null)
+                live.Add(bottomLive);
             columns.Add(new MonitorFactColumn(live));
         }
 
         if (wireless is not null)
         {
-            columns.Add(Column(new("Connection type", wireless.ConnectionType), new("SSID", wireless.Ssid)));
-            columns.Add(Column(new("IPv4", string.IsNullOrWhiteSpace(ip) ? "\u2014" : ip), new("Signal", wireless.Signal)));
+            columns.Add(Column(Row("Connection type", wireless.ConnectionType), Row("SSID", wireless.Ssid)));
+            columns.Add(Column(Row("IPv4", string.IsNullOrWhiteSpace(ip) ? "\u2014" : ip), Row("Signal", wireless.Signal)));
         }
         else
         {
-            columns.Add(Column(new("Connection type", nic is null ? "\u2014" : ConnectionType(nic))));
-            columns.Add(Column(new("IPv4", string.IsNullOrWhiteSpace(ip) ? "\u2014" : ip)));
+            columns.Add(Column(Row("Connection type", nic is null ? "\u2014" : ConnectionType(nic))));
+            columns.Add(Column(Row("IPv4", string.IsNullOrWhiteSpace(ip) ? "\u2014" : ip)));
         }
 
-        columns.Add(Column(new("Domain", nic is null ? "\u2014" : DomainName(nic))));
+        columns.Add(Column(Row("Domain", nic is null ? "\u2014" : DomainName(nic))));
         return columns;
     }
 
+    private static MonitorDetailRow Row(string label, string value)
+        => new MonitorDetailRow(label, value);
+
     private static MonitorFactColumn Column(params MonitorDetailRow[] rows)
-        => new(rows);
+        => new MonitorFactColumn(rows);
 
     private static string ConnectionType(AdapterRow nic)
     {
