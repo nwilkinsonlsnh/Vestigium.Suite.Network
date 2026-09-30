@@ -49,12 +49,12 @@ public sealed class NicPrimaryAdapterTests
     }
 
     [Fact]
-    public void Pick_ignores_preferred_when_down()
+    public void Pick_keeps_preferred_when_still_on_the_box()
     {
         var up = NicAdapterFactory.Up("up", metric: 20, ipv4: true);
         var down = NicAdapterFactory.Down("down", metric: 1);
         var picked = NicPrimaryAdapter.Pick([up, down], preferredId: "down");
-        Assert.Equal("up", picked?.Id);
+        Assert.Equal("down", picked?.Id);
     }
 }
 
@@ -70,12 +70,19 @@ public sealed class MonitorCounterListTests
     }
 
     [Fact]
-    public void FromSettings_keeps_explicit_list_and_drops_unknown()
+    public void FromSettings_uses_chart_need()
     {
         var rows = MonitorCounterList.FromSettings(new NicIqSettings
         {
             MonitorCounters = ["Bytes Sent/sec", "not-a-counter", "Bytes Sent/sec"]
         });
+        Assert.Equal(MonitorCounterList.ChartNeed, rows);
+    }
+
+    [Fact]
+    public void Sanitize_drops_unknown_and_dedupes()
+    {
+        var rows = MonitorCounterList.Sanitize(["Bytes Sent/sec", "not-a-counter", "Bytes Sent/sec"]);
         Assert.Equal(["Bytes Sent/sec"], rows);
     }
 
