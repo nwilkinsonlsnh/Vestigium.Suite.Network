@@ -2,7 +2,7 @@ namespace Vestigium.Suite.Network.NicIQ.ViewModels;
 
 public sealed class MonitorFactColumn
 {
-    public MonitorFactColumn(params MonitorDetailRow[] rows)
+    public MonitorFactColumn(IReadOnlyList<MonitorDetailRow> rows)
     {
         Rows = rows;
     }
