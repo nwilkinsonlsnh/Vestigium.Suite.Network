@@ -254,14 +254,15 @@ public sealed partial class MainViewModel : ObservableObject
             var box = NetworkHelper.GetWorkstation();
             Header = FormatHeader(box);
             var query = new NetworkAdapterQuery(IncludeDown: true, IpEnabledOnly: false);
+            var inventory = NetworkHelper.GetAdapters(query).ToList();
             var rows = AdapterListFilter.Apply(
-                NetworkHelper.GetAdapters(query),
+                inventory,
                 ShowUp,
                 ShowDown,
                 ShowIpv4,
                 ShowIpv6);
             ReplaceRows(rows, keep);
-            SyncActiveNics();
+            SyncActiveNics(inventory);
             Post("Idle");
         }
         catch (Exception ex)
@@ -373,19 +374,19 @@ public sealed partial class MainViewModel : ObservableObject
             : Adapters.FirstOrDefault(r => string.Equals(r.Id, preferred.Id, StringComparison.Ordinal));
     }
 
-    private void SyncActiveNics()
+    private void SyncActiveNics(IReadOnlyList<NetworkAdapter> inventory)
     {
         var keep = SelectedMonitorNic?.Id ?? PreferredMonitorNicId;
         ActiveNics.Clear();
-        foreach (var row in Adapters.Where(r => r.Source.Status == OperationalStatus.Up))
-            ActiveNics.Add(row);
+        foreach (var adapter in inventory)
+            ActiveNics.Add(new AdapterRow(adapter));
 
         AdapterRow? next = null;
         if (!string.IsNullOrWhiteSpace(keep))
             next = ActiveNics.FirstOrDefault(r => string.Equals(r.Id, keep, StringComparison.Ordinal));
         if (next is null)
         {
-            var primary = NicPrimaryAdapter.Pick(ActiveNics.Select(r => r.Source), PreferredMonitorNicId);
+            var primary = NicPrimaryAdapter.Pick(inventory, preferredId: null);
             if (primary is not null)
                 next = ActiveNics.FirstOrDefault(r => string.Equals(r.Id, primary.Id, StringComparison.Ordinal));
         }
@@ -393,7 +394,7 @@ public sealed partial class MainViewModel : ObservableObject
         _syncingNic = true;
         SelectedMonitorNic = next;
         _syncingNic = false;
-        if (next is not null)
+        if (next is not null && string.IsNullOrWhiteSpace(PreferredMonitorNicId))
             PreferredMonitorNicId = next.Id;
     }
 
@@ -401,6 +402,18 @@ public sealed partial class MainViewModel : ObservableObject
     {
         if (_monitorCts is not null)
             return;
+        if (ActiveNics.Count == 0)
+        {
+            try
+            {
+                var inventory = NetworkHelper.GetAdapters(new NetworkAdapterQuery(IncludeDown: true, IpEnabledOnly: false));
+                SyncActiveNics(inventory);
+            }
+            catch (Exception)
+            {
+            }
+        }
+
         _monitorCts = new CancellationTokenSource();
         IsMonitoring = true;
         PaintChart(force: true);
