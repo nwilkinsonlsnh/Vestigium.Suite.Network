@@ -153,15 +153,24 @@ public sealed partial class MainViewModel
 
     private void ResumeMonitoring()
     {
+        var imported = _reviewImported;
         ChartHorizon.Review = false;
-        _ring.Clear();
-        LiveChart = null;
-        ChartStrip = "Waiting for samples.";
         MonitorPaused = false;
-        BeginMonitorClock();
-        BeginWarm("Resuming monitor\u2026");
+        if (imported)
+        {
+            _ring.Clear();
+            LiveChart = null;
+            ChartStrip = "Waiting for samples.";
+            BeginMonitorClock();
+            BeginWarm("Resuming monitor\u2026");
+        }
+        else
+        {
+            ContinueMonitorClock();
+        }
+
         PaintChart(force: true);
-        Note("Idle", "Monitoring resumed");
+        Note("Idle", imported ? "Monitoring restarted" : "Monitoring resumed");
         RaiseReadingsCommands();
     }
 
