@@ -3,20 +3,48 @@ using Vestigium.Helpers.PerfMon;
 
 namespace Vestigium.Suite.Network.NicIQ.ViewModels;
 
-/// <summary>Keeps five minutes of samples. Live charts show the last 60 seconds.</summary>
+/// <summary>Keeps a rolling archive. Live charts grow with the collected span, up to the window.</summary>
 public sealed class MonitorRing
 {
-    public const int DisplaySeconds = 60;
-    public const int ArchiveSeconds = 300;
-    public const int Cap = ArchiveSeconds;
+    public const int DefaultArchiveSeconds = 300;
+    public const int MinArchiveSeconds = 180;
+    public const int MaxArchiveSeconds = 600;
+
+    public static int ArchiveSeconds { get; private set; } = DefaultArchiveSeconds;
+    public static int Cap => ArchiveSeconds;
 
     private readonly Dictionary<string, List<Observation>> _rows =
         new(StringComparer.OrdinalIgnoreCase);
+
+    public static int ClampArchive(int seconds)
+    {
+        var minutes = (int)Math.Round(seconds / 60d, MidpointRounding.AwayFromZero);
+        if (minutes < MinArchiveSeconds / 60)
+            minutes = MinArchiveSeconds / 60;
+        if (minutes > MaxArchiveSeconds / 60)
+            minutes = MaxArchiveSeconds / 60;
+        return minutes * 60;
+    }
+
+    public static int ApplyArchive(int seconds)
+    {
+        ArchiveSeconds = ClampArchive(seconds);
+        return ArchiveSeconds;
+    }
 
     public void Clear()
     {
         foreach (var list in _rows.Values)
             list.Clear();
+    }
+
+    public void Trim()
+    {
+        foreach (var list in _rows.Values)
+        {
+            if (list.Count > ArchiveSeconds)
+                list.RemoveRange(0, list.Count - ArchiveSeconds);
+        }
     }
 
     public void Add(SampleRecord sample)
