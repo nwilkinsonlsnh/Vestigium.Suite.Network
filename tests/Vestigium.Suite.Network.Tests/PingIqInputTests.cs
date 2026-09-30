@@ -25,8 +25,8 @@ public sealed class PingIqInputTests
         Assert.Null(reject);
         Assert.Equal("127.0.0.1", query!.Target);
         Assert.Equal(4, query.Options.Count);
-        Assert.Equal(TimeSpan.FromMilliseconds(1000), query.Options.Interval);
-        Assert.Equal(TimeSpan.FromMilliseconds(4000), query.Options.Timeout);
+        Assert.Equal(TimeSpan.FromMilliseconds(PingIqInput.DefaultDelayMs), query.Options.Interval);
+        Assert.Equal(TimeSpan.FromMilliseconds(PingIqInput.ReplyTimeoutMs), query.Options.Timeout);
         Assert.Equal(0, query.Options.InterfaceIndex);
         Assert.Null(query.Options.SourceAddress);
     }
@@ -108,7 +108,6 @@ public sealed class PingIqInputTests
         Assert.Equal(0, query!.Options.InterfaceIndex);
     }
 
-
     [Fact]
     public void Count_ninety_nine_accepts()
     {
@@ -158,7 +157,7 @@ public sealed class PingIqInputTests
         out string? reject,
         string? target = "127.0.0.1",
         decimal count = 4,
-        decimal timeoutMs = 4000,
+        decimal timeoutMs = PingIqInput.DefaultDelayMs,
         int index = 0,
         string? source = null)
         => PingIqInput.TryCreate(target, count, timeoutMs, index, source, out query, out reject);
