@@ -44,4 +44,16 @@ public sealed class MonitorRing
             return [];
         return list.ToArray();
     }
+
+    public int MaxDepth()
+    {
+        var max = 0;
+        foreach (var list in _rows.Values)
+        {
+            if (list.Count > max)
+                max = list.Count;
+        }
+
+        return max;
+    }
 }
