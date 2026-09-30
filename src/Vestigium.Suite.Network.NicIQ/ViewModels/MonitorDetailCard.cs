@@ -31,7 +31,7 @@ internal static class MonitorDetailCard
         var host = CpuHostFacts.Host;
         var columns = new MonitorFactColumn[]
         {
-            Column(Row("Speed", live.Speed), Row("Utilization", Pct(total)), Row("Base speed", live.BaseSpeed)),
+            Column(Row("Base speed", live.BaseSpeed), Row("Speed", live.Speed), Row("Utilization", Pct(total))),
             Column(Row("Processes", Count(live.Processes)), Row("Threads", Count(live.Threads)), Row("Handles", Count(live.Handles))),
             Column(Row("Sockets", Count(host.Sockets)), Row("Cores", Count(host.Cores)), Row("Logical processors", Count(host.Logical))),
             Column(Row("L1 cache", host.L1), Row("L2 cache", host.L2)),
