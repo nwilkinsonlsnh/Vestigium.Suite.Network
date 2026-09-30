@@ -38,9 +38,14 @@ public sealed partial class MainViewModel
         OnPropertyChanged(nameof(CpuPageOpen));
         OnPropertyChanged(nameof(MemoryPageOpen));
         RefreshMonitorFacts();
+        SyncWarm();
     }
 
-    partial void OnLiveChartChanged(FrameworkElement? value) => RefreshMonitorFacts();
+    partial void OnLiveChartChanged(FrameworkElement? value)
+    {
+        RefreshMonitorFacts();
+        SyncWarm();
+    }
 
     private void RefreshMonitorFacts()
     {
