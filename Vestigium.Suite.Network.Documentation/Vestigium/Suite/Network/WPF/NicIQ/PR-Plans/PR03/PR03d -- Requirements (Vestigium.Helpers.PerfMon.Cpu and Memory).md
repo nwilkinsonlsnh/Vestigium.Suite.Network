@@ -17,11 +17,11 @@ This version is not topology, not `GlobalMemoryStatusEx`, not a chart.
 ## Decision
 
 **Extract the path catalogs now.**  
-**Machine facts moved to PR03g** (`Vestigium.SystemInfo.Cpu` / `.Memory`).
+**Machine facts moved to PR03g** (`Vestigium.Helpers.SystemInfo.Cpu` / `.Memory`).
 
 Old belief: leave P/Invoke in the host until a second consumer.  
-What arrived: owner named SystemInfo as suite infrastructure.  
-New position: PerfMon stays PDH. SystemInfo owns snapshots.
+What arrived: owner named SystemInfo as Helpers infrastructure.  
+New position: PerfMon stays PDH. Helpers.SystemInfo owns snapshots.
 
 ## Must change
 
