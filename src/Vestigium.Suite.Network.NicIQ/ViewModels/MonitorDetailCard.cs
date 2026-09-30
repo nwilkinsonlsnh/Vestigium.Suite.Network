@@ -7,7 +7,7 @@ namespace Vestigium.Suite.Network.NicIQ.ViewModels;
 
 internal static class MonitorDetailCard
 {
-    public static (string Headline, IReadOnlyList<MonitorDetailRow> Rows) Build(
+    public static (string Headline, IReadOnlyList<MonitorFactColumn> Columns) Build(
         string page,
         AdapterRow? nic,
         MonitorRing ring)
@@ -24,98 +24,97 @@ internal static class MonitorDetailCard
         };
     }
 
-    private static (string, IReadOnlyList<MonitorDetailRow>) Cpu(MonitorRing ring)
+    private static (string, IReadOnlyList<MonitorFactColumn>) Cpu(MonitorRing ring)
     {
         var total = Last(ring, HostCounters.ProcessorTime);
         var live = CpuHostFacts.Live();
         var host = CpuHostFacts.Host;
-        var rows = new List<MonitorDetailRow>
-        {
-            new("Utilization", Pct(total)),
-            new("Processes", Count(live.Processes)),
-            new("Speed", live.Speed),
-            new("Threads", Count(live.Threads)),
-            new("Handles", Count(live.Handles)),
-            new("Sockets", Count(host.Sockets)),
-            new("Cores", Count(host.Cores)),
-            new("Logical processors", Count(host.Logical)),
-            new("L1 cache", host.L1),
-            new("L2 cache", host.L2),
-            new("L3 cache", host.L3),
-            new("L4 cache", host.L4)
-        };
-        return (Pct(total), rows);
+        MonitorFactColumn[] columns =
+        [
+            new(new("Speed", live.Speed), new("Utilization", Pct(total))),
+            new(new("Processes", Count(live.Processes)), new("Threads", Count(live.Threads)), new("Handles", Count(live.Handles))),
+            new(new("Sockets", Count(host.Sockets)), new("Cores", Count(host.Cores)), new("Logical processors", Count(host.Logical))),
+            new(new("L1 cache", host.L1), new("L2 cache", host.L2)),
+            new(new("L3 cache", host.L3), new("L4 cache", host.L4))
+        ];
+        return (Pct(total), columns);
     }
 
-    private static (string, IReadOnlyList<MonitorDetailRow>) Memory(MonitorRing ring)
+    private static (string, IReadOnlyList<MonitorFactColumn>) Memory(MonitorRing ring)
     {
         var availableMb = Last(ring, HostCounters.AvailableMBytes);
         var committed = Last(ring, HostCounters.CommittedBytes);
         var limit = Last(ring, HostCounters.CommitLimit);
         var cached = Last(ring, HostCounters.CacheBytes);
         var pct = Last(ring, HostCounters.CommittedPct);
-        var rows = new List<MonitorDetailRow>
-        {
-            new("Available", GbFromMb(availableMb)),
-            new("Committed", GbFromBytes(committed)),
-            new("Commit limit", GbFromBytes(limit)),
-            new("Cached", GbFromBytes(cached)),
-            new("Commit in use", Pct(pct))
-        };
-        return (GbFromMb(availableMb) + " free", rows);
+        MonitorFactColumn[] columns =
+        [
+            new(new("Available", GbFromMb(availableMb))),
+            new(new("Committed", GbFromBytes(committed))),
+            new(new("Commit limit", GbFromBytes(limit))),
+            new(new("Cached", GbFromBytes(cached))),
+            new(new("Commit in use", Pct(pct)))
+        ];
+        return (GbFromMb(availableMb) + " free", columns);
     }
 
-    private static (string, IReadOnlyList<MonitorDetailRow>) Network(AdapterRow? nic, MonitorRing ring)
+    private static (string, IReadOnlyList<MonitorFactColumn>) Network(AdapterRow? nic, MonitorRing ring)
     {
         var rx = Last(ring, PdhNic.BytesReceivedPerSec) * 8m / 1000m;
         var tx = Last(ring, PdhNic.BytesSentPerSec) * 8m / 1000m;
-        return (Rate(rx + tx, "Kbps"), NicFacts(nic, new("Send", Rate(tx, "Kbps")), new("Receive", Rate(rx, "Kbps"))));
+        return (Rate(rx + tx, "Kbps"), NicColumns(nic, new("Send", Rate(tx, "Kbps")), new("Receive", Rate(rx, "Kbps"))));
     }
 
-    private static (string, IReadOnlyList<MonitorDetailRow>) Packets(AdapterRow? nic, MonitorRing ring)
+    private static (string, IReadOnlyList<MonitorFactColumn>) Packets(AdapterRow? nic, MonitorRing ring)
     {
         var rx = Last(ring, PdhNic.PacketsReceivedPerSec);
         var tx = Last(ring, PdhNic.PacketsSentPerSec);
-        return (Rate(rx + tx, "pkt/s"), NicFacts(nic, new("Send", Rate(tx, "pkt/s")), new("Receive", Rate(rx, "pkt/s"))));
+        return (Rate(rx + tx, "pkt/s"), NicColumns(nic, new("Send", Rate(tx, "pkt/s")), new("Receive", Rate(rx, "pkt/s"))));
     }
 
-    private static (string, IReadOnlyList<MonitorDetailRow>) Utilization(AdapterRow? nic, MonitorRing ring)
+    private static (string, IReadOnlyList<MonitorFactColumn>) Utilization(AdapterRow? nic, MonitorRing ring)
     {
         var bytes = Last(ring, PdhNic.BytesTotalPerSec);
         var band = Last(ring, PdhNic.CurrentBandwidth);
         var pct = band > 0 ? 8m * bytes / band * 100m : 0m;
-        return (Pct(pct), NicFacts(nic, new("Total", Rate(bytes * 8m / 1000m, "Kbps")), null));
+        return (Pct(pct), NicColumns(nic, new("Total", Rate(bytes * 8m / 1000m, "Kbps")), null));
     }
 
-    private static (string, IReadOnlyList<MonitorDetailRow>) Integrity(AdapterRow? nic, MonitorRing ring)
+    private static (string, IReadOnlyList<MonitorFactColumn>) Integrity(AdapterRow? nic, MonitorRing ring)
     {
         var errors = Last(ring, PdhNic.PacketsReceivedErrors) + Last(ring, PdhNic.PacketsOutboundErrors);
         var discards = Last(ring, PdhNic.PacketsReceivedDiscarded) + Last(ring, PdhNic.PacketsOutboundDiscarded);
         var queue = Last(ring, PdhNic.OutputQueueLength);
         var headline = errors + discards + queue <= 0 ? "Clean" : "Attention";
-        return (headline, NicFacts(nic, new("Errors", Whole(errors)), new("Discards", Whole(discards))));
+        return (headline, NicColumns(nic, new("Errors", Whole(errors)), new("Discards", Whole(discards))));
     }
 
-    private static IReadOnlyList<MonitorDetailRow> NicFacts(AdapterRow? nic, MonitorDetailRow? topLive, MonitorDetailRow? bottomLive)
+    private static IReadOnlyList<MonitorFactColumn> NicColumns(AdapterRow? nic, MonitorDetailRow? topLive, MonitorDetailRow? bottomLive)
     {
-        var rows = new List<MonitorDetailRow>();
         var wireless = WirelessLinkLookup.TryRead(nic);
         var ip = nic is null ? string.Empty : FirstAddress(nic, AddressFamily.InterNetwork);
-
-        if (topLive is not null)
-            rows.Add(topLive);
-        rows.Add(new("Connection type", wireless?.ConnectionType ?? (nic is null ? "\u2014" : ConnectionType(nic))));
-        rows.Add(new("IPv4", string.IsNullOrWhiteSpace(ip) ? "\u2014" : ip));
-        rows.Add(new("Domain", nic is null ? "\u2014" : DomainName(nic)));
-        if (bottomLive is not null)
-            rows.Add(bottomLive);
-        if (wireless is not null)
+        var columns = new List<MonitorFactColumn>();
+        if (topLive is not null || bottomLive is not null)
         {
-            rows.Add(new("SSID", wireless.Ssid));
-            rows.Add(new("Signal", wireless.Signal));
+            var live = new List<MonitorDetailRow>();
+            if (topLive is not null) live.Add(topLive);
+            if (bottomLive is not null) live.Add(bottomLive);
+            columns.Add(new([.. live]));
         }
 
-        return rows;
+        if (wireless is not null)
+        {
+            columns.Add(new(new("Connection type", wireless.ConnectionType), new("SSID", wireless.Ssid)));
+            columns.Add(new(new("IPv4", string.IsNullOrWhiteSpace(ip) ? "\u2014" : ip), new("Signal", wireless.Signal)));
+        }
+        else
+        {
+            columns.Add(new(new("Connection type", nic is null ? "\u2014" : ConnectionType(nic))));
+            columns.Add(new(new("IPv4", string.IsNullOrWhiteSpace(ip) ? "\u2014" : ip)));
+        }
+
+        columns.Add(new(new("Domain", nic is null ? "\u2014" : DomainName(nic))));
+        return columns;
     }
 
     private static string ConnectionType(AdapterRow nic)
