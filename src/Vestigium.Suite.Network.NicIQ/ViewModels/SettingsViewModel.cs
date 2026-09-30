@@ -113,13 +113,13 @@ public sealed partial class SettingsViewModel : ObservableObject
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ArchiveWindowLabel))]
-    private decimal _archiveMinutes = MonitorRing.DefaultArchiveSeconds / 60;
+    private decimal _archiveSeconds = MonitorRing.DefaultArchiveSeconds;
 
     public string ArchiveWindowLabel
     {
         get
         {
-            var seconds = MonitorRing.ClampArchive((int)Math.Round(ArchiveMinutes, MidpointRounding.AwayFromZero) * 60);
+            var seconds = MonitorRing.ClampArchive((int)Math.Round(ArchiveSeconds, MidpointRounding.AwayFromZero));
             var minutes = seconds / 60;
             var rest = seconds % 60;
             return $"{minutes} minutes {rest} seconds";
@@ -152,8 +152,8 @@ public sealed partial class SettingsViewModel : ObservableObject
         ShowLegend = data.ShowLegend;
         ChartTheme.WatchLegend = data.ShowLegend;
         Host?.RefreshLegendButton();
-        ArchiveMinutes = MonitorRing.ClampArchive(
-            data.ArchiveSeconds == 0 ? MonitorRing.DefaultArchiveSeconds : data.ArchiveSeconds) / 60m;
+        ArchiveSeconds = MonitorRing.ClampArchive(
+            data.ArchiveSeconds == 0 ? MonitorRing.DefaultArchiveSeconds : data.ArchiveSeconds);
         RefreshCounterLists(MonitorCounterList.FromSettings(data));
         BarPosition = string.Equals(data.StatusBarDock, "Top", StringComparison.OrdinalIgnoreCase)
             ? VestigiumStatusBarPosition.Top
@@ -223,19 +223,19 @@ public sealed partial class SettingsViewModel : ObservableObject
         Persist();
     }
 
-    partial void OnArchiveMinutesChanged(decimal value)
+    partial void OnArchiveSecondsChanged(decimal value)
     {
-        var minutes = MonitorRing.ClampArchive((int)Math.Round(value, MidpointRounding.AwayFromZero) * 60) / 60m;
-        if (minutes != value)
+        var seconds = MonitorRing.ClampArchive((int)Math.Round(value, MidpointRounding.AwayFromZero));
+        if (seconds != value)
         {
-            ArchiveMinutes = minutes;
+            ArchiveSeconds = seconds;
             return;
         }
 
         OnPropertyChanged(nameof(ArchiveWindowLabel));
         if (_loading)
             return;
-        Host?.ApplyMonitorArchive((int)minutes * 60);
+        Host?.ApplyMonitorArchive(seconds);
         Persist();
     }
 
