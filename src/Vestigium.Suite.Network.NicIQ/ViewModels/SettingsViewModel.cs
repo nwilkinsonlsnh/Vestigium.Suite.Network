@@ -136,6 +136,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         MonitorDiscards = data.MonitorDiscards;
         ShowLegend = data.ShowLegend;
         ChartTheme.WatchLegend = data.ShowLegend;
+        Host?.RefreshLegendButton();
         RefreshCounterLists(MonitorCounterList.FromSettings(data));
         BarPosition = string.Equals(data.StatusBarDock, "Top", StringComparison.OrdinalIgnoreCase)
             ? VestigiumStatusBarPosition.Top
@@ -201,6 +202,7 @@ public sealed partial class SettingsViewModel : ObservableObject
             return;
         ChartTheme.WatchLegend = value;
         Host?.ApplyLegend(value);
+        Host?.RefreshLegendButton();
         Persist();
     }
 
