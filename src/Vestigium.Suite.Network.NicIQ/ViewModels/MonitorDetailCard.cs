@@ -47,9 +47,10 @@ internal static class MonitorDetailCard
         var limit = Last(ring, HostCounters.CommitLimit);
         var cached = Last(ring, HostCounters.CacheBytes);
         var pct = Last(ring, HostCounters.CommittedPct);
+        var phys = MemoryHostFacts.Read();
         var columns = new MonitorFactColumn[]
         {
-            Column(Row("Available", GbFromMb(availableMb))),
+            Column(Row("In use", phys.InUse), Row("Total", phys.Total)),
             Column(Row("Committed", GbFromBytes(committed))),
             Column(Row("Commit limit", GbFromBytes(limit))),
             Column(Row("Cached", GbFromBytes(cached))),
