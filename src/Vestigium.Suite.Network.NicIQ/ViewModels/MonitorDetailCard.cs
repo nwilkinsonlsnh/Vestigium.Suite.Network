@@ -77,7 +77,7 @@ internal static class MonitorDetailCard
         var bytes = Last(ring, PdhNic.BytesTotalPerSec);
         var band = Last(ring, PdhNic.CurrentBandwidth);
         var pct = band > 0 ? 8m * bytes / band * 100m : 0m;
-        return ("Utilization", Pct(pct), NicColumns(nic, Row("Total", Rate(bytes * 8m / 1000m, "Kbps")), null));
+        return ("Utilization", Pct(pct), NicColumns(nic, Row("Total", Rate(bytes * 8m / 1000m, "Kbps")), Row("Link", LinkLabel(nic, band))));
     }
 
     private static (string, string, IReadOnlyList<MonitorFactColumn>) Integrity(AdapterRow? nic, MonitorRing ring)
@@ -124,6 +124,16 @@ internal static class MonitorDetailCard
 
     private static MonitorFactColumn Column(params MonitorDetailRow[] rows)
         => new MonitorFactColumn(rows);
+
+    private static string LinkLabel(AdapterRow? nic, decimal bandwidthBits)
+    {
+        if (!string.IsNullOrWhiteSpace(nic?.Speed))
+            return nic.Speed;
+        if (bandwidthBits <= 0)
+            return "\u2014";
+        var bits = (long)decimal.Truncate(bandwidthBits);
+        return bits <= 0 ? "\u2014" : LinkSpeed.Format(bits);
+    }
 
     private static string ConnectionType(AdapterRow nic)
     {
