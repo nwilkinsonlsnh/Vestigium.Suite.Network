@@ -15,7 +15,7 @@
     </Grid.RowDefinitions>
 
     <TextBlock Style="{StaticResource TextBlock.Caption}"
-               Text="Live Network Interface counters. Primary NIC on open. Settings → Monitoring picks the set."
+               Text="Live counters. Network charts follow Active NIC. CPU and Memory are the machine."
                TextWrapping="Wrap"
                Margin="0,0,0,8" />
 
@@ -37,7 +37,9 @@
         <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="Throughput" IsChecked="{Binding ThroughputPageOpen}" GroupName="NicMonitorChart" Margin="0,0,8,0" />
         <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="Packets" IsChecked="{Binding PacketsPageOpen}" GroupName="NicMonitorChart" Margin="0,0,8,0" />
         <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="Integrity" IsChecked="{Binding IntegrityPageOpen}" GroupName="NicMonitorChart" Margin="0,0,8,0" />
-        <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="Utilization" IsChecked="{Binding UtilizationPageOpen}" GroupName="NicMonitorChart" />
+        <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="Utilization" IsChecked="{Binding UtilizationPageOpen}" GroupName="NicMonitorChart" Margin="0,0,8,0" />
+        <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="CPU" IsChecked="{Binding CpuPageOpen}" GroupName="NicMonitorChart" Margin="0,0,8,0" />
+        <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="Memory" IsChecked="{Binding MemoryPageOpen}" GroupName="NicMonitorChart" />
       </StackPanel>
       <TextBlock DockPanel.Dock="Bottom" Style="{StaticResource TextBlock.Caption}" Text="{Binding ChartStrip}" TextWrapping="Wrap" Margin="0,8,0,0" />
       <Border BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
