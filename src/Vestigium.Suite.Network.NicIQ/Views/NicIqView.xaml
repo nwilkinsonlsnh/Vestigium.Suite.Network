@@ -25,8 +25,8 @@
         <Button Content="Refresh" Style="{StaticResource Button.Secondary}" Command="{Binding RefreshCommand}" Padding="16,4" Margin="0,0,8,0" />
         <CheckBox Style="{StaticResource CheckBox.Standard}" Content="Show Down" IsChecked="{Binding ShowDown}" Margin="0,0,12,0" />
         <CheckBox Style="{StaticResource CheckBox.Standard}" Content="Show Up" IsChecked="{Binding ShowUp}" Margin="0,0,12,0" />
-        <CheckBox Style="{StaticResource CheckBox.Standard}" Content="Show IP Enabled &amp; IPv4" IsChecked="{Binding ShowIpv4}" Margin="0,0,12,0" />
-        <CheckBox Style="{StaticResource CheckBox.Standard}" Content="Show IP Enabled &amp; IPv6" IsChecked="{Binding ShowIpv6}" />
+        <CheckBox Style="{StaticResource CheckBox.Standard}" Content="Show IPv4" IsChecked="{Binding ShowIpv4}" Margin="0,0,12,0" />
+        <CheckBox Style="{StaticResource CheckBox.Standard}" Content="Show IPv6" IsChecked="{Binding ShowIpv6}" />
       </StackPanel>
 
       <StackPanel Grid.Column="1" Style="{StaticResource StackPanel.Toolbar}" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
