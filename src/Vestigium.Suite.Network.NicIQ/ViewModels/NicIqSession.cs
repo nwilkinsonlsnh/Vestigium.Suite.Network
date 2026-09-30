@@ -22,6 +22,7 @@ public sealed class NicIqSession
         _themes = themes;
         _chrome = chrome;
         Current = store.Load();
+        MonitorRing.ApplyArchive(Current.ArchiveSeconds);
         ApplyThemeAndBar();
     }
 
@@ -61,6 +62,7 @@ public sealed class NicIqSession
             MonitorDiscards = _main.MonitorDiscards,
             MonitorCounters = [.. _settings.MonitorCounters],
             ShowLegend = _settings.ShowLegend,
+            ArchiveSeconds = MonitorRing.ClampArchive((int)_settings.ArchiveMinutes * 60),
             SelectedAdapterId = _main.SelectedAdapter?.Id ?? _main.PreferredAdapterId,
             SelectedMonitorNicId = _main.SelectedMonitorNic?.Id ?? _main.PreferredMonitorNicId,
             StatusBarVisible = _settings.BarVisible,
@@ -100,6 +102,7 @@ public sealed class NicIqSession
         _main.PreferredAdapterId = Current.SelectedAdapterId;
         _main.PreferredMonitorNicId = Current.SelectedMonitorNicId ?? Current.SelectedAdapterId;
         ChartTheme.WatchLegend = Current.ShowLegend;
+        _main.ApplyMonitorArchive(Current.ArchiveSeconds);
         _settings.LoadFrom(Current);
     }
 
