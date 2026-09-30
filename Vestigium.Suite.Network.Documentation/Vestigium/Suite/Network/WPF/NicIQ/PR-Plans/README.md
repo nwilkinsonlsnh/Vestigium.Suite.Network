@@ -3,7 +3,7 @@
 **Host:** `Vestigium.Suite.Network.NicIQ`  
 **APPID:** `NicIQ`  
 **Status:** Live — [PR03 -- Implementation Plan.md](PR03/PR03%20--%20Implementation%20Plan.md)  
-**Next slice:** owner accepts the extract letters, then Helpers.PerfMon cached source (PR03c) and Charts (PR03a).
+**Next slice:** owner accepts the letters, then PerfMon cached source (PR03c), Charts (PR03a), and new SystemInfo (PR03g).
 
 This file is the queue keeper. It is not the plan. Do not delete it when the plan is idle.
 
@@ -20,6 +20,9 @@ PR-Plans/
     PR03d -- Requirements (Vestigium.Helpers.PerfMon.Cpu and Memory).md
     PR03e -- Requirements (Vestigium.Helpers.Network).md
     PR03f -- Requirements (Vestigium.Controls).md
+    PR03g -- Requirements (NEW) Vestigium.SystemInfo.md
+    PR03g-Cpu -- Requirements (NEW) Vestigium.SystemInfo.Cpu.md
+    PR03g-Memory -- Requirements (NEW) Vestigium.SystemInfo.Memory.md
   Completed/
     PR01/                            first and ten
     PR02/                            monitoring
@@ -37,7 +40,8 @@ When the extract finishes, move the whole `PR03/` folder under `Completed/`. The
 | [Published NugetPackages.md](../../../../Published%20NugetPackages.md) | Domain. Same job = same package |
 | [Requirements_v1.1.md](../Requirements_v1.1.md) | Monitoring job still owned by the window |
 | [Requirements_v1.0.md](../Requirements_v1.0.md) | List + detail + watch |
-| Helpers.Charts / Themes / PerfMon / Network / Controls | Library contracts |
+| Helpers.Charts / Themes / PerfMon / Network / Controls | Existing library contracts |
+| [PR03g SystemInfo](PR03/PR03g%20--%20Requirements%20(NEW)%20Vestigium.SystemInfo.md) | New family for machine facts |
 
 If a plan and Requirements disagree on the **job**, Requirements win.  
 If a plan invents a package the catalog already named, the plan is wrong.
