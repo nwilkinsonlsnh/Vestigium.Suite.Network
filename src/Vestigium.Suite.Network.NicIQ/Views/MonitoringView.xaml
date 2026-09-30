@@ -15,16 +15,17 @@
 
     <Grid Margin="0,0,0,8">
       <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="*" />
-        <ColumnDefinition Width="2*" MinWidth="280" />
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="*" MinWidth="360" />
       </Grid.ColumnDefinitions>
 
-      <StackPanel VerticalAlignment="Top">
+      <StackPanel VerticalAlignment="Top" Margin="0,0,16,0">
         <TextBlock Style="{StaticResource TextBlock.Caption}"
                    Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}"
                    Text="Live counters. Network charts follow Active NIC. CPU and Memory are the machine."
                    TextWrapping="Wrap"
-                   Margin="0,0,16,8" />
+                   MaxWidth="360"
+                   Margin="0,0,0,8" />
         <StackPanel Style="{StaticResource StackPanel.Toolbar}" Orientation="Horizontal">
           <Label Style="{StaticResource Label.Standard}" Content="Active NIC" VerticalAlignment="Center" Margin="0,0,8,0" />
           <ComboBox Style="{StaticResource ComboBox.Standard}"
@@ -45,7 +46,7 @@
               BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
               BorderThickness="1"
               Padding="16,10"
-              VerticalAlignment="Top">
+              VerticalAlignment="Stretch">
         <Grid>
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
@@ -67,15 +68,15 @@
                        Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}"
                        TextWrapping="Wrap" />
           </StackPanel>
-          <ItemsControl Grid.Column="1" ItemsSource="{Binding MonitorFacts}" VerticalAlignment="Center">
+          <ItemsControl Grid.Column="1" ItemsSource="{Binding MonitorFacts}" VerticalAlignment="Center" HorizontalContentAlignment="Stretch">
             <ItemsControl.ItemsPanel>
               <ItemsPanelTemplate>
-                <StackPanel Orientation="Horizontal" />
+                <UniformGrid Rows="1" />
               </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
               <DataTemplate>
-                <ItemsControl ItemsSource="{Binding Rows}" Margin="0,0,28,0">
+                <ItemsControl ItemsSource="{Binding Rows}" Margin="0,0,16,0" HorizontalAlignment="Stretch">
                   <ItemsControl.ItemTemplate>
                     <DataTemplate>
                       <StackPanel Margin="0,0,0,8">
