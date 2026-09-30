@@ -101,14 +101,23 @@
     </Grid>
 
     <DockPanel Grid.Row="1">
-      <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
-        <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="Throughput" IsChecked="{Binding ThroughputPageOpen}" GroupName="NicMonitorChart" Margin="0,0,8,0" />
-        <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="Packets" IsChecked="{Binding PacketsPageOpen}" GroupName="NicMonitorChart" Margin="0,0,8,0" />
-        <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="Integrity" IsChecked="{Binding IntegrityPageOpen}" GroupName="NicMonitorChart" Margin="0,0,8,0" />
-        <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="Utilization" IsChecked="{Binding UtilizationPageOpen}" GroupName="NicMonitorChart" Margin="0,0,8,0" />
-        <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="CPU" IsChecked="{Binding CpuPageOpen}" GroupName="NicMonitorChart" Margin="0,0,8,0" />
-        <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="Memory" IsChecked="{Binding MemoryPageOpen}" GroupName="NicMonitorChart" />
-      </StackPanel>
+      <Grid DockPanel.Dock="Top" Margin="0,0,0,8">
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+          <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="Throughput" IsChecked="{Binding ThroughputPageOpen}" GroupName="NicMonitorChart" Margin="0,0,8,0" />
+          <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="Packets" IsChecked="{Binding PacketsPageOpen}" GroupName="NicMonitorChart" Margin="0,0,8,0" />
+          <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="Integrity" IsChecked="{Binding IntegrityPageOpen}" GroupName="NicMonitorChart" Margin="0,0,8,0" />
+          <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="Utilization" IsChecked="{Binding UtilizationPageOpen}" GroupName="NicMonitorChart" Margin="0,0,8,0" />
+          <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="CPU" IsChecked="{Binding CpuPageOpen}" GroupName="NicMonitorChart" Margin="0,0,8,0" />
+          <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="Memory" IsChecked="{Binding MemoryPageOpen}" GroupName="NicMonitorChart" />
+        </StackPanel>
+        <Button Style="{StaticResource Button.Standard}"
+                Content="{Binding LegendButtonText}"
+                Command="{Binding ToggleLegendCommand}"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Center"
+                MinWidth="108"
+                Padding="12,4" />
+      </Grid>
       <TextBlock DockPanel.Dock="Bottom" Style="{StaticResource TextBlock.Caption}" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" Text="{Binding ChartStrip}" TextWrapping="Wrap" Margin="0,8,0,0" />
       <Border BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
         <Grid>
