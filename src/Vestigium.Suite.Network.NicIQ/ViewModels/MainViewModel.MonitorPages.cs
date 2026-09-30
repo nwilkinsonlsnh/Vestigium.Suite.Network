@@ -30,6 +30,7 @@ public sealed partial class MainViewModel
         OnPropertyChanged(nameof(UtilizationPageOpen));
         OnPropertyChanged(nameof(CpuPageOpen));
         OnPropertyChanged(nameof(MemoryPageOpen));
+        RefreshMonitorFacts();
     }
 
     private void RefreshMonitorFacts()
