@@ -53,6 +53,19 @@ internal static class MonitorReadingsIo
         PropertyNameCaseInsensitive = true
     };
 
+    public static string DefaultFolder
+    {
+        get
+        {
+            var root = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
+                "Vestigium",
+                "Exports");
+            Directory.CreateDirectory(root);
+            return root;
+        }
+    }
+
     public static void Write(string path, MonitorReadingsFile file)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);

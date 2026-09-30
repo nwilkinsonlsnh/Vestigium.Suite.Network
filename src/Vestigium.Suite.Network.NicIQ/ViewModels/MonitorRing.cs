@@ -3,10 +3,12 @@ using Vestigium.Helpers.PerfMon;
 
 namespace Vestigium.Suite.Network.NicIQ.ViewModels;
 
-/// <summary>Last 60 finite samples per counter. Unavailable rows never become zero.</summary>
+/// <summary>Keeps five minutes of samples. Live charts show the last 60 seconds.</summary>
 public sealed class MonitorRing
 {
-    public const int Cap = 60;
+    public const int DisplaySeconds = 60;
+    public const int ArchiveSeconds = 300;
+    public const int Cap = ArchiveSeconds;
 
     private readonly Dictionary<string, List<Observation>> _rows =
         new(StringComparer.OrdinalIgnoreCase);
@@ -34,8 +36,8 @@ public sealed class MonitorRing
         }
 
         list.Add(new Observation((decimal)raw, sample.Utc));
-        if (list.Count > Cap)
-            list.RemoveRange(0, list.Count - Cap);
+        if (list.Count > ArchiveSeconds)
+            list.RemoveRange(0, list.Count - ArchiveSeconds);
     }
 
     public IReadOnlyList<Observation> Of(string counter)
@@ -87,8 +89,8 @@ public sealed class MonitorRing
                 if (point is null)
                     continue;
                 list.Add(new Observation(point.Value, point.At));
-                if (list.Count > Cap)
-                    list.RemoveRange(0, list.Count - Cap);
+                if (list.Count > ArchiveSeconds)
+                    list.RemoveRange(0, list.Count - ArchiveSeconds);
             }
 
             if (list.Count > 0)
