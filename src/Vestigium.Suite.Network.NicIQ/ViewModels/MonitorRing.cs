@@ -56,4 +56,43 @@ public sealed class MonitorRing
 
         return max;
     }
+
+    public IReadOnlyList<MonitorReadingSeries> Snapshot()
+    {
+        var rows = new List<MonitorReadingSeries>();
+        foreach (var pair in _rows.OrderBy(p => p.Key, StringComparer.OrdinalIgnoreCase))
+        {
+            if (pair.Value.Count == 0)
+                continue;
+            rows.Add(new MonitorReadingSeries(
+                pair.Key,
+                pair.Value.Select(o => new MonitorReadingPoint(o.Value, o.At)).ToArray()));
+        }
+
+        return rows;
+    }
+
+    public void Replace(IEnumerable<MonitorReadingSeries> series)
+    {
+        ArgumentNullException.ThrowIfNull(series);
+        Clear();
+        foreach (var set in series)
+        {
+            var name = set.Counter?.Trim() ?? string.Empty;
+            if (name.Length == 0 || set.Points is null || set.Points.Count == 0)
+                continue;
+            var list = new List<Observation>();
+            foreach (var point in set.Points)
+            {
+                if (point is null)
+                    continue;
+                list.Add(new Observation(point.Value, point.At));
+                if (list.Count > Cap)
+                    list.RemoveRange(0, list.Count - Cap);
+            }
+
+            if (list.Count > 0)
+                _rows[name] = list;
+        }
+    }
 }
