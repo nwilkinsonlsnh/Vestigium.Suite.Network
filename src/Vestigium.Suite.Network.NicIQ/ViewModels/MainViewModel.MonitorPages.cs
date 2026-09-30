@@ -9,7 +9,13 @@ public sealed partial class MainViewModel
     public ObservableCollection<MonitorFactColumn> MonitorFacts { get; } = [];
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasMonitorHeadlineTitle))]
+    private string _monitorHeadlineTitle = string.Empty;
+
+    [ObservableProperty]
     private string _monitorHeadline = string.Empty;
+
+    public bool HasMonitorHeadlineTitle => !string.IsNullOrWhiteSpace(MonitorHeadlineTitle);
 
     public bool CpuPageOpen
     {
@@ -38,9 +44,11 @@ public sealed partial class MainViewModel
 
     private void RefreshMonitorFacts()
     {
-        var (headline, columns) = MonitorDetailCard.Build(ChartPage, SelectedMonitorNic, _ring);
-        if (!string.Equals(MonitorHeadline, headline, StringComparison.Ordinal))
-            MonitorHeadline = headline;
+        var (title, value, columns) = MonitorDetailCard.Build(ChartPage, SelectedMonitorNic, _ring);
+        if (!string.Equals(MonitorHeadlineTitle, title, StringComparison.Ordinal))
+            MonitorHeadlineTitle = title;
+        if (!string.Equals(MonitorHeadline, value, StringComparison.Ordinal))
+            MonitorHeadline = value;
 
         var n = Math.Min(MonitorFacts.Count, columns.Count);
         for (var i = 0; i < n; i++)
