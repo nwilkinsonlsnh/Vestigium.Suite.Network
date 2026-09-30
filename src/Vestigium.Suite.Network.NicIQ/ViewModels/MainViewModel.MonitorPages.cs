@@ -6,7 +6,7 @@ namespace Vestigium.Suite.Network.NicIQ.ViewModels;
 
 public sealed partial class MainViewModel
 {
-    public ObservableCollection<MonitorDetailRow> MonitorFacts { get; } = [];
+    public ObservableCollection<MonitorFactColumn> MonitorFacts { get; } = [];
 
     [ObservableProperty]
     private string _monitorHeadline = string.Empty;
@@ -38,23 +38,16 @@ public sealed partial class MainViewModel
 
     private void RefreshMonitorFacts()
     {
-        var (headline, rows) = MonitorDetailCard.Build(ChartPage, SelectedMonitorNic, _ring);
+        var (headline, columns) = MonitorDetailCard.Build(ChartPage, SelectedMonitorNic, _ring);
         if (!string.Equals(MonitorHeadline, headline, StringComparison.Ordinal))
             MonitorHeadline = headline;
 
-        var n = Math.Min(MonitorFacts.Count, rows.Count);
+        var n = Math.Min(MonitorFacts.Count, columns.Count);
         for (var i = 0; i < n; i++)
-        {
-            if (!string.Equals(MonitorFacts[i].Label, rows[i].Label, StringComparison.Ordinal)
-                || !string.Equals(MonitorFacts[i].Value, rows[i].Value, StringComparison.Ordinal))
-            {
-                MonitorFacts[i] = rows[i];
-            }
-        }
-
-        while (MonitorFacts.Count > rows.Count)
+            MonitorFacts[i] = columns[i];
+        while (MonitorFacts.Count > columns.Count)
             MonitorFacts.RemoveAt(MonitorFacts.Count - 1);
-        for (var i = MonitorFacts.Count; i < rows.Count; i++)
-            MonitorFacts.Add(rows[i]);
+        for (var i = MonitorFacts.Count; i < columns.Count; i++)
+            MonitorFacts.Add(columns[i]);
     }
 }
