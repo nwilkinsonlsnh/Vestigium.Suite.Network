@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace Vestigium.Suite.Network.NicIQ.ViewModels;
@@ -32,6 +33,8 @@ public sealed partial class MainViewModel
         OnPropertyChanged(nameof(MemoryPageOpen));
         RefreshMonitorFacts();
     }
+
+    partial void OnLiveChartChanged(FrameworkElement? value) => RefreshMonitorFacts();
 
     private void RefreshMonitorFacts()
     {
