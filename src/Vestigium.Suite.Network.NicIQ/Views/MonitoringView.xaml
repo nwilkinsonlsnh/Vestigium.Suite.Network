@@ -62,21 +62,27 @@
           <ItemsControl Grid.Column="1" ItemsSource="{Binding MonitorFacts}">
             <ItemsControl.ItemsPanel>
               <ItemsPanelTemplate>
-                <UniformGrid Columns="4" />
+                <StackPanel Orientation="Horizontal" />
               </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
               <DataTemplate>
-                <StackPanel Margin="0,0,16,6">
-                  <TextBlock Text="{Binding Label}"
-                             FontSize="11"
-                             Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
-                  <TextBlock Text="{Binding Value}"
-                             FontSize="14"
-                             FontWeight="SemiBold"
-                             Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}"
-                             TextWrapping="Wrap" />
-                </StackPanel>
+                <ItemsControl ItemsSource="{Binding Rows}" Margin="0,0,28,0">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                      <StackPanel Margin="0,0,0,8">
+                        <TextBlock Text="{Binding Label}"
+                                   FontSize="11"
+                                   Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
+                        <TextBlock Text="{Binding Value}"
+                                   FontSize="14"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}"
+                                   TextWrapping="Wrap" />
+                      </StackPanel>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
               </DataTemplate>
             </ItemsControl.ItemTemplate>
           </ItemsControl>
