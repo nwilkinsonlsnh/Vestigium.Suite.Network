@@ -110,13 +110,31 @@
           <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="CPU" IsChecked="{Binding CpuPageOpen}" GroupName="NicMonitorChart" Margin="0,0,8,0" />
           <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="Memory" IsChecked="{Binding MemoryPageOpen}" GroupName="NicMonitorChart" />
         </StackPanel>
-        <Button Style="{StaticResource Button.Secondary}"
-                Content="{Binding LegendButtonText}"
-                Command="{Binding ToggleLegendCommand}"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Center"
-                MinWidth="108"
-                Padding="12,4" />
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+          <Button Style="{StaticResource Button.Secondary}"
+                  Content="Export Readings"
+                  Command="{Binding ExportReadingsCommand}"
+                  MinWidth="108"
+                  Padding="12,4"
+                  Margin="0,0,8,0" />
+          <Button Style="{StaticResource Button.Secondary}"
+                  Content="Import Readings"
+                  Command="{Binding ImportReadingsCommand}"
+                  MinWidth="108"
+                  Padding="12,4"
+                  Margin="0,0,8,0" />
+          <Button Style="{StaticResource Button.Secondary}"
+                  Content="{Binding PauseButtonText}"
+                  Command="{Binding TogglePauseCommand}"
+                  MinWidth="88"
+                  Padding="12,4"
+                  Margin="0,0,8,0" />
+          <Button Style="{StaticResource Button.Secondary}"
+                  Content="{Binding LegendButtonText}"
+                  Command="{Binding ToggleLegendCommand}"
+                  MinWidth="108"
+                  Padding="12,4" />
+        </StackPanel>
       </Grid>
       <TextBlock DockPanel.Dock="Bottom" Style="{StaticResource TextBlock.Caption}" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" Text="{Binding ChartStrip}" TextWrapping="Wrap" Margin="0,8,0,0" />
       <Border BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
