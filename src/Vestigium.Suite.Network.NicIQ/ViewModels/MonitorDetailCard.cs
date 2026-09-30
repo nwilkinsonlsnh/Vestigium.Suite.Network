@@ -61,20 +61,14 @@ internal static class MonitorDetailCard
     {
         var rx = Last(ring, PdhNic.BytesReceivedPerSec) * 8m / 1000m;
         var tx = Last(ring, PdhNic.BytesSentPerSec) * 8m / 1000m;
-        return (Rate(rx + tx, "Kbps"), NicFacts(nic, [
-            new("Receive", Rate(rx, "Kbps")),
-            new("Send", Rate(tx, "Kbps"))
-        ]));
+        return (Rate(rx + tx, "Kbps"), NicFacts(nic, new("Send", Rate(tx, "Kbps")), new("Receive", Rate(rx, "Kbps"))));
     }
 
     private static (string, IReadOnlyList<MonitorDetailRow>) Packets(AdapterRow? nic, MonitorRing ring)
     {
         var rx = Last(ring, PdhNic.PacketsReceivedPerSec);
         var tx = Last(ring, PdhNic.PacketsSentPerSec);
-        return (Rate(rx + tx, "pkt/s"), NicFacts(nic, [
-            new("Receive", Rate(rx, "pkt/s")),
-            new("Send", Rate(tx, "pkt/s"))
-        ]));
+        return (Rate(rx + tx, "pkt/s"), NicFacts(nic, new("Send", Rate(tx, "pkt/s")), new("Receive", Rate(rx, "pkt/s"))));
     }
 
     private static (string, IReadOnlyList<MonitorDetailRow>) Utilization(AdapterRow? nic, MonitorRing ring)
@@ -82,9 +76,7 @@ internal static class MonitorDetailCard
         var bytes = Last(ring, PdhNic.BytesTotalPerSec);
         var band = Last(ring, PdhNic.CurrentBandwidth);
         var pct = band > 0 ? 8m * bytes / band * 100m : 0m;
-        return (Pct(pct), NicFacts(nic, [
-            new("Total", Rate(bytes * 8m / 1000m, "Kbps"))
-        ]));
+        return (Pct(pct), NicFacts(nic, new("Total", Rate(bytes * 8m / 1000m, "Kbps")), null));
     }
 
     private static (string, IReadOnlyList<MonitorDetailRow>) Integrity(AdapterRow? nic, MonitorRing ring)
@@ -93,35 +85,28 @@ internal static class MonitorDetailCard
         var discards = Last(ring, PdhNic.PacketsReceivedDiscarded) + Last(ring, PdhNic.PacketsOutboundDiscarded);
         var queue = Last(ring, PdhNic.OutputQueueLength);
         var headline = errors + discards + queue <= 0 ? "Clean" : "Attention";
-        return (headline, NicFacts(nic, [
-            new("Errors", Whole(errors)),
-            new("Discards", Whole(discards)),
-            new("Queue", Whole(queue))
-        ]));
+        return (headline, NicFacts(nic, new("Errors", Whole(errors)), new("Discards", Whole(discards))));
     }
 
-    private static IReadOnlyList<MonitorDetailRow> NicFacts(AdapterRow? nic, IEnumerable<MonitorDetailRow> live)
+    private static IReadOnlyList<MonitorDetailRow> NicFacts(AdapterRow? nic, MonitorDetailRow? topLive, MonitorDetailRow? bottomLive)
     {
-        var rows = live.ToList();
-        if (nic is null)
-            return rows;
-
+        var rows = new List<MonitorDetailRow>();
         var wireless = WirelessLinkLookup.TryRead(nic);
+        var ip = nic is null ? string.Empty : FirstAddress(nic, AddressFamily.InterNetwork);
+
+        if (topLive is not null)
+            rows.Add(topLive);
+        rows.Add(new("Connection type", wireless?.ConnectionType ?? (nic is null ? "\u2014" : ConnectionType(nic))));
+        rows.Add(new("IPv4", string.IsNullOrWhiteSpace(ip) ? "\u2014" : ip));
+        rows.Add(new("Domain", nic is null ? "\u2014" : DomainName(nic)));
+        if (bottomLive is not null)
+            rows.Add(bottomLive);
         if (wireless is not null)
         {
             rows.Add(new("SSID", wireless.Ssid));
-            rows.Add(new("Connection type", wireless.ConnectionType));
             rows.Add(new("Signal", wireless.Signal));
         }
-        else
-        {
-            rows.Add(new("Connection type", ConnectionType(nic)));
-        }
 
-        rows.Add(new("Domain", DomainName(nic)));
-        var ip = FirstAddress(nic, AddressFamily.InterNetwork);
-        if (!string.IsNullOrWhiteSpace(ip))
-            rows.Add(new("IPv4", ip));
         return rows;
     }
 
