@@ -25,6 +25,10 @@ internal static class ChartHorizon
 
 internal static class MonitorChart
 {
+    private static readonly ScottPlot.Color ClColor = new(232, 196, 90);
+    private static readonly ScottPlot.Color UclColor = new(214, 92, 92);
+    private static readonly ScottPlot.Color LclColor = new(90, 168, 224);
+
     public static (FrameworkElement? View, string Strip) Paint(string page, MonitorRing ring)
     {
         ArgumentNullException.ThrowIfNull(ring);
@@ -109,9 +113,40 @@ internal static class MonitorChart
     private static void DrawLimitLines(WpfPlot plot, ControlLimits? limits)
     {
         if (limits is null) return;
-        var ucl = plot.Plot.Add.HorizontalLine(limits.Upper); ucl.LinePattern = ScottPlot.LinePattern.Dashed; ucl.LegendText = "UCL";
-        var lcl = plot.Plot.Add.HorizontalLine(limits.Lower); lcl.LinePattern = ScottPlot.LinePattern.Dashed; lcl.LegendText = "LCL";
-        var cl = plot.Plot.Add.HorizontalLine(limits.Center); cl.LinePattern = ScottPlot.LinePattern.Dotted; cl.LegendText = "CL";
+        StyleOrAdd(plot, "UCL", limits.Upper, UclColor, ScottPlot.LinePattern.Dashed, 1.5f);
+        StyleOrAdd(plot, "LCL", limits.Lower, LclColor, ScottPlot.LinePattern.Dashed, 1.5f);
+        StyleOrAdd(plot, "CL", limits.Center, ClColor, ScottPlot.LinePattern.DenselyDashed, 2.25f);
+    }
+
+    private static void StyleLimitLines(FrameworkElement view, ControlLimits? limits)
+    {
+        if (view is not WpfPlot plot) return;
+        DrawLimitLines(plot, limits);
+        plot.Refresh();
+    }
+
+    private static void StyleOrAdd(WpfPlot plot, string name, double y, ScottPlot.Color color, ScottPlot.LinePattern pattern, float width)
+    {
+        foreach (var plottable in plot.Plot.GetPlottables())
+        {
+            if (plottable is not ScottPlot.Plottables.HorizontalLine line)
+                continue;
+            if (!string.Equals(line.LegendText, name, StringComparison.OrdinalIgnoreCase)
+                && Math.Abs(line.Y - y) > 0.0001)
+                continue;
+            line.Y = y;
+            line.Color = color;
+            line.LinePattern = pattern;
+            line.LineWidth = width;
+            line.LegendText = name;
+            return;
+        }
+
+        var added = plot.Plot.Add.HorizontalLine(y);
+        added.Color = color;
+        added.LinePattern = pattern;
+        added.LineWidth = width;
+        added.LegendText = name;
     }
 
     private static double CountCeiling(double peak) => peak <= 10 ? 10 : peak <= 20 ? 20 : peak <= 50 ? 50 : peak <= 100 ? 100 : Math.Ceiling(peak / 50d) * 50d;
@@ -139,6 +174,7 @@ internal static class MonitorChart
         {
             var view = ChartTheme.Paint(ChartView.Line(series, options));
             FitTimeAxis(view, span);
+            StyleLimitLines(view, options.Limits);
             var strip = points.Count == 0 ? "Waiting for samples." : RateStrip(stats, "Utilization");
             return (view, AppendLimits(strip, options.Limits));
         }
@@ -155,6 +191,7 @@ internal static class MonitorChart
         {
             var view = ChartTheme.Paint(ChartView.Line(rows, options));
             FitTimeAxis(view, span);
+            StyleLimitLines(view, options.Limits);
             return (view, AppendLimits(Strip(leftStats ?? left, leftName, rightStats ?? right, rightName, rates), options.Limits));
         }
         catch (Exception ex) { return (null, ex.Message); }
