@@ -1,5 +1,4 @@
 using Vestigium.Controls.StatusBar;
-using Vestigium.Helpers.Analytics;
 
 namespace Vestigium.Suite.Network.NicIQ.ViewModels;
 
@@ -24,6 +23,14 @@ public sealed partial class MainViewModel
     private void HoldMonitorClock()
     {
         _heldElapsed = ElapsedNow();
+        PublishMonitorProgress();
+    }
+
+    private void ContinueMonitorClock()
+    {
+        _reviewImported = false;
+        _reviewSpan = TimeSpan.Zero;
+        _runStartedUtc = DateTimeOffset.UtcNow - (_heldElapsed < TimeSpan.Zero ? TimeSpan.Zero : _heldElapsed);
         PublishMonitorProgress();
     }
 
