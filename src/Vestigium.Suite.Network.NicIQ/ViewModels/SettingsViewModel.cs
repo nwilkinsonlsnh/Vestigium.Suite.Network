@@ -1,4 +1,6 @@
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Vestigium.Controls.Shell;
 using Vestigium.Controls.StatusBar;
 using Vestigium.Themes;
@@ -27,6 +29,7 @@ public sealed partial class SettingsViewModel : ObservableObject
                 OnPropertyChanged(nameof(SelectedThemeId));
             }
         };
+        RefreshCounterLists(MonitorCounterList.FromSettings(new NicIqSettings()));
     }
 
     public NicIqSession? Session { get; set; }
@@ -41,8 +44,13 @@ public sealed partial class SettingsViewModel : ObservableObject
         VestigiumStatusBarPosition.Top
     ];
 
+    public ObservableCollection<string> AvailableCounters { get; } = [];
+
+    public ObservableCollection<string> MonitorCounters { get; } = [];
+
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(NicIqPageOpen))]
+    [NotifyPropertyChangedFor(nameof(MonitoringPageOpen))]
     [NotifyPropertyChangedFor(nameof(ThemePageOpen))]
     private string _settingsPage = "NicIQ";
 
@@ -50,6 +58,12 @@ public sealed partial class SettingsViewModel : ObservableObject
     {
         get => SettingsPage == "NicIQ";
         set { if (value) SettingsPage = "NicIQ"; }
+    }
+
+    public bool MonitoringPageOpen
+    {
+        get => SettingsPage == "Monitoring";
+        set { if (value) SettingsPage = "Monitoring"; }
     }
 
     public bool ThemePageOpen
@@ -71,10 +85,16 @@ public sealed partial class SettingsViewModel : ObservableObject
     private decimal _defaultDurationSeconds = NicIqWatchInput.DefaultDurationSeconds;
 
     [ObservableProperty]
-    private bool _includeDown = true;
+    private bool _showUp = true;
 
     [ObservableProperty]
-    private bool _ipEnabledOnly = true;
+    private bool _showDown = true;
+
+    [ObservableProperty]
+    private bool _showIpv4 = true;
+
+    [ObservableProperty]
+    private bool _showIpv6 = true;
 
     [ObservableProperty]
     private bool _monitorReceive = true;
@@ -88,6 +108,15 @@ public sealed partial class SettingsViewModel : ObservableObject
     [ObservableProperty]
     private bool _monitorDiscards;
 
+    [ObservableProperty]
+    private bool _showLegend = true;
+
+    [ObservableProperty]
+    private string? _selectedAvailableCounter;
+
+    [ObservableProperty]
+    private string? _selectedMonitorCounter;
+
     public void BeginLoad() => _loading = true;
 
     public void EndLoad() => _loading = false;
@@ -96,16 +125,50 @@ public sealed partial class SettingsViewModel : ObservableObject
     {
         SelectedThemeId = string.IsNullOrWhiteSpace(data.ThemeId) ? SelectedThemeId : data.ThemeId;
         DefaultDurationSeconds = NicIqSession.ClampDuration(data.DurationSeconds);
-        IncludeDown = data.IncludeDown;
-        IpEnabledOnly = data.IpEnabledOnly;
+        ShowUp = data.ShowUp ?? true;
+        ShowDown = data.ShowDown ?? data.IncludeDown;
+        var ip = data.IpEnabled ?? data.IpEnabledOnly;
+        ShowIpv4 = data.ShowIpv4 ?? ip;
+        ShowIpv6 = data.ShowIpv6 ?? ip;
         MonitorReceive = data.MonitorReceive;
         MonitorSend = data.MonitorSend;
         MonitorErrors = data.MonitorErrors;
         MonitorDiscards = data.MonitorDiscards;
+        ShowLegend = data.ShowLegend;
+        ChartTheme.WatchLegend = data.ShowLegend;
+        Host?.RefreshLegendButton();
+        RefreshCounterLists(MonitorCounterList.FromSettings(data));
         BarPosition = string.Equals(data.StatusBarDock, "Top", StringComparison.OrdinalIgnoreCase)
             ? VestigiumStatusBarPosition.Top
             : VestigiumStatusBarPosition.Bottom;
         BarVisible = data.StatusBarVisible;
+    }
+
+    [RelayCommand]
+    private void AddCounter()
+    {
+        var name = SelectedAvailableCounter;
+        if (string.IsNullOrWhiteSpace(name))
+            return;
+        if (MonitorCounters.Contains(name, StringComparer.OrdinalIgnoreCase))
+            return;
+        MonitorCounters.Add(name);
+        RefreshCounterLists(MonitorCounters);
+        PersistCounters();
+    }
+
+    [RelayCommand]
+    private void RemoveCounter()
+    {
+        var name = SelectedMonitorCounter;
+        if (string.IsNullOrWhiteSpace(name))
+            return;
+        var match = MonitorCounters.FirstOrDefault(c => c.Equals(name, StringComparison.OrdinalIgnoreCase));
+        if (match is null)
+            return;
+        MonitorCounters.Remove(match);
+        RefreshCounterLists(MonitorCounters);
+        PersistCounters();
     }
 
     partial void OnSelectedThemeIdChanged(string? value)
@@ -133,6 +196,16 @@ public sealed partial class SettingsViewModel : ObservableObject
         Persist();
     }
 
+    partial void OnShowLegendChanged(bool value)
+    {
+        if (_loading)
+            return;
+        ChartTheme.WatchLegend = value;
+        Host?.ApplyLegend(value);
+        Host?.RefreshLegendButton();
+        Persist();
+    }
+
     partial void OnDefaultDurationSecondsChanged(decimal value)
     {
         if (_loading)
@@ -147,28 +220,24 @@ public sealed partial class SettingsViewModel : ObservableObject
         Persist();
     }
 
-    partial void OnIncludeDownChanged(bool value)
-    {
-        if (_loading)
-            return;
-        if (Host is not null)
-            Host.IncludeDown = value;
-        Persist();
-    }
-
-    partial void OnIpEnabledOnlyChanged(bool value)
-    {
-        if (_loading)
-            return;
-        if (Host is not null)
-            Host.IpEnabledOnly = value;
-        Persist();
-    }
+    partial void OnShowUpChanged(bool value) => PushFilter(host => host.ShowUp = value);
+    partial void OnShowDownChanged(bool value) => PushFilter(host => host.ShowDown = value);
+    partial void OnShowIpv4Changed(bool value) => PushFilter(host => host.ShowIpv4 = value);
+    partial void OnShowIpv6Changed(bool value) => PushFilter(host => host.ShowIpv6 = value);
 
     partial void OnMonitorReceiveChanged(bool value) => PushMonitor(value, v => { if (Host is not null) Host.MonitorReceive = v; });
     partial void OnMonitorSendChanged(bool value) => PushMonitor(value, v => { if (Host is not null) Host.MonitorSend = v; });
     partial void OnMonitorErrorsChanged(bool value) => PushMonitor(value, v => { if (Host is not null) Host.MonitorErrors = v; });
     partial void OnMonitorDiscardsChanged(bool value) => PushMonitor(value, v => { if (Host is not null) Host.MonitorDiscards = v; });
+
+    private void PushFilter(Action<MainViewModel> apply)
+    {
+        if (_loading)
+            return;
+        if (Host is not null)
+            apply(Host);
+        Persist();
+    }
 
     private void PushMonitor(bool value, Action<bool> apply)
     {
@@ -178,10 +247,38 @@ public sealed partial class SettingsViewModel : ObservableObject
         Persist();
     }
 
+    private void PersistCounters()
+    {
+        if (_loading)
+            return;
+        Session?.Save();
+        Host?.RestartMonitoring();
+    }
+
     private void Persist()
     {
         if (_loading)
             return;
         Session?.Save();
+    }
+
+    private void RefreshCounterLists(IEnumerable<string> selected)
+    {
+        var picked = MonitorCounterList.Sanitize(selected);
+        MonitorCounters.Clear();
+        foreach (var name in picked)
+            MonitorCounters.Add(name);
+
+        AvailableCounters.Clear();
+        foreach (var name in MonitorCounterList.Available(picked))
+            AvailableCounters.Add(name);
+
+        if (SelectedAvailableCounter is not null
+            && !AvailableCounters.Contains(SelectedAvailableCounter, StringComparer.OrdinalIgnoreCase))
+            SelectedAvailableCounter = AvailableCounters.FirstOrDefault();
+
+        if (SelectedMonitorCounter is not null
+            && !MonitorCounters.Contains(SelectedMonitorCounter, StringComparer.OrdinalIgnoreCase))
+            SelectedMonitorCounter = MonitorCounters.FirstOrDefault();
     }
 }

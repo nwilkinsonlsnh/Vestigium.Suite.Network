@@ -42,7 +42,7 @@ public sealed class AdapterRow
         return brush;
     }
 
-    public string Type => Source.Type.ToString();
+    public string Type => AdapterTypeName.Format(Source.Type);
 
     public string? MacAddress => Source.MacAddress;
 

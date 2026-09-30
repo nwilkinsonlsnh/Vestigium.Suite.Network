@@ -9,10 +9,19 @@ public sealed class NicIqSettings
     public int DurationSeconds { get; set; } = NicIqWatchInput.DefaultDurationSeconds;
     public bool IncludeDown { get; set; } = true;
     public bool IpEnabledOnly { get; set; } = true;
+    public bool? ShowUp { get; set; }
+    public bool? ShowDown { get; set; }
+    public bool? IpEnabled { get; set; }
+    public bool? ShowIpv4 { get; set; }
+    public bool? ShowIpv6 { get; set; }
     public bool MonitorReceive { get; set; } = true;
     public bool MonitorSend { get; set; } = true;
     public bool MonitorErrors { get; set; }
     public bool MonitorDiscards { get; set; }
+    public List<string> MonitorCounters { get; set; } = [];
+    public bool ShowLegend { get; set; } = true;
+    public string? SelectedAdapterId { get; set; }
+    public string? SelectedMonitorNicId { get; set; }
     public bool StatusBarVisible { get; set; } = true;
     public string StatusBarDock { get; set; } = "Bottom";
 }
@@ -57,7 +66,13 @@ public sealed class NicIqSettingsStore
 
     public void Save(NicIqSettings settings)
     {
-        Directory.CreateDirectory(RootDirectory);
-        File.WriteAllText(FilePath, JsonSerializer.Serialize(settings, Json));
+        try
+        {
+            Directory.CreateDirectory(RootDirectory);
+            File.WriteAllText(FilePath, JsonSerializer.Serialize(settings, Json));
+        }
+        catch (Exception)
+        {
+        }
     }
 }

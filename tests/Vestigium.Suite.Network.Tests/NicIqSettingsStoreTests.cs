@@ -27,6 +27,8 @@ public sealed class NicIqSettingsStoreTests
             ThemeId = "Monokai",
             DurationSeconds = 25,
             IncludeDown = false,
+            MonitorCounters = ["Bytes Sent/sec"],
+            SelectedAdapterId = "{nic}",
             StatusBarVisible = false,
             StatusBarDock = "Top"
         });
@@ -35,6 +37,8 @@ public sealed class NicIqSettingsStoreTests
         Assert.Equal("Monokai", loaded.ThemeId);
         Assert.Equal(25, loaded.DurationSeconds);
         Assert.False(loaded.IncludeDown);
+        Assert.Equal(["Bytes Sent/sec"], loaded.MonitorCounters);
+        Assert.Equal("{nic}", loaded.SelectedAdapterId);
         Assert.False(loaded.StatusBarVisible);
         Assert.Equal("Top", loaded.StatusBarDock);
         Assert.True(File.Exists(Path.Combine(root, "settings.json")));

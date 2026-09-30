@@ -15,19 +15,31 @@
                TextWrapping="Wrap"
                Margin="0,0,0,8" />
 
-    <StackPanel Grid.Row="1" Style="{StaticResource StackPanel.Toolbar}" Orientation="Horizontal" Margin="0,0,0,8">
-      <Button Content="Refresh" Style="{StaticResource Button.Secondary}" Command="{Binding RefreshCommand}" Padding="16,4" Margin="0,0,8,0" />
-      <CheckBox Style="{StaticResource CheckBox.Standard}" Content="Include down" IsChecked="{Binding IncludeDown}" Margin="0,0,16,0" />
-      <CheckBox Style="{StaticResource CheckBox.Standard}" Content="IP enabled only" IsChecked="{Binding IpEnabledOnly}" Margin="0,0,16,0" />
-      <Label Style="{StaticResource Label.Standard}" Content="Duration" VerticalAlignment="Center" Margin="0,0,8,0" />
-      <nud:VestigiumNumericUpDown Value="{Binding DurationSeconds, Mode=TwoWay}"
-                                  SignMode="Unsigned"
-                                  Minimum="1" Maximum="60" Increment="1" PageIncrement="5" DecimalPlaces="0"
-                                  Width="88"
-                                  Margin="0,0,8,0" />
-      <Button Content="Watch (Status)" Style="{StaticResource Button.Primary}" Command="{Binding WatchCommand}" Padding="16,4" Margin="0,0,8,0" />
-      <Button Content="Cancel" Style="{StaticResource Button.Secondary}" Command="{Binding CancelCommand}" Padding="16,4" />
-    </StackPanel>
+    <Grid Grid.Row="1" Margin="0,0,0,8">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="Auto" />
+      </Grid.ColumnDefinitions>
+
+      <StackPanel Style="{StaticResource StackPanel.Toolbar}" Orientation="Horizontal" VerticalAlignment="Center">
+        <Button Content="Refresh" Style="{StaticResource Button.Secondary}" Command="{Binding RefreshCommand}" Padding="16,4" Margin="0,0,8,0" />
+        <CheckBox Style="{StaticResource CheckBox.Standard}" Content="Show Down" IsChecked="{Binding ShowDown}" Margin="0,0,12,0" />
+        <CheckBox Style="{StaticResource CheckBox.Standard}" Content="Show Up" IsChecked="{Binding ShowUp}" Margin="0,0,12,0" />
+        <CheckBox Style="{StaticResource CheckBox.Standard}" Content="Show IPv4" IsChecked="{Binding ShowIpv4}" Margin="0,0,12,0" />
+        <CheckBox Style="{StaticResource CheckBox.Standard}" Content="Show IPv6" IsChecked="{Binding ShowIpv6}" />
+      </StackPanel>
+
+      <StackPanel Grid.Column="1" Style="{StaticResource StackPanel.Toolbar}" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+        <Label Style="{StaticResource Label.Standard}" Content="Duration" VerticalAlignment="Center" Margin="0,0,8,0" />
+        <nud:VestigiumNumericUpDown Value="{Binding DurationSeconds, Mode=TwoWay}"
+                                    SignMode="Unsigned"
+                                    Minimum="1" Maximum="60" Increment="1" PageIncrement="5" DecimalPlaces="0"
+                                    Width="88"
+                                    Margin="0,0,8,0" />
+        <Button Content="Watch (Status)" Style="{StaticResource Button.Primary}" Command="{Binding WatchCommand}" Padding="16,4" Margin="0,0,8,0" />
+        <Button Content="Cancel" Style="{StaticResource Button.Secondary}" Command="{Binding CancelCommand}" Padding="16,4" />
+      </StackPanel>
+    </Grid>
 
     <Border Grid.Row="2" BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
       <DataGrid x:Name="AdapterGrid"
@@ -40,17 +52,19 @@
                 CanUserResizeColumns="True"
                 SelectionMode="Single"
                 HeadersVisibility="Column"
+                RowHeight="36"
+                MinRowHeight="36"
                 VerticalScrollBarVisibility="Visible"
                 HorizontalScrollBarVisibility="Visible"
                 ScrollViewer.HorizontalScrollBarVisibility="Visible"
                 ScrollViewer.VerticalScrollBarVisibility="Visible"
                 MouseDoubleClick="AdapterGrid_MouseDoubleClick">
         <DataGrid.Columns>
-          <DataGridTemplateColumn Header="Status" Width="56" MinWidth="56">
+          <DataGridTemplateColumn Header="Status" Width="72" MinWidth="72">
             <DataGridTemplateColumn.CellTemplate>
               <DataTemplate>
-                <Grid Width="24" Height="24" ToolTip="{Binding Status}" HorizontalAlignment="Center">
-                  <Ellipse Fill="{Binding StatusFill}">
+                <Grid Width="28" Height="28" ToolTip="{Binding Status}" HorizontalAlignment="Center" VerticalAlignment="Center" ClipToBounds="False">
+                  <Ellipse Width="22" Height="22" Fill="{Binding StatusFill}" HorizontalAlignment="Center" VerticalAlignment="Center">
                     <Ellipse.Style>
                       <Style TargetType="Ellipse">
                         <Setter Property="StrokeThickness" Value="0" />
@@ -65,10 +79,11 @@
                   </Ellipse>
                   <TextBlock Text="{Binding StatusGlyph}"
                              Foreground="White"
-                             FontSize="11"
+                             FontSize="10"
                              FontWeight="SemiBold"
                              HorizontalAlignment="Center"
-                             VerticalAlignment="Center" />
+                             VerticalAlignment="Center"
+                             Margin="0,-1,0,0" />
                 </Grid>
               </DataTemplate>
             </DataGridTemplateColumn.CellTemplate>

@@ -1,25 +1,50 @@
 using System.Collections.ObjectModel;
+using System.Net.NetworkInformation;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Vestigium.Controls.StatusBar;
+using Vestigium.Helpers.Charts;
 using Vestigium.Helpers.Network;
+using Vestigium.Helpers.PerfMon;
+using Vestigium.Helpers.PerfMon.Network;
+using PdhNic = Vestigium.Helpers.PerfMon.Network.NetworkInterface;
+using InventoryAdapter = Vestigium.Helpers.Network.NetworkAdapter;
 
 namespace Vestigium.Suite.Network.NicIQ.ViewModels;
 
 public sealed partial class MainViewModel : ObservableObject
 {
     private CancellationTokenSource? _cts;
+    private CancellationTokenSource? _monitorCts;
     private NetworkJob<AdapterWatchResult>? _watchJob;
+    private CachedPdhSource? _pdh;
+    private IReadOnlyList<string>? _live;
+    private DateTimeOffset _liveAt;
+    private string? _pdhInstance;
+    private string? _pdhKey;
     private bool _busy;
     private bool _loading;
+    private bool _syncingNic;
+    private string? _lastMonitorNote;
+    private readonly MonitorRing _ring = new();
 
     public MainViewModel()
     {
         Adapters = [];
+        ActiveNics = [];
+        Samples = [];
     }
 
     public ObservableCollection<AdapterRow> Adapters { get; }
+
+    public ObservableCollection<AdapterRow> ActiveNics { get; }
+
+    public ObservableCollection<MonitorSampleRow> Samples { get; }
+
+    public string? PreferredAdapterId { get; set; }
+
+    public string? PreferredMonitorNicId { get; set; }
 
     public VestigiumStatusBarViewModel? StatusBar { get; set; }
 
@@ -41,10 +66,16 @@ public sealed partial class MainViewModel : ObservableObject
     private string _detail = string.Empty;
 
     [ObservableProperty]
-    private bool _includeDown = true;
+    private bool _showUp = true;
 
     [ObservableProperty]
-    private bool _ipEnabledOnly = true;
+    private bool _showDown = true;
+
+    [ObservableProperty]
+    private bool _showIpv4 = true;
+
+    [ObservableProperty]
+    private bool _showIpv6 = true;
 
     [ObservableProperty]
     private bool _monitorReceive = true;
@@ -64,6 +95,63 @@ public sealed partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private AdapterRow? _selectedAdapter;
 
+    [ObservableProperty]
+    private AdapterRow? _selectedMonitorNic;
+
+    [ObservableProperty]
+    private string _monitorInstance = string.Empty;
+
+    [ObservableProperty]
+    private bool _isMonitoring;
+
+    [ObservableProperty]
+    private bool _monitorPageVisible;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ThroughputPageOpen))]
+    [NotifyPropertyChangedFor(nameof(PacketsPageOpen))]
+    [NotifyPropertyChangedFor(nameof(IntegrityPageOpen))]
+    [NotifyPropertyChangedFor(nameof(UtilizationPageOpen))]
+    [NotifyPropertyChangedFor(nameof(CpuPageOpen))]
+    [NotifyPropertyChangedFor(nameof(MemoryPageOpen))]
+    private string _chartPage = MonitorChartPages.Throughput;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasChart))]
+    [NotifyPropertyChangedFor(nameof(ChartEmpty))]
+    private FrameworkElement? _liveChart;
+
+    [ObservableProperty]
+    private string _chartStrip = "Waiting for samples.";
+
+    public bool HasChart => LiveChart is not null;
+
+    public bool ChartEmpty => LiveChart is null;
+
+    public bool ThroughputPageOpen
+    {
+        get => ChartPage == MonitorChartPages.Throughput;
+        set { if (value) ChartPage = MonitorChartPages.Throughput; }
+    }
+
+    public bool PacketsPageOpen
+    {
+        get => ChartPage == MonitorChartPages.Packets;
+        set { if (value) ChartPage = MonitorChartPages.Packets; }
+    }
+
+    public bool IntegrityPageOpen
+    {
+        get => ChartPage == MonitorChartPages.Integrity;
+        set { if (value) ChartPage = MonitorChartPages.Integrity; }
+    }
+
+    public bool UtilizationPageOpen
+    {
+        get => ChartPage == MonitorChartPages.Utilization;
+        set { if (value) ChartPage = MonitorChartPages.Utilization; }
+    }
+
     public bool CanRefresh => !_busy;
 
     public bool CanWatch => !_busy && SelectedAdapter is not null;
@@ -74,41 +162,46 @@ public sealed partial class MainViewModel : ObservableObject
     {
         Detail = value?.Detail ?? string.Empty;
         WatchCommand.NotifyCanExecuteChanged();
-    }
-
-    partial void OnIncludeDownChanged(bool value)
-    {
-        if (_loading)
+        if (_loading || _syncingNic)
             return;
-        if (Settings is not null)
-        {
-            Settings.BeginLoad();
-            Settings.IncludeDown = value;
-            Settings.EndLoad();
-        }
-
+        PreferredAdapterId = value?.Id;
         Session?.Save();
-        if (_busy)
-            return;
-        Refresh();
     }
 
-    partial void OnIpEnabledOnlyChanged(bool value)
+    partial void OnSelectedMonitorNicChanged(AdapterRow? value)
     {
-        if (_loading)
+        if (_syncingNic || value is null)
             return;
-        if (Settings is not null)
-        {
-            Settings.BeginLoad();
-            Settings.IpEnabledOnly = value;
-            Settings.EndLoad();
-        }
-
-        Session?.Save();
-        if (_busy)
-            return;
-        Refresh();
+        PreferredMonitorNicId = value.Id;
+        if (!_loading)
+            Session?.Save();
+        RestartMonitoring();
     }
+
+    partial void OnChartPageChanged(string value)
+    {
+        RaiseMonitorPages();
+        PaintChart(force: true);
+    }
+
+    partial void OnMonitorPageVisibleChanged(bool value)
+    {
+        if (value)
+            PaintChart(force: true);
+    }
+
+    public void ApplyLegend(bool visible)
+    {
+        ChartTheme.WatchLegend = visible;
+        if (LiveChart is not null)
+            ChartView.SetLegendVisible(LiveChart, visible);
+        PaintChart(force: true);
+    }
+
+    partial void OnShowUpChanged(bool value) => PersistFilter();
+    partial void OnShowDownChanged(bool value) => PersistFilter();
+    partial void OnShowIpv4Changed(bool value) => PersistFilter();
+    partial void OnShowIpv6Changed(bool value) => PersistFilter();
 
     partial void OnDurationSecondsChanged(decimal value)
     {
@@ -129,6 +222,26 @@ public sealed partial class MainViewModel : ObservableObject
     partial void OnMonitorErrorsChanged(bool value) => PersistMonitors();
     partial void OnMonitorDiscardsChanged(bool value) => PersistMonitors();
 
+    private void PersistFilter()
+    {
+        if (_loading)
+            return;
+        if (Settings is not null)
+        {
+            Settings.BeginLoad();
+            Settings.ShowUp = ShowUp;
+            Settings.ShowDown = ShowDown;
+            Settings.ShowIpv4 = ShowIpv4;
+            Settings.ShowIpv6 = ShowIpv6;
+            Settings.EndLoad();
+        }
+
+        Session?.Save();
+        if (_busy)
+            return;
+        Refresh();
+    }
+
     private void PersistMonitors()
     {
         if (_loading)
@@ -142,14 +255,21 @@ public sealed partial class MainViewModel : ObservableObject
         if (_busy)
             return;
 
-        var keep = SelectedAdapter?.Id;
+        var keep = SelectedAdapter?.Id ?? PreferredAdapterId;
         try
         {
             var box = NetworkHelper.GetWorkstation();
             Header = FormatHeader(box);
-            var query = new NetworkAdapterQuery(IncludeDown: IncludeDown, IpEnabledOnly: IpEnabledOnly);
-            var rows = NetworkHelper.GetAdapters(query).Select(static a => new AdapterRow(a)).ToList();
+            var query = new NetworkAdapterQuery(IncludeDown: true, IpEnabledOnly: false);
+            var inventory = NetworkHelper.GetAdapters(query).ToList();
+            var rows = AdapterListFilter.Apply(
+                inventory,
+                ShowUp,
+                ShowDown,
+                ShowIpv4,
+                ShowIpv6);
             ReplaceRows(rows, keep);
+            SyncActiveNics(inventory);
             Post("Idle");
         }
         catch (Exception ex)
@@ -178,7 +298,7 @@ public sealed partial class MainViewModel : ObservableObject
         RaiseBusy();
         StatusBar?.Engine.SetIdlePolicy(0);
         var name = SelectedAdapter?.Name ?? query.AdapterKey;
-        Post($"Monitoring {name}  status Up ↔ Down");
+        Post($"Monitoring {name}  status Up \u2194 Down");
         _cts = new CancellationTokenSource();
         var token = _cts.Token;
         try
@@ -255,7 +375,246 @@ public sealed partial class MainViewModel : ObservableObject
         if (SelectedAdapter is not null && Adapters.Contains(SelectedAdapter))
             return;
 
-        SelectedAdapter = Adapters.Count > 0 ? Adapters[0] : null;
+        var preferred = NicPrimaryAdapter.Pick(Adapters.Select(r => r.Source), PreferredAdapterId);
+        SelectedAdapter = preferred is null
+            ? null
+            : Adapters.FirstOrDefault(r => string.Equals(r.Id, preferred.Id, StringComparison.Ordinal));
+    }
+
+    private void SyncActiveNics(IReadOnlyList<InventoryAdapter> inventory)
+    {
+        var keep = SelectedMonitorNic?.Id ?? PreferredMonitorNicId;
+        ActiveNics.Clear();
+        foreach (var adapter in inventory)
+            ActiveNics.Add(new AdapterRow(adapter));
+
+        AdapterRow? next = null;
+        if (!string.IsNullOrWhiteSpace(keep))
+            next = ActiveNics.FirstOrDefault(r => string.Equals(r.Id, keep, StringComparison.Ordinal));
+        if (next is null)
+        {
+            var primary = NicPrimaryAdapter.Pick(inventory, preferredId: null);
+            if (primary is not null)
+                next = ActiveNics.FirstOrDefault(r => string.Equals(r.Id, primary.Id, StringComparison.Ordinal));
+        }
+
+        _syncingNic = true;
+        SelectedMonitorNic = next;
+        _syncingNic = false;
+        if (next is not null && string.IsNullOrWhiteSpace(PreferredMonitorNicId))
+            PreferredMonitorNicId = next.Id;
+    }
+
+    public void StartMonitoring()
+    {
+        if (_monitorCts is not null)
+            return;
+        if (ActiveNics.Count == 0)
+        {
+            try
+            {
+                var inventory = NetworkHelper.GetAdapters(new NetworkAdapterQuery(IncludeDown: true, IpEnabledOnly: false));
+                SyncActiveNics(inventory);
+            }
+            catch (Exception)
+            {
+            }
+        }
+
+        _monitorCts = new CancellationTokenSource();
+        IsMonitoring = true;
+        PaintChart(force: true);
+        _ = RunMonitorLoopAsync(_monitorCts.Token);
+    }
+
+    public void StopMonitoring()
+    {
+        try { _monitorCts?.Cancel(); }
+        catch (ObjectDisposedException) { }
+        _monitorCts?.Dispose();
+        _monitorCts = null;
+        IsMonitoring = false;
+        _pdh?.Dispose();
+        _pdh = null;
+        _live = null;
+        _pdhInstance = null;
+        _pdhKey = null;
+    }
+
+    public void RestartMonitoring()
+    {
+        _ring.Clear();
+        LiveChart = null;
+        ChartStrip = "Waiting for samples.";
+        _lastMonitorNote = null;
+        StopMonitoring();
+        StartMonitoring();
+    }
+
+    private async Task RunMonitorLoopAsync(CancellationToken token)
+    {
+        await Task.Yield();
+        while (!token.IsCancellationRequested)
+        {
+            try
+            {
+                var nic = SelectedMonitorNic;
+                if (nic is null)
+                {
+                    MonitorInstance = string.Empty;
+                    Note("Idle", "No active NIC");
+                    await Task.Delay(TimeSpan.FromSeconds(1), token).ConfigureAwait(true);
+                    continue;
+                }
+
+                var name = nic.Name;
+                var description = nic.Source.Description;
+                var selected = Settings is null
+                    ? MonitorCounterList.FromSettings(Session?.Current ?? new NicIqSettings())
+                    : MonitorCounterList.Sanitize(Settings.MonitorCounters);
+
+                var tick = await Task.Run(() => TakeTick(name, description, selected, token), token).ConfigureAwait(true);
+                if (!string.Equals(MonitorInstance, tick.Instance, StringComparison.Ordinal))
+                    MonitorInstance = tick.Instance ?? string.Empty;
+                if (!string.IsNullOrWhiteSpace(tick.Error))
+                {
+                    Note("Failed", tick.Error);
+                    await Task.Delay(TimeSpan.FromSeconds(2), token).ConfigureAwait(true);
+                    continue;
+                }
+
+                if (tick.Primed)
+                {
+                    Note($"Monitoring {name}", tick.Instance);
+                    await Task.Delay(TimeSpan.FromMilliseconds(250), token).ConfigureAwait(true);
+                    continue;
+                }
+
+                if (tick.Result is not null)
+                    ApplySamples(tick.Result);
+                Note($"Monitoring {name}", tick.Instance);
+                await Task.Delay(TimeSpan.FromSeconds(1), token).ConfigureAwait(true);
+            }
+            catch (OperationCanceledException)
+            {
+                return;
+            }
+            catch (Exception ex)
+            {
+                Note("Failed", ex.Message);
+                try
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(2), token).ConfigureAwait(true);
+                }
+                catch (OperationCanceledException)
+                {
+                    return;
+                }
+            }
+        }
+    }
+
+    private SampleTick TakeTick(string name, string description, IReadOnlyList<string> selected, CancellationToken token)
+    {
+        token.ThrowIfCancellationRequested();
+        var key = name + "\u001f" + description;
+        if (_live is null || DateTimeOffset.UtcNow - _liveAt > TimeSpan.FromSeconds(30))
+        {
+            try
+            {
+                _live = NetworkCounterCatalog.LiveInstances(PdhNic.Category);
+            }
+            catch (Exception)
+            {
+                _live = [];
+            }
+
+            _liveAt = DateTimeOffset.UtcNow;
+            _pdhInstance = null;
+            _pdhKey = null;
+        }
+
+        string? instance;
+        if (string.Equals(_pdhKey, key, StringComparison.Ordinal) && !string.IsNullOrWhiteSpace(_pdhInstance))
+        {
+            instance = _pdhInstance;
+        }
+        else
+        {
+            instance = NicPdhInstance.Resolve(name, description, _live);
+            _pdhKey = key;
+            _pdhInstance = instance;
+        }
+
+        if (string.IsNullOrWhiteSpace(instance))
+            return new SampleTick(null, null, $"No PDH instance for {name}", false);
+
+        var counters = MonitorCounterList.ForSample(selected);
+        if (counters.Count == 0)
+            counters = MonitorCounterList.Sanitize(MonitorCounterList.SeedReceiveSend);
+
+        var paths = NetworkCounterCatalog.Paths(PdhNic.Category, instance, counters)
+            .Concat(HostCounters.Preferred)
+            .ToList();
+        if (paths.Count == 0)
+            return new SampleTick(instance, null, "No counters selected", false);
+
+        _pdh ??= new CachedPdhSource();
+        var primed = false;
+        foreach (var path in paths)
+        {
+            token.ThrowIfCancellationRequested();
+            if (!_pdh.NeedsPrime(path))
+                continue;
+            _ = _pdh.Read(path);
+            primed = true;
+        }
+
+        if (primed)
+            return new SampleTick(instance, null, null, true);
+
+        var rows = new List<SampleRecord>(paths.Count);
+        foreach (var path in paths)
+        {
+            token.ThrowIfCancellationRequested();
+            rows.Add(_pdh.Read(path));
+        }
+
+        return new SampleTick(instance, new SampleJobResult(SampleStatus.Ok, rows), null, false);
+    }
+
+    private void ApplySamples(SampleJobResult result)
+    {
+        var latest = result.Samples
+            .GroupBy(s => s.Counter, StringComparer.OrdinalIgnoreCase)
+            .Select(g => g.Last())
+            .ToList();
+
+        for (var i = 0; i < latest.Count; i++)
+        {
+            if (i < Samples.Count)
+                Samples[i].Apply(latest[i]);
+            else
+                Samples.Add(new MonitorSampleRow(latest[i]));
+            _ring.Add(latest[i]);
+        }
+
+        while (Samples.Count > latest.Count)
+            Samples.RemoveAt(Samples.Count - 1);
+
+        PaintChart(force: false);
+    }
+
+    private void PaintChart(bool force)
+    {
+        if (!force && !MonitorPageVisible)
+            return;
+
+        var (view, strip) = MonitorChart.Paint(ChartPage, _ring);
+        if (view is not null)
+            LiveChart = view;
+        if (!string.Equals(ChartStrip, strip, StringComparison.Ordinal))
+            ChartStrip = strip;
     }
 
     private void MarkStatusChanged(string key, bool changed)
@@ -296,22 +655,33 @@ public sealed partial class MainViewModel : ObservableObject
             StatusBar.Message = Caption;
     }
 
+    private void Note(string status, string? detail = null)
+    {
+        var text = string.IsNullOrWhiteSpace(detail) ? status : $"{status}  {detail}";
+        if (string.Equals(_lastMonitorNote, text, StringComparison.Ordinal))
+            return;
+        _lastMonitorNote = text;
+        Caption = text;
+        if (StatusBar is not null)
+            StatusBar.Message = text;
+    }
+
     private static string FormatWatch(AdapterWatchResult result, bool changed)
     {
         var last = result.Samples.Count > 0 ? result.Samples[^1] : null;
         var speed = last is null ? result.LastStatus.ToString() : $"{result.LastStatus}  {LinkSpeed.Format(last.SpeedBitsPerSecond)}";
         if (!changed)
             return speed;
-        return $"{speed}  {result.FirstStatus} → {result.LastStatus}";
+        return $"{speed}  {result.FirstStatus} \u2192 {result.LastStatus}";
     }
 
     private static string FormatHeader(WorkstationNetwork box)
     {
-        var host = string.IsNullOrWhiteSpace(box.HostName) ? "—" : box.HostName.Trim();
+        var host = string.IsNullOrWhiteSpace(box.HostName) ? "\u2014" : box.HostName.Trim();
         var line = string.IsNullOrWhiteSpace(box.DomainName) ? host : $"{host}  /  {box.DomainName.Trim()}";
         if (box.Stack is { } stack)
         {
-            var dns = stack.DhcpNameServers.Count == 0 ? "—" : string.Join(", ", stack.DhcpNameServers);
+            var dns = stack.DhcpNameServers.Count == 0 ? "\u2014" : string.Join(", ", stack.DhcpNameServers);
             line = $"{line}{Environment.NewLine}DHCP DNS  {dns}  router {(stack.IpEnableRouter == true ? "yes" : "no")}";
         }
 
@@ -319,4 +689,6 @@ public sealed partial class MainViewModel : ObservableObject
             return line;
         return $"{line}{Environment.NewLine}Search  {string.Join(", ", box.DnsSuffixSearchList)}";
     }
+
+    private readonly record struct SampleTick(string? Instance, SampleJobResult? Result, string? Error, bool Primed);
 }

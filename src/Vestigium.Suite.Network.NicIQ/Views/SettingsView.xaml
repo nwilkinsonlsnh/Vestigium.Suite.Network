@@ -14,6 +14,11 @@
                    GroupName="SettingsPage"
                    Margin="0,0,8,0" />
       <RadioButton Style="{StaticResource RadioButton.HorizontalTab}"
+                   Content="Monitoring"
+                   IsChecked="{Binding MonitoringPageOpen}"
+                   GroupName="SettingsPage"
+                   Margin="0,0,8,0" />
+      <RadioButton Style="{StaticResource RadioButton.HorizontalTab}"
                    Content="Theme"
                    IsChecked="{Binding ThemePageOpen}"
                    GroupName="SettingsPage" />
@@ -28,18 +33,38 @@
                  Text="Defaults for the NicIQ page. Duration is seconds." />
 
       <CheckBox Style="{StaticResource CheckBox.Standard}"
-                Content="Include down adapters"
-                IsChecked="{Binding IncludeDown}"
-                Margin="0,0,0,16" />
+                Content="Show Down"
+                IsChecked="{Binding ShowDown}"
+                Margin="0,0,0,12" />
       <CheckBox Style="{StaticResource CheckBox.Standard}"
-                Content="IP enabled only"
-                IsChecked="{Binding IpEnabledOnly}"
+                Content="Show Up"
+                IsChecked="{Binding ShowUp}"
+                Margin="0,0,0,12" />
+      <CheckBox Style="{StaticResource CheckBox.Standard}"
+                Content="Show IPv4"
+                IsChecked="{Binding ShowIpv4}"
+                Margin="0,0,0,12" />
+      <CheckBox Style="{StaticResource CheckBox.Standard}"
+                Content="Show IPv6"
+                IsChecked="{Binding ShowIpv6}"
                 Margin="0,0,0,16" />
 
       <Label Style="{StaticResource Label.Standard}" Content="Duration (s)" />
       <nud:VestigiumNumericUpDown Value="{Binding DefaultDurationSeconds, Mode=TwoWay}"
                                   SignMode="Unsigned"
                                   Minimum="1" Maximum="60" Increment="1" PageIncrement="5" DecimalPlaces="0" />
+    </StackPanel>
+
+    <StackPanel HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                Width="480"
+                Margin="20,0,0,0"
+                Visibility="{Binding MonitoringPageOpen, Converter={StaticResource BoolToVis}}">
+      <TextBlock Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap" Margin="0,0,0,16"
+                 Text="Live charts sample the Network Interface counters they need. UCL and LCL are mean ± 3σ on the last 60 seconds." />
+      <CheckBox Style="{StaticResource CheckBox.Standard}"
+                Content="Show chart legend"
+                IsChecked="{Binding ShowLegend}" />
     </StackPanel>
 
     <StackPanel HorizontalAlignment="Left"

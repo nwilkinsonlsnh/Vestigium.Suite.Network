@@ -48,12 +48,21 @@ public sealed class NicIqSession
         {
             ThemeId = _settings.SelectedThemeId,
             DurationSeconds = (int)ClampDuration(_main.DurationSeconds),
-            IncludeDown = _main.IncludeDown,
-            IpEnabledOnly = _main.IpEnabledOnly,
+            IncludeDown = _main.ShowDown,
+            IpEnabledOnly = _main.ShowIpv4 || _main.ShowIpv6,
+            ShowUp = _main.ShowUp,
+            ShowDown = _main.ShowDown,
+            IpEnabled = _main.ShowIpv4 || _main.ShowIpv6,
+            ShowIpv4 = _main.ShowIpv4,
+            ShowIpv6 = _main.ShowIpv6,
             MonitorReceive = _main.MonitorReceive,
             MonitorSend = _main.MonitorSend,
             MonitorErrors = _main.MonitorErrors,
             MonitorDiscards = _main.MonitorDiscards,
+            MonitorCounters = [.. _settings.MonitorCounters],
+            ShowLegend = _settings.ShowLegend,
+            SelectedAdapterId = _main.SelectedAdapter?.Id ?? _main.PreferredAdapterId,
+            SelectedMonitorNicId = _main.SelectedMonitorNic?.Id ?? _main.PreferredMonitorNicId,
             StatusBarVisible = _settings.BarVisible,
             StatusBarDock = _settings.BarPosition == VestigiumStatusBarPosition.Top ? "Top" : "Bottom"
         };
@@ -78,13 +87,19 @@ public sealed class NicIqSession
             return;
 
         var duration = ClampDuration(Current.DurationSeconds);
+        var ip = Current.IpEnabled ?? Current.IpEnabledOnly;
         _main.DurationSeconds = duration;
-        _main.IncludeDown = Current.IncludeDown;
-        _main.IpEnabledOnly = Current.IpEnabledOnly;
+        _main.ShowUp = Current.ShowUp ?? true;
+        _main.ShowDown = Current.ShowDown ?? Current.IncludeDown;
+        _main.ShowIpv4 = Current.ShowIpv4 ?? ip;
+        _main.ShowIpv6 = Current.ShowIpv6 ?? ip;
         _main.MonitorReceive = Current.MonitorReceive;
         _main.MonitorSend = Current.MonitorSend;
         _main.MonitorErrors = Current.MonitorErrors;
         _main.MonitorDiscards = Current.MonitorDiscards;
+        _main.PreferredAdapterId = Current.SelectedAdapterId;
+        _main.PreferredMonitorNicId = Current.SelectedMonitorNicId ?? Current.SelectedAdapterId;
+        ChartTheme.WatchLegend = Current.ShowLegend;
         _settings.LoadFrom(Current);
     }
 
