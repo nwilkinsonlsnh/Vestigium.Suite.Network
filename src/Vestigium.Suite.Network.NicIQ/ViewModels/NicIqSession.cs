@@ -62,7 +62,7 @@ public sealed class NicIqSession
             MonitorDiscards = _main.MonitorDiscards,
             MonitorCounters = [.. _settings.MonitorCounters],
             ShowLegend = _settings.ShowLegend,
-            ArchiveSeconds = MonitorRing.ClampArchive((int)_settings.ArchiveMinutes * 60),
+            ArchiveSeconds = MonitorRing.ClampArchive((int)_settings.ArchiveSeconds),
             SelectedAdapterId = _main.SelectedAdapter?.Id ?? _main.PreferredAdapterId,
             SelectedMonitorNicId = _main.SelectedMonitorNic?.Id ?? _main.PreferredMonitorNicId,
             StatusBarVisible = _settings.BarVisible,
