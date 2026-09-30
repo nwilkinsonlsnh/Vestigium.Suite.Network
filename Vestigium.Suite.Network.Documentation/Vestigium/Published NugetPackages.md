@@ -14,15 +14,16 @@ This file is the room’s map. Use it before a new package is named, scoped, or 
 3. If two packages could own it, that is a fight to settle here, not a reason to ship a third.
 4. Libraries never call `VestigiumLogger.Initialize`. The host owns APPID and log directory. Helpers register catalogs into that host config.
 5. Helpers compute or run jobs. Charts draw. Controls render chrome. Themes paint. Logging writes JSONL. Do not collapse those.
-6. Hashing is not Encryption. Network is not Charts. FileIo is not `robocopy.exe`. PerfMon is not `perfmon.exe`. Those “not” lines are invariants.
+6. Hashing is not Encryption. Network is not Charts. FileIo is not `robocopy.exe`. PerfMon is not `perfmon.exe`. SystemInfo is not PerfMon. Those “not” lines are invariants.
 
 **Families**
 
 | Family | Owns | Does not own |
 | --- | --- | --- |
 | `Vestigium.Logging` | JSONL audit spine, EVENTID, flood, seal, WPF-safe subscribers | Payload documents, file copy, plots |
-| `Vestigium.Helpers.*` | Jobs, numbers, inventory, hashes, JSON documents, PDH samples | Shell, themes, converters |
+| `Vestigium.Helpers.*` | Jobs, numbers, inventory, hashes, JSON documents, PDH samples, machine-fact snapshots | Shell, themes, converters |
 | `Vestigium.Helpers.Charts` | Drawing Analytics results on WPF / PNG | Computing UCL/CL/LCL or run rules |
+| `Vestigium.Helpers.SystemInfo*` | OS snapshots: CPU topology/clocks/census, physical memory/pools | PDH series, adapter inventory, protocol jobs |
 | `Vestigium.Themes` | Palettes + ThemeManager + control catalog look | New controls |
 | `Vestigium.Converters` | IValueConverter catalog | Controls |
 | `Vestigium.Controls*` | Shell and reusable WPF controls | Theming engine, helpers |
@@ -40,8 +41,11 @@ Known EVENTID reservations from published READMEs (do not reuse):
 | 17000–17499 | PerfMon core |
 | 17500–17999 | PerfMon.Network |
 | 18000–18499 | PerfMon.Cpu |
+| 19000–19499 | SystemInfo core (proposed, unpublished) |
+| 19500–19999 | SystemInfo.Cpu (proposed, unpublished) |
+| 20000–20499 | SystemInfo.Memory (proposed, unpublished) |
 
-Disk / Gpu / Memory satellite ranges were not printed on the NuGet pages reviewed for this snapshot. Confirm in the Helpers requirements docs before allocating more.
+Disk / Gpu / Memory **PerfMon** satellite ranges were not printed on the NuGet pages reviewed for this snapshot. Confirm in the Helpers requirements docs before allocating more.
 
 ---
 
@@ -77,7 +81,7 @@ Intent: validated file jobs whose behavior reference is robocopy and whose produ
 
 ### Vestigium.Helpers.Network — 1.3.4
 
-Intent: workstation inventory and protocol jobs for diagnostic hosts (PingIQ, DnsIQ, TraceIQ, and kin) — adapters, snapshot, connections, routes, neighbors, ICMP echo/trace/pathping, single-host TCP/UDP probe, DNS probe, adapter watch, counter sample, path MTU, prefix math, echo/share campaigns, P95 billing via Analytics, share probes via FileIo, campaign stats via Json. APPID `Network`, EVENTID 14500–14999. Not a CLI. Not `ping.exe` / `tracert.exe` / `pathping.exe`. Not a plot package and it will not grow a plot API. No port sweep. No credential logging. OUI completeness is a caller URL; the embedded snapshot is a stub, not the IEEE registry. Route writes need admin. Do not create `Vestigium.Helpers.Ping`, `Dns`, `Trace`, or `Share` — those jobs already live here. Drawing results is Charts. PDH adapter rates are PerfMon.Network, not this package.
+Intent: workstation inventory and protocol jobs for diagnostic hosts (PingIQ, DnsIQ, TraceIQ, and kin) — adapters, snapshot, connections, routes, neighbors, ICMP echo/trace/pathping, single-host TCP/UDP probe, DNS probe, adapter watch, counter sample, path MTU, prefix math, echo/share campaigns, P95 billing via Analytics, share probes via FileIo, campaign stats via Json. APPID `Network`, EVENTID 14500–14999. Not a CLI. Not `ping.exe` / `tracert.exe` / `pathping.exe`. Not a plot package and it will not grow a plot API. No port sweep. No credential logging. OUI completeness is a caller URL; the embedded snapshot is a stub, not the IEEE registry. Route writes need admin. Do not create `Vestigium.Helpers.Ping`, `Dns`, `Trace`, or `Share` — those jobs already live here. Drawing results is Charts. PDH adapter rates are PerfMon.Network, not this package. Machine CPU/RAM snapshots are SystemInfo, not this package.
 
 ---
 
@@ -91,7 +95,7 @@ Intent: shared performance sample contract, job runner, and counter source. APPI
 
 ### Vestigium.Helpers.PerfMon.Cpu — 0.1.1
 
-Intent: processor PDH samples. APPID `PerfMon.Cpu`, EVENTID 18000–18499. Do not fold CPU counters into Network or into a host.
+Intent: processor PDH samples. APPID `PerfMon.Cpu`, EVENTID 18000–18499. Do not fold CPU counters into Network or into a host. Topology, clock MHz, and process/thread/handle census are SystemInfo.Cpu, not this package.
 
 ### Vestigium.Helpers.PerfMon.Network — 0.1.1
 
@@ -103,11 +107,31 @@ Intent: physical and logical disk PDH samples. Not FileIo. FileIo copies and rec
 
 ### Vestigium.Helpers.PerfMon.Memory — 0.1.1
 
-Intent: commit, available, and machine memory samples. Not a general diagnostics kitchen sink.
+Intent: commit, available, and machine memory **samples**. Physical total / in-use snapshots and kernel pools are SystemInfo.Memory, not a junk drawer here.
 
 ### Vestigium.Helpers.PerfMon.Gpu — 0.1.1
 
 Intent: GPU engine and adapter memory the OS exposes. If the OS does not expose it, the sample is Unavailable — do not invent a vendor SDK inside this package without an explicit owner decision.
+
+---
+
+## SystemInfo (named, not yet on nuget.org)
+
+SystemInfo is one contract with satellites, same shape as PerfMon. Snapshots, not a 1 s PDH clock. Projects live in `Vestigium.Helpers`. IDs are `Vestigium.Helpers.SystemInfo*` — never a root `Vestigium.SystemInfo` prefix. No Demo / CLI on 0.1. Unavailable, never a fake zero. None of them call `VestigiumLogger.Initialize`. None of them plot. None of them list adapters.
+
+### Vestigium.Helpers.SystemInfo — unpublished
+
+Intent: shared snapshot records and catalog hook. APPID `SystemInfo`, EVENTID 19000–19499 proposed. Satellites depend on this.
+
+### Vestigium.Helpers.SystemInfo.Cpu — unpublished
+
+Intent: processor topology, current/max MHz, process/thread/handle census. APPID `SystemInfo.Cpu`, EVENTID 19500–19999 proposed. Not `% Processor Time`.
+
+### Vestigium.Helpers.SystemInfo.Memory — unpublished
+
+Intent: physical total / available / in-use, commit peak, paged / nonpaged pools. APPID `SystemInfo.Memory`, EVENTID 20000–20499 proposed. Not the PDH series.
+
+Do not create `Vestigium.Helpers.SystemInfo.Network`. Adapters and WLAN stay on Helpers.Network. Rates stay on PerfMon.Network.
 
 ---
 
@@ -153,6 +177,8 @@ Intent: WPF placeholder page and overlay with title, subject, and multi-line des
 - **IEEE OUI registry package** — Network’s packed table is a stub; live lookup is a caller URL.
 - **PerfMon Demo / CLI** — forbidden on the 0.1 line.
 - **Per-host converter or theme packages** — catalog and palettes are already suite-wide.
+- **`Vestigium.SystemInfo` root prefix** — the family is `Vestigium.Helpers.SystemInfo*`.
+- **`Vestigium.Helpers.SystemInfo.Network`** — adapters and WLAN stay on Helpers.Network.
 
 ---
 
