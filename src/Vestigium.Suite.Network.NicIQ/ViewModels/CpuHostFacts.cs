@@ -11,12 +11,12 @@ internal sealed record CpuTopology(
     string L3,
     string L4);
 
-internal sealed record CpuLive(int Processes, int Threads, int Handles, string Speed);
+internal sealed record CpuLive(int Processes, int Threads, int Handles, string Speed, string BaseSpeed);
 
 internal static class CpuHostFacts
 {
     private static readonly CpuTopology Topology = ReadTopology();
-    private static CpuLive _live = new(0, 0, 0, "\u2014");
+    private static CpuLive _live = new(0, 0, 0, Dash, Dash);
     private static DateTimeOffset _liveAt;
     private static readonly object Gate = new();
 
@@ -47,10 +47,11 @@ internal static class CpuHostFacts
             handles = perf.HandleCount;
         }
 
-        return new CpuLive(processes, threads, handles, ReadSpeed());
+        var (speed, baseSpeed) = ReadSpeeds();
+        return new CpuLive(processes, threads, handles, speed, baseSpeed);
     }
 
-    private static string ReadSpeed()
+    private static (string Speed, string BaseSpeed) ReadSpeeds()
     {
         var count = Math.Max(1, Environment.ProcessorCount);
         var size = Marshal.SizeOf<ProcessorPowerInformation>() * count;
@@ -58,7 +59,7 @@ internal static class CpuHostFacts
         try
         {
             if (CallNtPowerInformation(11, nint.Zero, 0, buffer, size) != 0)
-                return "\u2014";
+                return (Dash, Dash);
             var max = 0u;
             var current = 0u;
             for (var i = 0; i < count; i++)
@@ -72,17 +73,20 @@ internal static class CpuHostFacts
 
             if (current == 0)
                 current = max;
-            return current == 0 ? "\u2014" : (current / 1000d).ToString("0.00") + " GHz";
+            return (FormatGhz(current), FormatGhz(max));
         }
         catch (DllNotFoundException)
         {
-            return "\u2014";
+            return (Dash, Dash);
         }
         finally
         {
             Marshal.FreeHGlobal(buffer);
         }
     }
+
+    private static string FormatGhz(uint mhz)
+        => mhz == 0 ? Dash : (mhz / 1000d).ToString("0.00") + " GHz";
 
     private static CpuTopology ReadTopology()
     {
