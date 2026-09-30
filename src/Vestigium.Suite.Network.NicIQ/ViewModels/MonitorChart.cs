@@ -18,6 +18,11 @@ public static class MonitorChartPages
     public const string Memory = "Memory";
 }
 
+internal static class ChartHorizon
+{
+    public static bool Review { get; set; }
+}
+
 internal static class MonitorChart
 {
     public static (FrameworkElement? View, string Strip) Paint(string page, MonitorRing ring)
@@ -25,23 +30,29 @@ internal static class MonitorChart
         ArgumentNullException.ThrowIfNull(ring);
         return page switch
         {
-            MonitorChartPages.Packets => Pair(ring, NetworkInterface.PacketsReceivedPerSec, NetworkInterface.PacketsSentPerSec, "Receive", "Send", "Packets", "60 s", "Packets/sec", 1m, 1m, true),
+            MonitorChartPages.Packets => Pair(ring, NetworkInterface.PacketsReceivedPerSec, NetworkInterface.PacketsSentPerSec, "Receive", "Send", "Packets", "Packets/sec", 1m, 1m, true),
             MonitorChartPages.Integrity => Integrity(ring),
             MonitorChartPages.Utilization => Utilization(ring),
-            MonitorChartPages.Cpu => Pair(ring, HostCounters.UserTime, HostCounters.PrivilegedTime, "User", "Privileged", "CPU", "60 s", "%", 1m, 1m, true),
-            MonitorChartPages.Memory => Pair(ring, HostCounters.CommittedBytes, HostCounters.AvailableMBytes, "Committed", "Available", "Memory", "60 s", "GB", 1m / 1073741824m, 1m / 1024m, true),
-            _ => Pair(ring, NetworkInterface.BytesReceivedPerSec, NetworkInterface.BytesSentPerSec, "Receive", "Send", "Throughput", "60 s", "Kbps", 8m / 1000m, 8m / 1000m, true)
+            MonitorChartPages.Cpu => Pair(ring, HostCounters.UserTime, HostCounters.PrivilegedTime, "User", "Privileged", "CPU", "%", 1m, 1m, true),
+            MonitorChartPages.Memory => Pair(ring, HostCounters.CommittedBytes, HostCounters.AvailableMBytes, "Committed", "Available", "Memory", "GB", 1m / 1073741824m, 1m / 1024m, true),
+            _ => Pair(ring, NetworkInterface.BytesReceivedPerSec, NetworkInterface.BytesSentPerSec, "Receive", "Send", "Throughput", "Kbps", 8m / 1000m, 8m / 1000m, true)
         };
     }
 
-    private static (FrameworkElement? View, string Strip) Pair(MonitorRing ring, string leftCounter, string rightCounter, string leftName, string rightName, string title, string xLabel, string yLabel, decimal scaleLeft, decimal scaleRight, bool rates)
+    private static int PlotSeconds(int depth)
+        => ChartHorizon.Review ? Math.Max(depth, 1) : MonitorRing.DisplaySeconds;
+
+    private static string TimeLabel(int seconds) => seconds + " s";
+
+    private static (FrameworkElement? View, string Strip) Pair(MonitorRing ring, string leftCounter, string rightCounter, string leftName, string rightName, string title, string yLabel, decimal scaleLeft, decimal scaleRight, bool rates)
     {
-        var leftPoints = Scale(ring.Of(leftCounter), scaleLeft);
-        var rightPoints = Scale(ring.Of(rightCounter), scaleRight);
-        var left = Window(leftPoints, leftName);
-        var right = Window(rightPoints, rightName);
-        var options = WithLimits(ChartTheme.Options(title, xLabel, yLabel), LimitsOf(leftPoints), LimitsOf(rightPoints));
-        return Draw(left, right, leftName, rightName, options, rates);
+        var leftAll = Scale(ring.Of(leftCounter), scaleLeft);
+        var rightAll = Scale(ring.Of(rightCounter), scaleRight);
+        var span = PlotSeconds(Math.Max(leftAll.Count, rightAll.Count));
+        var left = Window(leftAll, leftName, span);
+        var right = Window(rightAll, rightName, span);
+        var options = WithLimits(ChartTheme.Options(title, TimeLabel(span), yLabel), LimitsOf(leftAll), LimitsOf(rightAll));
+        return Draw(left, right, SeriesOf(leftAll, leftName), SeriesOf(rightAll, rightName), leftName, rightName, options, rates, span);
     }
 
     private static (FrameworkElement? View, string Strip) Integrity(MonitorRing ring)
@@ -59,13 +70,15 @@ internal static class MonitorChart
         var values = new double[rows.Length];
         var parts = new List<string>(rows.Length);
         var peak = 0d;
-        var counts = new List<decimal>(rows.Length);
+        var counts = new List<decimal>();
         for (var i = 0; i < rows.Length; i++)
         {
-            var last = Last(ring.Of(rows[i].Counter));
+            var history = ring.Of(rows[i].Counter);
+            var last = Last(history);
             labels[i] = rows[i].Label;
             values[i] = Math.Max(0, (double)decimal.Truncate(last));
-            counts.Add((decimal)values[i]);
+            foreach (var point in history)
+                counts.Add(point.Value);
             parts.Add(string.Create(CultureInfo.InvariantCulture, $"{rows[i].Label} {N(last)}"));
             if (values[i] > peak) peak = values[i];
         }
@@ -118,19 +131,21 @@ internal static class MonitorChart
             if (pct < 0) pct = 0;
             points.Add(new Observation(pct, bytes[i].At ?? band[i].At));
         }
-        var series = Window(points, "Utilization");
-        var options = WithLimits(ChartTheme.Options("Utilization", "60 s", "%"), LimitsOf(points));
+        var span = PlotSeconds(points.Count);
+        var series = Window(points, "Utilization", span);
+        var stats = SeriesOf(points, "Utilization");
+        var options = WithLimits(ChartTheme.Options("Utilization", TimeLabel(span), "%"), LimitsOf(points));
         try
         {
             var view = ChartTheme.Paint(ChartView.Line(series, options));
-            FitTimeAxis(view);
-            var strip = points.Count == 0 ? "Waiting for samples." : RateStrip(series, "Utilization");
+            FitTimeAxis(view, span);
+            var strip = points.Count == 0 ? "Waiting for samples." : RateStrip(stats, "Utilization");
             return (view, AppendLimits(strip, options.Limits));
         }
         catch (Exception ex) { return (null, ex.Message); }
     }
 
-    private static (FrameworkElement? View, string Strip) Draw(NumericSeries? left, NumericSeries? right, string leftName, string rightName, ChartOptions options, bool rates)
+    private static (FrameworkElement? View, string Strip) Draw(NumericSeries? left, NumericSeries? right, NumericSeries? leftStats, NumericSeries? rightStats, string leftName, string rightName, ChartOptions options, bool rates, int span)
     {
         var rows = new List<NumericSeries>();
         if (left is not null) rows.Add(left);
@@ -139,8 +154,8 @@ internal static class MonitorChart
         try
         {
             var view = ChartTheme.Paint(ChartView.Line(rows, options));
-            FitTimeAxis(view);
-            return (view, AppendLimits(Strip(left, leftName, right, rightName, rates), options.Limits));
+            FitTimeAxis(view, span);
+            return (view, AppendLimits(Strip(leftStats ?? left, leftName, rightStats ?? right, rightName, rates), options.Limits));
         }
         catch (Exception ex) { return (null, ex.Message); }
     }
@@ -165,22 +180,25 @@ internal static class MonitorChart
     private static List<Observation> Scale(IReadOnlyList<Observation> points, decimal scale)
         => scale == 1m || points.Count == 0 ? [.. points] : points.Select(p => new Observation(p.Value * scale, p.At)).ToList();
 
-    private static void FitTimeAxis(FrameworkElement view)
+    private static void FitTimeAxis(FrameworkElement view, int seconds)
     {
         if (view is not WpfPlot plot) return;
-        plot.Plot.Axes.SetLimitsX(0, 60);
+        plot.Plot.Axes.SetLimitsX(0, Math.Max(seconds, 1));
         plot.Refresh();
     }
 
-    private static NumericSeries Window(IReadOnlyList<Observation> points, string name)
+    private static NumericSeries? Window(IReadOnlyList<Observation> points, string name, int take)
     {
-        if (points.Count == 0) return NumericSeries.FromDecimal([0m], name);
-        var take = Math.Min(points.Count, MonitorRing.Cap);
-        var values = new decimal[take];
-        var src = points.Count - take;
-        for (var i = 0; i < take; i++) values[i] = points[src + i].Value;
+        if (points.Count == 0) return null;
+        var n = Math.Min(points.Count, Math.Max(take, 1));
+        var values = new decimal[n];
+        var src = points.Count - n;
+        for (var i = 0; i < n; i++) values[i] = points[src + i].Value;
         return NumericSeries.FromDecimal(values, name);
     }
+
+    private static NumericSeries? SeriesOf(IReadOnlyList<Observation> points, string name)
+        => points.Count == 0 ? null : NumericSeries.FromDecimal(points.Select(p => p.Value).ToArray(), name);
 
     private static decimal Last(IReadOnlyList<Observation> points) => points.Count == 0 ? 0 : points[^1].Value;
 
