@@ -61,7 +61,7 @@
                 Margin="20,0,0,0"
                 Visibility="{Binding MonitoringPageOpen, Converter={StaticResource BoolToVis}}">
       <TextBlock Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap" Margin="0,0,0,16"
-                 Text="Live charts sample the Network Interface counters they need. UCL and LCL are mean ± 3σ on the last 60 seconds." />
+                 Text="Live charts show the last 60 seconds. Mean, p95, CL, UCL and LCL use up to five minutes of samples. Pause or import to view the full archive." />
       <CheckBox Style="{StaticResource CheckBox.Standard}"
                 Content="Show chart legend"
                 IsChecked="{Binding ShowLegend}" />
