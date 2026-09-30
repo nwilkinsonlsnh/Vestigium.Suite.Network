@@ -44,7 +44,7 @@ internal static class MonitorChart
     }
 
     private static int PlotSeconds(int depth)
-        => ChartHorizon.Review ? Math.Max(depth, 1) : MonitorRing.DisplaySeconds;
+        => Math.Clamp(Math.Max(depth, 1), 1, MonitorRing.ArchiveSeconds);
 
     private static string TimeLabel(int seconds) => seconds + " s";
 
