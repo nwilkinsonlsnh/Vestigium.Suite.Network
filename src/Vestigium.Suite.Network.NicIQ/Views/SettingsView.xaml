@@ -61,16 +61,16 @@
                 Margin="20,0,0,0"
                 Visibility="{Binding MonitoringPageOpen, Converter={StaticResource BoolToVis}}">
       <TextBlock Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap" Margin="0,0,0,16"
-                 Text="The live chart grows with collected samples up to this window. Mean, p95, CL, UCL and LCL use the same window. Floor 3 minutes, ceiling 10 minutes." />
+                 Text="The live chart grows with collected samples up to this window. Mean, p95, CL, UCL and LCL use the same window. Floor 180 seconds (3 minutes), ceiling 600 seconds (10 minutes)." />
       <CheckBox Style="{StaticResource CheckBox.Standard}"
                 Content="Show chart legend"
                 IsChecked="{Binding ShowLegend}"
                 Margin="0,0,0,16" />
-      <Label Style="{StaticResource Label.Standard}" Content="Archive window (minutes)" />
+      <Label Style="{StaticResource Label.Standard}" Content="Archive window (seconds)" />
       <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-        <nud:VestigiumNumericUpDown Value="{Binding ArchiveMinutes, Mode=TwoWay}"
+        <nud:VestigiumNumericUpDown Value="{Binding ArchiveSeconds, Mode=TwoWay}"
                                     SignMode="Unsigned"
-                                    Minimum="3" Maximum="10" Increment="1" PageIncrement="1" DecimalPlaces="0"
+                                    Minimum="180" Maximum="600" Increment="1" PageIncrement="30" DecimalPlaces="0"
                                     Width="120" />
         <TextBlock Style="{StaticResource TextBlock.Caption}"
                    VerticalAlignment="Center"
