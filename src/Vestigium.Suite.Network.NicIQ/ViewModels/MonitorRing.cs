@@ -18,12 +18,11 @@ public sealed class MonitorRing
 
     public static int ClampArchive(int seconds)
     {
-        var minutes = (int)Math.Round(seconds / 60d, MidpointRounding.AwayFromZero);
-        if (minutes < MinArchiveSeconds / 60)
-            minutes = MinArchiveSeconds / 60;
-        if (minutes > MaxArchiveSeconds / 60)
-            minutes = MaxArchiveSeconds / 60;
-        return minutes * 60;
+        if (seconds < MinArchiveSeconds)
+            return MinArchiveSeconds;
+        if (seconds > MaxArchiveSeconds)
+            return MaxArchiveSeconds;
+        return seconds;
     }
 
     public static int ApplyArchive(int seconds)
