@@ -74,5 +74,17 @@ public sealed class PingIqAdapterChoiceTests
             Gateways: [],
             DnsServers: [],
             Dhcp: new DhcpInfo(null, null, null, null),
-            NetbiosOverTcp: NetbiosOverTcp.Unknown);
+            NetbiosOverTcp: NetbiosOverTcp.Unknown,
+            InterfaceIndex: 1,
+            Ipv4Metric: null,
+            Ipv4MetricIsAutomatic: null,
+            Ipv4AutoconfigEnabled: null,
+            Mtu: null,
+            DnsSuffix: null,
+            WinsServers: [],
+            DnsRegistrationEnabled: null,
+            PhysicalAdapter: true,
+            Driver: null,
+            SupportsIpv4: true,
+            SupportsIpv6: false);
 }
