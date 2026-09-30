@@ -20,6 +20,7 @@ public sealed class NicIqSettings
     public bool MonitorDiscards { get; set; }
     public List<string> MonitorCounters { get; set; } = [];
     public bool ShowLegend { get; set; } = true;
+    public int ArchiveSeconds { get; set; } = MonitorRing.DefaultArchiveSeconds;
     public string? SelectedAdapterId { get; set; }
     public string? SelectedMonitorNicId { get; set; }
     public bool StatusBarVisible { get; set; } = true;
@@ -56,7 +57,10 @@ public sealed class NicIqSettingsStore
                 return new NicIqSettings();
 
             var json = File.ReadAllText(FilePath);
-            return JsonSerializer.Deserialize<NicIqSettings>(json, Json) ?? new NicIqSettings();
+            var data = JsonSerializer.Deserialize<NicIqSettings>(json, Json) ?? new NicIqSettings();
+            data.ArchiveSeconds = MonitorRing.ClampArchive(
+                data.ArchiveSeconds == 0 ? MonitorRing.DefaultArchiveSeconds : data.ArchiveSeconds);
+            return data;
         }
         catch (Exception)
         {
@@ -69,6 +73,8 @@ public sealed class NicIqSettingsStore
         try
         {
             Directory.CreateDirectory(RootDirectory);
+            settings.ArchiveSeconds = MonitorRing.ClampArchive(
+                settings.ArchiveSeconds == 0 ? MonitorRing.DefaultArchiveSeconds : settings.ArchiveSeconds);
             File.WriteAllText(FilePath, JsonSerializer.Serialize(settings, Json));
         }
         catch (Exception)
