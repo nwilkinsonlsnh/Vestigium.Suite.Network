@@ -5,7 +5,7 @@
 **APPID:** `NicIQ`  
 **Status:** Live  
 **Date:** 30 September 2026  
-**Revised:** 1 October 2026 — PR03c.004 is on Helpers `main` (`ad20b78`).  
+**Revised:** 1 October 2026 — PR03c.005 is on Helpers `main` (`2ae5826`).  
 **Binding:** Published NugetPackages.md wins on domain. Each letter (PR03a–g) wins on that package. This file wins on order and step IDs.
 
 **Goal:** Move host-local library work out of NicIQ. Rev1 window stays shippable.
@@ -18,7 +18,7 @@ Letters stay the requirements. This file is the slice list. Do not rewrite a let
 
 ## Where PR03c is
 
-Helpers `main` is `ad20b78`. NicIQ still has its own `CachedPdhSource.cs`. That delete is PR03c.008, after publish.
+Helpers `main` is `2ae5826`. NicIQ still has its own `CachedPdhSource.cs`. That delete is PR03c.008, after publish.
 
 | ID | State | Evidence |
 | :--- | :--- | :--- |
@@ -26,7 +26,8 @@ Helpers `main` is `ad20b78`. NicIQ still has its own `CachedPdhSource.cs`. That 
 | PR03c.002 | Done | `SampleJob` default is that type and disposes it. |
 | PR03c.003 | Done | First rate read is Unavailable. Level counters are not primed away. |
 | PR03c.004 | Done | `Retain` drops counters the job does not sample. A miss drops the dead handle. |
-| PR03c.005 | Next | Do not add a second instance lister. |
+| PR03c.005 | Done | `ListInstances` calls `PdhCounterInventory.Shared.LiveInstances`. Same door as `NetworkCounterCatalog.LiveInstances`. No second walk. |
+| PR03c.006 | Next | Helpers tests. |
 
 ---
 
@@ -34,7 +35,7 @@ Helpers `main` is `ad20b78`. NicIQ still has its own `CachedPdhSource.cs`. That 
 
 | Order | Phase | Package / repo | Why this slot |
 | ---: | :--- | :--- | :--- |
-| 1 | PR03c | `Vestigium.Helpers.PerfMon` — Helpers | .001–.004 done. Next is .005. |
+| 1 | PR03c | `Vestigium.Helpers.PerfMon` — Helpers | .001–.005 done. Next is .006. |
 | 2 | PR03a | `Vestigium.Helpers.Charts` — Helpers | After rates are honest. |
 | 3 | PR03d | `Helpers.PerfMon.Cpu` / `Memory` — Helpers | Path catalogs only. |
 | 4 | PR03g | `Helpers.SystemInfo` + `.Cpu` + `.Memory` — Helpers | New family. |
@@ -55,8 +56,8 @@ Helpers `main` is `ad20b78`. NicIQ still has its own `CachedPdhSource.cs`. That 
 | 2 | PR03c.002 | Default `SampleJob` uses that type and disposes it. | Done |
 | 3 | PR03c.003 | Miss → Unavailable. First unprimed rate is Unavailable, never a fake 0. | Done |
 | 4 | PR03c.004 | `Retain` drops counters not in the job path list. Miss drops the dead handle. | Done |
-| 5 | PR03c.005 | `ListInstances`: reuse `NetworkCounterCatalog.LiveInstances` if it already exists. | Next |
-| 6 | PR03c.006 | Helpers tests. | Planned |
+| 5 | PR03c.005 | `ListInstances` uses `PdhCounterInventory.Shared`. Core does not reference the Network satellite. | Done |
+| 6 | PR03c.006 | Helpers tests: busy NIC can be non-zero after prime; missing instance is Unavailable; dispose does not leak. | Next |
 | 7 | PR03c.007 | Pack and publish PerfMon. | Planned |
 | 8 | PR03c.008 | Pin bump. Delete NicIQ `CachedPdhSource.cs`. | Planned |
 | 9 | PR03c.009 | Owner smoke. | Planned |
@@ -164,4 +165,4 @@ Not started. Depends on PR03b.
 
 ## Next action
 
-PR03c.005 on Helpers `main`. Reuse `NetworkCounterCatalog.LiveInstances` if it exists. Do not add a second lister.
+PR03c.006 on Helpers `main`. Tests for prime, Unavailable, and dispose. No live-wire test unless the fixture already has one.
