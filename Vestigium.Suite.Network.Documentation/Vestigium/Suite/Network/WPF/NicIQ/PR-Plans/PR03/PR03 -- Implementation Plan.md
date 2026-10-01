@@ -29,21 +29,6 @@ Helpers `main` is `01f1dc9`. NicIQ still has its own `CachedPdhSource.cs`. That 
 
 ---
 
-## Owner locks this plan already has
-
-| Lock | Meaning |
-|---|---|
-| Helpers family | SystemInfo IDs are `Vestigium.Helpers.SystemInfo*` in `nwilkinsonlsnh/Vestigium.Helpers`. |
-| PerfMon stays PDH | Topology / `GlobalMemoryStatusEx` are PR03g, not PR03d. |
-| No SystemInfo.Network | Adapters and WLAN stay on Helpers.Network (PR03e). |
-| ScottPlot stays internal | Hosts never `using ScottPlot`. |
-| Themes does not style suite controls | Tokens in Themes. Default styles on Controls. |
-| PR03e is parked | Do not expand `NetworkAdapter` in the same breath as Charts / Themes. |
-| Public PDH source | `CachedPdhSource` only. |
-| Prime | Unprimed rate is Unavailable, never 0. |
-
----
-
 ## Overview — execution order
 
 | Order | Phase | Package / repo | Why this slot |
@@ -75,7 +60,104 @@ Helpers `main` is `01f1dc9`. NicIQ still has its own `CachedPdhSource.cs`. That 
 | 8 | PR03c.008 | Pin bump. Delete NicIQ `CachedPdhSource.cs`. | Planned |
 | 9 | PR03c.009 | Owner smoke. | Planned |
 
-PR03a through PR03e are unchanged and not started. PR03e stays parked.
+---
+
+## PR03a — `Vestigium.Helpers.Charts`
+
+Not started.
+
+| Order | ID | Do | State |
+| ---: | :--- | :--- | :--- |
+| 1 | PR03a.001 | C-01: themed `ChartOptions` from Vestigium token strings. No Themes project reference. | Planned |
+| 2 | PR03a.002 | C-02: limit lines when `ChartOptions.Limits` is set. Host never `Add.HorizontalLine`. | Planned |
+| 3 | PR03a.003 | C-03: XMin/XMax. Default remains fit-data. | Planned |
+| 4 | PR03a.004 | C-04: count-axis flag for Column. | Planned |
+| 5 | PR03a.005 | Do not lift the two-series Line cap. | Planned |
+| 6 | PR03a.006 | Keep legend toggle on Charts. Charts does not persist. | Planned |
+| 7 | PR03a.007 | Helpers tests for themed options and limit lines. | Planned |
+| 8 | PR03a.008 | Pack and publish Charts. | Planned |
+| 9 | PR03a.009 | Pin bump. `MonitorChart` is `ChartView` only. No ScottPlot usings. | Planned |
+| 10 | PR03a.010 | Delete `ChartTheme` hex helper. Host still scales and computes limits. | Planned |
+| 11 | PR03a.011 | `using ScottPlot` absent from Suite.Network. | Planned |
+
+---
+
+## PR03d — `Vestigium.Helpers.PerfMon.Cpu` / `Memory`
+
+PDH path catalogs only. Facts are PR03g. Not started.
+
+| Order | ID | Do | State |
+| ---: | :--- | :--- | :--- |
+| 1 | PR03d.001 | Cpu preferred `Processor Information`, fallback `Processor`. | Planned |
+| 2 | PR03d.002 | Memory catalog paths. Hosts stop spelling category strings. | Planned |
+| 3 | PR03d.003 | Confirm Memory EVENTID before new named events. | Planned |
+| 4 | PR03d.004 | Tests: published paths; missing category is Unavailable. | Planned |
+| 5 | PR03d.005 | Pack and publish the two satellites. | Planned |
+| 6 | PR03d.006 | Pin bump. Delete `HostCounters.cs`. | Planned |
+| 7 | PR03d.007 | Do not move host facts into these packages. | Planned |
+
+---
+
+## PR03g — NEW `Vestigium.Helpers.SystemInfo*`
+
+Not started. IDs are `Vestigium.Helpers.SystemInfo*`.
+
+| Order | ID | Do | State |
+| ---: | :--- | :--- | :--- |
+| 1 | PR03g.001 | Confirm EVENTID 19000–19499 / 19500–19999 / 20000–20499. | Planned |
+| 2 | PR03g.002 | Core project. Records + Unavailable. No P/Invoke. | Planned |
+| 3 | PR03g.003 | Cpu satellite. | Planned |
+| 4 | PR03g.004 | Memory satellite. | Planned |
+| 5 | PR03g.005 | S-01 through S-05. No PerfMon or Network reference. | Planned |
+| 6 | PR03g.006 | Headless Windows tests. | Planned |
+| 7 | PR03g.007 | Pack the three Helpers IDs. No root `Vestigium.SystemInfo`. | Planned |
+| 8 | PR03g.008 | Pin. Delete `CpuHostFacts.cs` and `MemoryHostFacts.cs`. | Planned |
+| 9 | PR03g.009 | NicIQ grep for those P/Invokes is zero. | Planned |
+
+---
+
+## PR03b — `Vestigium.Themes`
+
+Not started.
+
+| Order | ID | Do | State |
+| ---: | :--- | :--- | :--- |
+| 1 | PR03b.001 | `RegisterSuiteV1` / `ThemeDefinitions.SuiteV1`. NuGet does not Register on import. | Planned |
+| 2 | PR03b.002 | Ids match README 1.0.2. | Planned |
+| 3 | PR03b.003 | Series.1–6 on every palette. | Planned |
+| 4 | PR03b.004 | No implicit TargetType in Themes.Controls for suite controls. | Planned |
+| 5 | PR03b.005 | Pack still eleven DLLs. | Planned |
+| 6 | PR03b.006 | Delete three host `ThemeCatalog.cs` files together. | Planned |
+| 7 | PR03b.007 | Hosts call RegisterSuiteV1 then Initialize. | Planned |
+
+---
+
+## PR03f — `Vestigium.Controls*`
+
+Not started. Depends on PR03b.
+
+| Order | ID | Do | State |
+| ---: | :--- | :--- | :--- |
+| 1 | PR03f.001 | StatusBar binds Surface.StatusBar / Text.Primary / Stroke.Subtle. | Planned |
+| 2 | PR03f.002 | NumericUpDown and UnderConstruction default styles. | Planned |
+| 3 | PR03f.003 | One PageViewport, preferred home Shell. | Planned |
+| 4 | PR03f.004 | No `Vestigium.Controls.Theme`. | Planned |
+| 5 | PR03f.005 | Pack touched control packages. | Planned |
+| 6 | PR03f.006 | Delete `ThemeChrome.cs` from three hosts. | Planned |
+| 7 | PR03f.007 | Palette switch updates those controls with no visual-tree walk. | Planned |
+
+---
+
+## PR03e — `Vestigium.Helpers.Network` (parked)
+
+| Order | ID | Do | State |
+| ---: | :--- | :--- | :--- |
+| 1 | PR03e.001 | Owner call on wireless association. | Parked |
+| 2 | PR03e.002 | If yes: door on `NetworkHelper`. Empty, not throw. | Parked |
+| 3 | PR03e.003 | If yes: SSID, PHY, quality. No keys in the log. | Parked |
+| 4 | PR03e.004 | If yes: one P/Invoke inside Network. | Parked |
+| 5 | PR03e.005 | If yes: delete `WirelessLink.cs`. | Parked |
+| 6 | PR03e.006 | Never mint Wireless, Wlan, or SystemInfo.Network. | Parked |
 
 ---
 
