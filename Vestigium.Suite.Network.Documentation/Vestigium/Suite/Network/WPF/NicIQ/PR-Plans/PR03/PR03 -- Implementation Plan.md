@@ -5,7 +5,7 @@
 **APPID:** `NicIQ`  
 **Status:** Live  
 **Date:** 30 September 2026  
-**Revised:** 1 October 2026 — PR03c.003 is on Helpers `main` (`01f1dc9`).  
+**Revised:** 1 October 2026 — PR03c.004 is on Helpers `main` (`ad20b78`).  
 **Binding:** Published NugetPackages.md wins on domain. Each letter (PR03a–g) wins on that package. This file wins on order and step IDs.
 
 **Goal:** Move host-local library work out of NicIQ. Rev1 window stays shippable.
@@ -18,14 +18,15 @@ Letters stay the requirements. This file is the slice list. Do not rewrite a let
 
 ## Where PR03c is
 
-Helpers `main` is `01f1dc9`. NicIQ still has its own `CachedPdhSource.cs`. That delete is PR03c.008, after publish.
+Helpers `main` is `ad20b78`. NicIQ still has its own `CachedPdhSource.cs`. That delete is PR03c.008, after publish.
 
 | ID | State | Evidence |
 | :--- | :--- | :--- |
 | PR03c.001 | Done | `public sealed class CachedPdhSource`. |
 | PR03c.002 | Done | `SampleJob` default is that type and disposes it. |
-| PR03c.003 | Done | First rate read is Unavailable. Level counters are not primed away. Misses stay Unavailable. |
-| PR03c.004 | Next | New NIC instance must drop old counters. |
+| PR03c.003 | Done | First rate read is Unavailable. Level counters are not primed away. |
+| PR03c.004 | Done | `Retain` drops counters the job does not sample. A miss drops the dead handle. |
+| PR03c.005 | Next | Do not add a second instance lister. |
 
 ---
 
@@ -33,7 +34,7 @@ Helpers `main` is `01f1dc9`. NicIQ still has its own `CachedPdhSource.cs`. That 
 
 | Order | Phase | Package / repo | Why this slot |
 | ---: | :--- | :--- | :--- |
-| 1 | PR03c | `Vestigium.Helpers.PerfMon` — Helpers | .001–.003 done. Next is .004. |
+| 1 | PR03c | `Vestigium.Helpers.PerfMon` — Helpers | .001–.004 done. Next is .005. |
 | 2 | PR03a | `Vestigium.Helpers.Charts` — Helpers | After rates are honest. |
 | 3 | PR03d | `Helpers.PerfMon.Cpu` / `Memory` — Helpers | Path catalogs only. |
 | 4 | PR03g | `Helpers.SystemInfo` + `.Cpu` + `.Memory` — Helpers | New family. |
@@ -53,8 +54,8 @@ Helpers `main` is `01f1dc9`. NicIQ still has its own `CachedPdhSource.cs`. That 
 | 1 | PR03c.001 | Public type is `CachedPdhSource`. One type. Host does not subclass. | Done |
 | 2 | PR03c.002 | Default `SampleJob` uses that type and disposes it. | Done |
 | 3 | PR03c.003 | Miss → Unavailable. First unprimed rate is Unavailable, never a fake 0. | Done |
-| 4 | PR03c.004 | Source lifetime follows the job. New NIC instance drops old instance counters. | Next |
-| 5 | PR03c.005 | `ListInstances`: reuse `NetworkCounterCatalog.LiveInstances` if it already exists. | Planned |
+| 4 | PR03c.004 | `Retain` drops counters not in the job path list. Miss drops the dead handle. | Done |
+| 5 | PR03c.005 | `ListInstances`: reuse `NetworkCounterCatalog.LiveInstances` if it already exists. | Next |
 | 6 | PR03c.006 | Helpers tests. | Planned |
 | 7 | PR03c.007 | Pack and publish PerfMon. | Planned |
 | 8 | PR03c.008 | Pin bump. Delete NicIQ `CachedPdhSource.cs`. | Planned |
@@ -163,4 +164,4 @@ Not started. Depends on PR03b.
 
 ## Next action
 
-PR03c.004 on Helpers `main`. Drop counters for an instance the job no longer samples.
+PR03c.005 on Helpers `main`. Reuse `NetworkCounterCatalog.LiveInstances` if it exists. Do not add a second lister.
