@@ -3,9 +3,7 @@ using System.Windows;
 using Vestigium.Helpers.Analytics;
 using Vestigium.Helpers.Charts;
 using Vestigium.Helpers.PerfMon.Cpu;
-using Vestigium.Helpers.PerfMon.Memory;
 using Vestigium.Helpers.PerfMon.Network;
-using MemoryInfo = Vestigium.Helpers.SystemInfo.Memory.MemoryFacts;
 
 namespace Vestigium.Suite.Network.NicIQ.ViewModels;
 
@@ -24,7 +22,7 @@ internal static class ChartHorizon
     public static bool Review { get; set; }
 }
 
-internal static class MonitorChart
+internal static partial class MonitorChart
 {
     public static (FrameworkElement? View, string Strip) Paint(string page, MonitorRing ring)
     {
@@ -38,13 +36,6 @@ internal static class MonitorChart
             MonitorChartPages.Memory => MemoryChart(ring),
             _ => Pair(ring, NetworkInterface.BytesReceivedPerSec, NetworkInterface.BytesSentPerSec, "Receive", "Send", "Throughput", "Kbps", 8m / 1000m, 8m / 1000m, true)
         };
-    }
-
-    private static (FrameworkElement? View, string Strip) MemoryChart(MonitorRing ring)
-    {
-        var total = MemoryInfo.Read().TotalBytes;
-        double? yMax = total.IsOk && total.Value > 0 ? total.Value / 1073741824d : null;
-        return Pair(ring, Memory.CommittedBytes, Memory.AvailableMBytes, "Committed", "Available", "Memory", "GB", 1m / 1073741824m, 1m / 1024m, true, yMax);
     }
 
     private static int PlotSeconds(int depth)
