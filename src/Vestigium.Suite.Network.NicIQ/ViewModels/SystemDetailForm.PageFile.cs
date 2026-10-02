@@ -45,7 +45,7 @@ public sealed partial class SystemDetailForm
             if (string.IsNullOrWhiteSpace(row))
                 continue;
             var parts = row.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            locations.Add(parts[0]);
+            locations.Add(SystemDrive(parts[0]));
             var min = parts.Length > 1 && int.TryParse(parts[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out var low) ? low : 0;
             var max = parts.Length > 2 && int.TryParse(parts[2], NumberStyles.Integer, CultureInfo.InvariantCulture, out var high) ? high : 0;
             if (min != 0 || max != 0)
@@ -59,5 +59,14 @@ public sealed partial class SystemDetailForm
             minimum.Count == 0 ? Dash : string.Join("; ", minimum),
             maximum.Count == 0 ? Dash : string.Join("; ", maximum),
             managed ? "Yes" : "No");
+    }
+
+    private static string SystemDrive(string path)
+    {
+        if (!path.StartsWith("?", StringComparison.Ordinal))
+            return path;
+        var root = Path.GetPathRoot(Environment.SystemDirectory);
+        var letter = string.IsNullOrWhiteSpace(root) ? "C:" : root.TrimEnd('\\');
+        return letter + path[1..];
     }
 }
