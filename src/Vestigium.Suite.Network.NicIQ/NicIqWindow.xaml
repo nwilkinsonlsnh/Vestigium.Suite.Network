@@ -14,14 +14,19 @@
       <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="pack://application:,,,/Vestigium.Controls;component/Shell/MenuChrome.xaml" />
       </ResourceDictionary.MergedDictionaries>
-      <Style x:Key="Separator.MenuLine" TargetType="Separator" BasedOn="{StaticResource Separator.Menu}">
+      <Style x:Key="Separator.MenuLine" TargetType="Separator">
         <Setter Property="Height" Value="1" />
-        <Setter Property="Margin" Value="8,4" />
-        <Setter Property="Background" Value="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
+        <Setter Property="Margin" Value="8,6" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="Background" Value="{DynamicResource Vestigium.Brushes.Accent.Primary}" />
         <Setter Property="Template">
           <Setter.Value>
             <ControlTemplate TargetType="Separator">
-              <Border Height="1" Margin="8,4" SnapsToDevicePixels="True" Background="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
+              <Border Height="1"
+                      Margin="8,6"
+                      HorizontalAlignment="Stretch"
+                      SnapsToDevicePixels="True"
+                      Background="{TemplateBinding Background}" />
             </ControlTemplate>
           </Setter.Value>
         </Setter>
