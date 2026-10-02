@@ -4,7 +4,7 @@ namespace Vestigium.Suite.Network.NicIQ.ViewModels;
 
 public sealed partial class MainViewModel
 {
-    private const int WarmReadyDepth = 2;
+    private const int WarmReadyDepth = 1;
     private int _warmPathTotal;
     private int _warmPathReady;
 
