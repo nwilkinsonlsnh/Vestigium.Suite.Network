@@ -3,10 +3,10 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="{Binding Title}"
         Icon="pack://application:,,,/Assets/NicIQ.ico"
-        Width="760"
+        Width="640"
         SizeToContent="Height"
-        MinHeight="640"
-        MinWidth="640"
+        MinHeight="360"
+        MinWidth="520"
         ResizeMode="CanResize"
         ShowInTaskbar="True"
         WindowStartupLocation="CenterOwner"
@@ -31,72 +31,77 @@
                  VerticalAlignment="Center"
                  Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
     </DockPanel>
-    <UniformGrid Columns="2">
-      <StackPanel Margin="0,0,16,16">
-        <TextBlock Text="Identity" FontWeight="SemiBold" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
-        <TextBlock Text="Name" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
-        <TextBlock Text="{Binding Name}" Margin="0,0,0,6" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
-        <TextBlock Text="Description" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
-        <TextBlock Text="{Binding Description}" TextWrapping="Wrap" Margin="0,0,0,6" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
-        <TextBlock Text="Type" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
-        <TextBlock Text="{Binding Type}" Margin="0,0,0,6" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
-        <TextBlock Text="Status" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
-        <TextBlock Text="{Binding Status}" Margin="0,0,0,6" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
-        <TextBlock Text="MAC" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
-        <TextBlock Text="{Binding Mac}" Margin="0,0,0,6" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
-        <TextBlock Text="Interface index" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
-        <TextBlock Text="{Binding InterfaceIndex}" Margin="0,0,0,6" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
-        <TextBlock Text="Physical" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
-        <TextBlock Text="{Binding Physical}" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
-      </StackPanel>
-      <StackPanel Margin="0,0,0,16">
-        <TextBlock Text="Link" FontWeight="SemiBold" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
-        <TextBlock Text="Speed" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
-        <TextBlock Text="{Binding Speed}" Margin="0,0,0,6" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
-        <TextBlock Text="MTU" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
-        <TextBlock Text="{Binding Mtu}" Margin="0,0,0,6" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
-        <TextBlock Text="Assignment" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
-        <TextBlock Text="{Binding Assignment}" Margin="0,0,0,6" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
-        <TextBlock Text="Metric" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
-        <TextBlock Text="{Binding Metric}" Margin="0,0,0,6" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
-        <StackPanel Visibility="{Binding WirelessVisibility}" Margin="0,8,0,0">
-          <TextBlock Text="Wi-Fi" FontWeight="SemiBold" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+    <TabControl>
+      <TabItem Header="Identity">
+        <StackPanel Margin="12">
+          <TextBlock Text="Name" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
+          <TextBlock Text="{Binding Name}" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+          <TextBlock Text="Description" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
+          <TextBlock Text="{Binding Description}" TextWrapping="Wrap" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+          <TextBlock Text="Type" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
+          <TextBlock Text="{Binding Type}" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+          <TextBlock Text="Status" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
+          <TextBlock Text="{Binding Status}" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+          <TextBlock Text="MAC" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
+          <TextBlock Text="{Binding Mac}" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+          <TextBlock Text="Interface index" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
+          <TextBlock Text="{Binding InterfaceIndex}" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+          <TextBlock Text="Physical" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
+          <TextBlock Text="{Binding Physical}" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+        </StackPanel>
+      </TabItem>
+      <TabItem Header="Link">
+        <StackPanel Margin="12">
+          <TextBlock Text="Speed" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
+          <TextBlock Text="{Binding Speed}" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+          <TextBlock Text="MTU" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
+          <TextBlock Text="{Binding Mtu}" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+          <TextBlock Text="Assignment" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
+          <TextBlock Text="{Binding Assignment}" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+          <TextBlock Text="Metric" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
+          <TextBlock Text="{Binding Metric}" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+        </StackPanel>
+      </TabItem>
+      <TabItem Header="Wi-Fi" Visibility="{Binding WirelessVisibility}">
+        <StackPanel Margin="12">
           <TextBlock Text="BSSID" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
-          <TextBlock Text="{Binding Bssid}" Margin="0,0,0,6" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+          <TextBlock Text="{Binding Bssid}" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
           <TextBlock Text="Receive" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
-          <TextBlock Text="{Binding ReceiveRate}" Margin="0,0,0,6" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+          <TextBlock Text="{Binding ReceiveRate}" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
           <TextBlock Text="Transmit" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
-          <TextBlock Text="{Binding TransmitRate}" Margin="0,0,0,6" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+          <TextBlock Text="{Binding TransmitRate}" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
           <TextBlock Text="Security" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
           <TextBlock Text="{Binding Security}" TextWrapping="Wrap" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
         </StackPanel>
-      </StackPanel>
-      <StackPanel Margin="0,0,16,0">
-        <TextBlock Text="Addresses" FontWeight="SemiBold" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
-        <TextBlock Text="IPv4" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
-        <TextBlock Text="{Binding Ipv4}" Margin="0,0,0,6" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
-        <TextBlock Text="Prefix" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
-        <TextBlock Text="{Binding Prefix}" Margin="0,0,0,6" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
-        <TextBlock Text="Gateway" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
-        <TextBlock Text="{Binding Gateway}" Margin="0,0,0,6" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
-        <TextBlock Text="DNS" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
-        <TextBlock Text="{Binding Dns}" Margin="0,0,0,6" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
-        <TextBlock Text="IPv6" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
-        <TextBlock Text="{Binding Ipv6}" Margin="0,0,0,6" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
-        <TextBlock Text="Suffix" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
-        <TextBlock Text="{Binding Suffix}" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
-      </StackPanel>
-      <StackPanel>
-        <TextBlock Text="Driver" FontWeight="SemiBold" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
-        <TextBlock Text="Provider" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
-        <TextBlock Text="{Binding DriverProvider}" Margin="0,0,0,6" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
-        <TextBlock Text="Version" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
-        <TextBlock Text="{Binding DriverVersion}" Margin="0,0,0,6" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
-        <TextBlock Text="Date" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
-        <TextBlock Text="{Binding DriverDate}" Margin="0,0,0,6" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
-        <TextBlock Text="Service" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
-        <TextBlock Text="{Binding DriverService}" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
-      </StackPanel>
-    </UniformGrid>
+      </TabItem>
+      <TabItem Header="Addresses">
+        <StackPanel Margin="12">
+          <TextBlock Text="IPv4" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
+          <TextBlock Text="{Binding Ipv4}" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+          <TextBlock Text="Prefix" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
+          <TextBlock Text="{Binding Prefix}" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+          <TextBlock Text="Gateway" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
+          <TextBlock Text="{Binding Gateway}" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+          <TextBlock Text="DNS" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
+          <TextBlock Text="{Binding Dns}" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+          <TextBlock Text="IPv6" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
+          <TextBlock Text="{Binding Ipv6}" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+          <TextBlock Text="Suffix" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
+          <TextBlock Text="{Binding Suffix}" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+        </StackPanel>
+      </TabItem>
+      <TabItem Header="Driver">
+        <StackPanel Margin="12">
+          <TextBlock Text="Provider" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
+          <TextBlock Text="{Binding DriverProvider}" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+          <TextBlock Text="Version" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
+          <TextBlock Text="{Binding DriverVersion}" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+          <TextBlock Text="Date" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
+          <TextBlock Text="{Binding DriverDate}" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+          <TextBlock Text="Service" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
+          <TextBlock Text="{Binding DriverService}" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+        </StackPanel>
+      </TabItem>
+    </TabControl>
   </DockPanel>
 </Window>
