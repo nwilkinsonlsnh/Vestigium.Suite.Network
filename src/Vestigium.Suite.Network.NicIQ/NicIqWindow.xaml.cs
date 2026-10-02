@@ -173,9 +173,11 @@ public partial class NicIqWindow : Window
 
     private MainViewModel? FindMonitor()
     {
-        foreach (var item in RootShell.Items)
+        if (RootShell.NavItems is null)
+            return null;
+        foreach (var raw in RootShell.NavItems)
         {
-            if (item.Content is FrameworkElement { DataContext: MainViewModel viewModel })
+            if (raw is VestigiumNavItem { Content: FrameworkElement { DataContext: MainViewModel viewModel } })
                 return viewModel;
         }
 
