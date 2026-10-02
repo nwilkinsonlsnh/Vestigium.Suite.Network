@@ -2,6 +2,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using Vestigium.Controls.Shell;
+using Vestigium.Suite.Network.NicIQ.ViewModels;
+using Vestigium.Suite.Network.NicIQ.Views;
 
 namespace Vestigium.Suite.Network.NicIQ;
 
@@ -134,7 +136,7 @@ public partial class NicIqWindow : Window
     {
         return new TextBlock
         {
-            Text = "✓",
+            Text = "\u2713",
             FontSize = 13,
             FontWeight = FontWeights.SemiBold,
             HorizontalAlignment = HorizontalAlignment.Center,
@@ -157,6 +159,27 @@ public partial class NicIqWindow : Window
         if (!item.IsEnabled)
             return;
         RootShell.SelectedItem = item;
+    }
+
+    private void AdapterDetails_Click(object sender, RoutedEventArgs e)
+    {
+        if (FindMonitor() is not MainViewModel viewModel)
+            return;
+        AdapterDetailWindow.ShowFor(this, viewModel, followMonitor: true);
+    }
+
+    private void SystemDetails_Click(object sender, RoutedEventArgs e)
+        => SystemDetailWindow.ShowFor(this);
+
+    private MainViewModel? FindMonitor()
+    {
+        foreach (var item in RootShell.Items)
+        {
+            if (item.Content is FrameworkElement { DataContext: MainViewModel viewModel })
+                return viewModel;
+        }
+
+        return null;
     }
 
     private void Exit_Click(object sender, RoutedEventArgs e) => Close();
