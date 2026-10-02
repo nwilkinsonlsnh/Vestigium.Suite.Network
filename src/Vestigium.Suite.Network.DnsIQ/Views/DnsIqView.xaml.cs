@@ -1,5 +1,6 @@
 using System.Windows.Controls;
 using System.Windows.Input;
+using Vestigium.Suite.Network.Shell;
 
 namespace Vestigium.Suite.Network.DnsIQ.Views;
 
