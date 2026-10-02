@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Windows;
+using System.Windows.Controls;
 using Vestigium.Suite.Network.NicIQ.ViewModels;
 
 namespace Vestigium.Suite.Network.NicIQ.Views;
@@ -70,7 +71,27 @@ public partial class AdapterDetailWindow : Window
         if (row is null)
             return;
         DataContext = AdapterDetailForm.From(row);
+        if (WifiTab.Visibility != Visibility.Visible && WifiTab.IsChecked == true)
+            IdentityTab.IsChecked = true;
+        ShowTab();
     }
+
+    private void TabChecked(object sender, RoutedEventArgs e)
+        => ShowTab();
+
+    private void ShowTab()
+    {
+        if (IdentityPanel is null)
+            return;
+        IdentityPanel.Visibility = Shown(IdentityTab);
+        LinkPanel.Visibility = Shown(LinkTab);
+        WifiPanel.Visibility = Shown(WifiTab);
+        AddressesPanel.Visibility = Shown(AddressesTab);
+        DriverPanel.Visibility = Shown(DriverTab);
+    }
+
+    private static Visibility Shown(RadioButton tab)
+        => tab.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
 
     private void CopyClick(object sender, RoutedEventArgs e)
     {
