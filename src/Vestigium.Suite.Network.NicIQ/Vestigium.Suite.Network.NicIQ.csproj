@@ -23,6 +23,8 @@
     <PackageReference Include="Vestigium.Helpers.Analytics" Version="$(VestigiumAnalyticsVersion)" />
     <PackageReference Include="Vestigium.Helpers.Charts" Version="$(VestigiumChartsVersion)" />
     <PackageReference Include="Vestigium.Helpers.PerfMon" Version="$(VestigiumPerfMonCoreVersion)" />
+    <PackageReference Include="Vestigium.Helpers.PerfMon.Cpu" Version="$(VestigiumPerfMonCpuVersion)" />
+    <PackageReference Include="Vestigium.Helpers.PerfMon.Memory" Version="$(VestigiumPerfMonMemoryVersion)" />
     <PackageReference Include="Vestigium.Helpers.PerfMon.Network" Version="$(VestigiumPerfMonVersion)" />
   </ItemGroup>
 </Project>
