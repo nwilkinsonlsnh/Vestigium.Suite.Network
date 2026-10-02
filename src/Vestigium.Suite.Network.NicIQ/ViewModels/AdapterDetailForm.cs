@@ -1,6 +1,8 @@
 using System.Globalization;
+using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Text;
+using System.Windows;
 using Vestigium.Helpers.Network;
 
 namespace Vestigium.Suite.Network.NicIQ.ViewModels;
@@ -55,6 +57,16 @@ public sealed class AdapterDetailForm
 
     public string DriverService { get; private set; } = Dash;
 
+    public Visibility WirelessVisibility { get; private set; } = Visibility.Collapsed;
+
+    public string Bssid { get; private set; } = Dash;
+
+    public string ReceiveRate { get; private set; } = Dash;
+
+    public string TransmitRate { get; private set; } = Dash;
+
+    public string Security { get; private set; } = Dash;
+
     public static AdapterDetailForm From(AdapterRow? row)
     {
         if (row is null)
@@ -63,6 +75,9 @@ public sealed class AdapterDetailForm
         var adapter = row.Source;
         var ipv4 = adapter.UnicastAddresses.FirstOrDefault(a => a.Family == AddressFamily.InterNetwork);
         var ipv6 = adapter.UnicastAddresses.FirstOrDefault(a => a.Family == AddressFamily.InterNetworkV6 && !a.Address.StartsWith("fe80", StringComparison.OrdinalIgnoreCase));
+        var wireless = adapter.Type == NetworkInterfaceType.Wireless80211
+            ? NetworkHelper.TryWirelessAssociation(adapter)
+            : null;
         var form = new AdapterDetailForm
         {
             Title = Text(row.Name),
@@ -86,7 +101,12 @@ public sealed class AdapterDetailForm
             DriverProvider = Text(adapter.Driver?.Provider),
             DriverVersion = Text(adapter.Driver?.Version),
             DriverDate = adapter.Driver?.Date is DateTimeOffset date ? date.ToLocalTime().ToString("g", CultureInfo.CurrentCulture) : Dash,
-            DriverService = Text(adapter.Driver?.Service)
+            DriverService = Text(adapter.Driver?.Service),
+            WirelessVisibility = wireless is null ? Visibility.Collapsed : Visibility.Visible,
+            Bssid = Text(wireless?.Bssid),
+            ReceiveRate = Rate(wireless?.ReceiveKbps),
+            TransmitRate = Rate(wireless?.TransmitKbps),
+            Security = Text(wireless?.Security)
         };
         form.CopyText = form.Format();
         return form;
@@ -111,6 +131,14 @@ public sealed class AdapterDetailForm
         Line(text, "MTU", Mtu);
         Line(text, "Assignment", Assignment);
         Line(text, "Metric", Metric);
+        if (WirelessVisibility == Visibility.Visible)
+        {
+            Line(text, "BSSID", Bssid);
+            Line(text, "Receive", ReceiveRate);
+            Line(text, "Transmit", TransmitRate);
+            Line(text, "Security", Security);
+        }
+
         text.AppendLine();
         text.AppendLine("Addresses");
         Line(text, "IPv4", Ipv4);
@@ -133,6 +161,9 @@ public sealed class AdapterDetailForm
 
     private static string Text(string? value)
         => string.IsNullOrWhiteSpace(value) ? Dash : value.Trim();
+
+    private static string Rate(int? kbps)
+        => kbps is > 0 ? (kbps.Value / 1000d).ToString("0", CultureInfo.InvariantCulture) + " Mbps" : Dash;
 
     private static string Yes(bool? value)
         => value is null ? Dash : value.Value ? "Yes" : "No";
