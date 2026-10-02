@@ -1,6 +1,7 @@
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using Vestigium.Suite.Network.Shell;
 
 namespace Vestigium.Suite.Network.PingIQ.Views;
 
