@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Net.NetworkInformation;
 using System.Text;
 using Microsoft.Win32;
+using Vestigium.Helpers.SystemInfo;
 using Vestigium.Helpers.SystemInfo.Cpu;
 using MemoryInfo = Vestigium.Helpers.SystemInfo.Memory.MemoryFacts;
 
@@ -107,7 +108,7 @@ public sealed class SystemDetailForm
             AvailablePhysical = Gb(memory.AvailableBytes),
             InUsePhysical = Gb(memory.InUseBytes),
             CommitPeak = Gb(memory.CommitPeakBytes),
-            PageFile = PageFile()
+            PageFile = ReadPageFile()
         };
         form.CopyText = form.Format();
         return form;
@@ -153,7 +154,7 @@ public sealed class SystemDetailForm
         return text.ToString();
     }
 
-    private static string ProcessorText(RegistryKey? cpu, Vestigium.Helpers.SystemInfo.Fact<CpuTopology> host)
+    private static string ProcessorText(RegistryKey? cpu, Fact<CpuTopology> host)
     {
         var name = cpu?.GetValue("ProcessorNameString")?.ToString();
         var topology = host.IsOk ? $"{host.Value.Sockets} socket, {host.Value.Cores} cores, {host.Value.Logical} logical" : null;
@@ -162,7 +163,7 @@ public sealed class SystemDetailForm
         return string.IsNullOrWhiteSpace(topology) ? name.Trim() : name.Trim() + "  " + topology;
     }
 
-    private static string PageFile()
+    private static string ReadPageFile()
     {
         var key = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management");
         if (key?.GetValue("PagingFiles") is not string[] files || files.Length == 0)
@@ -194,7 +195,7 @@ public sealed class SystemDetailForm
         return Dash;
     }
 
-    private static string Gb(Vestigium.Helpers.SystemInfo.Fact<ulong> fact)
+    private static string Gb(Fact<ulong> fact)
         => fact.IsOk ? (fact.Value / 1073741824d).ToString("0.0", CultureInfo.InvariantCulture) + " GB" : Dash;
 
     private static void Line(StringBuilder text, string label, string value)
