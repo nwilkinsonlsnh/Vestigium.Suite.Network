@@ -18,7 +18,6 @@ public sealed partial class MainViewModel : ObservableObject
     private CancellationTokenSource? _cts;
     private CancellationTokenSource? _monitorCts;
     private NetworkJob<AdapterWatchResult>? _watchJob;
-    private CachedPdhSource? _pdh;
     private IReadOnlyList<string>? _live;
     private DateTimeOffset _liveAt;
     private string? _pdhInstance;
@@ -264,7 +263,7 @@ public sealed partial class MainViewModel : ObservableObject
     {
         try { _monitorCts?.Cancel(); } catch (ObjectDisposedException) { }
         _monitorCts?.Dispose(); _monitorCts = null; IsMonitoring = false;
-        _pdh?.Dispose(); _pdh = null; _live = null; _pdhInstance = null; _pdhKey = null;
+        _live = null; _pdhInstance = null; _pdhKey = null;
     }
 
     public void RestartMonitoring()
@@ -292,18 +291,9 @@ public sealed partial class MainViewModel : ObservableObject
         if (counters.Count == 0) counters = MonitorCounterList.Sanitize(MonitorCounterList.SeedReceiveSend);
         var paths = NetworkCounterCatalog.Paths(PdhNic.Category, instance, counters).Concat(HostCounters.Preferred).ToList();
         if (paths.Count == 0) return new SampleTick(instance, null, "No counters selected", false);
-        _pdh ??= new CachedPdhSource();
-        var primed = false;
-        foreach (var path in paths)
-        {
-            token.ThrowIfCancellationRequested();
-            if (!_pdh.NeedsPrime(path)) continue;
-            _ = _pdh.Read(path); primed = true;
-        }
-        if (primed) return new SampleTick(instance, null, null, true);
-        var rows = new List<SampleRecord>(paths.Count);
-        foreach (var path in paths) { token.ThrowIfCancellationRequested(); rows.Add(_pdh.Read(path)); }
-        return new SampleTick(instance, new SampleJobResult(SampleStatus.Ok, rows), null, false);
+        var job = new SampleJob(paths, new SampleJobOptions { Count = 1 });
+        var result = job.RunAsync(token).GetAwaiter().GetResult();
+        return new SampleTick(instance, result, null, false);
     }
 
     private void ApplySamples(SampleJobResult result)
