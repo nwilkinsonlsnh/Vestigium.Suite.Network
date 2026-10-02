@@ -3,14 +3,14 @@
 **Document ID:** VEST-SUITE-NETWORK-NICIQ-PLAN-PR03  
 **Host:** `Vestigium.Suite.Network.NicIQ`  
 **APPID:** `NicIQ`  
-**Status:** Live  
+**Status:** Closed  
 **Date:** 30 September 2026  
-**Revised:** 2 October 2026 — PR03e.001 is yes. Wireless association expands Network.  
-**Binding:** Published NugetPackages.md wins on domain. Each letter (PR03a–g) wins on that package. This file wins on order and step IDs.
+**Revised:** 2 October 2026 — PR03a–g are done. PR03h is recorded, not started.  
+**Binding:** Published NugetPackages.md wins on domain. Each letter (PR03a–h) wins on that package. This file wins on order and step IDs.
 
 **Goal:** Move host-local library work out of NicIQ. Rev1 window stays shippable.
 
-**Not:** A new host. Not `perfmon.exe`. Not a tenth palette. Not a root `Vestigium.SystemInfo` prefix. Not `Vestigium.Helpers.SystemInfo.Network`. Not a second shell package.
+**Not:** A new host. Not `perfmon.exe`. Not a tenth palette. Not a root `Vestigium.SystemInfo` prefix. Not `Vestigium.Helpers.SystemInfo.Network`. Not a second shell package. Not `Vestigium.Helpers.Wireless`.
 
 Letters stay the requirements. This file is the slice list. Do not rewrite a letter from a step.
 
@@ -32,9 +32,9 @@ Letters stay the requirements. This file is the slice list. Do not rewrite a let
 | `Vestigium.Controls.StatusBar` | 1.0.1 |
 | `Vestigium.Controls.NumericUpDown` | 1.0.2 |
 | `Vestigium.Controls.UnderConstruction` | 1.0.1 |
-| `Vestigium.Helpers.Network` | 1.3.4. Wireless door not published. |
+| `Vestigium.Helpers.Network` | 1.3.5 |
 
-NicIQ keeps one `CachedPdhSource` for the monitor session. `HostCounters.cs`, `CpuHostFacts.cs`, `MemoryHostFacts.cs`, the three `ThemeChrome.cs` files, and the three `ThemeCatalog.cs` files are deleted. Hosts call `Themes.RegisterSuiteV1()` then `Initialize`. The card formats SystemInfo raw numbers. The PerfMon ring still supplies the series. `WirelessLink.cs` still calls `wlanapi` until PR03e.005.
+NicIQ keeps one `CachedPdhSource` for the monitor session. `HostCounters.cs`, `CpuHostFacts.cs`, `MemoryHostFacts.cs`, the three `ThemeChrome.cs` files, the three `ThemeCatalog.cs` files, and `WirelessLink.cs` are deleted. Hosts call `Themes.RegisterSuiteV1()` then `Initialize`. The card reads `NetworkHelper.TryWirelessAssociation`. The PerfMon ring still supplies the series.
 
 ---
 
@@ -42,13 +42,14 @@ NicIQ keeps one `CachedPdhSource` for the monitor session. `HostCounters.cs`, `C
 
 | Order | Phase | Package / repo | Why this slot |
 | ---: | :--- | :--- | :--- |
-| 1 | PR03c | `Vestigium.Helpers.PerfMon` — Helpers | Code done. Visual smoke is the owner. |
+| 1 | PR03c | `Vestigium.Helpers.PerfMon` — Helpers | Done. |
 | 2 | PR03a | `Vestigium.Helpers.Charts` — Helpers | Done. Pin 1.0.9. |
 | 3 | PR03d | `Helpers.PerfMon.Cpu` / `Memory` — Helpers | Done. |
 | 4 | PR03g | `Helpers.SystemInfo` + `.Cpu` + `.Memory` — Helpers | Done. Pin 0.1.1. |
 | 5 | PR03b | `Vestigium.Themes` — Themes | Done. Pin 1.0.4. |
-| 6 | PR03f | `Vestigium.Controls*` — Controls | Done. Pins above. |
-| 7 | PR03e | `Vestigium.Helpers.Network` — Helpers | Open. Owner said yes. |
+| 6 | PR03f | `Vestigium.Controls*` — Controls | Done. |
+| 7 | PR03e | `Vestigium.Helpers.Network` — Helpers | Done. Pin 1.3.5. |
+| 8 | PR03h | NicIQ adapter details — Suite.Network | Recorded. Not started. |
 
 ---
 
@@ -118,7 +119,7 @@ Published 0.1.1. The proposed 19000 block was already `PerfMon.Memory`, so no ca
 | 6 | PR03g.006 | Headless Windows tests. | Done |
 | 7 | PR03g.007 | Pack the three Helpers IDs. No root `Vestigium.SystemInfo`. | Done. 0.1.1. |
 | 8 | PR03g.008 | Pin. Delete `CpuHostFacts.cs` and `MemoryHostFacts.cs`. | Done |
-| 9 | PR03g.009 | NicIQ grep for those P/Invokes is zero. | Done. `wlanapi` remains for PR03e. |
+| 9 | PR03g.009 | NicIQ grep for those P/Invokes is zero. | Done. `wlanapi` stays inside Network. |
 
 ---
 
@@ -156,19 +157,49 @@ StatusBar 1.0.1, NumericUpDown 1.0.2, UnderConstruction 1.0.1. `PageViewport` li
 
 ## PR03e — `Vestigium.Helpers.Network`
 
-Owner call is yes. No new package. `WirelessLink.cs` stays until the door is published and pinned.
+Published 1.3.5. Suite.Network pins 1.3.5. No Wireless package.
 
 | Order | ID | Do | State |
 | ---: | :--- | :--- | :--- |
 | 1 | PR03e.001 | Owner call on wireless association. | Done. Yes. |
-| 2 | PR03e.002 | Door on `NetworkHelper`. Empty, not throw. | Next |
-| 3 | PR03e.003 | SSID, PHY, quality. No keys in the log. | Planned |
-| 4 | PR03e.004 | One P/Invoke inside Network. | Planned |
-| 5 | PR03e.005 | Delete `WirelessLink.cs`. | Planned |
+| 2 | PR03e.002 | Door on `NetworkHelper`. Empty, not throw. | Done |
+| 3 | PR03e.003 | SSID, PHY, quality. No keys in the log. | Done |
+| 4 | PR03e.004 | One P/Invoke inside Network. | Done |
+| 5 | PR03e.005 | Delete `WirelessLink.cs`. | Done |
 | 6 | PR03e.006 | Never mint Wireless, Wlan, or SystemInfo.Network. | Standing |
 
 ---
 
-## Next action
+## PR03h — NicIQ adapter details
 
-PR03e.002: `NetworkHelper` returns wireless association on a `Wireless80211` adapter. Missing WLAN service, a non-Wi-Fi NIC, or no association is empty, not a throw. `WirelessLink.cs` still calls `wlanapi` until PR03e.005.
+Host slice. No new package. The strip stays a glance. The form is the inventory.
+
+Card title on a NIC page is the active adapter name (`Wi-Fi`, `Ethernet 2`). CPU and memory keep their own titles. No selection stays `Network`.
+
+Bottom right of the details pane is a link, label `Adapter details`. Click opens the form. Double-click on the adapter row does the same thing. The link is the visual aid. Double-click is the shortcut. Hover underlines. Focus uses the theme accent.
+
+Three card rows, same shape as CPU:
+
+| Row | Wi-Fi | Ethernet |
+| ---: | :--- | :--- |
+| 1 | Send, receive, PHY and band | Send, receive, link speed |
+| 2 | SSID, signal | MAC, status |
+| 3 | IPv4, domain | IPv4, gateway |
+
+The form is one window titled with the adapter name. Four blocks, two columns, empty cells as a dash: Identity, Link, Addresses, Driver. Wi-Fi adds BSSID, Rx, Tx, and security (`WPA2-Enterprise · CCMP · 802.1X`) only when the adapter is `Wireless80211`. Ethernet does not show blank Wi-Fi labels. Band folds into the PHY cell. Profile name stays off. Keys stay off. The form reads `NetworkAdapter` and `WirelessAssociation`. It does not call `wlanapi`. Channel, frequency, and dBm wait for a later WLAN query.
+
+| Order | ID | Do | State |
+| ---: | :--- | :--- | :--- |
+| 1 | PR03h.001 | NIC page title is the active adapter name. | Not started |
+| 2 | PR03h.002 | Bottom-right `Adapter details` link. Double-click is the same open. | Not started |
+| 3 | PR03h.003 | Three card rows. Wi-Fi and Ethernet differ. | Not started |
+| 4 | PR03h.004 | Detail form: Identity, Link, Addresses, Driver. | Not started |
+| 5 | PR03h.005 | Wi-Fi block only: BSSID, Rx, Tx, security. No profile, no keys. | Not started |
+| 6 | PR03h.006 | Ethernet omits the Wi-Fi block. | Not started |
+| 7 | PR03h.007 | Form does not call `wlanapi`. Channel and dBm stay out. | Standing |
+
+---
+
+## Close
+
+PR03a through PR03g are done. PR03e.006 still forbids a Wireless package. PR03h is the next host slice and is not started. PR03c.009 remains an owner visual check, not a code slice.
