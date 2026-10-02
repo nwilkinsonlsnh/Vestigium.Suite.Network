@@ -5,7 +5,7 @@
 **APPID:** `NicIQ`  
 **Status:** Live  
 **Date:** 30 September 2026  
-**Revised:** 2 October 2026 — PR03b.001–.005 are done. Themes 1.0.4 is on NuGet. Host catalogs are not deleted.  
+**Revised:** 2 October 2026 — PR03f.001–.007 are done. StatusBar 1.0.1, NumericUpDown 1.0.2, UnderConstruction 1.0.1.  
 **Binding:** Published NugetPackages.md wins on domain. Each letter (PR03a–g) wins on that package. This file wins on order and step IDs.
 
 **Goal:** Move host-local library work out of NicIQ. Rev1 window stays shippable.
@@ -29,8 +29,11 @@ Letters stay the requirements. This file is the slice list. Do not rewrite a let
 | `Vestigium.Helpers.SystemInfo.Cpu` | 0.1.1 |
 | `Vestigium.Helpers.SystemInfo.Memory` | 0.1.1 |
 | `Vestigium.Themes` | Suite.Network still pins 1.0.2. NuGet has 1.0.4. |
+| `Vestigium.Controls.StatusBar` | 1.0.1 |
+| `Vestigium.Controls.NumericUpDown` | 1.0.2 |
+| `Vestigium.Controls.UnderConstruction` | 1.0.1 |
 
-NicIQ keeps one `CachedPdhSource` for the monitor session. `HostCounters.cs`, `CpuHostFacts.cs`, and `MemoryHostFacts.cs` are deleted. The card formats SystemInfo raw numbers. The PerfMon ring still supplies the series. Three host `ThemeCatalog.cs` files remain.
+NicIQ keeps one `CachedPdhSource` for the monitor session. `HostCounters.cs`, `CpuHostFacts.cs`, `MemoryHostFacts.cs`, and the three `ThemeChrome.cs` files are deleted. The card formats SystemInfo raw numbers. The PerfMon ring still supplies the series. Three host `ThemeCatalog.cs` files remain.
 
 ---
 
@@ -43,7 +46,7 @@ NicIQ keeps one `CachedPdhSource` for the monitor session. `HostCounters.cs`, `C
 | 3 | PR03d | `Helpers.PerfMon.Cpu` / `Memory` — Helpers | Done. |
 | 4 | PR03g | `Helpers.SystemInfo` + `.Cpu` + `.Memory` — Helpers | Done. Pin 0.1.1. |
 | 5 | PR03b | `Vestigium.Themes` — Themes | Package done at 1.0.4. Host consume is next. |
-| 6 | PR03f | `Vestigium.Controls*` — Controls | .002 is in source, not published. Rest not started. |
+| 6 | PR03f | `Vestigium.Controls*` — Controls | Done. Pins above. |
 | 7 | PR03e | `Vestigium.Helpers.Network` — Helpers | **Parked.** |
 
 ---
@@ -136,17 +139,17 @@ Published 1.0.4. `RegisterSuiteV1` is on that package. Suite.Network still pins 
 
 ## PR03f — `Vestigium.Controls*`
 
-.002 landed early in source. Not published. Host `App.xaml` still reprints the tokens.
+StatusBar 1.0.1, NumericUpDown 1.0.2, UnderConstruction 1.0.1. `PageViewport` lives in Shell. No `Vestigium.Controls.Theme`.
 
 | Order | ID | Do | State |
 | ---: | :--- | :--- | :--- |
-| 1 | PR03f.001 | StatusBar binds Surface.StatusBar / Text.Primary / Stroke.Subtle. | Planned |
-| 2 | PR03f.002 | NumericUpDown and UnderConstruction default styles. | Done in source. Not published. |
-| 3 | PR03f.003 | One PageViewport, preferred home Shell. | Planned |
-| 4 | PR03f.004 | No `Vestigium.Controls.Theme`. | Planned |
-| 5 | PR03f.005 | Pack touched control packages. | Planned |
-| 6 | PR03f.006 | Delete `ThemeChrome.cs` from three hosts. | Planned |
-| 7 | PR03f.007 | Palette switch updates those controls with no visual-tree walk. | Planned |
+| 1 | PR03f.001 | StatusBar binds Surface.StatusBar / Text.Primary / Stroke.Subtle. | Done |
+| 2 | PR03f.002 | NumericUpDown and UnderConstruction default styles. | Done |
+| 3 | PR03f.003 | One PageViewport, preferred home Shell. | Done |
+| 4 | PR03f.004 | No `Vestigium.Controls.Theme`. | Done. Not on NuGet. ThemeLab stays a sample. |
+| 5 | PR03f.005 | Pack touched control packages. | Done |
+| 6 | PR03f.006 | Delete `ThemeChrome.cs` from three hosts. | Done |
+| 7 | PR03f.007 | Palette switch updates those controls with no visual-tree walk. | Done. `DynamicResource` follows `SwitchTheme`. |
 
 ---
 
