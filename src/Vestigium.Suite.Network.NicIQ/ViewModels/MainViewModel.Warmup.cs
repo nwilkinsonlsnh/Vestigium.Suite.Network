@@ -5,7 +5,6 @@ namespace Vestigium.Suite.Network.NicIQ.ViewModels;
 public sealed partial class MainViewModel
 {
     private const int WarmReadyDepth = 2;
-    private const int WarmExpectedPaths = 22;
     private int _warmPathTotal;
     private int _warmPathReady;
 
@@ -48,15 +47,6 @@ public sealed partial class MainViewModel
         if (!ChartWarming)
             return;
 
-        var opened = _pdh?.OpenedCount ?? 0;
-        var primed = _pdh?.PrimedCount ?? 0;
-        if (opened > _warmPathTotal)
-            _warmPathTotal = opened;
-        if (primed > _warmPathReady)
-            _warmPathReady = primed;
-        if (_warmPathTotal < WarmExpectedPaths && _ring.MaxDepth() == 0)
-            _warmPathTotal = WarmExpectedPaths;
-
         SyncWarm();
     }
 
@@ -79,16 +69,12 @@ public sealed partial class MainViewModel
         if (!ChartWarming)
             ChartWarming = true;
 
-        var expected = Math.Max(_warmPathTotal, 1);
-        var pathShare = 60d * Math.Min(_warmPathReady, expected) / expected;
-        var sampleShare = depth * 15d;
-        var progress = Math.Min(95, 8 + pathShare + sampleShare);
+        var sampleShare = depth * 40d;
+        var progress = Math.Min(95, 8 + sampleShare);
 
         string status;
         if (depth > 0)
             status = $"Collecting plot points  {depth} of {WarmReadyDepth}";
-        else if (_warmPathReady > 0)
-            status = $"Opening counters  {_warmPathReady} of {expected}";
         else
             status = stage ?? "Resolving performance counters\u2026";
 
