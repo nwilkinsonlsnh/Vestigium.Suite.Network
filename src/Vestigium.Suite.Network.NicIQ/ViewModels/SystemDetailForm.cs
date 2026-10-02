@@ -9,7 +9,7 @@ using MemoryInfo = Vestigium.Helpers.SystemInfo.Memory.MemoryFacts;
 
 namespace Vestigium.Suite.Network.NicIQ.ViewModels;
 
-public sealed class SystemDetailForm
+public sealed partial class SystemDetailForm
 {
     private const string Dash = "\u2014";
     private const string DisplayClass = @"SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}";
@@ -138,7 +138,6 @@ public sealed class SystemDetailForm
             AvailablePhysical = Gb(memory.AvailableBytes),
             InUsePhysical = Gb(memory.InUseBytes),
             CommitPeak = Gb(memory.CommitPeakBytes),
-            PageFile = ReadPageFile(),
             PageFileUsed = page.Used,
             PageFileAvailable = page.Available,
             DisplayName = display.Name,
@@ -148,6 +147,7 @@ public sealed class SystemDetailForm
             DisplayVram = display.Vram,
             DisplayShared = display.Shared
         };
+        form.ApplyPageFile();
         form.CopyText = form.Format();
         return form;
     }
@@ -185,9 +185,15 @@ public sealed class SystemDetailForm
         Line(text, "In use", InUsePhysical);
         Line(text, "Available", AvailablePhysical);
         Line(text, "Commit peak", CommitPeak);
-        Line(text, "Page file", PageFile);
-        Line(text, "Page file used", PageFileUsed);
-        Line(text, "Page file available", PageFileAvailable);
+        text.AppendLine();
+        text.AppendLine("Page file");
+        Line(text, "Location", PageFile);
+        Line(text, "System managed", PageFileManaged);
+        Line(text, "Minimum", PageFileMinimum);
+        Line(text, "Maximum", PageFileMaximum);
+        Line(text, "Total", PageFileTotal);
+        Line(text, "Used", PageFileUsed);
+        Line(text, "Available", PageFileAvailable);
         text.AppendLine();
         text.AppendLine("Display");
         Line(text, "Name", DisplayName);
@@ -280,14 +286,6 @@ public sealed class SystemDetailForm
         }
 
         return (Dash, Dash, Dash, Dash, Dash, Dash);
-    }
-
-    private static string ReadPageFile()
-    {
-        var key = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management");
-        if (key?.GetValue("PagingFiles") is not string[] files || files.Length == 0)
-            return Dash;
-        return string.Join("; ", files.Where(static value => !string.IsNullOrWhiteSpace(value)));
     }
 
     private static string DomainName()
