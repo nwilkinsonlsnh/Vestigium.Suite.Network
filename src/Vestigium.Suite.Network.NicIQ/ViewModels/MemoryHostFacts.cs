@@ -9,6 +9,7 @@ internal sealed record MemorySnapshot(
     string Paged,
     string Nonpaged);
 
+/// <summary>Physical and commit snapshot. Host-owned. Not a PerfMon.Memory type.</summary>
 internal static class MemoryHostFacts
 {
     public static MemorySnapshot Read()
