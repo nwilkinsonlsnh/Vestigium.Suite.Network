@@ -264,6 +264,7 @@ public sealed partial class MainViewModel : ObservableObject
         try { _monitorCts?.Cancel(); } catch (ObjectDisposedException) { }
         _monitorCts?.Dispose(); _monitorCts = null; IsMonitoring = false;
         _live = null; _pdhInstance = null; _pdhKey = null;
+        DropSampleSource();
     }
 
     public void RestartMonitoring()
@@ -291,8 +292,7 @@ public sealed partial class MainViewModel : ObservableObject
         if (counters.Count == 0) counters = MonitorCounterList.Sanitize(MonitorCounterList.SeedReceiveSend);
         var paths = NetworkCounterCatalog.Paths(PdhNic.Category, instance, counters).Concat(HostCounters.Preferred).ToList();
         if (paths.Count == 0) return new SampleTick(instance, null, "No counters selected", false);
-        var job = new SampleJob(paths, new SampleJobOptions { Count = 1 });
-        var result = job.RunAsync(token).GetAwaiter().GetResult();
+        var result = RunSample(paths, token);
         return new SampleTick(instance, result, null, false);
     }
 
