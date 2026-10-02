@@ -43,7 +43,7 @@ public partial class App : Application
             NetworkPerfCatalog.Register(cfg);
         });
 
-        ThemeCatalog.RegisterAll(Themes);
+        Themes.RegisterSuiteV1();
         Themes.Initialize(this, "LightBlue");
 
         var services = new ServiceCollection();
