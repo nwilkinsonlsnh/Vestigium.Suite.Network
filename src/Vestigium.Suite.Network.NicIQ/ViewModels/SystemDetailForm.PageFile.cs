@@ -15,25 +15,20 @@ public sealed partial class SystemDetailForm
 
     private void ApplyPageFile()
     {
-        var usage = ReadPageUsage();
-        PageFileUsed = usage.Used;
-        PageFileAvailable = usage.Available;
-        PageFileTotal = usage.Total;
         var configured = ReadPageConfig();
         PageFile = configured.Location;
         PageFileMinimum = configured.Minimum;
         PageFileMaximum = configured.Maximum;
         PageFileManaged = configured.Managed;
+        PageFileTotal = PageTotal();
     }
 
-    private static (string Used, string Available, string Total) ReadPageUsage()
+    private static string PageTotal()
     {
         var status = new MemoryStatusEx { Length = (uint)System.Runtime.InteropServices.Marshal.SizeOf<MemoryStatusEx>() };
         if (!GlobalMemoryStatusEx(ref status) || status.TotalPageFile == 0)
-            return (Dash, Dash, Dash);
-        var available = status.AvailPageFile;
-        var used = status.TotalPageFile > available ? status.TotalPageFile - available : 0;
-        return (Mb(used), Mb(available), Mb(status.TotalPageFile));
+            return Dash;
+        return Mb(status.TotalPageFile);
     }
 
     private static (string Location, string Minimum, string Maximum, string Managed) ReadPageConfig()
