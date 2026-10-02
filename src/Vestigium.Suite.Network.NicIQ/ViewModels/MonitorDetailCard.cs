@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using Vestigium.Helpers.Network;
 using Vestigium.Helpers.PerfMon.Cpu;
 using Vestigium.Helpers.PerfMon.Memory;
 using Vestigium.Helpers.SystemInfo;
@@ -99,7 +100,7 @@ internal static class MonitorDetailCard
 
     private static IReadOnlyList<MonitorFactColumn> NicColumns(AdapterRow? nic, MonitorDetailRow? topLive, MonitorDetailRow? bottomLive)
     {
-        var wireless = WirelessLinkLookup.TryRead(nic);
+        var wireless = NetworkHelper.TryWirelessAssociation(nic?.Source);
         var ip = nic is null ? string.Empty : FirstAddress(nic, AddressFamily.InterNetwork);
         var columns = new List<MonitorFactColumn>();
         if (topLive is not null || bottomLive is not null)
@@ -114,8 +115,8 @@ internal static class MonitorDetailCard
 
         if (wireless is not null)
         {
-            columns.Add(Column(Row("Connection type", wireless.ConnectionType), Row("SSID", wireless.Ssid)));
-            columns.Add(Column(Row("IPv4", string.IsNullOrWhiteSpace(ip) ? Dash : ip), Row("Signal", wireless.Signal)));
+            columns.Add(Column(Row("Connection type", wireless.Phy), Row("SSID", wireless.Ssid)));
+            columns.Add(Column(Row("IPv4", string.IsNullOrWhiteSpace(ip) ? Dash : ip), Row("Signal", SignalLabel(wireless.Quality))));
         }
         else
         {
@@ -125,6 +126,16 @@ internal static class MonitorDetailCard
 
         columns.Add(Column(Row("Domain", nic is null ? Dash : DomainName(nic))));
         return columns;
+    }
+
+    private static string SignalLabel(int quality)
+    {
+        var word = quality >= 80 ? "Excellent"
+            : quality >= 60 ? "Good"
+            : quality >= 40 ? "Fair"
+            : quality >= 20 ? "Weak"
+            : "Poor";
+        return $"{word}  {quality}%";
     }
 
     private static MonitorDetailRow Row(string label, string value)
