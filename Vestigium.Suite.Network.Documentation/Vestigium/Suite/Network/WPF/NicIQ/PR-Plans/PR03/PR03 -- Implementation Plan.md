@@ -5,7 +5,7 @@
 **APPID:** `NicIQ`  
 **Status:** Live  
 **Date:** 30 September 2026  
-**Revised:** 2 October 2026 — PR03b and PR03f are done. Themes pin is 1.0.4. Host catalogs are deleted.  
+**Revised:** 2 October 2026 — PR03e.001 is yes. Wireless association expands Network.  
 **Binding:** Published NugetPackages.md wins on domain. Each letter (PR03a–g) wins on that package. This file wins on order and step IDs.
 
 **Goal:** Move host-local library work out of NicIQ. Rev1 window stays shippable.
@@ -32,8 +32,9 @@ Letters stay the requirements. This file is the slice list. Do not rewrite a let
 | `Vestigium.Controls.StatusBar` | 1.0.1 |
 | `Vestigium.Controls.NumericUpDown` | 1.0.2 |
 | `Vestigium.Controls.UnderConstruction` | 1.0.1 |
+| `Vestigium.Helpers.Network` | 1.3.4. Wireless door not published. |
 
-NicIQ keeps one `CachedPdhSource` for the monitor session. `HostCounters.cs`, `CpuHostFacts.cs`, `MemoryHostFacts.cs`, the three `ThemeChrome.cs` files, and the three `ThemeCatalog.cs` files are deleted. Hosts call `Themes.RegisterSuiteV1()` then `Initialize`. The card formats SystemInfo raw numbers. The PerfMon ring still supplies the series.
+NicIQ keeps one `CachedPdhSource` for the monitor session. `HostCounters.cs`, `CpuHostFacts.cs`, `MemoryHostFacts.cs`, the three `ThemeChrome.cs` files, and the three `ThemeCatalog.cs` files are deleted. Hosts call `Themes.RegisterSuiteV1()` then `Initialize`. The card formats SystemInfo raw numbers. The PerfMon ring still supplies the series. `WirelessLink.cs` still calls `wlanapi` until PR03e.005.
 
 ---
 
@@ -47,7 +48,7 @@ NicIQ keeps one `CachedPdhSource` for the monitor session. `HostCounters.cs`, `C
 | 4 | PR03g | `Helpers.SystemInfo` + `.Cpu` + `.Memory` — Helpers | Done. Pin 0.1.1. |
 | 5 | PR03b | `Vestigium.Themes` — Themes | Done. Pin 1.0.4. |
 | 6 | PR03f | `Vestigium.Controls*` — Controls | Done. Pins above. |
-| 7 | PR03e | `Vestigium.Helpers.Network` — Helpers | **Parked.** |
+| 7 | PR03e | `Vestigium.Helpers.Network` — Helpers | Open. Owner said yes. |
 
 ---
 
@@ -153,19 +154,21 @@ StatusBar 1.0.1, NumericUpDown 1.0.2, UnderConstruction 1.0.1. `PageViewport` li
 
 ---
 
-## PR03e — `Vestigium.Helpers.Network` (parked)
+## PR03e — `Vestigium.Helpers.Network`
+
+Owner call is yes. No new package. `WirelessLink.cs` stays until the door is published and pinned.
 
 | Order | ID | Do | State |
 | ---: | :--- | :--- | :--- |
-| 1 | PR03e.001 | Owner call on wireless association. | Parked |
-| 2 | PR03e.002 | If yes: door on `NetworkHelper`. Empty, not throw. | Parked |
-| 3 | PR03e.003 | If yes: SSID, PHY, quality. No keys in the log. | Parked |
-| 4 | PR03e.004 | If yes: one P/Invoke inside Network. | Parked |
-| 5 | PR03e.005 | If yes: delete `WirelessLink.cs`. | Parked |
-| 6 | PR03e.006 | Never mint Wireless, Wlan, or SystemInfo.Network. | Parked |
+| 1 | PR03e.001 | Owner call on wireless association. | Done. Yes. |
+| 2 | PR03e.002 | Door on `NetworkHelper`. Empty, not throw. | Next |
+| 3 | PR03e.003 | SSID, PHY, quality. No keys in the log. | Planned |
+| 4 | PR03e.004 | One P/Invoke inside Network. | Planned |
+| 5 | PR03e.005 | Delete `WirelessLink.cs`. | Planned |
+| 6 | PR03e.006 | Never mint Wireless, Wlan, or SystemInfo.Network. | Standing |
 
 ---
 
 ## Next action
 
-PR03e stays parked until the owner call on wireless association. `WirelessLink.cs` still calls `wlanapi`. PR03c.009 is the remaining visual smoke: a live adapter must not throw on Unavailable.
+PR03e.002: `NetworkHelper` returns wireless association on a `Wireless80211` adapter. Missing WLAN service, a non-Wi-Fi NIC, or no association is empty, not a throw. `WirelessLink.cs` still calls `wlanapi` until PR03e.005.
