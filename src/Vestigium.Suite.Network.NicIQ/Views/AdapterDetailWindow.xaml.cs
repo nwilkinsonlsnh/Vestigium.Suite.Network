@@ -14,19 +14,21 @@ public partial class AdapterDetailWindow : Window
 
     public static void ShowFor(Window? owner, MainViewModel viewModel)
     {
-        if (viewModel.SelectedAdapter is null && viewModel.SelectedMonitorNic is null)
+        var row = viewModel.SelectedAdapter ?? viewModel.SelectedMonitorNic;
+        if (row is null)
             return;
 
+        var form = AdapterDetailForm.From(row);
         if (_open is { IsLoaded: true })
         {
-            _open.DataContext = viewModel;
+            _open.DataContext = form;
             _open.Activate();
             return;
         }
 
         var window = new AdapterDetailWindow
         {
-            DataContext = viewModel,
+            DataContext = form,
             Owner = owner
         };
         window.Closed += (_, _) => _open = null;
@@ -34,5 +36,11 @@ public partial class AdapterDetailWindow : Window
             window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
         _open = window;
         window.Show();
+    }
+
+    private void CopyClick(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is AdapterDetailForm form)
+            Clipboard.SetText(form.CopyText);
     }
 }
