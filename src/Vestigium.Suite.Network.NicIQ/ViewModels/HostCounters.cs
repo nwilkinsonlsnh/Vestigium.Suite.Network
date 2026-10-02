@@ -16,9 +16,6 @@ internal static class HostCounters
 
     public static IReadOnlyList<CounterPath> Preferred { get; } =
     [
-        new CounterPath("Processor Information", ProcessorTime, "_Total", "%"),
-        new CounterPath("Processor Information", UserTime, "_Total", "%"),
-        new CounterPath("Processor Information", PrivilegedTime, "_Total", "%"),
         new CounterPath("Processor", ProcessorTime, "_Total", "%"),
         new CounterPath("Processor", UserTime, "_Total", "%"),
         new CounterPath("Processor", PrivilegedTime, "_Total", "%"),
@@ -29,10 +26,5 @@ internal static class HostCounters
         new CounterPath("Memory", CacheBytes, string.Empty, "bytes")
     ];
 
-    public static IReadOnlyList<CounterPath> ProcessorFallback { get; } =
-    [
-        new CounterPath("Processor", ProcessorTime, "_Total", "%"),
-        new CounterPath("Processor", UserTime, "_Total", "%"),
-        new CounterPath("Processor", PrivilegedTime, "_Total", "%")
-    ];
+    public static IReadOnlyList<CounterPath> ProcessorFallback { get; } = Preferred.Take(3).ToArray();
 }
