@@ -76,8 +76,8 @@
         <TextBlock Text="{Binding InUsePhysical}" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
         <TextBlock Text="Available" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
         <TextBlock Text="{Binding AvailablePhysical}" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
-        <TextBlock Text="Commit" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
-        <TextBlock Text="{Binding Commit}" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+        <TextBlock Text="Commit peak" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
+        <TextBlock Text="{Binding CommitPeak}" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
         <TextBlock Text="Page file" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
         <TextBlock Text="{Binding PageFile}" TextWrapping="Wrap" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
       </StackPanel>
