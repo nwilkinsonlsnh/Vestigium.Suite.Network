@@ -1,4 +1,6 @@
 using Vestigium.Helpers.PerfMon;
+using Vestigium.Helpers.PerfMon.Cpu;
+using Vestigium.Helpers.PerfMon.Memory;
 
 namespace Vestigium.Suite.Network.NicIQ.ViewModels;
 
@@ -14,6 +16,9 @@ public sealed partial class MainViewModel
         _sampleSource?.Dispose();
         _sampleSource = null;
     }
+
+    private static IReadOnlyList<CounterPath> HostSamplePaths()
+        => CpuPerf.UtilizationPaths().Concat(MemoryPerf.HostPaths()).ToArray();
 
     private SampleJobResult RunSample(IReadOnlyList<CounterPath> paths, CancellationToken token)
     {
