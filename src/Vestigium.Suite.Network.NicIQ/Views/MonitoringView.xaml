@@ -113,6 +113,17 @@
                      Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}"
                      Visibility="{Binding ShowAdapterDetails, Converter={StaticResource BoolToVis}}"
                      MouseLeftButtonUp="OpenAdapterDetails" />
+          <TextBlock Grid.Row="1"
+                     Grid.Column="2"
+                     Text="System details"
+                     HorizontalAlignment="Right"
+                     Margin="0,8,0,0"
+                     Cursor="Hand"
+                     FontSize="12"
+                     TextDecorations="Underline"
+                     Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}"
+                     Visibility="{Binding ShowSystemDetails, Converter={StaticResource BoolToVis}}"
+                     MouseLeftButtonUp="OpenSystemDetails" />
         </Grid>
       </Border>
     </Grid>
