@@ -46,14 +46,21 @@
               BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
               BorderThickness="1"
               Padding="16,10"
-              VerticalAlignment="Stretch">
+              VerticalAlignment="Stretch"
+              MouseLeftButtonDown="OpenAdapterDetails">
         <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+          </Grid.RowDefinitions>
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="48" />
             <ColumnDefinition Width="*" />
           </Grid.ColumnDefinitions>
-          <StackPanel VerticalAlignment="Center"
+          <StackPanel Grid.Row="0"
+                      Grid.Column="0"
+                      VerticalAlignment="Center"
                       HorizontalAlignment="Center"
                       Margin="4,0,8,0"
                       MinWidth="92">
@@ -69,7 +76,7 @@
                        Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}"
                        TextWrapping="Wrap" />
           </StackPanel>
-          <ItemsControl Grid.Column="2" ItemsSource="{Binding MonitorFacts}" VerticalAlignment="Center" HorizontalContentAlignment="Stretch">
+          <ItemsControl Grid.Row="0" Grid.Column="2" ItemsSource="{Binding MonitorFacts}" VerticalAlignment="Center" HorizontalContentAlignment="Stretch">
             <ItemsControl.ItemsPanel>
               <ItemsPanelTemplate>
                 <UniformGrid Rows="1" />
@@ -96,6 +103,16 @@
               </DataTemplate>
             </ItemsControl.ItemTemplate>
           </ItemsControl>
+          <TextBlock Grid.Row="1"
+                     Grid.Column="2"
+                     Text="Adapter details"
+                     HorizontalAlignment="Right"
+                     Margin="0,8,0,0"
+                     Cursor="Hand"
+                     FontSize="12"
+                     TextDecorations="Underline"
+                     Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}"
+                     MouseLeftButtonUp="OpenAdapterDetails" />
         </Grid>
       </Border>
     </Grid>
