@@ -215,11 +215,14 @@ public sealed class SystemDetailForm
     {
         var name = cpu?.GetValue("ProcessorNameString")?.ToString()?.Trim();
         var cpus = host.IsOk ? host.Value.Logical : Environment.ProcessorCount;
-        var mhz = live.IsOk && live.Value.MaxMhz > 0 ? live.Value.MaxMhz : cpu?.GetValue("~MHz") as int? ?? 0;
+        var mhz = live.IsOk && live.Value.MaxMhz > 0 ? (int)live.Value.MaxMhz : RegistryMhz(cpu);
         var speed = mhz > 0 ? $", ~{mhz / 1000d:0.00}GHz" : string.Empty;
         var body = string.IsNullOrWhiteSpace(name) ? "Processor" : name;
         return $"{body} ({cpus} CPUs){speed}";
     }
+
+    private static int RegistryMhz(RegistryKey? cpu)
+        => cpu?.GetValue("~MHz") is int mhz ? mhz : 0;
 
     private static string BiosText(RegistryKey? bios)
     {
