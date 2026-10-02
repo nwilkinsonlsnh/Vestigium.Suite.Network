@@ -9,7 +9,6 @@ namespace Vestigium.Suite.Network.NicIQ.Views;
 public partial class NicIqView : UserControl
 {
     private readonly PageViewport _viewport;
-    private AdapterDetailWindow? _detail;
 
     public NicIqView()
     {
@@ -19,24 +18,8 @@ public partial class NicIqView : UserControl
 
     private void AdapterGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
     {
-        if (DataContext is not MainViewModel { SelectedAdapter: not null } vm)
+        if (DataContext is not MainViewModel vm)
             return;
-
-        if (_detail is { IsLoaded: true })
-        {
-            _detail.Activate();
-            return;
-        }
-
-        var owner = Window.GetWindow(this);
-        _detail = new AdapterDetailWindow
-        {
-            DataContext = vm,
-            Owner = owner
-        };
-        _detail.Closed += (_, _) => _detail = null;
-        if (owner is not null)
-            _detail.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-        _detail.Show();
+        AdapterDetailWindow.ShowFor(Window.GetWindow(this), vm);
     }
 }
