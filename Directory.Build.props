@@ -12,7 +12,9 @@
     <VestigiumLoggingVersion>1.7.1</VestigiumLoggingVersion>
     <VestigiumThemesVersion>1.0.4</VestigiumThemesVersion>
     <VestigiumControlsVersion>1.0.0</VestigiumControlsVersion>
-    <VestigiumNumericUpDownVersion>1.0.1</VestigiumNumericUpDownVersion>
+    <VestigiumStatusBarVersion>1.0.1</VestigiumStatusBarVersion>
+    <VestigiumNumericUpDownVersion>1.0.2</VestigiumNumericUpDownVersion>
+    <VestigiumUnderConstructionVersion>1.0.1</VestigiumUnderConstructionVersion>
     <VestigiumConvertersVersion>1.0.0</VestigiumConvertersVersion>
     <VestigiumPerfMonVersion>0.1.1</VestigiumPerfMonVersion>
     <VestigiumPerfMonCoreVersion>0.1.6</VestigiumPerfMonCoreVersion>
