@@ -33,7 +33,6 @@ public partial class DnsIqWindow : Window
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
         ViewModel.RootShell = RootShell;
-        ThemeChrome.Bind(this);
         BuildThemeMenu();
     }
 
