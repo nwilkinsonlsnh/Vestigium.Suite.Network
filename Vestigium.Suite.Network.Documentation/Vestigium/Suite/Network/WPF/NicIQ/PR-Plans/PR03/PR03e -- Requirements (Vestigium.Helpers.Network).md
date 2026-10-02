@@ -5,34 +5,24 @@
 **Repo:** `nwilkinsonlsnh/Vestigium.Helpers`  
 **APPID:** `Network`  
 **EVENTID:** 14500–14999 (used through 14560 — allocate in the unused tail)  
-**Status:** Parked pending owner  
+**Status:** Open. Owner call on 2 October 2026: expand Network.  
 **Date:** 30 September 2026  
 **Evidence:** `src/Vestigium.Suite.Network.NicIQ/ViewModels/WirelessLink.cs`  
 **Product paper:** NicIQ Requirements v1.0 §5 — “Wireless SSID / BSSID extras — Not on `NetworkAdapter`.”
 
 ## Goal
 
-If SSID / PHY / quality become suite facts, they land on Network inventory — not a new package, not PerfMon.Network, not the exe forever by accident.
+SSID / PHY / quality are suite facts. They land on Network inventory — not a new package, not PerfMon.Network, not the exe.
 
 This version is not a plot API, not a port sweep, not credential logging, and not `wlanapi` wrapped as FileIo.
 
-## Why this is a fight, not a sneak
+## Decision
 
-Catalog: Network owns adapters, snapshot, connections.  
-NicIQ v1.0: wireless extras are out of first-and-ten because they are not on `NetworkAdapter`.  
-Host Rev1 shipped `WirelessLinkLookup` anyway (`wlanapi.dll`, current connection, quality buckets).
+**PR03e.001 — yes.** The adapter record includes wireless association.
 
-That is a product change to Network, or it stays a host private. It is not Charts. It is not Themes.
+NicIQ keeps `WirelessLink.cs` until PR03e.005 deletes it. The door, fields, and the single P/Invoke land in `Vestigium.Helpers.Network` first.
 
-## Decision (Dave, default)
-
-**Park.** Do not expand `NetworkAdapter` in the same breath as the Charts / Themes extract.
-
-NicIQ keeps `WirelessLink.cs` until the owner says the adapter record includes wireless association.
-
-If the owner says yes, the requirements below become the Network delta. If the owner says no, delete the card from a later NicIQ slice or keep it as host-only with a comment pointing here.
-
-## If the owner expands Network
+## Network delta
 
 ### N-01 Door
 
@@ -54,9 +44,10 @@ PDH adapter rates stay in PerfMon.Network. RSSI-as-PDH if it exists later is sti
 
 - `Vestigium.Helpers.Wireless`
 - `Vestigium.Helpers.Wlan`
+- `Vestigium.Helpers.SystemInfo.Network`
 - Copying `WirelessLink.cs` into Charts or Themes
 
-## Acceptance (only if unparked)
+## Acceptance
 
 1. `GetAdapters()` on a Wi-Fi box with an association fills SSID without NicIQ calling `wlanapi`.
 2. Ethernet rows stay empty on wireless fields.
