@@ -2,6 +2,8 @@ using System.Globalization;
 using System.Windows;
 using Vestigium.Helpers.Analytics;
 using Vestigium.Helpers.Charts;
+using Vestigium.Helpers.PerfMon.Cpu;
+using Vestigium.Helpers.PerfMon.Memory;
 using Vestigium.Helpers.PerfMon.Network;
 
 namespace Vestigium.Suite.Network.NicIQ.ViewModels;
@@ -31,8 +33,8 @@ internal static class MonitorChart
             MonitorChartPages.Packets => Pair(ring, NetworkInterface.PacketsReceivedPerSec, NetworkInterface.PacketsSentPerSec, "Receive", "Send", "Packets", "Packets/sec", 1m, 1m, true),
             MonitorChartPages.Integrity => Integrity(ring),
             MonitorChartPages.Utilization => Utilization(ring),
-            MonitorChartPages.Cpu => Pair(ring, HostCounters.UserTime, HostCounters.PrivilegedTime, "User", "Privileged", "CPU", "%", 1m, 1m, true),
-            MonitorChartPages.Memory => Pair(ring, HostCounters.CommittedBytes, HostCounters.AvailableMBytes, "Committed", "Available", "Memory", "GB", 1m / 1073741824m, 1m / 1024m, true),
+            MonitorChartPages.Cpu => Pair(ring, Processor.PercentUserTime, Processor.PercentPrivilegedTime, "User", "Privileged", "CPU", "%", 1m, 1m, true),
+            MonitorChartPages.Memory => Pair(ring, Memory.CommittedBytes, Memory.AvailableMBytes, "Committed", "Available", "Memory", "GB", 1m / 1073741824m, 1m / 1024m, true),
             _ => Pair(ring, NetworkInterface.BytesReceivedPerSec, NetworkInterface.BytesSentPerSec, "Receive", "Send", "Throughput", "Kbps", 8m / 1000m, 8m / 1000m, true)
         };
     }
