@@ -42,4 +42,10 @@ public partial class MonitoringView : UserControl
         AdapterDetailWindow.ShowFor(Window.GetWindow(this), vm, followMonitor: true);
         e.Handled = true;
     }
+
+    private void OpenSystemDetails(object sender, MouseButtonEventArgs e)
+    {
+        SystemDetailWindow.ShowFor(Window.GetWindow(this));
+        e.Handled = true;
+    }
 }
