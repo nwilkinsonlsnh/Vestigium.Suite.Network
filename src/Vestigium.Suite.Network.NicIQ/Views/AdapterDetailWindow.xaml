@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="{Binding Title}"
         Icon="pack://application:,,,/Assets/NicIQ.ico"
-        Height="560" Width="720"
+        Height="640" Width="720"
         MinHeight="420" MinWidth="560"
         ResizeMode="CanResize"
         ShowInTaskbar="True"
@@ -57,7 +57,18 @@
           <TextBlock Text="Assignment" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
           <TextBlock Text="{Binding Assignment}" Margin="0,0,0,6" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
           <TextBlock Text="Metric" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
-          <TextBlock Text="{Binding Metric}" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+          <TextBlock Text="{Binding Metric}" Margin="0,0,0,6" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+          <StackPanel Visibility="{Binding WirelessVisibility}" Margin="0,8,0,0">
+            <TextBlock Text="Wi-Fi" FontWeight="SemiBold" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+            <TextBlock Text="BSSID" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
+            <TextBlock Text="{Binding Bssid}" Margin="0,0,0,6" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+            <TextBlock Text="Receive" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
+            <TextBlock Text="{Binding ReceiveRate}" Margin="0,0,0,6" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+            <TextBlock Text="Transmit" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
+            <TextBlock Text="{Binding TransmitRate}" Margin="0,0,0,6" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+            <TextBlock Text="Security" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
+            <TextBlock Text="{Binding Security}" TextWrapping="Wrap" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+          </StackPanel>
         </StackPanel>
         <StackPanel Margin="0,0,16,0">
           <TextBlock Text="Addresses" FontWeight="SemiBold" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
