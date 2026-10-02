@@ -75,9 +75,8 @@ public sealed class AdapterDetailForm
         var adapter = row.Source;
         var ipv4 = adapter.UnicastAddresses.FirstOrDefault(a => a.Family == AddressFamily.InterNetwork);
         var ipv6 = adapter.UnicastAddresses.FirstOrDefault(a => a.Family == AddressFamily.InterNetworkV6 && !a.Address.StartsWith("fe80", StringComparison.OrdinalIgnoreCase));
-        var wireless = adapter.Type == NetworkInterfaceType.Wireless80211
-            ? NetworkHelper.TryWirelessAssociation(adapter)
-            : null;
+        var wifi = adapter.Type == NetworkInterfaceType.Wireless80211;
+        var wireless = wifi ? NetworkHelper.TryWirelessAssociation(adapter) : null;
         var form = new AdapterDetailForm
         {
             Title = Text(row.Name),
@@ -102,7 +101,7 @@ public sealed class AdapterDetailForm
             DriverVersion = Text(adapter.Driver?.Version),
             DriverDate = adapter.Driver?.Date is DateTimeOffset date ? date.ToLocalTime().ToString("g", CultureInfo.CurrentCulture) : Dash,
             DriverService = Text(adapter.Driver?.Service),
-            WirelessVisibility = wireless is null ? Visibility.Collapsed : Visibility.Visible,
+            WirelessVisibility = wifi ? Visibility.Visible : Visibility.Collapsed,
             Bssid = Text(wireless?.Bssid),
             ReceiveRate = Rate(wireless?.ReceiveKbps),
             TransmitRate = Rate(wireless?.TransmitKbps),
