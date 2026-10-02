@@ -39,7 +39,7 @@ public partial class MonitoringView : UserControl
     {
         if (DataContext is not MainViewModel vm)
             return;
-        AdapterDetailWindow.ShowFor(Window.GetWindow(this), vm);
+        AdapterDetailWindow.ShowFor(Window.GetWindow(this), vm, followMonitor: true);
         e.Handled = true;
     }
 }
