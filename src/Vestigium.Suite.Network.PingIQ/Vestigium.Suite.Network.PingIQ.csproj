@@ -16,9 +16,9 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.12" />
     <PackageReference Include="Vestigium.Themes" Version="$(VestigiumThemesVersion)" />
     <PackageReference Include="Vestigium.Controls" Version="$(VestigiumControlsVersion)" />
-    <PackageReference Include="Vestigium.Controls.StatusBar" Version="$(VestigiumControlsVersion)" />
+    <PackageReference Include="Vestigium.Controls.StatusBar" Version="$(VestigiumStatusBarVersion)" />
     <PackageReference Include="Vestigium.Controls.NumericUpDown" Version="$(VestigiumNumericUpDownVersion)" />
-    <PackageReference Include="Vestigium.Controls.UnderConstruction" Version="$(VestigiumControlsVersion)" />
+    <PackageReference Include="Vestigium.Controls.UnderConstruction" Version="$(VestigiumUnderConstructionVersion)" />
     <PackageReference Include="Vestigium.Converters" Version="$(VestigiumConvertersVersion)" />
     <PackageReference Include="Vestigium.Helpers.Analytics" Version="$(VestigiumAnalyticsVersion)" />
     <PackageReference Include="Vestigium.Helpers.Charts" Version="$(VestigiumChartsVersion)" />
