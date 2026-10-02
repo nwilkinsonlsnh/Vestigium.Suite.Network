@@ -15,7 +15,7 @@
     <VestigiumNumericUpDownVersion>1.0.1</VestigiumNumericUpDownVersion>
     <VestigiumConvertersVersion>1.0.0</VestigiumConvertersVersion>
     <VestigiumPerfMonVersion>0.1.1</VestigiumPerfMonVersion>
-    <VestigiumPerfMonCoreVersion>0.1.4</VestigiumPerfMonCoreVersion>
+    <VestigiumPerfMonCoreVersion>0.1.6</VestigiumPerfMonCoreVersion>
     <VestigiumPerfMonCpuVersion>0.1.2</VestigiumPerfMonCpuVersion>
     <VestigiumPerfMonMemoryVersion>0.1.2</VestigiumPerfMonMemoryVersion>
     <MicrosoftExtensionsDiVersion>10.0.0</MicrosoftExtensionsDiVersion>
