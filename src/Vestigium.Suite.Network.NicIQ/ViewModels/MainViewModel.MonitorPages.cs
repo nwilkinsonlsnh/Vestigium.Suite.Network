@@ -201,6 +201,7 @@ public sealed partial class MainViewModel
         OnPropertyChanged(nameof(CpuPageOpen));
         OnPropertyChanged(nameof(MemoryPageOpen));
         OnPropertyChanged(nameof(ShowAdapterDetails));
+        OnPropertyChanged(nameof(ShowSystemDetails));
         RefreshMonitorFacts();
         SyncWarm();
     }
