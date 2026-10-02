@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Threading;
 using Vestigium.Suite.Network.NicIQ.ViewModels;
 
@@ -32,5 +33,13 @@ public partial class MonitoringView : UserControl
         _warmTimer.Stop();
         if (DataContext is MainViewModel vm)
             vm.MonitorPageVisible = false;
+    }
+
+    private void OpenAdapterDetails(object sender, MouseButtonEventArgs e)
+    {
+        if (DataContext is not MainViewModel vm)
+            return;
+        AdapterDetailWindow.ShowFor(Window.GetWindow(this), vm);
+        e.Handled = true;
     }
 }
