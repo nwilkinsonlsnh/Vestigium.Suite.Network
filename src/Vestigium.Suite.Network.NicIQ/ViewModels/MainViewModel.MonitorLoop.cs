@@ -33,7 +33,7 @@ public sealed partial class MainViewModel
                     ? MonitorCounterList.FromSettings(Session?.Current ?? new NicIqSettings())
                     : MonitorCounterList.Sanitize(Settings.MonitorCounters);
 
-                var tick = await Task.Run(() => TakeTick(name, description, selected, token), token).ConfigureAwait(true);
+                var tick = await Task.Run(() => TakeTickSafe(name, description, selected, token), token).ConfigureAwait(true);
                 if (!string.Equals(MonitorInstance, tick.Instance, StringComparison.Ordinal))
                     MonitorInstance = tick.Instance ?? string.Empty;
                 if (!string.IsNullOrWhiteSpace(tick.Error))
