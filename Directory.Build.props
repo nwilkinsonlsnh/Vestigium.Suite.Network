@@ -14,7 +14,7 @@
     <VestigiumControlsVersion>1.0.0</VestigiumControlsVersion>
     <VestigiumNumericUpDownVersion>1.0.1</VestigiumNumericUpDownVersion>
     <VestigiumConvertersVersion>1.0.0</VestigiumConvertersVersion>
-    <VestigiumPerfMonVersion>0.1.2</VestigiumPerfMonVersion>
+    <VestigiumPerfMonVersion>0.1.1</VestigiumPerfMonVersion>
     <VestigiumPerfMonCoreVersion>0.1.3</VestigiumPerfMonCoreVersion>
     <MicrosoftExtensionsDiVersion>10.0.0</MicrosoftExtensionsDiVersion>
   </PropertyGroup>
