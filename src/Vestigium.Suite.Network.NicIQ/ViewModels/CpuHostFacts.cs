@@ -13,6 +13,7 @@ internal sealed record CpuTopology(
 
 internal sealed record CpuLive(int Processes, int Threads, int Handles, string Speed, string BaseSpeed);
 
+/// <summary>Topology, speed, and process counts. Host-owned. Not a PerfMon.Cpu type.</summary>
 internal static class CpuHostFacts
 {
     private static readonly CpuTopology Topology = ReadTopology();
