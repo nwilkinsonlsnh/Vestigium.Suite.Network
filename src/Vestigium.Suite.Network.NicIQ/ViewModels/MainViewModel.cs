@@ -290,7 +290,7 @@ public sealed partial class MainViewModel : ObservableObject
         if (string.IsNullOrWhiteSpace(instance)) return new SampleTick(null, null, $"No PDH instance for {name}", false);
         var counters = MonitorCounterList.ForSample(selected);
         if (counters.Count == 0) counters = MonitorCounterList.Sanitize(MonitorCounterList.SeedReceiveSend);
-        var paths = NetworkCounterCatalog.Paths(PdhNic.Category, instance, counters).Concat(HostCounters.Preferred).ToList();
+        var paths = SamplePaths(instance, counters);
         if (paths.Count == 0) return new SampleTick(instance, null, "No counters selected", false);
         var result = RunSample(paths, token);
         return new SampleTick(instance, result, null, false);
