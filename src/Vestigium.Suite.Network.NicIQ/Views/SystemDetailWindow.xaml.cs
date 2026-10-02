@@ -38,6 +38,7 @@ public partial class SystemDetailWindow : Window
         WindowsPanel.Visibility = Shown(WindowsTab);
         ComputerPanel.Visibility = Shown(ComputerTab);
         MemoryPanel.Visibility = Shown(MemoryTab);
+        PageFilePanel.Visibility = Shown(PageFileTab);
         DisplayPanel.Visibility = Shown(DisplayTab);
     }
 
