@@ -1,6 +1,8 @@
 using System.Globalization;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using Vestigium.Helpers.PerfMon.Cpu;
+using Vestigium.Helpers.PerfMon.Memory;
 using PdhNic = Vestigium.Helpers.PerfMon.Network.NetworkInterface;
 
 namespace Vestigium.Suite.Network.NicIQ.ViewModels;
@@ -16,7 +18,7 @@ internal static class MonitorDetailCard
         return page switch
         {
             MonitorChartPages.Cpu => Cpu(ring),
-            MonitorChartPages.Memory => Memory(ring),
+            MonitorChartPages.Memory => MemoryPage(ring),
             MonitorChartPages.Integrity => Integrity(nic, ring),
             MonitorChartPages.Packets => Packets(nic, ring),
             MonitorChartPages.Utilization => Utilization(nic, ring),
@@ -26,7 +28,7 @@ internal static class MonitorDetailCard
 
     private static (string, string, IReadOnlyList<MonitorFactColumn>) Cpu(MonitorRing ring)
     {
-        var total = Last(ring, HostCounters.ProcessorTime);
+        var total = Last(ring, Processor.PercentProcessorTime);
         var live = CpuHostFacts.Live();
         var host = CpuHostFacts.Host;
         var columns = new MonitorFactColumn[]
@@ -40,13 +42,13 @@ internal static class MonitorDetailCard
         return ("Utilization", Pct(total), columns);
     }
 
-    private static (string, string, IReadOnlyList<MonitorFactColumn>) Memory(MonitorRing ring)
+    private static (string, string, IReadOnlyList<MonitorFactColumn>) MemoryPage(MonitorRing ring)
     {
-        var availableMb = Last(ring, HostCounters.AvailableMBytes);
-        var committed = Last(ring, HostCounters.CommittedBytes);
-        var limit = Last(ring, HostCounters.CommitLimit);
-        var cached = Last(ring, HostCounters.CacheBytes);
-        var pct = Last(ring, HostCounters.CommittedPct);
+        var availableMb = Last(ring, Memory.AvailableMBytes);
+        var committed = Last(ring, Memory.CommittedBytes);
+        var limit = Last(ring, Memory.CommitLimit);
+        var cached = Last(ring, Memory.CacheBytes);
+        var pct = Last(ring, Memory.PercentCommittedBytesInUse);
         var phys = MemoryHostFacts.Read();
         var columns = new MonitorFactColumn[]
         {
