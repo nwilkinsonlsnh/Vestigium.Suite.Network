@@ -5,7 +5,7 @@
 **APPID:** `NicIQ`  
 **Status:** Live  
 **Date:** 30 September 2026  
-**Revised:** 2 October 2026 — PR03g is done. PR03c visual smoke is still the owner.  
+**Revised:** 2 October 2026 — PR03b.001–.005 are done. Themes 1.0.4 is on NuGet. Host catalogs are not deleted.  
 **Binding:** Published NugetPackages.md wins on domain. Each letter (PR03a–g) wins on that package. This file wins on order and step IDs.
 
 **Goal:** Move host-local library work out of NicIQ. Rev1 window stays shippable.
@@ -28,8 +28,9 @@ Letters stay the requirements. This file is the slice list. Do not rewrite a let
 | `Vestigium.Helpers.SystemInfo` | 0.1.1 |
 | `Vestigium.Helpers.SystemInfo.Cpu` | 0.1.1 |
 | `Vestigium.Helpers.SystemInfo.Memory` | 0.1.1 |
+| `Vestigium.Themes` | Suite.Network still pins 1.0.2. NuGet has 1.0.4. |
 
-NicIQ keeps one `CachedPdhSource` for the monitor session. `HostCounters.cs`, `CpuHostFacts.cs`, and `MemoryHostFacts.cs` are deleted. The card formats SystemInfo raw numbers. The PerfMon ring still supplies the series.
+NicIQ keeps one `CachedPdhSource` for the monitor session. `HostCounters.cs`, `CpuHostFacts.cs`, and `MemoryHostFacts.cs` are deleted. The card formats SystemInfo raw numbers. The PerfMon ring still supplies the series. Three host `ThemeCatalog.cs` files remain.
 
 ---
 
@@ -41,8 +42,8 @@ NicIQ keeps one `CachedPdhSource` for the monitor session. `HostCounters.cs`, `C
 | 2 | PR03a | `Vestigium.Helpers.Charts` — Helpers | Done. Pin 1.0.9. |
 | 3 | PR03d | `Helpers.PerfMon.Cpu` / `Memory` — Helpers | Done. |
 | 4 | PR03g | `Helpers.SystemInfo` + `.Cpu` + `.Memory` — Helpers | Done. Pin 0.1.1. |
-| 5 | PR03b | `Vestigium.Themes` — Themes | Next. One suite palette list. |
-| 6 | PR03f | `Vestigium.Controls*` — Controls | Bind tokens. After T-01. |
+| 5 | PR03b | `Vestigium.Themes` — Themes | Package done at 1.0.4. Host consume is next. |
+| 6 | PR03f | `Vestigium.Controls*` — Controls | .002 is in source, not published. Rest not started. |
 | 7 | PR03e | `Vestigium.Helpers.Network` — Helpers | **Parked.** |
 
 ---
@@ -119,28 +120,28 @@ Published 0.1.1. The proposed 19000 block was already `PerfMon.Memory`, so no ca
 
 ## PR03b — `Vestigium.Themes`
 
-Not started.
+Published 1.0.4. `RegisterSuiteV1` is on that package. Suite.Network still pins 1.0.2.
 
 | Order | ID | Do | State |
 | ---: | :--- | :--- | :--- |
-| 1 | PR03b.001 | `RegisterSuiteV1` / `ThemeDefinitions.SuiteV1`. NuGet does not Register on import. | Planned |
-| 2 | PR03b.002 | Ids match README 1.0.2. | Planned |
-| 3 | PR03b.003 | Series.1–6 on every palette. | Planned |
-| 4 | PR03b.004 | No implicit TargetType in Themes.Controls for suite controls. | Planned |
-| 5 | PR03b.005 | Pack still eleven DLLs. | Planned |
-| 6 | PR03b.006 | Delete three host `ThemeCatalog.cs` files together. | Planned |
-| 7 | PR03b.007 | Hosts call RegisterSuiteV1 then Initialize. | Planned |
+| 1 | PR03b.001 | `RegisterSuiteV1` / `ThemeDefinitions.SuiteV1`. NuGet does not Register on import. | Done |
+| 2 | PR03b.002 | Ids match README 1.0.2. | Done. Descriptions restored to the README text. |
+| 3 | PR03b.003 | Series.1–6 on every palette. | Done. Already present. No file change. |
+| 4 | PR03b.004 | No implicit TargetType in Themes.Controls for suite controls. | Done. None present. |
+| 5 | PR03b.005 | Pack still eleven DLLs. | Done. Core, catalog, nine palettes. |
+| 6 | PR03b.006 | Delete three host `ThemeCatalog.cs` files together. | Not started. Needs the 1.0.4 pin. |
+| 7 | PR03b.007 | Hosts call RegisterSuiteV1 then Initialize. | Not started. Same consume as .006. |
 
 ---
 
 ## PR03f — `Vestigium.Controls*`
 
-Not started. Depends on PR03b.
+.002 landed early in source. Not published. Host `App.xaml` still reprints the tokens.
 
 | Order | ID | Do | State |
 | ---: | :--- | :--- | :--- |
 | 1 | PR03f.001 | StatusBar binds Surface.StatusBar / Text.Primary / Stroke.Subtle. | Planned |
-| 2 | PR03f.002 | NumericUpDown and UnderConstruction default styles. | Planned |
+| 2 | PR03f.002 | NumericUpDown and UnderConstruction default styles. | Done in source. Not published. |
 | 3 | PR03f.003 | One PageViewport, preferred home Shell. | Planned |
 | 4 | PR03f.004 | No `Vestigium.Controls.Theme`. | Planned |
 | 5 | PR03f.005 | Pack touched control packages. | Planned |
@@ -164,4 +165,4 @@ Not started. Depends on PR03b.
 
 ## Next action
 
-PR03b.001. PR03e stays parked. `WirelessLink.cs` still calls `wlanapi`.
+PR03b.006 and PR03b.007 together: pin Themes 1.0.4, call `RegisterSuiteV1`, then delete the three `ThemeCatalog.cs` files. PR03e stays parked. `WirelessLink.cs` still calls `wlanapi`.
