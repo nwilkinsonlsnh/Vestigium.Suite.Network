@@ -67,7 +67,7 @@ public sealed partial class SystemDetailForm
         if (!path.StartsWith("?", StringComparison.Ordinal))
             return path;
         var root = Path.GetPathRoot(Environment.SystemDirectory);
-        var letter = string.IsNullOrWhiteSpace(root) ? "C:" : root.TrimEnd('\\');
+        var letter = string.IsNullOrWhiteSpace(root) ? "C" : root.TrimEnd('\\', ':');
         return letter + path[1..];
     }
 }
