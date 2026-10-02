@@ -38,6 +38,7 @@ public partial class SystemDetailWindow : Window
         WindowsPanel.Visibility = Shown(WindowsTab);
         ComputerPanel.Visibility = Shown(ComputerTab);
         MemoryPanel.Visibility = Shown(MemoryTab);
+        DisplayPanel.Visibility = Shown(DisplayTab);
     }
 
     private static Visibility Shown(RadioButton tab)
