@@ -35,12 +35,12 @@ internal static class MonitorChart
             MonitorChartPages.Integrity => Integrity(ring),
             MonitorChartPages.Utilization => Utilization(ring),
             MonitorChartPages.Cpu => Pair(ring, Processor.PercentUserTime, Processor.PercentPrivilegedTime, "User", "Privileged", "CPU", "%", 1m, 1m, true),
-            MonitorChartPages.Memory => Memory(ring),
+            MonitorChartPages.Memory => MemoryChart(ring),
             _ => Pair(ring, NetworkInterface.BytesReceivedPerSec, NetworkInterface.BytesSentPerSec, "Receive", "Send", "Throughput", "Kbps", 8m / 1000m, 8m / 1000m, true)
         };
     }
 
-    private static (FrameworkElement? View, string Strip) Memory(MonitorRing ring)
+    private static (FrameworkElement? View, string Strip) MemoryChart(MonitorRing ring)
     {
         var total = MemoryInfo.Read().TotalBytes;
         double? yMax = total.IsOk && total.Value > 0 ? total.Value / 1073741824d : null;
