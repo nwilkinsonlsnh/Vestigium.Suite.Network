@@ -5,7 +5,7 @@
 **APPID:** `NicIQ`  
 **Status:** Live  
 **Date:** 30 September 2026  
-**Revised:** 1 October 2026 — PR03a and PR03d are done. PR03c code is done. Visual smoke on a live adapter is still the owner.  
+**Revised:** 2 October 2026 — PR03g is done. PR03c visual smoke is still the owner.  
 **Binding:** Published NugetPackages.md wins on domain. Each letter (PR03a–g) wins on that package. This file wins on order and step IDs.
 
 **Goal:** Move host-local library work out of NicIQ. Rev1 window stays shippable.
@@ -25,8 +25,11 @@ Letters stay the requirements. This file is the slice list. Do not rewrite a let
 | `Vestigium.Helpers.PerfMon.Cpu` | 0.1.2 |
 | `Vestigium.Helpers.PerfMon.Memory` | 0.1.2 |
 | `Vestigium.Helpers.PerfMon.Network` | 0.1.2 |
+| `Vestigium.Helpers.SystemInfo` | 0.1.1 |
+| `Vestigium.Helpers.SystemInfo.Cpu` | 0.1.1 |
+| `Vestigium.Helpers.SystemInfo.Memory` | 0.1.1 |
 
-NicIQ keeps one `CachedPdhSource` for the monitor session. The first rate read is still the prime. `HostCounters.cs` is deleted. `CpuHostFacts` and `MemoryHostFacts` stay in the host.
+NicIQ keeps one `CachedPdhSource` for the monitor session. `HostCounters.cs`, `CpuHostFacts.cs`, and `MemoryHostFacts.cs` are deleted. The card formats SystemInfo raw numbers. The PerfMon ring still supplies the series.
 
 ---
 
@@ -36,9 +39,9 @@ NicIQ keeps one `CachedPdhSource` for the monitor session. The first rate read i
 | ---: | :--- | :--- | :--- |
 | 1 | PR03c | `Vestigium.Helpers.PerfMon` — Helpers | Code done. Visual smoke is the owner. |
 | 2 | PR03a | `Vestigium.Helpers.Charts` — Helpers | Done. Pin 1.0.9. |
-| 3 | PR03d | `Helpers.PerfMon.Cpu` / `Memory` — Helpers | Done. Facts stayed in NicIQ. |
-| 4 | PR03g | `Helpers.SystemInfo` + `.Cpu` + `.Memory` — Helpers | Next. New family. |
-| 5 | PR03b | `Vestigium.Themes` — Themes | One suite palette list. |
+| 3 | PR03d | `Helpers.PerfMon.Cpu` / `Memory` — Helpers | Done. |
+| 4 | PR03g | `Helpers.SystemInfo` + `.Cpu` + `.Memory` — Helpers | Done. Pin 0.1.1. |
+| 5 | PR03b | `Vestigium.Themes` — Themes | Next. One suite palette list. |
 | 6 | PR03f | `Vestigium.Controls*` — Controls | Bind tokens. After T-01. |
 | 7 | PR03e | `Vestigium.Helpers.Network` — Helpers | **Parked.** |
 
@@ -82,7 +85,7 @@ Published 1.0.9. Suite.Network pin is 1.0.9.
 
 ## PR03d — `Vestigium.Helpers.PerfMon.Cpu` / `Memory`
 
-PDH path catalogs only. Facts stayed in NicIQ.
+PDH path catalogs only. Facts stayed out of these packages.
 
 | Order | ID | Do | State |
 | ---: | :--- | :--- | :--- |
@@ -96,21 +99,21 @@ PDH path catalogs only. Facts stayed in NicIQ.
 
 ---
 
-## PR03g — NEW `Vestigium.Helpers.SystemInfo*`
+## PR03g — `Vestigium.Helpers.SystemInfo*`
 
-Not started. IDs are `Vestigium.Helpers.SystemInfo*`.
+Published 0.1.1. The proposed 19000 block was already `PerfMon.Memory`, so no catalog was registered.
 
 | Order | ID | Do | State |
 | ---: | :--- | :--- | :--- |
-| 1 | PR03g.001 | Confirm EVENTID 19000–19499 / 19500–19999 / 20000–20499. | Planned |
-| 2 | PR03g.002 | Core project. Records + Unavailable. No P/Invoke. | Planned |
-| 3 | PR03g.003 | Cpu satellite. | Planned |
-| 4 | PR03g.004 | Memory satellite. | Planned |
-| 5 | PR03g.005 | S-01 through S-05. No PerfMon or Network reference. | Planned |
-| 6 | PR03g.006 | Headless Windows tests. | Planned |
-| 7 | PR03g.007 | Pack the three Helpers IDs. No root `Vestigium.SystemInfo`. | Planned |
-| 8 | PR03g.008 | Pin. Delete `CpuHostFacts.cs` and `MemoryHostFacts.cs`. | Planned |
-| 9 | PR03g.009 | NicIQ grep for those P/Invokes is zero. | Planned |
+| 1 | PR03g.001 | Confirm EVENTID 19000–19499 / 19500–19999 / 20000–20499. | Skipped. 19000–19499 is `PerfMon.Memory`. |
+| 2 | PR03g.002 | Core project. Records + Unavailable. No P/Invoke. | Done |
+| 3 | PR03g.003 | Cpu satellite. | Done |
+| 4 | PR03g.004 | Memory satellite. | Done |
+| 5 | PR03g.005 | S-01 through S-05. No PerfMon or Network reference. | Done |
+| 6 | PR03g.006 | Headless Windows tests. | Done |
+| 7 | PR03g.007 | Pack the three Helpers IDs. No root `Vestigium.SystemInfo`. | Done. 0.1.1. |
+| 8 | PR03g.008 | Pin. Delete `CpuHostFacts.cs` and `MemoryHostFacts.cs`. | Done |
+| 9 | PR03g.009 | NicIQ grep for those P/Invokes is zero. | Done. `wlanapi` remains for PR03e. |
 
 ---
 
@@ -161,4 +164,4 @@ Not started. Depends on PR03b.
 
 ## Next action
 
-PR03g.001 when the owner starts the SystemInfo family. PR03b and PR03f are not started. PR03e stays parked.
+PR03b.001. PR03e stays parked. `WirelessLink.cs` still calls `wlanapi`.
