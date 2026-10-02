@@ -5,7 +5,7 @@
 **APPID:** `NicIQ`  
 **Status:** Live  
 **Date:** 30 September 2026  
-**Revised:** 1 October 2026 — PR03c code is on Suite.Network `main` (`c5be965`). Visual smoke is still the owner.  
+**Revised:** 1 October 2026 — PR03a and PR03d are done. PR03c code is done. Visual smoke on a live adapter is still the owner.  
 **Binding:** Published NugetPackages.md wins on domain. Each letter (PR03a–g) wins on that package. This file wins on order and step IDs.
 
 **Goal:** Move host-local library work out of NicIQ. Rev1 window stays shippable.
@@ -16,21 +16,17 @@ Letters stay the requirements. This file is the slice list. Do not rewrite a let
 
 ---
 
-## Where PR03c is
+## Where the finished phases are
 
-Core pin is `Vestigium.Helpers.PerfMon` 0.1.3. Network satellite pin is 0.1.1 until restore can see 0.1.2. NicIQ `CachedPdhSource.cs` is deleted. The tick uses `SampleJob` with no host source.
+| Pin | Version |
+| :--- | :--- |
+| `Vestigium.Helpers.Charts` | 1.0.9 |
+| `Vestigium.Helpers.PerfMon` | 0.1.6 |
+| `Vestigium.Helpers.PerfMon.Cpu` | 0.1.2 |
+| `Vestigium.Helpers.PerfMon.Memory` | 0.1.2 |
+| `Vestigium.Helpers.PerfMon.Network` | 0.1.2 |
 
-| ID | State | Evidence |
-| :--- | :--- | :--- |
-| PR03c.001 | Done | `public sealed class CachedPdhSource`. |
-| PR03c.002 | Done | `SampleJob` default is that type and disposes it. |
-| PR03c.003 | Done | First rate read is Unavailable. |
-| PR03c.004 | Done | `Retain` drops counters the job does not sample. |
-| PR03c.005 | Done | `ListInstances` calls `PdhCounterInventory.Shared.LiveInstances`. |
-| PR03c.006 | Done | `PerfMonPR03cSourceTests`. |
-| PR03c.007 | Done | Published 0.1.3. |
-| PR03c.008 | Done | Host file deleted. Core pin 0.1.3. |
-| PR03c.009 | Code-ready | `MonitorRing.Add` skips a null value. `MonitorSampleRow` shows an em dash. The loop already catches a throw. Window look is the owner. |
+NicIQ keeps one `CachedPdhSource` for the monitor session. The first rate read is still the prime. `HostCounters.cs` is deleted. `CpuHostFacts` and `MemoryHostFacts` stay in the host.
 
 ---
 
@@ -39,9 +35,9 @@ Core pin is `Vestigium.Helpers.PerfMon` 0.1.3. Network satellite pin is 0.1.1 un
 | Order | Phase | Package / repo | Why this slot |
 | ---: | :--- | :--- | :--- |
 | 1 | PR03c | `Vestigium.Helpers.PerfMon` — Helpers | Code done. Visual smoke is the owner. |
-| 2 | PR03a | `Vestigium.Helpers.Charts` — Helpers | Next library phase. |
-| 3 | PR03d | `Helpers.PerfMon.Cpu` / `Memory` — Helpers | Path catalogs only. |
-| 4 | PR03g | `Helpers.SystemInfo` + `.Cpu` + `.Memory` — Helpers | New family. |
+| 2 | PR03a | `Vestigium.Helpers.Charts` — Helpers | Done. Pin 1.0.9. |
+| 3 | PR03d | `Helpers.PerfMon.Cpu` / `Memory` — Helpers | Done. Facts stayed in NicIQ. |
+| 4 | PR03g | `Helpers.SystemInfo` + `.Cpu` + `.Memory` — Helpers | Next. New family. |
 | 5 | PR03b | `Vestigium.Themes` — Themes | One suite palette list. |
 | 6 | PR03f | `Vestigium.Controls*` — Controls | Bind tokens. After T-01. |
 | 7 | PR03e | `Vestigium.Helpers.Network` — Helpers | **Parked.** |
@@ -58,7 +54,7 @@ Core pin is `Vestigium.Helpers.PerfMon` 0.1.3. Network satellite pin is 0.1.1 un
 | 4 | PR03c.004 | `Retain` drops counters not in the job path list. | Done |
 | 5 | PR03c.005 | `ListInstances` uses `PdhCounterInventory.Shared`. | Done |
 | 6 | PR03c.006 | Source tests. | Done |
-| 7 | PR03c.007 | Published 0.1.3. | Done |
+| 7 | PR03c.007 | Published 0.1.3, then 0.1.6 for the missing-category fix. | Done |
 | 8 | PR03c.008 | Pin bump. Delete NicIQ `CachedPdhSource.cs`. | Done |
 | 9 | PR03c.009 | Owner looks at a live adapter. Code path does not throw on Unavailable. | Code-ready |
 
@@ -66,37 +62,37 @@ Core pin is `Vestigium.Helpers.PerfMon` 0.1.3. Network satellite pin is 0.1.1 un
 
 ## PR03a — `Vestigium.Helpers.Charts`
 
-Not started.
+Published 1.0.9. Suite.Network pin is 1.0.9.
 
 | Order | ID | Do | State |
 | ---: | :--- | :--- | :--- |
-| 1 | PR03a.001 | C-01: themed `ChartOptions` from Vestigium token strings. No Themes project reference. | Planned |
-| 2 | PR03a.002 | C-02: limit lines when `ChartOptions.Limits` is set. Host never `Add.HorizontalLine`. | Planned |
-| 3 | PR03a.003 | C-03: XMin/XMax. Default remains fit-data. | Planned |
-| 4 | PR03a.004 | C-04: count-axis flag for Column. | Planned |
-| 5 | PR03a.005 | Do not lift the two-series Line cap. | Planned |
-| 6 | PR03a.006 | Keep legend toggle on Charts. Charts does not persist. | Planned |
-| 7 | PR03a.007 | Helpers tests for themed options and limit lines. | Planned |
-| 8 | PR03a.008 | Pack and publish Charts. | Planned |
-| 9 | PR03a.009 | Pin bump. `MonitorChart` is `ChartView` only. No ScottPlot usings. | Planned |
-| 10 | PR03a.010 | Delete `ChartTheme` hex helper. Host still scales and computes limits. | Planned |
-| 11 | PR03a.011 | `using ScottPlot` absent from Suite.Network. | Planned |
+| 1 | PR03a.001 | C-01: themed `ChartOptions` from Vestigium token strings. No Themes project reference. | Done |
+| 2 | PR03a.002 | C-02: limit lines when `ChartOptions.Limits` is set. Host never `Add.HorizontalLine`. | Done |
+| 3 | PR03a.003 | C-03: XMin/XMax. Default remains fit-data. | Done |
+| 4 | PR03a.004 | C-04: count-axis flag for Column. | Done |
+| 5 | PR03a.005 | Do not lift the two-series Line cap. | Done |
+| 6 | PR03a.006 | Keep legend toggle on Charts. Charts does not persist. | Done |
+| 7 | PR03a.007 | Helpers tests for themed options and limit lines. | Done |
+| 8 | PR03a.008 | Pack and publish Charts. | Done |
+| 9 | PR03a.009 | Pin bump. `MonitorChart` is `ChartView` only. No ScottPlot usings. | Done |
+| 10 | PR03a.010 | Delete `ChartTheme` hex helper. Host still scales and computes limits. | Done |
+| 11 | PR03a.011 | `using ScottPlot` absent from the NicIQ chart path. | Done |
 
 ---
 
 ## PR03d — `Vestigium.Helpers.PerfMon.Cpu` / `Memory`
 
-PDH path catalogs only. Facts are PR03g. Not started.
+PDH path catalogs only. Facts stayed in NicIQ.
 
 | Order | ID | Do | State |
 | ---: | :--- | :--- | :--- |
-| 1 | PR03d.001 | Cpu preferred `Processor Information`, fallback `Processor`. | Planned |
-| 2 | PR03d.002 | Memory catalog paths. Hosts stop spelling category strings. | Planned |
-| 3 | PR03d.003 | Confirm Memory EVENTID before new named events. | Planned |
-| 4 | PR03d.004 | Tests: published paths; missing category is Unavailable. | Planned |
-| 5 | PR03d.005 | Pack and publish the two satellites. | Planned |
-| 6 | PR03d.006 | Pin bump. Delete `HostCounters.cs`. | Planned |
-| 7 | PR03d.007 | Do not move host facts into these packages. | Planned |
+| 1 | PR03d.001 | Cpu preferred `Processor Information`, fallback `Processor`. | Done |
+| 2 | PR03d.002 | Memory catalog paths. Hosts stop spelling category strings. | Done |
+| 3 | PR03d.003 | Confirm Memory EVENTID before new named events. Next free is 19050. | Done |
+| 4 | PR03d.004 | Tests: published paths; missing category is Unavailable. | Done |
+| 5 | PR03d.005 | Pack and publish the two satellites. CPU 0.1.2, Memory 0.1.2, core 0.1.6. | Done |
+| 6 | PR03d.006 | Pin bump. Delete `HostCounters.cs`. | Done |
+| 7 | PR03d.007 | Do not move host facts into these packages. | Done |
 
 ---
 
@@ -165,4 +161,4 @@ Not started. Depends on PR03b.
 
 ## Next action
 
-PR03a.001 when the owner is done looking at NicIQ. Do not start Charts before that unless the owner says to.
+PR03g.001 when the owner starts the SystemInfo family. PR03b and PR03f are not started. PR03e stays parked.
