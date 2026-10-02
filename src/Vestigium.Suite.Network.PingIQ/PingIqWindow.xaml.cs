@@ -35,7 +35,6 @@ public partial class PingIqWindow : Window
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
         ViewModel.RootShell = RootShell;
-        ThemeChrome.Bind(this);
         BuildThemeMenu();
     }
 
