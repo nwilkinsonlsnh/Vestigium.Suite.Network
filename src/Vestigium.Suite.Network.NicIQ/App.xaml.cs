@@ -9,6 +9,8 @@ using Vestigium.Converters.DependencyInjection;
 using Vestigium.Helpers.Analytics;
 using Vestigium.Helpers.Charts;
 using Vestigium.Helpers.PerfMon;
+using Vestigium.Helpers.PerfMon.Cpu;
+using Vestigium.Helpers.PerfMon.Memory;
 using Vestigium.Helpers.PerfMon.Network;
 using Vestigium.Suite.Network.NicIQ.ViewModels;
 using Vestigium.Suite.Network.NicIQ.Views;
@@ -36,6 +38,8 @@ public partial class App : Application
             AnalyticsCatalog.Register(cfg);
             ChartsCatalog.Register(cfg);
             PerfMonCatalog.Register(cfg);
+            CpuPerfCatalog.Register(cfg);
+            MemoryPerfCatalog.Register(cfg);
             NetworkPerfCatalog.Register(cfg);
         });
 
