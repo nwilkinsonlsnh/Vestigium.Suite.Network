@@ -3,12 +3,17 @@ using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using Vestigium.Helpers.PerfMon.Cpu;
 using Vestigium.Helpers.PerfMon.Memory;
+using Vestigium.Helpers.SystemInfo;
+using CpuInfo = Vestigium.Helpers.SystemInfo.Cpu.CpuFacts;
+using MemoryInfo = Vestigium.Helpers.SystemInfo.Memory.MemoryFacts;
 using PdhNic = Vestigium.Helpers.PerfMon.Network.NetworkInterface;
 
 namespace Vestigium.Suite.Network.NicIQ.ViewModels;
 
 internal static class MonitorDetailCard
 {
+    private const string Dash = "\u2014";
+
     public static (string Title, string Value, IReadOnlyList<MonitorFactColumn> Columns) Build(
         string page,
         AdapterRow? nic,
@@ -29,15 +34,15 @@ internal static class MonitorDetailCard
     private static (string, string, IReadOnlyList<MonitorFactColumn>) Cpu(MonitorRing ring)
     {
         var total = Last(ring, Processor.PercentProcessorTime);
-        var live = CpuHostFacts.Live();
-        var host = CpuHostFacts.Host;
+        var live = CpuInfo.Live();
+        var host = CpuInfo.Host;
         var columns = new MonitorFactColumn[]
         {
-            Column(Row("Base speed", live.BaseSpeed), Row("Speed", live.Speed), Row("Utilization", Pct(total))),
-            Column(Row("Processes", Count(live.Processes)), Row("Threads", Count(live.Threads)), Row("Handles", Count(live.Handles))),
-            Column(Row("Sockets", Count(host.Sockets)), Row("Cores", Count(host.Cores)), Row("Logical processors", Count(host.Logical))),
-            Column(Row("L1 cache", host.L1), Row("L2 cache", host.L2)),
-            Column(Row("L3 cache", host.L3), Row("L4 cache", host.L4))
+            Column(Row("Base speed", Ghz(live, v => v.MaxMhz)), Row("Speed", Ghz(live, v => v.CurrentMhz)), Row("Utilization", Pct(total))),
+            Column(Row("Processes", CountOf(live, v => v.Processes)), Row("Threads", CountOf(live, v => v.Threads)), Row("Handles", CountOf(live, v => v.Handles))),
+            Column(Row("Sockets", CountOf(host, v => v.Sockets)), Row("Cores", CountOf(host, v => v.Cores)), Row("Logical processors", CountOf(host, v => v.Logical))),
+            Column(Row("L1 cache", Cache(host, v => v.L1Bytes)), Row("L2 cache", Cache(host, v => v.L2Bytes))),
+            Column(Row("L3 cache", Cache(host, v => v.L3Bytes)), Row("L4 cache", Cache(host, v => v.L4Bytes)))
         };
         return ("Utilization", Pct(total), columns);
     }
@@ -49,14 +54,14 @@ internal static class MonitorDetailCard
         var limit = Last(ring, Memory.CommitLimit);
         var cached = Last(ring, Memory.CacheBytes);
         var pct = Last(ring, Memory.PercentCommittedBytesInUse);
-        var phys = MemoryHostFacts.Read();
+        var phys = MemoryInfo.Read();
         var columns = new MonitorFactColumn[]
         {
-            Column(Row("In use", phys.InUse), Row("Total", phys.Total)),
-            Column(Row("Committed", GbFromBytes(committed)), Row("Commit peak", phys.Peak)),
+            Column(Row("In use", Gb(phys.InUseBytes)), Row("Total", Gb(phys.TotalBytes))),
+            Column(Row("Committed", GbFromBytes(committed)), Row("Commit peak", Gb(phys.CommitPeakBytes))),
             Column(Row("Commit limit", GbFromBytes(limit)), Row("Commit in use", Pct(pct))),
-            Column(Row("Cached", GbFromBytes(cached)), Row("Paged pool", phys.Paged)),
-            Column(Row("Non-paged pool", phys.Nonpaged))
+            Column(Row("Cached", GbFromBytes(cached)), Row("Paged pool", Gb(phys.PagedBytes))),
+            Column(Row("Non-paged pool", Gb(phys.NonpagedBytes)))
         };
         return ("Available", GbFromMb(availableMb), columns);
     }
@@ -110,15 +115,15 @@ internal static class MonitorDetailCard
         if (wireless is not null)
         {
             columns.Add(Column(Row("Connection type", wireless.ConnectionType), Row("SSID", wireless.Ssid)));
-            columns.Add(Column(Row("IPv4", string.IsNullOrWhiteSpace(ip) ? "\u2014" : ip), Row("Signal", wireless.Signal)));
+            columns.Add(Column(Row("IPv4", string.IsNullOrWhiteSpace(ip) ? Dash : ip), Row("Signal", wireless.Signal)));
         }
         else
         {
-            columns.Add(Column(Row("Connection type", nic is null ? "\u2014" : ConnectionType(nic))));
-            columns.Add(Column(Row("IPv4", string.IsNullOrWhiteSpace(ip) ? "\u2014" : ip)));
+            columns.Add(Column(Row("Connection type", nic is null ? Dash : ConnectionType(nic))));
+            columns.Add(Column(Row("IPv4", string.IsNullOrWhiteSpace(ip) ? Dash : ip)));
         }
 
-        columns.Add(Column(Row("Domain", nic is null ? "\u2014" : DomainName(nic))));
+        columns.Add(Column(Row("Domain", nic is null ? Dash : DomainName(nic))));
         return columns;
     }
 
@@ -133,9 +138,9 @@ internal static class MonitorDetailCard
         if (!string.IsNullOrWhiteSpace(nic?.Speed))
             return nic.Speed;
         if (bandwidthBits <= 0)
-            return "\u2014";
+            return Dash;
         var bits = (long)decimal.Truncate(bandwidthBits);
-        return bits <= 0 ? "\u2014" : LinkSpeed.Format(bits);
+        return bits <= 0 ? Dash : LinkSpeed.Format(bits);
     }
 
     private static string ConnectionType(AdapterRow nic)
@@ -167,7 +172,7 @@ internal static class MonitorDetailCard
         {
         }
 
-        return "\u2014";
+        return Dash;
     }
 
     private static string FirstAddress(AdapterRow nic, AddressFamily family)
@@ -193,12 +198,34 @@ internal static class MonitorDetailCard
     private static string Whole(decimal value)
         => decimal.Truncate(value).ToString("0", CultureInfo.InvariantCulture);
 
-    private static string Count(int value)
-        => value.ToString("N0", CultureInfo.CurrentCulture);
-
     private static string GbFromMb(decimal megaBytes)
         => (megaBytes / 1024m).ToString("0.0", CultureInfo.InvariantCulture) + " GB";
 
     private static string GbFromBytes(decimal bytes)
         => (bytes / 1073741824m).ToString("0.0", CultureInfo.InvariantCulture) + " GB";
+
+    private static string CountOf<T>(Fact<T> fact, Func<T, int> pick)
+        => fact.IsOk ? pick(fact.Value).ToString("N0", CultureInfo.CurrentCulture) : Dash;
+
+    private static string Ghz<T>(Fact<T> fact, Func<T, uint> mhz)
+    {
+        if (!fact.IsOk)
+            return Dash;
+        var value = mhz(fact.Value);
+        return value == 0 ? Dash : (value / 1000d).ToString("0.00") + " GHz";
+    }
+
+    private static string Cache<T>(Fact<T> fact, Func<T, long> bytes)
+    {
+        if (!fact.IsOk)
+            return Dash;
+        var value = bytes(fact.Value);
+        if (value <= 0)
+            return Dash;
+        var kilo = value / 1024d;
+        return kilo >= 1024 ? (kilo / 1024d).ToString("0.0") + " MB" : Math.Round(kilo).ToString("0") + " KB";
+    }
+
+    private static string Gb(Fact<ulong> fact)
+        => fact.IsOk ? (fact.Value / 1073741824d).ToString("0.0", CultureInfo.InvariantCulture) + " GB" : Dash;
 }
