@@ -3,9 +3,9 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="{Binding Title}"
         Icon="pack://application:,,,/Assets/NicIQ.ico"
-        Width="680"
+        Width="720"
         SizeToContent="Height"
-        MinHeight="420"
+        MinHeight="460"
         MinWidth="560"
         ResizeMode="CanResize"
         ShowInTaskbar="True"
@@ -26,30 +26,27 @@
     <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,12">
       <RadioButton x:Name="WindowsTab" Style="{StaticResource RadioButton.HorizontalTab}" Content="Windows" GroupName="SystemTab" IsChecked="True" Margin="0,0,8,0" Checked="TabChecked" />
       <RadioButton x:Name="ComputerTab" Style="{StaticResource RadioButton.HorizontalTab}" Content="Computer" GroupName="SystemTab" Margin="0,0,8,0" Checked="TabChecked" />
-      <RadioButton x:Name="MemoryTab" Style="{StaticResource RadioButton.HorizontalTab}" Content="Memory" GroupName="SystemTab" Checked="TabChecked" />
+      <RadioButton x:Name="MemoryTab" Style="{StaticResource RadioButton.HorizontalTab}" Content="Memory" GroupName="SystemTab" Margin="0,0,8,0" Checked="TabChecked" />
+      <RadioButton x:Name="DisplayTab" Style="{StaticResource RadioButton.HorizontalTab}" Content="Display" GroupName="SystemTab" Checked="TabChecked" />
     </StackPanel>
-    <Grid MinHeight="320">
+    <Grid MinHeight="340">
       <StackPanel x:Name="WindowsPanel" Margin="4,8,4,4">
+        <TextBlock Text="Date/Time" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
+        <TextBlock Text="{Binding Now}" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
         <TextBlock Text="Host name" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
         <TextBlock Text="{Binding HostName}" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
-        <TextBlock Text="OS name" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
-        <TextBlock Text="{Binding OsName}" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+        <TextBlock Text="Operating system" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
+        <TextBlock Text="{Binding OsName}" TextWrapping="Wrap" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+        <TextBlock Text="Language" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
+        <TextBlock Text="{Binding Language}" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
         <TextBlock Text="Edition" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
         <TextBlock Text="{Binding Edition}" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
         <TextBlock Text="Version" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
         <TextBlock Text="{Binding DisplayVersion}" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
         <TextBlock Text="Build" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
         <TextBlock Text="{Binding Build}" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
-        <TextBlock Text="Owner" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
-        <TextBlock Text="{Binding Owner}" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
-        <TextBlock Text="Organization" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
-        <TextBlock Text="{Binding Organization}" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
-        <TextBlock Text="Product ID" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
-        <TextBlock Text="{Binding ProductId}" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
-        <TextBlock Text="Install date" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
-        <TextBlock Text="{Binding InstallDate}" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
-        <TextBlock Text="Boot time" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
-        <TextBlock Text="{Binding BootTime}" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+        <TextBlock Text="DirectX" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
+        <TextBlock Text="{Binding DirectX}" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
       </StackPanel>
       <StackPanel x:Name="ComputerPanel" Margin="4,8,4,4" Visibility="Collapsed">
         <TextBlock Text="Manufacturer" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
@@ -76,10 +73,26 @@
         <TextBlock Text="{Binding InUsePhysical}" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
         <TextBlock Text="Available" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
         <TextBlock Text="{Binding AvailablePhysical}" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
-        <TextBlock Text="Commit peak" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
-        <TextBlock Text="{Binding CommitPeak}" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+        <TextBlock Text="Page file used" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
+        <TextBlock Text="{Binding PageFileUsed}" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+        <TextBlock Text="Page file available" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
+        <TextBlock Text="{Binding PageFileAvailable}" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
         <TextBlock Text="Page file" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
         <TextBlock Text="{Binding PageFile}" TextWrapping="Wrap" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+      </StackPanel>
+      <StackPanel x:Name="DisplayPanel" Margin="4,8,4,4" Visibility="Collapsed">
+        <TextBlock Text="Name" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
+        <TextBlock Text="{Binding DisplayName}" TextWrapping="Wrap" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+        <TextBlock Text="Manufacturer" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
+        <TextBlock Text="{Binding DisplayManufacturer}" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+        <TextBlock Text="Chip" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
+        <TextBlock Text="{Binding DisplayChip}" TextWrapping="Wrap" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+        <TextBlock Text="Approx. total memory" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
+        <TextBlock Text="{Binding DisplayMemory}" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+        <TextBlock Text="Display memory (VRAM)" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
+        <TextBlock Text="{Binding DisplayVram}" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+        <TextBlock Text="Shared memory" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
+        <TextBlock Text="{Binding DisplayShared}" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
       </StackPanel>
     </Grid>
   </DockPanel>
