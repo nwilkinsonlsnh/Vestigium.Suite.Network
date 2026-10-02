@@ -25,6 +25,8 @@ public sealed partial class MainViewModel
 
     public bool HasMonitorHeadlineTitle => !string.IsNullOrWhiteSpace(MonitorHeadlineTitle);
 
+    public bool ShowAdapterDetails => ChartPage is not MonitorChartPages.Cpu and not MonitorChartPages.Memory;
+
     public string LegendButtonText => ChartTheme.WatchLegend ? "Hide Legend" : "Show Legend";
 
     public string PauseButtonText => MonitorPaused ? "Resume" : "Pause";
@@ -198,6 +200,7 @@ public sealed partial class MainViewModel
         OnPropertyChanged(nameof(UtilizationPageOpen));
         OnPropertyChanged(nameof(CpuPageOpen));
         OnPropertyChanged(nameof(MemoryPageOpen));
+        OnPropertyChanged(nameof(ShowAdapterDetails));
         RefreshMonitorFacts();
         SyncWarm();
     }
