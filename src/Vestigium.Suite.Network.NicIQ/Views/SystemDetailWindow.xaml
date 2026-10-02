@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="{Binding Title}"
         Icon="pack://application:,,,/Assets/NicIQ.ico"
-        Width="720"
+        Width="760"
         SizeToContent="Height"
         MinHeight="460"
         MinWidth="560"
@@ -27,6 +27,7 @@
       <RadioButton x:Name="WindowsTab" Style="{StaticResource RadioButton.HorizontalTab}" Content="Windows" GroupName="SystemTab" IsChecked="True" Margin="0,0,8,0" Checked="TabChecked" />
       <RadioButton x:Name="ComputerTab" Style="{StaticResource RadioButton.HorizontalTab}" Content="Computer" GroupName="SystemTab" Margin="0,0,8,0" Checked="TabChecked" />
       <RadioButton x:Name="MemoryTab" Style="{StaticResource RadioButton.HorizontalTab}" Content="Memory" GroupName="SystemTab" Margin="0,0,8,0" Checked="TabChecked" />
+      <RadioButton x:Name="PageFileTab" Style="{StaticResource RadioButton.HorizontalTab}" Content="Page File" GroupName="SystemTab" Margin="0,0,8,0" Checked="TabChecked" />
       <RadioButton x:Name="DisplayTab" Style="{StaticResource RadioButton.HorizontalTab}" Content="Display" GroupName="SystemTab" Checked="TabChecked" />
     </StackPanel>
     <Grid MinHeight="340">
@@ -73,12 +74,24 @@
         <TextBlock Text="{Binding InUsePhysical}" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
         <TextBlock Text="Available" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
         <TextBlock Text="{Binding AvailablePhysical}" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
-        <TextBlock Text="Page file used" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
+        <TextBlock Text="Commit peak" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
+        <TextBlock Text="{Binding CommitPeak}" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+      </StackPanel>
+      <StackPanel x:Name="PageFilePanel" Margin="4,8,4,4" Visibility="Collapsed">
+        <TextBlock Text="Location" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
+        <TextBlock Text="{Binding PageFile}" TextWrapping="Wrap" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+        <TextBlock Text="System managed" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
+        <TextBlock Text="{Binding PageFileManaged}" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+        <TextBlock Text="Minimum" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
+        <TextBlock Text="{Binding PageFileMinimum}" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+        <TextBlock Text="Maximum" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
+        <TextBlock Text="{Binding PageFileMaximum}" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+        <TextBlock Text="Total" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
+        <TextBlock Text="{Binding PageFileTotal}" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+        <TextBlock Text="Used" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
         <TextBlock Text="{Binding PageFileUsed}" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
-        <TextBlock Text="Page file available" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
-        <TextBlock Text="{Binding PageFileAvailable}" Margin="0,0,0,8" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
-        <TextBlock Text="Page file" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
-        <TextBlock Text="{Binding PageFile}" TextWrapping="Wrap" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
+        <TextBlock Text="Available" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
+        <TextBlock Text="{Binding PageFileAvailable}" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
       </StackPanel>
       <StackPanel x:Name="DisplayPanel" Margin="4,8,4,4" Visibility="Collapsed">
         <TextBlock Text="Name" Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}" />
