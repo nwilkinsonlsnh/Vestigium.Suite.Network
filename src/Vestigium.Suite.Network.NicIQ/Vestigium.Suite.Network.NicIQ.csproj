@@ -22,7 +22,7 @@
     <PackageReference Include="Vestigium.Converters" Version="$(VestigiumConvertersVersion)" />
     <PackageReference Include="Vestigium.Helpers.Analytics" Version="$(VestigiumAnalyticsVersion)" />
     <PackageReference Include="Vestigium.Helpers.Charts" Version="$(VestigiumChartsVersion)" />
-    <PackageReference Include="Vestigium.Helpers.PerfMon" Version="$(VestigiumPerfMonVersion)" />
+    <PackageReference Include="Vestigium.Helpers.PerfMon" Version="$(VestigiumPerfMonCoreVersion)" />
     <PackageReference Include="Vestigium.Helpers.PerfMon.Network" Version="$(VestigiumPerfMonVersion)" />
   </ItemGroup>
 </Project>
