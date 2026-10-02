@@ -46,8 +46,7 @@
               BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
               BorderThickness="1"
               Padding="16,10"
-              VerticalAlignment="Stretch"
-              MouseLeftButtonDown="OpenAdapterDetails">
+              VerticalAlignment="Stretch">
         <Grid>
           <Grid.RowDefinitions>
             <RowDefinition Height="*" />
