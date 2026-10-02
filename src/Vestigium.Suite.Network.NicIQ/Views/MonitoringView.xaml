@@ -111,6 +111,7 @@
                      FontSize="12"
                      TextDecorations="Underline"
                      Foreground="{DynamicResource Vestigium.Brushes.Text.Secondary}"
+                     Visibility="{Binding ShowAdapterDetails, Converter={StaticResource BoolToVis}}"
                      MouseLeftButtonUp="OpenAdapterDetails" />
         </Grid>
       </Border>
