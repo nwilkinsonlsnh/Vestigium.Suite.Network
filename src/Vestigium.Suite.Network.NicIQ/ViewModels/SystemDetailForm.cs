@@ -65,7 +65,7 @@ public sealed class SystemDetailForm
 
     public string InUsePhysical { get; private set; } = Dash;
 
-    public string Commit { get; private set; } = Dash;
+    public string CommitPeak { get; private set; } = Dash;
 
     public string PageFile { get; private set; } = Dash;
 
@@ -106,9 +106,7 @@ public sealed class SystemDetailForm
             TotalPhysical = Gb(memory.TotalBytes),
             AvailablePhysical = Gb(memory.AvailableBytes),
             InUsePhysical = Gb(memory.InUseBytes),
-            Commit = memory.CommitLimitBytes.IsOk && memory.CommittedBytes.IsOk
-                ? Gb(memory.CommittedBytes) + " of " + Gb(memory.CommitLimitBytes)
-                : Dash,
+            CommitPeak = Gb(memory.CommitPeakBytes),
             PageFile = PageFile()
         };
         form.CopyText = form.Format();
@@ -150,7 +148,7 @@ public sealed class SystemDetailForm
         Line(text, "Total physical", TotalPhysical);
         Line(text, "In use", InUsePhysical);
         Line(text, "Available", AvailablePhysical);
-        Line(text, "Commit", Commit);
+        Line(text, "Commit peak", CommitPeak);
         Line(text, "Page file", PageFile);
         return text.ToString();
     }
