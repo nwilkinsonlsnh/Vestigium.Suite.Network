@@ -9,68 +9,63 @@ public sealed class AdapterDetailForm
 {
     private const string Dash = "\u2014";
 
-    private AdapterDetailForm(string title, string copyText)
-    {
-        Title = title;
-        CopyText = copyText;
-    }
+    public string Title { get; private set; } = "Adapter";
 
-    public string Title { get; }
+    public string CopyText { get; private set; } = "No adapter selected.";
 
-    public string CopyText { get; }
+    public string Name { get; private set; } = Dash;
 
-    public string Name { get; private init; } = Dash;
+    public string Description { get; private set; } = Dash;
 
-    public string Description { get; private init; } = Dash;
+    public string Type { get; private set; } = Dash;
 
-    public string Type { get; private init; } = Dash;
+    public string Status { get; private set; } = Dash;
 
-    public string Status { get; private init; } = Dash;
+    public string Mac { get; private set; } = Dash;
 
-    public string Mac { get; private init; } = Dash;
+    public string InterfaceIndex { get; private set; } = Dash;
 
-    public string InterfaceIndex { get; private init; } = Dash;
+    public string Physical { get; private set; } = Dash;
 
-    public string Physical { get; private init; } = Dash;
+    public string Speed { get; private set; } = Dash;
 
-    public string Speed { get; private init; } = Dash;
+    public string Mtu { get; private set; } = Dash;
 
-    public string Mtu { get; private init; } = Dash;
+    public string Assignment { get; private set; } = Dash;
 
-    public string Assignment { get; private init; } = Dash;
+    public string Metric { get; private set; } = Dash;
 
-    public string Metric { get; private init; } = Dash;
+    public string Ipv4 { get; private set; } = Dash;
 
-    public string Ipv4 { get; private init; } = Dash;
+    public string Prefix { get; private set; } = Dash;
 
-    public string Prefix { get; private init; } = Dash;
+    public string Gateway { get; private set; } = Dash;
 
-    public string Gateway { get; private init; } = Dash;
+    public string Dns { get; private set; } = Dash;
 
-    public string Dns { get; private init; } = Dash;
+    public string Ipv6 { get; private set; } = Dash;
 
-    public string Ipv6 { get; private init; } = Dash;
+    public string Suffix { get; private set; } = Dash;
 
-    public string Suffix { get; private init; } = Dash;
+    public string DriverProvider { get; private set; } = Dash;
 
-    public string DriverProvider { get; private init; } = Dash;
+    public string DriverVersion { get; private set; } = Dash;
 
-    public string DriverVersion { get; private init; } = Dash;
+    public string DriverDate { get; private set; } = Dash;
 
-    public string DriverDate { get; private init; } = Dash;
-
-    public string DriverService { get; private init; } = Dash;
+    public string DriverService { get; private set; } = Dash;
 
     public static AdapterDetailForm From(AdapterRow? row)
     {
         if (row is null)
-            return new AdapterDetailForm("Adapter", "No adapter selected.");
+            return new AdapterDetailForm();
 
         var adapter = row.Source;
         var ipv4 = adapter.UnicastAddresses.FirstOrDefault(a => a.Family == AddressFamily.InterNetwork);
         var ipv6 = adapter.UnicastAddresses.FirstOrDefault(a => a.Family == AddressFamily.InterNetworkV6 && !a.Address.StartsWith("fe80", StringComparison.OrdinalIgnoreCase));
-        var form = new AdapterDetailForm(Text(row.Name), string.Empty)
+        var form = new AdapterDetailForm
         {
+            Title = Text(row.Name),
             Name = Text(row.Name),
             Description = Text(adapter.Description),
             Type = Text(row.Type),
@@ -93,7 +88,8 @@ public sealed class AdapterDetailForm
             DriverDate = adapter.Driver?.Date is DateTimeOffset date ? date.ToLocalTime().ToString("g", CultureInfo.CurrentCulture) : Dash,
             DriverService = Text(adapter.Driver?.Service)
         };
-        return form with { CopyText = form.Format() };
+        form.CopyText = form.Format();
+        return form;
     }
 
     private string Format()
