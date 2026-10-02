@@ -103,35 +103,36 @@ internal static class MonitorDetailCard
         return (string.Empty, value, NicColumns(nic, Row("Errors", Whole(errors)), Row("Discards", Whole(discards))));
     }
 
-    private static IReadOnlyList<MonitorFactColumn> NicColumns(AdapterRow? nic, MonitorDetailRow? topLive, MonitorDetailRow? bottomLive)
+    private static IReadOnlyList<MonitorFactColumn> NicColumns(AdapterRow? nic, MonitorDetailRow topLive, MonitorDetailRow bottomLive)
     {
         var wireless = NetworkHelper.TryWirelessAssociation(nic?.Source);
-        var ip = nic is null ? string.Empty : FirstAddress(nic, AddressFamily.InterNetwork);
-        var columns = new List<MonitorFactColumn>();
-        if (topLive is not null || bottomLive is not null)
-        {
-            var live = new List<MonitorDetailRow>();
-            if (topLive is not null)
-                live.Add(topLive);
-            if (bottomLive is not null)
-                live.Add(bottomLive);
-            columns.Add(new MonitorFactColumn(live));
-        }
-
+        var ip = TextOr(nic is null ? null : FirstAddress(nic, AddressFamily.InterNetwork));
         if (wireless is not null)
         {
-            columns.Add(Column(Row("Connection type", wireless.Phy), Row("SSID", wireless.Ssid)));
-            columns.Add(Column(Row("IPv4", string.IsNullOrWhiteSpace(ip) ? Dash : ip), Row("Signal", SignalLabel(wireless.Quality))));
-        }
-        else
-        {
-            columns.Add(Column(Row("Connection type", nic is null ? Dash : ConnectionType(nic))));
-            columns.Add(Column(Row("IPv4", string.IsNullOrWhiteSpace(ip) ? Dash : ip)));
+            return
+            [
+                Column(topLive, bottomLive, Row("PHY", wireless.Phy)),
+                Column(Row("SSID", wireless.Ssid), Row("Signal", SignalLabel(wireless.Quality))),
+                Column(Row("IPv4", ip), Row("Domain", nic is null ? Dash : DomainName(nic)))
+            ];
         }
 
-        columns.Add(Column(Row("Domain", nic is null ? Dash : DomainName(nic))));
-        return columns;
+        return
+        [
+            Column(topLive, bottomLive, Row("Link speed", nic is null ? Dash : LinkLabel(nic, 0))),
+            Column(Row("MAC", TextOr(nic?.MacAddress)), Row("Status", nic is null ? Dash : nic.Status)),
+            Column(Row("IPv4", ip), Row("Gateway", Gateway(nic)))
+        ];
     }
+
+    private static string Gateway(AdapterRow? nic)
+    {
+        var gateway = nic?.Source.Gateways.FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value));
+        return TextOr(gateway);
+    }
+
+    private static string TextOr(string? value)
+        => string.IsNullOrWhiteSpace(value) ? Dash : value.Trim();
 
     private static string SignalLabel(int quality)
     {
@@ -157,21 +158,6 @@ internal static class MonitorDetailCard
             return Dash;
         var bits = (long)decimal.Truncate(bandwidthBits);
         return bits <= 0 ? Dash : LinkSpeed.Format(bits);
-    }
-
-    private static string ConnectionType(AdapterRow nic)
-    {
-        if (!string.IsNullOrWhiteSpace(nic.Type) && !string.Equals(nic.Type, nic.Source.Type.ToString(), StringComparison.Ordinal))
-            return nic.Type;
-        return nic.Source.Type switch
-        {
-            NetworkInterfaceType.Ethernet or NetworkInterfaceType.GigabitEthernet => "Ethernet",
-            NetworkInterfaceType.Wireless80211 => "Wi-Fi",
-            NetworkInterfaceType.Loopback => "Loopback",
-            NetworkInterfaceType.Tunnel => "Tunnel",
-            NetworkInterfaceType.Ppp => "PPP",
-            _ => nic.Type
-        };
     }
 
     private static string DomainName(AdapterRow nic)
