@@ -42,10 +42,8 @@ internal static class MonitorChart
 
     private static (FrameworkElement? View, string Strip) Memory(MonitorRing ring)
     {
-        var total = MemoryInfo.Read();
-        double? yMax = total.IsOk && total.Value.TotalBytes > 0
-            ? total.Value.TotalBytes / 1073741824d
-            : null;
+        var total = MemoryInfo.Read().TotalBytes;
+        double? yMax = total.IsOk && total.Value > 0 ? total.Value / 1073741824d : null;
         return Pair(ring, Memory.CommittedBytes, Memory.AvailableMBytes, "Committed", "Available", "Memory", "GB", 1m / 1073741824m, 1m / 1024m, true, yMax);
     }
 
