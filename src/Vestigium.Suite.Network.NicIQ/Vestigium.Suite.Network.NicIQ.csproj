@@ -26,5 +26,8 @@
     <PackageReference Include="Vestigium.Helpers.PerfMon.Cpu" Version="$(VestigiumPerfMonCpuVersion)" />
     <PackageReference Include="Vestigium.Helpers.PerfMon.Memory" Version="$(VestigiumPerfMonMemoryVersion)" />
     <PackageReference Include="Vestigium.Helpers.PerfMon.Network" Version="$(VestigiumPerfMonVersion)" />
+    <PackageReference Include="Vestigium.Helpers.SystemInfo" Version="$(VestigiumSystemInfoVersion)" />
+    <PackageReference Include="Vestigium.Helpers.SystemInfo.Cpu" Version="$(VestigiumSystemInfoVersion)" />
+    <PackageReference Include="Vestigium.Helpers.SystemInfo.Memory" Version="$(VestigiumSystemInfoVersion)" />
   </ItemGroup>
 </Project>
