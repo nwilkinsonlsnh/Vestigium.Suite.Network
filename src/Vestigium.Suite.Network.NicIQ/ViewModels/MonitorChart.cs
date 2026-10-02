@@ -5,6 +5,7 @@ using Vestigium.Helpers.Charts;
 using Vestigium.Helpers.PerfMon.Cpu;
 using Vestigium.Helpers.PerfMon.Memory;
 using Vestigium.Helpers.PerfMon.Network;
+using MemoryInfo = Vestigium.Helpers.SystemInfo.Memory.MemoryFacts;
 
 namespace Vestigium.Suite.Network.NicIQ.ViewModels;
 
@@ -34,9 +35,18 @@ internal static class MonitorChart
             MonitorChartPages.Integrity => Integrity(ring),
             MonitorChartPages.Utilization => Utilization(ring),
             MonitorChartPages.Cpu => Pair(ring, Processor.PercentUserTime, Processor.PercentPrivilegedTime, "User", "Privileged", "CPU", "%", 1m, 1m, true),
-            MonitorChartPages.Memory => Pair(ring, Memory.CommittedBytes, Memory.AvailableMBytes, "Committed", "Available", "Memory", "GB", 1m / 1073741824m, 1m / 1024m, true),
+            MonitorChartPages.Memory => Memory(ring),
             _ => Pair(ring, NetworkInterface.BytesReceivedPerSec, NetworkInterface.BytesSentPerSec, "Receive", "Send", "Throughput", "Kbps", 8m / 1000m, 8m / 1000m, true)
         };
+    }
+
+    private static (FrameworkElement? View, string Strip) Memory(MonitorRing ring)
+    {
+        var total = MemoryInfo.Read();
+        double? yMax = total.IsOk && total.Value.TotalBytes > 0
+            ? total.Value.TotalBytes / 1073741824d
+            : null;
+        return Pair(ring, Memory.CommittedBytes, Memory.AvailableMBytes, "Committed", "Available", "Memory", "GB", 1m / 1073741824m, 1m / 1024m, true, yMax);
     }
 
     private static int PlotSeconds(int depth)
@@ -44,15 +54,36 @@ internal static class MonitorChart
 
     private static string TimeLabel(int seconds) => seconds + " s";
 
-    private static (FrameworkElement? View, string Strip) Pair(MonitorRing ring, string leftCounter, string rightCounter, string leftName, string rightName, string title, string yLabel, decimal scaleLeft, decimal scaleRight, bool rates)
+    private static (FrameworkElement? View, string Strip) Pair(
+        MonitorRing ring,
+        string leftCounter,
+        string rightCounter,
+        string leftName,
+        string rightName,
+        string title,
+        string yLabel,
+        decimal scaleLeft,
+        decimal scaleRight,
+        bool rates,
+        double? yMax = null)
     {
         var leftAll = Scale(ring.Of(leftCounter), scaleLeft);
         var rightAll = Scale(ring.Of(rightCounter), scaleRight);
         var span = PlotSeconds(Math.Max(leftAll.Count, rightAll.Count));
         var left = Window(leftAll, leftName, span);
         var right = Window(rightAll, rightName, span);
-        var options = Span(WithLimits(ChartTheme.Options(title, TimeLabel(span), yLabel), LimitsOf(leftAll), LimitsOf(rightAll)), span);
+        var options = PairColors(Span(WithLimits(ChartTheme.Options(title, TimeLabel(span), yLabel), LimitsOf(leftAll), LimitsOf(rightAll)), span));
+        if (yMax is > 0)
+            options = options with { YMin = 0, YMax = yMax };
         return Draw(left, right, SeriesOf(leftAll, leftName), SeriesOf(rightAll, rightName), leftName, rightName, options, rates);
+    }
+
+    private static ChartOptions PairColors(ChartOptions options)
+    {
+        var colors = options.SeriesColors;
+        if (colors is null || colors.Count < 3)
+            return options;
+        return options with { SeriesColors = [colors[1], colors[2]] };
     }
 
     private static (FrameworkElement? View, string Strip) Integrity(MonitorRing ring)
