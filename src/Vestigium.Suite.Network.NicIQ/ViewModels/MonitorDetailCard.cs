@@ -21,7 +21,7 @@ internal static class MonitorDetailCard
         MonitorRing ring)
     {
         ArgumentNullException.ThrowIfNull(ring);
-        return page switch
+        var built = page switch
         {
             MonitorChartPages.Cpu => Cpu(ring),
             MonitorChartPages.Memory => MemoryPage(ring),
@@ -30,6 +30,11 @@ internal static class MonitorDetailCard
             MonitorChartPages.Utilization => Utilization(nic, ring),
             _ => Network(nic, ring)
         };
+        if (page is MonitorChartPages.Cpu or MonitorChartPages.Memory)
+            return built;
+
+        var name = string.IsNullOrWhiteSpace(nic?.Name) ? "Network" : nic.Name.Trim();
+        return (name, built.Item2, built.Item3);
     }
 
     private static (string, string, IReadOnlyList<MonitorFactColumn>) Cpu(MonitorRing ring)
