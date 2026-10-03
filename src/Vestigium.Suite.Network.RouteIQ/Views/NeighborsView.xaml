@@ -22,9 +22,9 @@
     <Grid>
       <Grid.RowDefinitions>
         <RowDefinition Height="Auto" />
-        <RowDefinition Height="*" MaxHeight="280" />
+        <RowDefinition Height="360" />
         <RowDefinition Height="Auto" />
-        <RowDefinition Height="*" />
+        <RowDefinition Height="220" />
       </Grid.RowDefinitions>
 
       <TextBlock Grid.Row="0" Style="{StaticResource TextBlock.Caption}" Text="IPv4 Neighbor Cache" Margin="0,0,0,4" />
@@ -32,7 +32,7 @@
               BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
               BorderThickness="1"
               Margin="0,0,0,12"
-              MaxHeight="280">
+              Height="360">
         <DataGrid ItemsSource="{Binding Ipv4Neighbors}"
                   Style="{StaticResource DataGrid.Compact}"
                   IsReadOnly="True"
@@ -56,7 +56,7 @@
       <Border Grid.Row="3"
               BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
               BorderThickness="1"
-              MinHeight="180">
+              Height="220">
         <DataGrid ItemsSource="{Binding Ipv6Neighbors}"
                   Style="{StaticResource DataGrid.Compact}"
                   IsReadOnly="True"

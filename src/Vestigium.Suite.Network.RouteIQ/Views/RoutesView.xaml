@@ -22,9 +22,9 @@
     <Grid>
       <Grid.RowDefinitions>
         <RowDefinition Height="Auto" />
-        <RowDefinition Height="*" />
+        <RowDefinition Height="360" />
         <RowDefinition Height="Auto" />
-        <RowDefinition Height="*" />
+        <RowDefinition Height="220" />
       </Grid.RowDefinitions>
 
       <TextBlock Grid.Row="0"
@@ -35,7 +35,7 @@
               BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
               BorderThickness="1"
               Margin="0,0,0,12"
-              MinHeight="160">
+              Height="360">
         <DataGrid ItemsSource="{Binding Ipv4Routes}"
                   Style="{StaticResource DataGrid.Compact}"
                   IsReadOnly="True"
@@ -44,7 +44,8 @@
                   CanUserDeleteRows="False"
                   HeadersVisibility="Column"
                   VerticalScrollBarVisibility="Auto"
-                  HorizontalScrollBarVisibility="Auto">
+                  HorizontalScrollBarVisibility="Auto"
+                  ScrollViewer.VerticalScrollBarVisibility="Auto">
           <DataGrid.Columns>
             <DataGridTextColumn Header="Destination" Binding="{Binding Destination}" Width="160" />
             <DataGridTextColumn Header="PrefixLength" Binding="{Binding PrefixLength}" Width="100" />
@@ -65,7 +66,7 @@
       <Border Grid.Row="3"
               BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
               BorderThickness="1"
-              MinHeight="160">
+              Height="220">
         <DataGrid ItemsSource="{Binding Ipv6Routes}"
                   Style="{StaticResource DataGrid.Compact}"
                   IsReadOnly="True"
@@ -74,7 +75,8 @@
                   CanUserDeleteRows="False"
                   HeadersVisibility="Column"
                   VerticalScrollBarVisibility="Auto"
-                  HorizontalScrollBarVisibility="Auto">
+                  HorizontalScrollBarVisibility="Auto"
+                  ScrollViewer.VerticalScrollBarVisibility="Auto">
           <DataGrid.Columns>
             <DataGridTextColumn Header="Destination" Binding="{Binding Destination}" Width="220" />
             <DataGridTextColumn Header="PrefixLength" Binding="{Binding PrefixLength}" Width="100" />
