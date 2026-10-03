@@ -53,14 +53,14 @@
                     HorizontalScrollBarVisibility="Auto"
                     ScrollViewer.VerticalScrollBarVisibility="Auto">
             <DataGrid.Columns>
-              <DataGridTextColumn Header="Destination" Binding="{Binding Destination}" Width="160" />
-              <DataGridTextColumn Header="PrefixLength" Binding="{Binding PrefixLength}" Width="100" />
+              <DataGridTextColumn Header="Destination" Binding="{Binding Destination}" Width="220" />
+              <DataGridTextColumn Header="PrefixLength" Binding="{Binding PrefixLength}" Width="110" />
               <DataGridTextColumn Header="Mask" Binding="{Binding Mask}" Width="140" />
-              <DataGridTextColumn Header="Gateway" Binding="{Binding Gateway}" Width="160" />
-              <DataGridTextColumn Header="InterfaceName" Binding="{Binding InterfaceName}" Width="140" />
-              <DataGridTextColumn Header="InterfaceIndex" Binding="{Binding InterfaceIndex}" Width="110" />
+              <DataGridTextColumn Header="Gateway" Binding="{Binding Gateway}" Width="180" />
+              <DataGridTextColumn Header="InterfaceName" Binding="{Binding InterfaceName}" Width="160" />
+              <DataGridTextColumn Header="InterfaceIndex" Binding="{Binding InterfaceIndex}" Width="120" />
               <DataGridTextColumn Header="Metric" Binding="{Binding Metric}" Width="80" />
-              <DataGridTextColumn Header="Protocol" Binding="{Binding Protocol}" Width="*" />
+              <DataGridTextColumn Header="Protocol" Binding="{Binding Protocol}" Width="100" />
             </DataGrid.Columns>
           </DataGrid>
         </Grid>
@@ -90,13 +90,13 @@
                     ScrollViewer.VerticalScrollBarVisibility="Auto">
             <DataGrid.Columns>
               <DataGridTextColumn Header="Destination" Binding="{Binding Destination}" Width="220" />
-              <DataGridTextColumn Header="PrefixLength" Binding="{Binding PrefixLength}" Width="100" />
+              <DataGridTextColumn Header="PrefixLength" Binding="{Binding PrefixLength}" Width="110" />
               <DataGridTextColumn Header="Mask" Binding="{Binding Mask}" Width="140" />
               <DataGridTextColumn Header="Gateway" Binding="{Binding Gateway}" Width="180" />
-              <DataGridTextColumn Header="InterfaceName" Binding="{Binding InterfaceName}" Width="140" />
-              <DataGridTextColumn Header="InterfaceIndex" Binding="{Binding InterfaceIndex}" Width="110" />
+              <DataGridTextColumn Header="InterfaceName" Binding="{Binding InterfaceName}" Width="160" />
+              <DataGridTextColumn Header="InterfaceIndex" Binding="{Binding InterfaceIndex}" Width="120" />
               <DataGridTextColumn Header="Metric" Binding="{Binding Metric}" Width="80" />
-              <DataGridTextColumn Header="Protocol" Binding="{Binding Protocol}" Width="*" />
+              <DataGridTextColumn Header="Protocol" Binding="{Binding Protocol}" Width="100" />
             </DataGrid.Columns>
           </DataGrid>
         </Grid>
