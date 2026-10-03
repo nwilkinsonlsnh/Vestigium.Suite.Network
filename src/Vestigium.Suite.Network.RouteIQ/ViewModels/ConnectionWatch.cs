@@ -77,7 +77,7 @@ public sealed partial class MainViewModel
     {
         var batch = Interlocked.Increment(ref _batch);
         ConnectionSummary = "Reading connections.";
-        var rows = await Task.Run(NetworkHelper.GetConnections).ConfigureAwait(true);
+        var rows = await Task.Run(() => NetworkHelper.GetConnections()).ConfigureAwait(true);
         if (batch != _batch)
             return;
         var now = DateTime.UtcNow;
@@ -123,7 +123,7 @@ public sealed partial class MainViewModel
         {
             Connections.Add(rows[i]);
             if (i > 0 && i % 40 == 0)
-                await System.Windows.Application.Current.Dispatcher.Yield(DispatcherPriority.Background);
+                await System.Windows.Application.Current.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.Background);
         }
 
         var added = 0;
