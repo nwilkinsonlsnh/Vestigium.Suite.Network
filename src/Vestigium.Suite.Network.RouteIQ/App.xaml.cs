@@ -65,7 +65,10 @@ public partial class App : Application
         var store = new RouteIqSettingsStore(RouteIqSettingsStore.DefaultRoot);
         var session = new RouteIqSession(store, Themes, chrome);
         var settings = new SettingsViewModel(Themes, chrome) { Session = session };
-        var host = new MainViewModel();
+        var host = new MainViewModel
+        {
+            ReportStatus = text => chrome.Status.Message = text
+        };
         session.Attach(settings);
 
         var routes = window.HostShell["Routes"];
@@ -84,7 +87,7 @@ public partial class App : Application
             settingsItem.Content = new SettingsView { DataContext = settings };
 
         window.Closed += (_, _) => session.Save();
-        chrome.Status.Message = "Idle";
+        chrome.Status.Message = string.Empty;
         return window;
     }
 }

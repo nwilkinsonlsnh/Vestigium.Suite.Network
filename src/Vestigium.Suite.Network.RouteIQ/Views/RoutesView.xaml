@@ -2,41 +2,44 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              Background="{DynamicResource Vestigium.Brushes.Surface.Window}">
-  <DockPanel Margin="16">
-    <StackPanel DockPanel.Dock="Top" Margin="0,0,0,12">
-      <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-        <TextBlock Text="Family" VerticalAlignment="Center" Margin="0,0,8,0" />
-        <ComboBox Width="120"
-                  Style="{StaticResource ComboBox.Standard}"
-                  ItemsSource="{Binding Families}"
-                  SelectedItem="{Binding Family}"
-                  Margin="0,0,16,0" />
-        <Button Content="Refresh"
-                Style="{StaticResource Button.Primary}"
-                Command="{Binding RefreshCommand}"
-                Padding="16,4" />
-      </StackPanel>
-      <TextBlock Text="{Binding Status}" />
+  <Grid Margin="16,12,16,16">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+    </Grid.RowDefinitions>
+    <StackPanel Style="{StaticResource StackPanel.Toolbar}" Orientation="Horizontal" Margin="0,0,0,12">
+      <Label Style="{StaticResource Label.Standard}" Content="Family" VerticalAlignment="Center" Margin="0,0,8,0" />
+      <ComboBox Width="120"
+                Style="{StaticResource ComboBox.Standard}"
+                ItemsSource="{Binding Families}"
+                SelectedItem="{Binding Family}"
+                Margin="0,0,16,0" />
+      <Button Content="Refresh"
+              Style="{StaticResource Button.Primary}"
+              Command="{Binding RefreshCommand}"
+              Padding="16,4" />
     </StackPanel>
-    <DataGrid ItemsSource="{Binding Routes}"
-              Style="{StaticResource DataGrid.Compact}"
-              IsReadOnly="True"
-              AutoGenerateColumns="False"
-              CanUserAddRows="False"
-              CanUserDeleteRows="False"
-              HeadersVisibility="Column"
-              VerticalScrollBarVisibility="Auto"
-              HorizontalScrollBarVisibility="Auto">
-      <DataGrid.Columns>
-        <DataGridTextColumn Header="Destination" Binding="{Binding Destination}" Width="160" />
-        <DataGridTextColumn Header="PrefixLength" Binding="{Binding PrefixLength}" Width="100" />
-        <DataGridTextColumn Header="Mask" Binding="{Binding Mask}" Width="120" />
-        <DataGridTextColumn Header="Gateway" Binding="{Binding Gateway}" Width="160" />
-        <DataGridTextColumn Header="InterfaceName" Binding="{Binding InterfaceName}" Width="140" />
-        <DataGridTextColumn Header="InterfaceIndex" Binding="{Binding InterfaceIndex}" Width="110" />
-        <DataGridTextColumn Header="Metric" Binding="{Binding Metric}" Width="80" />
-        <DataGridTextColumn Header="Protocol" Binding="{Binding Protocol}" Width="*" />
-      </DataGrid.Columns>
-    </DataGrid>
-  </DockPanel>
+    <Border Grid.Row="1" BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
+      <DataGrid ItemsSource="{Binding Routes}"
+                Style="{StaticResource DataGrid.Compact}"
+                IsReadOnly="True"
+                AutoGenerateColumns="False"
+                CanUserAddRows="False"
+                CanUserDeleteRows="False"
+                HeadersVisibility="Column"
+                VerticalScrollBarVisibility="Auto"
+                HorizontalScrollBarVisibility="Auto">
+        <DataGrid.Columns>
+          <DataGridTextColumn Header="Destination" Binding="{Binding Destination}" Width="160" />
+          <DataGridTextColumn Header="PrefixLength" Binding="{Binding PrefixLength}" Width="100" />
+          <DataGridTextColumn Header="Mask" Binding="{Binding Mask}" Width="120" />
+          <DataGridTextColumn Header="Gateway" Binding="{Binding Gateway}" Width="160" />
+          <DataGridTextColumn Header="InterfaceName" Binding="{Binding InterfaceName}" Width="140" />
+          <DataGridTextColumn Header="InterfaceIndex" Binding="{Binding InterfaceIndex}" Width="110" />
+          <DataGridTextColumn Header="Metric" Binding="{Binding Metric}" Width="80" />
+          <DataGridTextColumn Header="Protocol" Binding="{Binding Protocol}" Width="*" />
+        </DataGrid.Columns>
+      </DataGrid>
+    </Border>
+  </Grid>
 </UserControl>

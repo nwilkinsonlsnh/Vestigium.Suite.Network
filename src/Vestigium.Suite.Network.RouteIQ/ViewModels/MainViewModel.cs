@@ -19,8 +19,7 @@ public sealed partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private string _family = "All";
 
-    [ObservableProperty]
-    private string _status = "Idle";
+    public Action<string>? ReportStatus { get; set; }
 
     public MainViewModel() => _ = Refresh();
 
@@ -32,23 +31,23 @@ public sealed partial class MainViewModel : ObservableObject
 
         if (!RouteIqInput.TryMapFamily(Family, out var family, out var reason))
         {
-            Status = $"Failed: {reason}";
+            Report(reason ?? "Family must be All, IPv4, or IPv6.");
             return;
         }
 
         _busy = true;
         RefreshCommand.NotifyCanExecuteChanged();
-        Status = "Running";
+        Report(string.Empty);
         try
         {
             var snapshot = await Task.Run(() => Load(family)).ConfigureAwait(true);
             Replace(Routes, snapshot.Routes);
             Replace(Neighbors, snapshot.Neighbors);
-            Status = "Idle";
+            Report(string.Empty);
         }
         catch (Exception ex)
         {
-            Status = $"Failed: {ex.Message}";
+            Report(ex.Message);
         }
         finally
         {
@@ -58,6 +57,8 @@ public sealed partial class MainViewModel : ObservableObject
     }
 
     private bool CanRefresh() => !_busy;
+
+    private void Report(string text) => ReportStatus?.Invoke(text);
 
     private static (IReadOnlyList<NetworkRoute> Routes, IReadOnlyList<NetworkNeighbor> Neighbors) Load(RouteFamily family)
     {
