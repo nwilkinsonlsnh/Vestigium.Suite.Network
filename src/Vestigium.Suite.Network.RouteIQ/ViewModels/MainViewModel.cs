@@ -12,6 +12,7 @@ namespace Vestigium.Suite.Network.RouteIQ.ViewModels;
 
 public sealed partial class MainViewModel : ObservableObject
 {
+    private const string NoValue = "--";
     private const int OuiGapMs = 1200;
     private bool _busy;
     private readonly SemaphoreSlim _ouiPace = new(1, 1);
@@ -101,18 +102,18 @@ public sealed partial class MainViewModel : ObservableObject
         return rows.Select(row =>
         {
             if (!CanLookup(row.MacAddress))
-                return new NeighborGridRow(row, null);
+                return new NeighborGridRow(row, NoValue, NoValue);
             var hit = NetworkHelper.LookupOuiPacked(row.MacAddress!);
             if (string.IsNullOrWhiteSpace(hit.Vendor))
-                return new NeighborGridRow(row, null);
-            return new NeighborGridRow(row with { Vendor = hit.Vendor }, hit.Vendor);
+                return new NeighborGridRow(row, NoValue, NoValue);
+            return new NeighborGridRow(row with { Vendor = hit.Vendor }, hit.Vendor, NoValue);
         }).ToArray();
     }
 
     private async Task<string> ResolveLiveVendors()
     {
         var pending = Ipv4Neighbors.Concat(Ipv6Neighbors)
-            .Where(row => string.IsNullOrWhiteSpace(row.VendorText) && CanLookup(row.MacAddress))
+            .Where(row => row.VendorText == NoValue && CanLookup(row.MacAddress))
             .GroupBy(row => Oui(row.MacAddress!), StringComparer.OrdinalIgnoreCase)
             .Select(group => group.First())
             .ToArray();
@@ -193,16 +194,14 @@ public sealed partial class MainViewModel : ObservableObject
             {
                 var target = EchoTarget(row);
                 var result = await NetworkHelper.Ping(target, options).RunAsync().ConfigureAwait(false);
-                var reply = result.Replies.FirstOrDefault();
                 var rtt = result.Received > 0 && result.AverageMs is not null
                     ? Math.Round(result.AverageMs.Value).ToString(CultureInfo.InvariantCulture)
-                    : "--";
-                var hops = reply is null ? "--" : EstimateHops(reply.Ttl).ToString(CultureInfo.InvariantCulture);
-                await Application.Current.Dispatcher.InvokeAsync(() => StampProbe(row.Address, rtt, hops));
+                    : NoValue;
+                await Application.Current.Dispatcher.InvokeAsync(() => StampProbe(row.Address, rtt));
             }
             catch (Exception)
             {
-                await Application.Current.Dispatcher.InvokeAsync(() => StampProbe(row.Address, "--", "--"));
+                await Application.Current.Dispatcher.InvokeAsync(() => StampProbe(row.Address, NoValue));
             }
             finally
             {
@@ -217,14 +216,6 @@ public sealed partial class MainViewModel : ObservableObject
         if (IPAddress.TryParse(row.Address, out var ip) && ip.IsIPv6LinkLocal && row.InterfaceIndex is > 0)
             return row.Address + "%" + row.InterfaceIndex.Value.ToString(CultureInfo.InvariantCulture);
         return row.Address;
-    }
-
-    private static int EstimateHops(int ttl)
-    {
-        if (ttl <= 0)
-            return 0;
-        var origin = ttl <= 64 ? 64 : ttl <= 128 ? 128 : 255;
-        return Math.Max(0, origin - ttl);
     }
 
     private async Task PaceOuiSend()
@@ -251,24 +242,24 @@ public sealed partial class MainViewModel : ObservableObject
             if (!string.Equals(Oui(row.MacAddress), oui, StringComparison.OrdinalIgnoreCase))
                 continue;
             var source = string.IsNullOrWhiteSpace(vendor) ? row.Source with { Vendor = null } : row.Source with { Vendor = vendor };
-            rows[i] = new NeighborGridRow(source, string.IsNullOrWhiteSpace(vendor) ? "--" : vendor, row.RttMs, row.Hops);
+            rows[i] = new NeighborGridRow(source, string.IsNullOrWhiteSpace(vendor) ? NoValue : vendor, row.RttMs, row.Hops);
         }
     }
 
-    private void StampProbe(string address, string rtt, string hops)
+    private void StampProbe(string address, string rtt)
     {
-        StampProbe(Ipv4Neighbors, address, rtt, hops);
-        StampProbe(Ipv6Neighbors, address, rtt, hops);
+        StampProbe(Ipv4Neighbors, address, rtt);
+        StampProbe(Ipv6Neighbors, address, rtt);
     }
 
-    private static void StampProbe(ObservableCollection<NeighborGridRow> rows, string address, string rtt, string hops)
+    private static void StampProbe(ObservableCollection<NeighborGridRow> rows, string address, string rtt)
     {
         for (var i = 0; i < rows.Count; i++)
         {
             var row = rows[i];
             if (!string.Equals(row.Address, address, StringComparison.OrdinalIgnoreCase))
                 continue;
-            rows[i] = row with { RttMs = rtt, Hops = hops };
+            rows[i] = row with { RttMs = string.IsNullOrWhiteSpace(rtt) ? NoValue : rtt };
         }
     }
 
@@ -345,7 +336,7 @@ public sealed partial class MainViewModel : ObservableObject
         if (text.Length > 0)
             text.AppendLine();
         text.AppendLine(title);
-        text.AppendLine("Address              MAC                Interface            State            Multicast  Vendor               RTT   Hops");
+        text.AppendLine("Address              MAC                Interface            State            Multicast  Vendor               RTT");
         foreach (var row in rows)
         {
             text.Append(Pad(row.Address, 21));
@@ -354,8 +345,7 @@ public sealed partial class MainViewModel : ObservableObject
             text.Append(Pad(row.State, 17));
             text.Append(Pad(row.IsMulticast ? "True" : "False", 11));
             text.Append(Pad(row.VendorText, 21));
-            text.Append(Pad(row.RttMs, 6));
-            text.AppendLine(row.Hops);
+            text.AppendLine(row.RttMs);
         }
 
         if (rows.Count == 0)
@@ -386,7 +376,7 @@ public sealed partial class MainViewModel : ObservableObject
 
     private static string Pad(string? value, int width)
     {
-        var text = value ?? string.Empty;
+        var text = value ?? NoValue;
         return text.Length >= width ? text + " " : text.PadRight(width);
     }
 
