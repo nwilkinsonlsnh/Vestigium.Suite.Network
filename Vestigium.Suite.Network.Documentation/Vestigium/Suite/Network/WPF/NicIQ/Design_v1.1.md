@@ -1,17 +1,17 @@
 # NicIQ — Design v1.1
 
-**Companion:** [Requirements_v1.1.md](Requirements_v1.1.md)  
+**Companion:** [Requirements_v1.2.md](Requirements_v1.2.md)  
 **Baseline:** [Design_v1.0.md](Design_v1.0.md)  
 **Project:** `src/Vestigium.Suite.Network.NicIQ`  
 **Date:** 2 October 2026
 
-v1.0 types remain. This file adds the types from the details and menu work.
+v1.0 types remain. This file adds the types from the details and menu work. Requirements v1.1 stays the monitoring slice.
 
 ## Window
 
 `NicIqWindow` hosts File and View. View groups are status-bar visibility, dock top or bottom, Adapter details and System details, then Theme. Dividers use a local `MenuDividerTemplate` (`#9AA8B8`) so the line still paints when menu chrome's implicit separator hides `Separator.Menu`.
 
-Monitoring charts live on `MonitorChart`. Memory is in-use and available, scaled to installed RAM.
+Monitoring charts live on `MonitorChart`. Memory is in-use and available, scaled to installed RAM. Throughput, packets, and CPU user/privileged each use two colors.
 
 ## Types
 
@@ -49,4 +49,4 @@ Hotfixes. DirectX acceleration flags. A second menu divider owned by the host af
 | Version | Date | Change |
 |---|---|---|
 | 1.0 | 24 Sep 2026 | List, detail, watch. Kept as [Design_v1.0.md](Design_v1.0.md). |
-| 1.1 | 2 Oct 2026 | System details, page file, memory chart, View menu. |
+| 1.1 | 2 Oct 2026 | System details, page file, memory chart, View menu. Companion is requirements v1.2. |
