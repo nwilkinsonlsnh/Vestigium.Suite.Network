@@ -4,7 +4,7 @@
              Background="{DynamicResource Vestigium.Brushes.Surface.Window}">
   <StackPanel HorizontalAlignment="Left" VerticalAlignment="Top" Width="420" Margin="20,12,0,0">
     <TextBlock Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap" Margin="0,0,0,16"
-               Text="Palette is saved under ProgramData\Vestigium\Settings\Diagnostics\RouteIQ." />
+               Text="Palette and the OUI pool are saved under ProgramData\Vestigium\Settings\Diagnostics\RouteIQ." />
     <Label Style="{StaticResource Label.Standard}" Content="Palette" />
     <ComboBox Style="{StaticResource ComboBox.Standard}"
               ItemsSource="{Binding Themes}"
@@ -12,6 +12,13 @@
               SelectedValuePath="Id"
               SelectedValue="{Binding SelectedThemeId, Mode=TwoWay}"
               Margin="0,0,0,16" />
+    <Label Style="{StaticResource Label.Standard}" Content="OUI lookup pool" />
+    <ComboBox Style="{StaticResource ComboBox.Standard}"
+              ItemsSource="{Binding OuiPoolSizes}"
+              SelectedItem="{Binding OuiPoolSize}"
+              Margin="0,0,0,8" />
+    <TextBlock Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap" Margin="0,0,0,16"
+               Text="How many vendor lookups run at once. A finished call fills that row and starts the next prefix." />
     <CheckBox Style="{StaticResource CheckBox.Standard}"
               Content="Status bar visible"
               IsChecked="{Binding BarVisible}"

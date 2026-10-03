@@ -67,7 +67,8 @@ public partial class App : Application
         var settings = new SettingsViewModel(Themes, chrome) { Session = session };
         var host = new MainViewModel
         {
-            ReportStatus = text => chrome.Status.Message = text
+            ReportStatus = text => chrome.Status.Message = text,
+            OuiPoolSize = () => session.OuiPoolSize
         };
         session.Attach(settings);
 

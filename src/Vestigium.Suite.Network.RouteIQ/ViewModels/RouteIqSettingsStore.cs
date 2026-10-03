@@ -8,6 +8,7 @@ public sealed class RouteIqSettings
     public string? ThemeId { get; set; }
     public bool StatusBarVisible { get; set; } = true;
     public string StatusBarDock { get; set; } = "Bottom";
+    public int OuiPoolSize { get; set; } = 10;
 }
 
 public sealed class RouteIqSettingsStore

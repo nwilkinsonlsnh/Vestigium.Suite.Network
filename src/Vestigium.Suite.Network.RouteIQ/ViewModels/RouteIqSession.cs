@@ -23,6 +23,8 @@ public sealed class RouteIqSession
 
     public RouteIqSettings Current { get; private set; }
 
+    public int OuiPoolSize => Current.OuiPoolSize is >= 1 and <= 20 ? Current.OuiPoolSize : 10;
+
     public void Attach(SettingsViewModel settings)
     {
         _settings = settings;
@@ -41,7 +43,8 @@ public sealed class RouteIqSession
         {
             ThemeId = _settings.SelectedThemeId,
             StatusBarVisible = _settings.BarVisible,
-            StatusBarDock = _settings.BarPosition == VestigiumStatusBarPosition.Top ? "Top" : "Bottom"
+            StatusBarDock = _settings.BarPosition == VestigiumStatusBarPosition.Top ? "Top" : "Bottom",
+            OuiPoolSize = _settings.OuiPoolSize is >= 1 and <= 20 ? _settings.OuiPoolSize : 10
         };
         _store.Save(Current);
     }

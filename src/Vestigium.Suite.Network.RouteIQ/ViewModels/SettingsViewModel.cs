@@ -39,6 +39,8 @@ public sealed partial class SettingsViewModel : ObservableObject
         VestigiumStatusBarPosition.Top
     ];
 
+    public IReadOnlyList<int> OuiPoolSizes { get; } = [1, 2, 5, 10, 15, 20];
+
     [ObservableProperty]
     private string? _selectedThemeId;
 
@@ -47,6 +49,9 @@ public sealed partial class SettingsViewModel : ObservableObject
 
     [ObservableProperty]
     private bool _barVisible;
+
+    [ObservableProperty]
+    private int _ouiPoolSize = 10;
 
     public void BeginLoad() => _loading = true;
 
@@ -59,6 +64,7 @@ public sealed partial class SettingsViewModel : ObservableObject
             ? VestigiumStatusBarPosition.Top
             : VestigiumStatusBarPosition.Bottom;
         BarVisible = data.StatusBarVisible;
+        OuiPoolSize = data.OuiPoolSize is >= 1 and <= 20 ? data.OuiPoolSize : 10;
     }
 
     partial void OnSelectedThemeIdChanged(string? value)
@@ -85,6 +91,8 @@ public sealed partial class SettingsViewModel : ObservableObject
         _chrome.ShowStatusBar = value;
         Persist();
     }
+
+    partial void OnOuiPoolSizeChanged(int value) => Persist();
 
     private void Persist()
     {
