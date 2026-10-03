@@ -13,6 +13,8 @@ namespace Vestigium.Suite.Network.RouteIQ.ViewModels;
 public sealed partial class MainViewModel : ObservableObject
 {
     private bool _busy;
+    private readonly SemaphoreSlim _ouiPace = new(1, 1);
+    private DateTime _ouiSentAt = DateTime.UtcNow.AddSeconds(-1);
 
     public ObservableCollection<NetworkRoute> Ipv4Routes { get; } = [];
 
@@ -134,6 +136,7 @@ public sealed partial class MainViewModel : ObservableObject
         if (pool < 1) pool = 1;
         if (pool > 20) pool = 20;
         var misses = new List<string>();
+        var filled = 0;
         var options = new OuiLookupOptions { Timeout = TimeSpan.FromSeconds(8) };
         using var slots = new SemaphoreSlim(pool, pool);
         var tasks = pending.Select(async sample =>
@@ -143,6 +146,7 @@ public sealed partial class MainViewModel : ObservableObject
             {
                 var mac = sample.MacAddress!;
                 var oui = Oui(mac);
+                await PaceOuiSend().ConfigureAwait(false);
                 var hit = await NetworkHelper.LookupOuiAsync(mac, options).ConfigureAwait(false);
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
@@ -150,15 +154,22 @@ public sealed partial class MainViewModel : ObservableObject
                         misses.Add(oui);
                     else
                     {
+                        filled++;
                         Stamp(Ipv4Neighbors, oui, hit.Vendor);
                         Stamp(Ipv6Neighbors, oui, hit.Vendor);
                     }
+
+                    Report($"OUI {filled} filled, {misses.Count} missed");
                 });
             }
             catch (Exception ex)
             {
                 var oui = Oui(sample.MacAddress);
-                await Application.Current.Dispatcher.InvokeAsync(() => misses.Add(oui + " " + ex.Message));
+                await Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    misses.Add(oui + " " + ex.Message);
+                    Report($"OUI {filled} filled, {misses.Count} missed");
+                });
             }
             finally
             {
@@ -168,6 +179,22 @@ public sealed partial class MainViewModel : ObservableObject
 
         await Task.WhenAll(tasks).ConfigureAwait(true);
         Report(misses.Count == 0 ? string.Empty : "OUI miss: " + string.Join(", ", misses));
+    }
+
+    private async Task PaceOuiSend()
+    {
+        await _ouiPace.WaitAsync().ConfigureAwait(false);
+        try
+        {
+            var wait = 1000 - (int)(DateTime.UtcNow - _ouiSentAt).TotalMilliseconds;
+            if (wait > 0)
+                await Task.Delay(wait).ConfigureAwait(false);
+            _ouiSentAt = DateTime.UtcNow;
+        }
+        finally
+        {
+            _ouiPace.Release();
+        }
     }
 
     private static void Stamp(ObservableCollection<NetworkNeighbor> rows, string oui, string vendor)
