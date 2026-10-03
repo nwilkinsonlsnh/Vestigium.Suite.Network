@@ -1,4 +1,6 @@
 using System.Collections.ObjectModel;
+using System.Net;
+using System.Net.Sockets;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -117,7 +119,12 @@ public sealed partial class MainViewModel
     private async Task Paint()
     {
         var now = DateTime.UtcNow;
-        var rows = _slots.Values.Select(slot => ToGrid(slot, now)).OrderBy(row => Rank(row.Change)).ThenBy(row => row.LocalPort).ToArray();
+        var rows = _slots.Values
+            .Select(slot => ToGrid(slot, now))
+            .OrderBy(row => AddressKey(row.LocalAddress), Comparer<byte[]>.Create(CompareAddress))
+            .ThenBy(row => row.LocalPort)
+            .ThenBy(row => AddressKey(row.RemoteAddress), Comparer<byte[]>.Create(CompareAddress))
+            .ToArray();
         Connections.Clear();
         for (var i = 0; i < rows.Length; i++)
         {
@@ -151,7 +158,30 @@ public sealed partial class MainViewModel
         return new ConnectionGridRow(change, slot.Row.Protocol.ToString(), slot.Row.LocalAddress, slot.Row.LocalPort, remote, remotePort, slot.Row.State ?? "--", process, time, slot.Returns);
     }
 
-    private static int Rank(string change) => change switch { "Added" => 0, "Returned" => 1, "Dropped" => 2, _ => 3 };
+    private static byte[] AddressKey(string? text)
+    {
+        if (!IPAddress.TryParse(text, out var address))
+            return [0xFF];
+        if (address.AddressFamily == AddressFamily.InterNetworkV6 && address.IsIPv4MappedToIPv6)
+            address = address.MapToIPv4();
+        return address.GetAddressBytes();
+    }
+
+    private static int CompareAddress(byte[] left, byte[] right)
+    {
+        var family = left.Length.CompareTo(right.Length);
+        if (family != 0)
+            return family;
+        var count = Math.Min(left.Length, right.Length);
+        for (var i = 0; i < count; i++)
+        {
+            var diff = left[i].CompareTo(right[i]);
+            if (diff != 0)
+                return diff;
+        }
+
+        return 0;
+    }
 
     private static string Key(NetworkConnection row)
         => row.Protocol + "|" + row.LocalAddress + "|" + row.LocalPort + "|" + row.RemoteAddress + "|" + row.RemotePort + "|" + row.ProcessId;
