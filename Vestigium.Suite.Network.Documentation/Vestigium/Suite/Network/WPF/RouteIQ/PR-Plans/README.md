@@ -2,7 +2,7 @@
 
 **Host:** `Vestigium.Suite.Network.RouteIQ`  
 **APPID:** `RouteIQ`  
-**Status:** No current implementation plan.
+**Status:** Live — [PR01 -- Implementation Plan](PR01/PR01%20--%20Implementation%20Plan.md)
 
 This file is the queue keeper. It is not the plan. Do not delete it when the plan is idle.
 
