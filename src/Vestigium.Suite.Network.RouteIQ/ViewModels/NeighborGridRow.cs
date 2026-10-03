@@ -2,7 +2,7 @@ using Vestigium.Helpers.Network;
 
 namespace Vestigium.Suite.Network.RouteIQ.ViewModels;
 
-public sealed record NeighborGridRow(NetworkNeighbor Source, string? VendorText, string? PingText = null)
+public sealed record NeighborGridRow(NetworkNeighbor Source, string? VendorText, string? RttMs = null, string? Hops = null)
 {
     public string Address => Source.Address;
     public string? MacAddress => Source.MacAddress;
