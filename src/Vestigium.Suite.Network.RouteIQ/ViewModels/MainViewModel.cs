@@ -43,7 +43,6 @@ public sealed partial class MainViewModel : ObservableObject
             Replace(Ipv4Neighbors, ApplyPacked(snapshot.Ipv4Neighbors));
             Replace(Ipv6Neighbors, ApplyPacked(snapshot.Ipv6Neighbors));
             await ResolveLiveVendors().ConfigureAwait(true);
-            Report(string.Empty);
         }
         catch (Exception ex)
         {
@@ -120,16 +119,41 @@ public sealed partial class MainViewModel : ObservableObject
     {
         var pending = Ipv4Neighbors.Concat(Ipv6Neighbors)
             .Where(row => string.IsNullOrWhiteSpace(row.Vendor) && CanLookup(row.MacAddress))
-            .GroupBy(row => Oui(row.MacAddress!), StringComparer.OrdinalIgnoreCase)
+            .Select(row => Oui(row.MacAddress!))
+            .Where(oui => oui.Length > 0)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
-        foreach (var group in pending)
+        if (pending.Length == 0)
         {
-            var hit = await NetworkHelper.LookupOuiAsync(group.Key).ConfigureAwait(true);
-            if (string.IsNullOrWhiteSpace(hit.Vendor))
-                continue;
-            Stamp(Ipv4Neighbors, group.Key, hit.Vendor);
-            Stamp(Ipv6Neighbors, group.Key, hit.Vendor);
+            Report(string.Empty);
+            return;
         }
+
+        var misses = new List<string>();
+        var options = new OuiLookupOptions { Timeout = TimeSpan.FromSeconds(8) };
+        foreach (var oui in pending)
+        {
+            Report($"OUI {oui}");
+            try
+            {
+                var hit = await NetworkHelper.LookupOuiAsync(oui, options).ConfigureAwait(true);
+                if (string.IsNullOrWhiteSpace(hit.Vendor))
+                    misses.Add(oui);
+                else
+                {
+                    Stamp(Ipv4Neighbors, oui, hit.Vendor);
+                    Stamp(Ipv6Neighbors, oui, hit.Vendor);
+                }
+            }
+            catch (Exception ex)
+            {
+                misses.Add(oui + " " + ex.Message);
+            }
+
+            await Task.Delay(1100).ConfigureAwait(true);
+        }
+
+        Report(misses.Count == 0 ? string.Empty : "OUI miss: " + string.Join(", ", misses));
     }
 
     private static void Stamp(ObservableCollection<NetworkNeighbor> rows, string oui, string vendor)
