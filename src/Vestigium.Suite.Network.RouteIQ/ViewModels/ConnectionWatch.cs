@@ -10,7 +10,7 @@ namespace Vestigium.Suite.Network.RouteIQ.ViewModels;
 
 public sealed partial class MainViewModel
 {
-    private readonly Dictionary<string, List<WatchSlot>> _slots = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, WatchSlot> _slots = new(StringComparer.OrdinalIgnoreCase);
     private CancellationTokenSource? _watch;
     private int _batch;
 
@@ -85,7 +85,7 @@ public sealed partial class MainViewModel
         var now = DateTime.UtcNow;
         _slots.Clear();
         foreach (var row in rows)
-            _slots[Key(row)] = [new WatchSlot(row, now, now, "Open")];
+            _slots[Key(row)] = new WatchSlot(row, now, now, "Open");
         await Paint().ConfigureAwait(true);
     }
 
@@ -97,33 +97,23 @@ public sealed partial class MainViewModel
         {
             var key = Key(row);
             seen.Add(key);
-            if (!_slots.TryGetValue(key, out var list))
+            if (!_slots.TryGetValue(key, out var slot))
             {
-                _slots[key] = [new WatchSlot(row, now, now, "Added")];
+                _slots[key] = new WatchSlot(row, now, now, "Added");
                 continue;
             }
 
-            var active = list.FindIndex(slot => slot.Change != "Dropped");
-            if (active >= 0)
-            {
-                var slot = list[active];
-                list[active] = slot with { Row = row, LastSeen = now };
-                continue;
-            }
-
-            list.Add(new WatchSlot(row, now, now, "Returned"));
+            var change = slot.Change == "Dropped" ? "Reopened" : slot.Change;
+            var started = change == "Reopened" && slot.Change == "Dropped" ? now : slot.FirstSeen;
+            _slots[key] = slot with { Row = row, FirstSeen = started, LastSeen = now, Change = change };
         }
 
-        foreach (var key in _slots.Keys)
+        foreach (var key in _slots.Keys.ToArray())
         {
-            if (seen.Contains(key))
+            if (seen.Contains(key) || _slots[key].Change == "Dropped")
                 continue;
-            var list = _slots[key];
-            var active = list.FindIndex(slot => slot.Change != "Dropped");
-            if (active < 0)
-                continue;
-            var slot = list[active];
-            list[active] = slot with { Change = "Dropped", LastSeen = now };
+            var slot = _slots[key];
+            _slots[key] = slot with { Change = "Dropped", LastSeen = now };
         }
     }
 
@@ -131,7 +121,6 @@ public sealed partial class MainViewModel
     {
         var now = DateTime.UtcNow;
         var rows = _slots.Values
-            .SelectMany(list => list)
             .Select(slot => ToGrid(slot, now))
             .OrderBy(row => ConnectionAddressKey(row.LocalAddress), Comparer<byte[]>.Create(CompareConnectionAddress))
             .ThenBy(row => row.LocalPort)
@@ -148,16 +137,16 @@ public sealed partial class MainViewModel
         var open = 0;
         var added = 0;
         var dropped = 0;
-        var returned = 0;
+        var reopened = 0;
         foreach (var row in rows)
         {
             if (row.Change == "Open") open++;
             else if (row.Change == "Added") added++;
             else if (row.Change == "Dropped") dropped++;
-            else if (row.Change == "Returned") returned++;
+            else if (row.Change == "Reopened") reopened++;
         }
 
-        ConnectionSummary = $"Open {open}. Added {added}. Dropped {dropped}. Returned {returned}.";
+        ConnectionSummary = $"Open {open}. Added {added}. Dropped {dropped}. Reopened {reopened}.";
     }
 
     private static ConnectionGridRow ToGrid(WatchSlot slot, DateTime now)
@@ -172,13 +161,13 @@ public sealed partial class MainViewModel
 
     private static string Mark(string change) => change switch
     {
-        "Added" => "\uE710",
-        "Dropped" => "\uE738",
-        "Returned" => "\uE72C",
-        _ => "\uEA3B"
+        "Added" => "+",
+        "Dropped" => "\u2212",
+        "Reopened" => "\u21BB",
+        _ => "\u25CF"
     };
 
-    private static int Rank(string change) => change switch { "Open" => 0, "Added" => 1, "Returned" => 2, "Dropped" => 3, _ => 4 };
+    private static int Rank(string change) => change switch { "Added" => 0, "Reopened" => 1, "Dropped" => 2, _ => 3 };
 
     private static byte[] ConnectionAddressKey(string? text)
     {
@@ -206,7 +195,7 @@ public sealed partial class MainViewModel
     }
 
     private static string Key(NetworkConnection row)
-        => row.Protocol + "|" + row.LocalAddress + "|" + row.LocalPort + "|" + row.RemoteAddress + "|" + row.RemotePort + "|" + row.ProcessId;
+        => row.Protocol + "|" + row.LocalAddress + "|" + row.LocalPort + "|" + row.RemoteAddress + "|" + row.RemotePort;
 
     private sealed record WatchSlot(NetworkConnection Row, DateTime FirstSeen, DateTime LastSeen, string Change);
 }

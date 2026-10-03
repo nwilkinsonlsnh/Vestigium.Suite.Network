@@ -55,22 +55,10 @@
                 Padding="12"
                 Margin="0,4,0,0">
           <StackPanel>
-            <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
-              <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xEA3B;" Width="18" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
-              <TextBlock Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" Text="Open. In the baseline. Refresh writes this." />
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
-              <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE710;" Width="18" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
-              <TextBlock Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" Text="Added. Not in the baseline. Showed up during the watch." />
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
-              <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE738;" Width="18" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
-              <TextBlock Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" Text="Dropped. Was present, then left. The row stays." />
-            </StackPanel>
-            <StackPanel Orientation="Horizontal">
-              <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE72C;" Width="18" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" />
-              <TextBlock Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" Text="Returned. Came back after a drop. Its own row." />
-            </StackPanel>
+            <TextBlock Margin="0,0,0,6" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" Text="\u25CF  Open. In the baseline. Refresh writes this." />
+            <TextBlock Margin="0,0,0,6" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" Text="+  Added. Not in the baseline. Showed up during the watch." />
+            <TextBlock Margin="0,0,0,6" Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" Text="\u2212  Dropped. Was present, then left. Same row." />
+            <TextBlock Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}" Text="\u21BB  Reopened. Came back after a drop. Same row." />
           </StackPanel>
         </Border>
       </Popup>
@@ -103,8 +91,7 @@
             <DataGridTemplateColumn.CellTemplate>
               <DataTemplate>
                 <StackPanel Orientation="Horizontal">
-                  <TextBlock FontFamily="Segoe MDL2 Assets"
-                             Text="{Binding Mark}"
+                  <TextBlock Text="{Binding Mark}"
                              Width="16"
                              Margin="0,0,6,0"
                              VerticalAlignment="Center"
