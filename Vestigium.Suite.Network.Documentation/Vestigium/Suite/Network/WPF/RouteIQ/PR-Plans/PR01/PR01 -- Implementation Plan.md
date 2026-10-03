@@ -64,6 +64,7 @@ One PR. Four build slices plus owner gate. The stub is the start, not a second p
 | Write form, collapsed, “for later” | Design forbids leftover write fields. |
 | Default-route checkbox | Library lock 34. Permanent non-goal. |
 | `Task.Run` per row or a progress channel | Gold plate. One off-thread call per button. |
+| Suite shell / theme chrome in PR01-01 | Design is a window. DnsIQ chrome is a later host. Not this slice. |
 
 ---
 
@@ -164,7 +165,7 @@ Build order is the Order column.
 
 | Order | ID | Do | State |
 | ---: | :--- | :--- | :--- |
-| 1 | PR01-01 | Window. Delete `Log`. Family, Refresh, probe box, Probe, two grids, status line. No write controls. | Open |
+| 1 | PR01-01 | Window. Delete `Log`. Family, Refresh, probe box, Probe, two grids, status line. No write controls. | Done |
 | 2 | PR01-02 | `RouteIqInput` + Refresh. Pass family. Filter neighbors. Failure keeps lists. Off UI thread. | Open |
 | 3 | PR01-03 | Probe. Blank disabled. Garbage rejects before the library. Found / not-found status line. | Open |
 | 4 | PR01-04 | Host tests for parse and family map. No stack. | Open |
@@ -172,7 +173,14 @@ Build order is the Order column.
 
 ### PR01-01
 
-Rewrite `MainWindow.xaml` to the Design layout. Delete the `Log` text box. `MainWindow.xaml.cs` stays DataContext-only. Grids are read-only. Combo items are the three labels, not the library enum names.
+Done. `MainWindow.xaml` is the Design layout. `Log` is gone. `MainWindow.xaml.cs` is still DataContext-only. Grids are read-only and bind `NetworkRoute` / `NetworkNeighbor`. Combo items are All / IPv4 / IPv6.
+
+Held for later slices, on purpose:
+
+- Family is bound and not applied. Refresh still calls `GetRoutes()` with the default.
+- Neighbors collection stays empty. No `GetNeighbors` yet.
+- Probe `CanExecute` is false. The button is on the window and cannot start.
+- No suite shell and no theme merge. Design did not ask for DnsIQ chrome.
 
 ### PR01-02
 
@@ -242,4 +250,4 @@ When this plan finishes, move the whole `PR01/` folder to `PR-Plans/Completed/PR
 
 ## Next action
 
-PR01-01. Replace the log window. Do not call `GetNeighbors` or `ProbeNeighbor` until PR01-02 / PR01-03.
+PR01-02. `RouteIqInput` plus Refresh using family. `GetNeighbors`, filter, failure keeps both lists, off the UI thread. Probe stays disabled.
