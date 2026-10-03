@@ -1,9 +1,11 @@
 <UserControl x:Class="Vestigium.Suite.Network.RouteIQ.Views.NeighborsView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             Background="{DynamicResource Vestigium.Brushes.Surface.Window}">
+             Background="{DynamicResource Vestigium.Brushes.Surface.Window}"
+             SizeChanged="OnSizeChanged">
   <DockPanel Margin="16,12,16,16">
-    <StackPanel DockPanel.Dock="Top"
+    <StackPanel x:Name="Toolbar"
+                DockPanel.Dock="Top"
                 Style="{StaticResource StackPanel.Toolbar}"
                 Orientation="Horizontal"
                 HorizontalAlignment="Left"
@@ -27,54 +29,69 @@
         <RowDefinition Height="276" />
       </Grid.RowDefinitions>
 
-      <TextBlock Grid.Row="0" Style="{StaticResource TextBlock.Caption}" Text="IPv4 Neighbor Cache" Margin="0,0,0,4" />
-      <Border Grid.Row="1"
+      <TextBlock x:Name="Ipv4Caption"
+                 Grid.Row="0"
+                 Style="{StaticResource TextBlock.Caption}"
+                 Text="IPv4 Neighbor Cache"
+                 Margin="0,0,0,4" />
+      <Border x:Name="Ipv4Host"
+              Grid.Row="1"
               BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
               BorderThickness="1"
               Margin="0,0,0,12">
-        <DataGrid ItemsSource="{Binding Ipv4Neighbors}"
-                  Style="{StaticResource DataGrid.Compact}"
-                  RowHeight="28"
-                  IsReadOnly="True"
-                  AutoGenerateColumns="False"
-                  CanUserAddRows="False"
-                  CanUserDeleteRows="False"
-                  HeadersVisibility="Column"
-                  VerticalScrollBarVisibility="Auto"
-                  HorizontalScrollBarVisibility="Auto"
-                  ScrollViewer.VerticalScrollBarVisibility="Auto">
-          <DataGrid.Columns>
-            <DataGridTextColumn Header="Address" Binding="{Binding Address}" Width="180" />
-            <DataGridTextColumn Header="MacAddress" Binding="{Binding MacAddress}" Width="160" />
-            <DataGridTextColumn Header="InterfaceName" Binding="{Binding InterfaceName}" Width="160" />
-            <DataGridTextColumn Header="State" Binding="{Binding State}" Width="*" />
-          </DataGrid.Columns>
-        </DataGrid>
+        <Grid>
+          <DataGrid ItemsSource="{Binding Ipv4Neighbors}"
+                    Style="{StaticResource DataGrid.Compact}"
+                    RowHeight="28"
+                    IsReadOnly="True"
+                    AutoGenerateColumns="False"
+                    CanUserAddRows="False"
+                    CanUserDeleteRows="False"
+                    HeadersVisibility="Column"
+                    VerticalAlignment="Stretch"
+                    VerticalScrollBarVisibility="Auto"
+                    HorizontalScrollBarVisibility="Auto"
+                    ScrollViewer.VerticalScrollBarVisibility="Auto">
+            <DataGrid.Columns>
+              <DataGridTextColumn Header="Address" Binding="{Binding Address}" Width="180" />
+              <DataGridTextColumn Header="MacAddress" Binding="{Binding MacAddress}" Width="160" />
+              <DataGridTextColumn Header="InterfaceName" Binding="{Binding InterfaceName}" Width="160" />
+              <DataGridTextColumn Header="State" Binding="{Binding State}" Width="*" />
+            </DataGrid.Columns>
+          </DataGrid>
+        </Grid>
       </Border>
 
-      <TextBlock Grid.Row="2" Style="{StaticResource TextBlock.Caption}" Text="IPv6 Neighbor Cache" Margin="0,0,0,4" />
+      <TextBlock x:Name="Ipv6Caption"
+                 Grid.Row="2"
+                 Style="{StaticResource TextBlock.Caption}"
+                 Text="IPv6 Neighbor Cache"
+                 Margin="0,0,0,4" />
       <Border Grid.Row="3"
               BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
               BorderThickness="1"
               Height="276">
-        <DataGrid ItemsSource="{Binding Ipv6Neighbors}"
-                  Style="{StaticResource DataGrid.Compact}"
-                  RowHeight="28"
-                  IsReadOnly="True"
-                  AutoGenerateColumns="False"
-                  CanUserAddRows="False"
-                  CanUserDeleteRows="False"
-                  HeadersVisibility="Column"
-                  VerticalScrollBarVisibility="Auto"
-                  HorizontalScrollBarVisibility="Auto"
-                  ScrollViewer.VerticalScrollBarVisibility="Auto">
-          <DataGrid.Columns>
-            <DataGridTextColumn Header="Address" Binding="{Binding Address}" Width="260" />
-            <DataGridTextColumn Header="MacAddress" Binding="{Binding MacAddress}" Width="160" />
-            <DataGridTextColumn Header="InterfaceName" Binding="{Binding InterfaceName}" Width="160" />
-            <DataGridTextColumn Header="State" Binding="{Binding State}" Width="*" />
-          </DataGrid.Columns>
-        </DataGrid>
+        <Grid>
+          <DataGrid ItemsSource="{Binding Ipv6Neighbors}"
+                    Style="{StaticResource DataGrid.Compact}"
+                    RowHeight="28"
+                    IsReadOnly="True"
+                    AutoGenerateColumns="False"
+                    CanUserAddRows="False"
+                    CanUserDeleteRows="False"
+                    HeadersVisibility="Column"
+                    VerticalAlignment="Stretch"
+                    VerticalScrollBarVisibility="Auto"
+                    HorizontalScrollBarVisibility="Auto"
+                    ScrollViewer.VerticalScrollBarVisibility="Auto">
+            <DataGrid.Columns>
+              <DataGridTextColumn Header="Address" Binding="{Binding Address}" Width="260" />
+              <DataGridTextColumn Header="MacAddress" Binding="{Binding MacAddress}" Width="160" />
+              <DataGridTextColumn Header="InterfaceName" Binding="{Binding InterfaceName}" Width="160" />
+              <DataGridTextColumn Header="State" Binding="{Binding State}" Width="*" />
+            </DataGrid.Columns>
+          </DataGrid>
+        </Grid>
       </Border>
     </Grid>
   </DockPanel>
