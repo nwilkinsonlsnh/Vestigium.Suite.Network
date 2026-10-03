@@ -44,10 +44,10 @@
               Style="{StaticResource Button.Secondary}"
               Padding="16,4"
               Click="OnLegend" />
-      <Popup PlacementTarget="{Binding ElementName=LegendButton}"
+      <Popup x:Name="LegendPopup"
+             PlacementTarget="{Binding ElementName=LegendButton}"
              Placement="Bottom"
              StaysOpen="False"
-             IsOpen="{Binding IsChecked, ElementName=LegendButton, Mode=OneWay}"
              AllowsTransparency="True">
         <Border Background="{DynamicResource Vestigium.Brushes.Surface.Window}"
                 BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
