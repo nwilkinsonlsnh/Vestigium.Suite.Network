@@ -167,30 +167,21 @@ Build order is the Order column.
 | ---: | :--- | :--- | :--- |
 | 1 | PR01-01 | Window. Delete `Log`. Family, Refresh, probe box, Probe, two grids, status line. No write controls. | Done |
 | 2 | PR01-02 | `RouteIqInput` + Refresh. Pass family. Filter neighbors. Failure keeps lists. Off UI thread. | Done |
-| 3 | PR01-03 | Probe. Blank disabled. Garbage rejects before the library. Found / not-found status line. | Open |
+| 3 | PR01-03 | Probe. Blank disabled. Garbage rejects before the library. Found / not-found status line. | Done |
 | 4 | PR01-04 | Host tests for parse and family map. No stack. | Open |
 | 5 | PR01-05 | Owner runs the window against Requirements §4. | Owner |
 
 ### PR01-01
 
-Done. `MainWindow.xaml` is the Design layout. `Log` is gone. `MainWindow.xaml.cs` is still DataContext-only. Grids are read-only and bind `NetworkRoute` / `NetworkNeighbor`. Combo items are All / IPv4 / IPv6.
-
-Held for later slices, on purpose:
-
-- Family is bound and not applied. Refresh still calls `GetRoutes()` with the default.
-- Neighbors collection stays empty. No `GetNeighbors` yet.
-- Probe `CanExecute` is false. The button is on the window and cannot start.
-- No suite shell and no theme merge. Design did not ask for DnsIQ chrome.
+Done. `MainWindow.xaml` is the Design layout. `Log` is gone. `MainWindow.xaml.cs` is still DataContext-only. Grids are read-only and bind `NetworkRoute` / `NetworkNeighbor`. Combo items are All / IPv4 / IPv6. No suite shell and no theme merge.
 
 ### PR01-02
 
-Done. `RouteIqInput.TryMapFamily` is the only family map: All / IPv4 / IPv6 → `All` / `Pv4` / `Pv6`. Unknown label fails before the library. Refresh passes that family to `GetRoutes`, calls `GetNeighbors`, and filters neighbors in the VM. Both calls run in one `Task.Run`. List replace is after `ConfigureAwait(true)`. Failure does not clear the grids. Probe line is left alone. Probe `CanExecute` is still false.
-
-`TryParseProbe` is on the type for PR01-03. This slice does not call it.
+Done. `RouteIqInput.TryMapFamily` is the only family map: All / IPv4 / IPv6 → `All` / `Pv4` / `Pv6`. Unknown label fails before the library. Refresh passes that family to `GetRoutes`, calls `GetNeighbors`, and filters neighbors in the VM. Both calls run in one `Task.Run`. List replace is after `ConfigureAwait(true)`. Failure does not clear the grids. Probe line is left alone on Refresh.
 
 ### PR01-03
 
-Same busy flag. `CanExecute` watches `ProbeAddress` and busy. Parse with `RouteIqInput.TryParseProbe`. Call `ProbeNeighbor` only after a successful parse.
+Done. Probe `CanExecute` is false while busy or while the box is blank or whitespace. Garbage fails in `TryParseProbe` and does not call `ProbeNeighbor`. A parsed address runs off the UI thread. `Found` with a MAC sets the probe line to address + MAC and Status `Idle`. A miss sets the probe line to the address and Status `Failed`. An exception sets `Failed: ` plus the message. Lists are not touched.
 
 ### PR01-04
 
@@ -252,4 +243,4 @@ When this plan finishes, move the whole `PR01/` folder to `PR-Plans/Completed/PR
 
 ## Next action
 
-PR01-03. Probe. Blank stays disabled. Garbage rejects in `TryParseProbe` before `ProbeNeighbor`. Found writes address + MAC. Miss is Failed and no MAC.
+PR01-04. Host tests for `RouteIqInput` only. No stack calls.

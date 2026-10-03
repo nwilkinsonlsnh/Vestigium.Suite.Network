@@ -64,13 +64,51 @@ public sealed partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand(CanExecute = nameof(CanProbe))]
-    private void Probe()
+    private async Task Probe()
     {
+        if (_busy)
+            return;
+
+        if (!RouteIqInput.TryParseProbe(ProbeAddress, out var address, out var reason))
+        {
+            if (reason is not null)
+                Status = $"Failed: {reason}";
+            return;
+        }
+
+        _busy = true;
+        RaiseCanExecute();
+        Status = "Running";
+        try
+        {
+            var result = await Task.Run(() => NetworkHelper.ProbeNeighbor(address!.ToString())).ConfigureAwait(true);
+            if (result.Found && !string.IsNullOrWhiteSpace(result.MacAddress))
+            {
+                ProbeLine = $"{result.Address} {result.MacAddress}";
+                Status = "Idle";
+            }
+            else
+            {
+                ProbeLine = result.Address;
+                Status = "Failed";
+            }
+        }
+        catch (Exception ex)
+        {
+            Status = $"Failed: {ex.Message}";
+        }
+        finally
+        {
+            _busy = false;
+            RaiseCanExecute();
+        }
     }
 
     private bool CanRefresh() => !_busy;
 
-    private bool CanProbe() => false;
+    private bool CanProbe() => !_busy && !string.IsNullOrWhiteSpace(ProbeAddress);
+
+    partial void OnProbeAddressChanged(string value) => ProbeCommand.NotifyCanExecuteChanged();
 
     private void RaiseCanExecute()
     {
