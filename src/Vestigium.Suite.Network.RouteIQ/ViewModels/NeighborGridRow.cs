@@ -1,3 +1,5 @@
+using System.Net;
+using System.Net.Sockets;
 using Vestigium.Helpers.Network;
 
 namespace Vestigium.Suite.Network.RouteIQ.ViewModels;
@@ -10,8 +12,22 @@ public sealed record NeighborGridRow(NetworkNeighbor Source, string? VendorText,
     public int? InterfaceIndex => Source.InterfaceIndex;
     public string State => Source.State;
     public bool? IsRouter => Source.IsRouter;
+    public bool IsMulticast => Multicast(Source.Address);
     public string? LastReachableText => FormatReachable(Source.LastReachable);
     public string? Vendor => Source.Vendor;
+
+    private static bool Multicast(string? address)
+    {
+        if (!IPAddress.TryParse(address, out var ip))
+            return false;
+        if (ip.AddressFamily == AddressFamily.InterNetwork)
+        {
+            var first = ip.GetAddressBytes()[0];
+            return first is >= 224 and <= 239;
+        }
+
+        return ip.IsIPv6Multicast;
+    }
 
     private static string? FormatReachable(long? milliseconds)
     {
