@@ -22,6 +22,7 @@ public sealed partial class MainViewModel : ObservableObject
     public ObservableCollection<NetworkRoute> Ipv6Routes { get; } = [];
     public ObservableCollection<NeighborGridRow> Ipv4Neighbors { get; } = [];
     public ObservableCollection<NeighborGridRow> Ipv6Neighbors { get; } = [];
+    public ObservableCollection<NetworkNetBiosName> NetBiosNames { get; } = [];
     public Action<string>? ReportStatus { get; set; }
     public Func<int>? OuiPoolSize { get; set; }
 
@@ -43,6 +44,7 @@ public sealed partial class MainViewModel : ObservableObject
             Replace(Ipv6Routes, snapshot.Ipv6);
             Replace(Ipv4Neighbors, ApplyPacked(snapshot.Ipv4Neighbors));
             Replace(Ipv6Neighbors, ApplyPacked(snapshot.Ipv6Neighbors));
+            Replace(NetBiosNames, snapshot.NetBios);
             var vendors = ResolveLiveVendors();
             var probes = ProbeNeighbors();
             var vendorLine = await vendors.ConfigureAwait(true);
@@ -75,6 +77,13 @@ public sealed partial class MainViewModel : ObservableObject
         catch (Exception ex) { Report(ex.Message); }
     }
 
+    [RelayCommand(CanExecute = nameof(CanCopy))]
+    private void CopyNetBios()
+    {
+        try { Clipboard.SetText(FormatNetBios()); }
+        catch (Exception ex) { Report(ex.Message); }
+    }
+
     private bool CanRefresh() => !_busy;
     private bool CanCopy() => !_busy;
 
@@ -83,18 +92,23 @@ public sealed partial class MainViewModel : ObservableObject
         RefreshCommand.NotifyCanExecuteChanged();
         CopyCommand.NotifyCanExecuteChanged();
         CopyNeighborsCommand.NotifyCanExecuteChanged();
+        CopyNetBiosCommand.NotifyCanExecuteChanged();
     }
 
     private void Report(string text) => ReportStatus?.Invoke(text);
 
-    private static (IReadOnlyList<NetworkRoute> Ipv4, IReadOnlyList<NetworkRoute> Ipv6, IReadOnlyList<NetworkNeighbor> Ipv4Neighbors, IReadOnlyList<NetworkNeighbor> Ipv6Neighbors) Load()
+    private static (IReadOnlyList<NetworkRoute> Ipv4, IReadOnlyList<NetworkRoute> Ipv6, IReadOnlyList<NetworkNeighbor> Ipv4Neighbors, IReadOnlyList<NetworkNeighbor> Ipv6Neighbors, IReadOnlyList<NetworkNetBiosName> NetBios) Load()
     {
         var ipv4 = ByAddress(NetworkHelper.GetRoutes(RouteFamily.Pv4), row => row.Destination);
         var ipv6 = ByAddress(NetworkHelper.GetRoutes(RouteFamily.Pv6), row => row.Destination);
         var neighbors = NetworkHelper.GetNeighbors();
         var v4 = ByAddress(neighbors.Where(row => row.Family == AddressFamily.InterNetwork), row => row.Address);
         var v6 = ByAddress(neighbors.Where(row => row.Family == AddressFamily.InterNetworkV6), row => row.Address);
-        return (ipv4, ipv6, v4, v6);
+        var names = NetworkHelper.GetNetBiosNames()
+            .OrderBy(row => row.Table, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(row => row.Name, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        return (ipv4, ipv6, v4, v6, names);
     }
 
     private static IReadOnlyList<NeighborGridRow> ApplyPacked(IReadOnlyList<NetworkNeighbor> rows)
@@ -192,8 +206,7 @@ public sealed partial class MainViewModel : ObservableObject
             await slots.WaitAsync().ConfigureAwait(false);
             try
             {
-                var target = EchoTarget(row);
-                var result = await NetworkHelper.Ping(target, options).RunAsync().ConfigureAwait(false);
+                var result = await NetworkHelper.Ping(EchoTarget(row), options).RunAsync().ConfigureAwait(false);
                 var rtt = result.Received > 0 && result.AverageMs is not null
                     ? Math.Round(result.AverageMs.Value).ToString(CultureInfo.InvariantCulture)
                     : NoValue;
@@ -328,6 +341,26 @@ public sealed partial class MainViewModel : ObservableObject
         var text = new StringBuilder();
         AppendNeighbors(text, "IPv4 Neighbor Cache", Ipv4Neighbors);
         AppendNeighbors(text, "IPv6 Neighbor Cache", Ipv6Neighbors);
+        return text.ToString();
+    }
+
+    private string FormatNetBios()
+    {
+        var text = new StringBuilder();
+        text.AppendLine("Table   Name                 Suffix  Type        Status           Address          Life");
+        foreach (var row in NetBiosNames)
+        {
+            text.Append(Pad(row.Table, 8));
+            text.Append(Pad(row.Name, 21));
+            text.Append(Pad(row.Suffix, 8));
+            text.Append(Pad(row.Type, 12));
+            text.Append(Pad(row.Status, 17));
+            text.Append(Pad(row.Address, 17));
+            text.AppendLine(row.LifeSeconds?.ToString(CultureInfo.InvariantCulture));
+        }
+
+        if (NetBiosNames.Count == 0)
+            text.AppendLine("None");
         return text.ToString();
     }
 
