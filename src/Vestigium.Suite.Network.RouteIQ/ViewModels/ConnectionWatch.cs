@@ -63,7 +63,7 @@ public sealed partial class MainViewModel
         try
         {
             var text = ConnectionSummary + Environment.NewLine
-                + "Change     Protocol  Local                         Remote                        State        Process          Time"
+                + "Status     Protocol  Local                         Remote                        State        Process          Time"
                 + Environment.NewLine
                 + string.Join(Environment.NewLine, Connections.Select(row =>
                     $"{row.Change,-10} {row.Protocol,-8} {row.LocalAddress}:{row.LocalPort,-16} {row.RemoteAddress}:{row.RemotePort,-16} {row.State,-12} {row.Process,-16} {row.TimeSeconds,4}"));
@@ -161,10 +161,10 @@ public sealed partial class MainViewModel
 
     private static string Mark(string change) => change switch
     {
-        "Added" => "+",
-        "Dropped" => "\u2212",
-        "Reopened" => "\u21BB",
-        _ => "\u25CF"
+        "Added" => "\uE710",
+        "Dropped" => "\uE738",
+        "Reopened" => "\uE72C",
+        _ => "\uEA3B"
     };
 
     private static int Rank(string change) => change switch { "Added" => 0, "Reopened" => 1, "Dropped" => 2, _ => 3 };
