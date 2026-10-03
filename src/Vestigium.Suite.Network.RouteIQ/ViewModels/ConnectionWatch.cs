@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Vestigium.Helpers.Network;
@@ -9,6 +10,7 @@ public sealed partial class MainViewModel
 {
     private readonly Dictionary<string, WatchSlot> _slots = new(StringComparer.OrdinalIgnoreCase);
     private CancellationTokenSource? _watch;
+    private int _batch;
 
     public ObservableCollection<ConnectionGridRow> Connections { get; } = [];
 
@@ -26,14 +28,9 @@ public sealed partial class MainViewModel
             WatchSeconds = 180;
     }
 
-    public void LoadConnections(IReadOnlyList<NetworkConnection> rows)
-    {
-        var now = DateTime.UtcNow;
-        _slots.Clear();
-        foreach (var row in rows)
-            _slots[Key(row)] = new WatchSlot(row, now, now, false, 0);
-        Publish(now);
-    }
+    [RelayCommand]
+    private Task SnapshotConnections()
+        => FillAsync(reset: true);
 
     [RelayCommand]
     private async Task WatchConnections()
@@ -48,8 +45,9 @@ public sealed partial class MainViewModel
             while (DateTime.UtcNow < until && !token.IsCancellationRequested)
             {
                 await Task.Delay(TimeSpan.FromSeconds(1), token).ConfigureAwait(true);
-                var rows = await Task.Run(() => NetworkHelper.GetConnections()).ConfigureAwait(true);
+                var rows = await Task.Run(() => NetworkHelper.GetConnections(), token).ConfigureAwait(true);
                 ApplyWatch(rows);
+                await Paint().ConfigureAwait(true);
             }
         }
         catch (OperationCanceledException)
@@ -73,6 +71,21 @@ public sealed partial class MainViewModel
         {
             Report(ex.Message);
         }
+    }
+
+    private async Task FillAsync(bool reset)
+    {
+        var batch = Interlocked.Increment(ref _batch);
+        ConnectionSummary = "Reading connections.";
+        var rows = await Task.Run(NetworkHelper.GetConnections).ConfigureAwait(true);
+        if (batch != _batch)
+            return;
+        var now = DateTime.UtcNow;
+        if (reset)
+            _slots.Clear();
+        foreach (var row in rows)
+            _slots[Key(row)] = new WatchSlot(row, now, now, false, 0);
+        await Paint().ConfigureAwait(true);
     }
 
     private void ApplyWatch(IReadOnlyList<NetworkConnection> rows)
@@ -99,23 +112,31 @@ public sealed partial class MainViewModel
             if (!seen.Contains(key))
                 _slots[key] = _slots[key] with { Dropped = true, LastSeen = now };
         }
-
-        Publish(now);
     }
 
-    private void Publish(DateTime now)
+    private async Task Paint()
     {
-        var rows = _slots.Values
-            .Select(slot => ToGrid(slot, now))
-            .OrderBy(row => Rank(row.Change))
-            .ThenBy(row => row.LocalPort)
-            .ToArray();
-        Replace(Connections, rows);
-        var added = rows.Count(row => row.Change == "Added");
-        var dropped = rows.Count(row => row.Change == "Dropped");
-        var returned = rows.Count(row => row.Change == "Returned");
-        var open = rows.Length - dropped;
-        ConnectionSummary = $"Open {open}. Added {added}. Dropped {dropped}. Returned {returned}.";
+        var now = DateTime.UtcNow;
+        var rows = _slots.Values.Select(slot => ToGrid(slot, now)).OrderBy(row => Rank(row.Change)).ThenBy(row => row.LocalPort).ToArray();
+        Connections.Clear();
+        for (var i = 0; i < rows.Length; i++)
+        {
+            Connections.Add(rows[i]);
+            if (i > 0 && i % 40 == 0)
+                await System.Windows.Application.Current.Dispatcher.Yield(DispatcherPriority.Background);
+        }
+
+        var added = 0;
+        var dropped = 0;
+        var returned = 0;
+        foreach (var row in rows)
+        {
+            if (row.Change == "Added") added++;
+            else if (row.Change == "Dropped") dropped++;
+            else if (row.Change == "Returned") returned++;
+        }
+
+        ConnectionSummary = $"Open {rows.Length - dropped}. Added {added}. Dropped {dropped}. Returned {returned}.";
     }
 
     private static ConnectionGridRow ToGrid(WatchSlot slot, DateTime now)

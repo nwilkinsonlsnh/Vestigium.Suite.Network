@@ -3,15 +3,20 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:nud="clr-namespace:Vestigium.Controls.NumericUpDown;assembly=Vestigium.Controls.NumericUpDown"
              Background="{DynamicResource Vestigium.Brushes.Surface.Window}">
-  <DockPanel Margin="16,12,16,16">
-    <StackPanel DockPanel.Dock="Top"
+  <Grid Margin="16,12,16,16">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+    </Grid.RowDefinitions>
+    <StackPanel Grid.Row="0"
                 Style="{StaticResource StackPanel.Toolbar}"
                 Orientation="Horizontal"
                 HorizontalAlignment="Left"
                 Margin="0,0,0,12">
       <Button Content="Refresh"
               Style="{StaticResource Button.Primary}"
-              Command="{Binding RefreshCommand}"
+              Command="{Binding SnapshotConnectionsCommand}"
               Padding="16,4"
               Margin="0,0,8,0" />
       <TextBlock Text="Window"
@@ -34,11 +39,11 @@
               Command="{Binding CopyConnectionsCommand}"
               Padding="16,4" />
     </StackPanel>
-    <TextBlock DockPanel.Dock="Top"
+    <TextBlock Grid.Row="1"
                Style="{StaticResource TextBlock.Caption}"
                Text="{Binding ConnectionSummary}"
                Margin="0,0,0,4" />
-    <Border BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
+    <Border Grid.Row="2" BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
       <DataGrid ItemsSource="{Binding Connections}"
                 Style="{StaticResource DataGrid.Compact}"
                 RowHeight="28"
@@ -48,9 +53,10 @@
                 CanUserDeleteRows="False"
                 CanUserResizeRows="False"
                 EnableRowVirtualization="True"
-                EnableColumnVirtualization="True"
+                EnableColumnVirtualization="False"
                 VirtualizingPanel.IsVirtualizing="True"
                 VirtualizingPanel.VirtualizationMode="Recycling"
+                VirtualizingPanel.ScrollUnit="Pixel"
                 ScrollViewer.CanContentScroll="True"
                 HeadersVisibility="Column"
                 VerticalAlignment="Stretch"
@@ -70,5 +76,5 @@
         </DataGrid.Columns>
       </DataGrid>
     </Border>
-  </DockPanel>
+  </Grid>
 </UserControl>
