@@ -27,13 +27,16 @@ public partial class ConnectionsView : UserControl
     private void FitGrid()
     {
         var window = Window.GetWindow(this);
-        if (window is null || ConnectionGrid.ActualWidth <= 0)
+        if (window?.Content is not FrameworkElement root || ConnectionGrid.ActualWidth <= 0)
             return;
-        var origin = ConnectionGrid.TranslatePoint(new Point(0, 0), window);
-        var height = window.ActualHeight - origin.Y - 56;
+        foreach (var viewer in FindViewers(this))
+            viewer.VerticalScrollBarVisibility = ScrollBarVisibility.Disabled;
+        var origin = ConnectionGrid.TranslatePoint(new Point(0, 0), root);
+        var height = root.ActualHeight - origin.Y - 12;
         if (height < 240)
             height = 240;
         ConnectionGrid.Height = height;
+        ConnectionGrid.MaxHeight = height;
         ConnectionGrid.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
     }
 
@@ -51,6 +54,17 @@ public partial class ConnectionsView : UserControl
         }
 
         e.Handled = true;
+    }
+
+    private static IEnumerable<ScrollViewer> FindViewers(DependencyObject start)
+    {
+        var node = VisualTreeHelper.GetParent(start);
+        while (node is not null)
+        {
+            if (node is ScrollViewer viewer)
+                yield return viewer;
+            node = VisualTreeHelper.GetParent(node);
+        }
     }
 
     private static ScrollViewer? FindScroll(DependencyObject root)
