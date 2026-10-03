@@ -1,7 +1,8 @@
 # NicIQ — Design v1.0
 
 **Companion:** [Requirements_v1.0.md](Requirements_v1.0.md)  
-**Project:** `src/Vestigium.Suite.Network.NicIQ`
+**Project:** `src/Vestigium.Suite.Network.NicIQ`  
+**Superseded by:** [Design_v1.1.md](Design_v1.1.md) for the current window. This file stays the first-and-ten map.
 
 ## Window
 
@@ -29,3 +30,10 @@ Use `Status`, never `OperationalStatus`.
 ## Out of this design
 
 `SampleCounters`. Chart sparkline. Disable/rename NIC.
+
+## Document control
+
+| Version | Date | Change |
+|---|---|---|
+| 1.0 | 24 Sep 2026 | List, detail, watch. |
+| 1.1 | 2 Oct 2026 | Current window. See [Design_v1.1.md](Design_v1.1.md). Body above is unchanged. |
