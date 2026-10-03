@@ -168,7 +168,7 @@ Build order is the Order column.
 | 1 | PR01-01 | Window. Delete `Log`. Family, Refresh, probe box, Probe, two grids, status line. No write controls. | Done |
 | 2 | PR01-02 | `RouteIqInput` + Refresh. Pass family. Filter neighbors. Failure keeps lists. Off UI thread. | Done |
 | 3 | PR01-03 | Probe. Blank disabled. Garbage rejects before the library. Found / not-found status line. | Done |
-| 4 | PR01-04 | Host tests for parse and family map. No stack. | Open |
+| 4 | PR01-04 | Host tests for parse and family map. No stack. | Done |
 | 5 | PR01-05 | Owner runs the window against Requirements §4. | Owner |
 
 ### PR01-01
@@ -185,21 +185,7 @@ Done. Probe `CanExecute` is false while busy or while the box is blank or whites
 
 ### PR01-04
 
-Add `tests/Vestigium.Suite.Network.Tests/RouteIqInputTests.cs`.
-
-Must assert:
-
-- `All` → `RouteFamily.All`
-- `IPv4` → `RouteFamily.Pv4`
-- `IPv6` → `RouteFamily.Pv6`
-- unknown label rejects
-- blank / whitespace probe is not a parse success (command stays disabled; parser returns blank)
-- `127.0.0.1` and `::1` parse
-- `not-an-ip` and `dns.google` reject
-
-Keep `HostIdsTests` (`RouteIQ` is not `Network`).
-
-Do **not** add tests that call `GetRoutes`, `GetNeighbors`, or `ProbeNeighbor`.
+Done. `tests/Vestigium.Suite.Network.Tests/RouteIqInputTests.cs`. The test project references the RouteIQ exe, same pattern as DnsIQ and PingIQ. Assertions cover the family map, unknown labels, blank probe (false, null reason), `127.0.0.1`, `::1`, `not-an-ip`, and `dns.google`. `HostIdsTests` now asserts `RouteIQ` is not `Network`. No test calls `GetRoutes`, `GetNeighbors`, or `ProbeNeighbor`.
 
 ### PR01-05
 
@@ -211,6 +197,7 @@ Owner on the clone:
 4. Probe `127.0.0.1` returns a result line or Failed — not an unhandled exception.
 5. No Add / Change / Remove / Default-route control on the window.
 6. A forced print failure (if you can induce one) leaves the previous lists.
+7. `RouteIqInputTests` and `HostIdsTests` pass.
 
 This agent does not mark first-and-ten closed.
 
@@ -221,8 +208,10 @@ This agent does not mark first-and-ten closed.
 ```
 src/Vestigium.Suite.Network.RouteIQ/MainWindow.xaml
 src/Vestigium.Suite.Network.RouteIQ/ViewModels/MainViewModel.cs
-src/Vestigium.Suite.Network.RouteIQ/ViewModels/RouteIqInput.cs       [NEW]
-tests/Vestigium.Suite.Network.Tests/RouteIqInputTests.cs             [NEW]
+src/Vestigium.Suite.Network.RouteIQ/ViewModels/RouteIqInput.cs
+tests/Vestigium.Suite.Network.Tests/RouteIqInputTests.cs
+tests/Vestigium.Suite.Network.Tests/HostIdsTests.cs
+tests/Vestigium.Suite.Network.Tests/Vestigium.Suite.Network.Tests.csproj
 ```
 
 Do not edit Shell. Do not bump or downgrade package pins. Do not add a project reference from the exe to Helpers — Shell already flows Network through. Do not edit `Vestigium.Helpers`.
@@ -243,4 +232,4 @@ When this plan finishes, move the whole `PR01/` folder to `PR-Plans/Completed/PR
 
 ## Next action
 
-PR01-04. Host tests for `RouteIqInput` only. No stack calls.
+PR01-05. Owner gate. Run the window against Requirements §4 and run `RouteIqInputTests`. This agent does not close first-and-ten.

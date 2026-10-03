@@ -13,5 +13,6 @@
     <ProjectReference Include="..\..\src\Vestigium.Suite.Network.DnsIQ\Vestigium.Suite.Network.DnsIQ.csproj" />
     <ProjectReference Include="..\..\src\Vestigium.Suite.Network.PingIQ\Vestigium.Suite.Network.PingIQ.csproj" />
     <ProjectReference Include="..\..\src\Vestigium.Suite.Network.NicIQ\Vestigium.Suite.Network.NicIQ.csproj" />
+    <ProjectReference Include="..\..\src\Vestigium.Suite.Network.RouteIQ\Vestigium.Suite.Network.RouteIQ.csproj" />
   </ItemGroup>
 </Project>
