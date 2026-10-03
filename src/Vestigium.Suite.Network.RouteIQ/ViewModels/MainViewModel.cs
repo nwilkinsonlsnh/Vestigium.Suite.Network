@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Windows;
@@ -94,12 +95,39 @@ public sealed partial class MainViewModel : ObservableObject
 
     private static (IReadOnlyList<NetworkRoute> Ipv4, IReadOnlyList<NetworkRoute> Ipv6, IReadOnlyList<NetworkNeighbor> Ipv4Neighbors, IReadOnlyList<NetworkNeighbor> Ipv6Neighbors) Load()
     {
-        var ipv4 = NetworkHelper.GetRoutes(RouteFamily.Pv4);
-        var ipv6 = NetworkHelper.GetRoutes(RouteFamily.Pv6);
+        var ipv4 = ByAddress(NetworkHelper.GetRoutes(RouteFamily.Pv4), row => row.Destination);
+        var ipv6 = ByAddress(NetworkHelper.GetRoutes(RouteFamily.Pv6), row => row.Destination);
         var neighbors = NetworkHelper.GetNeighbors();
-        var v4 = neighbors.Where(row => row.Family == AddressFamily.InterNetwork).ToArray();
-        var v6 = neighbors.Where(row => row.Family == AddressFamily.InterNetworkV6).ToArray();
+        var v4 = ByAddress(neighbors.Where(row => row.Family == AddressFamily.InterNetwork), row => row.Address);
+        var v6 = ByAddress(neighbors.Where(row => row.Family == AddressFamily.InterNetworkV6), row => row.Address);
         return (ipv4, ipv6, v4, v6);
+    }
+
+    private static IReadOnlyList<T> ByAddress<T>(IEnumerable<T> rows, Func<T, string?> address)
+    {
+        return rows
+            .OrderBy(row => AddressKey(address(row)), Comparer<byte[]>.Create(CompareBytes))
+            .ToArray();
+    }
+
+    private static byte[] AddressKey(string? text)
+    {
+        if (IPAddress.TryParse(text, out var address))
+            return address.GetAddressBytes();
+        return [0xFF];
+    }
+
+    private static int CompareBytes(byte[] left, byte[] right)
+    {
+        var count = Math.Min(left.Length, right.Length);
+        for (var i = 0; i < count; i++)
+        {
+            var diff = left[i].CompareTo(right[i]);
+            if (diff != 0)
+                return diff;
+        }
+
+        return left.Length.CompareTo(right.Length);
     }
 
     private string FormatTables()
