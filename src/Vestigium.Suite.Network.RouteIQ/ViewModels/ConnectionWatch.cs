@@ -121,9 +121,9 @@ public sealed partial class MainViewModel
         var now = DateTime.UtcNow;
         var rows = _slots.Values
             .Select(slot => ToGrid(slot, now))
-            .OrderBy(row => AddressKey(row.LocalAddress), Comparer<byte[]>.Create(CompareAddress))
+            .OrderBy(row => ConnectionAddressKey(row.LocalAddress), Comparer<byte[]>.Create(CompareConnectionAddress))
             .ThenBy(row => row.LocalPort)
-            .ThenBy(row => AddressKey(row.RemoteAddress), Comparer<byte[]>.Create(CompareAddress))
+            .ThenBy(row => ConnectionAddressKey(row.RemoteAddress), Comparer<byte[]>.Create(CompareConnectionAddress))
             .ToArray();
         Connections.Clear();
         for (var i = 0; i < rows.Length; i++)
@@ -158,7 +158,7 @@ public sealed partial class MainViewModel
         return new ConnectionGridRow(change, slot.Row.Protocol.ToString(), slot.Row.LocalAddress, slot.Row.LocalPort, remote, remotePort, slot.Row.State ?? "--", process, time, slot.Returns);
     }
 
-    private static byte[] AddressKey(string? text)
+    private static byte[] ConnectionAddressKey(string? text)
     {
         if (!IPAddress.TryParse(text, out var address))
             return [0xFF];
@@ -167,7 +167,7 @@ public sealed partial class MainViewModel
         return address.GetAddressBytes();
     }
 
-    private static int CompareAddress(byte[] left, byte[] right)
+    private static int CompareConnectionAddress(byte[] left, byte[] right)
     {
         var family = left.Length.CompareTo(right.Length);
         if (family != 0)
