@@ -20,13 +20,7 @@ public sealed partial class MainViewModel : ObservableObject
     private string _family = "All";
 
     [ObservableProperty]
-    private string _probeAddress = string.Empty;
-
-    [ObservableProperty]
     private string _status = "Idle";
-
-    [ObservableProperty]
-    private string _probeLine = string.Empty;
 
     public MainViewModel() => _ = Refresh();
 
@@ -43,7 +37,7 @@ public sealed partial class MainViewModel : ObservableObject
         }
 
         _busy = true;
-        RaiseCanExecute();
+        RefreshCommand.NotifyCanExecuteChanged();
         Status = "Running";
         try
         {
@@ -59,62 +53,11 @@ public sealed partial class MainViewModel : ObservableObject
         finally
         {
             _busy = false;
-            RaiseCanExecute();
-        }
-    }
-
-    [RelayCommand(CanExecute = nameof(CanProbe))]
-    private async Task Probe()
-    {
-        if (_busy)
-            return;
-
-        if (!RouteIqInput.TryParseProbe(ProbeAddress, out var address, out var reason))
-        {
-            if (reason is not null)
-                Status = $"Failed: {reason}";
-            return;
-        }
-
-        _busy = true;
-        RaiseCanExecute();
-        Status = "Running";
-        try
-        {
-            var result = await Task.Run(() => NetworkHelper.ProbeNeighbor(address!.ToString())).ConfigureAwait(true);
-            if (result.Found && !string.IsNullOrWhiteSpace(result.MacAddress))
-            {
-                ProbeLine = $"{result.Address} {result.MacAddress}";
-                Status = "Idle";
-            }
-            else
-            {
-                ProbeLine = result.Address;
-                Status = "Failed";
-            }
-        }
-        catch (Exception ex)
-        {
-            Status = $"Failed: {ex.Message}";
-        }
-        finally
-        {
-            _busy = false;
-            RaiseCanExecute();
+            RefreshCommand.NotifyCanExecuteChanged();
         }
     }
 
     private bool CanRefresh() => !_busy;
-
-    private bool CanProbe() => !_busy && !string.IsNullOrWhiteSpace(ProbeAddress);
-
-    partial void OnProbeAddressChanged(string value) => ProbeCommand.NotifyCanExecuteChanged();
-
-    private void RaiseCanExecute()
-    {
-        RefreshCommand.NotifyCanExecuteChanged();
-        ProbeCommand.NotifyCanExecuteChanged();
-    }
 
     private static (IReadOnlyList<NetworkRoute> Routes, IReadOnlyList<NetworkNeighbor> Neighbors) Load(RouteFamily family)
     {

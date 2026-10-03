@@ -1,0 +1,24 @@
+<UserControl x:Class="Vestigium.Suite.Network.RouteIQ.Views.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="{DynamicResource Vestigium.Brushes.Surface.Window}">
+  <StackPanel HorizontalAlignment="Left" VerticalAlignment="Top" Width="420" Margin="20,12,0,0">
+    <TextBlock Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap" Margin="0,0,0,16"
+               Text="Palette is saved under ProgramData\Vestigium\Settings\Diagnostics\RouteIQ." />
+    <Label Style="{StaticResource Label.Standard}" Content="Palette" />
+    <ComboBox Style="{StaticResource ComboBox.Standard}"
+              ItemsSource="{Binding Themes}"
+              DisplayMemberPath="DisplayName"
+              SelectedValuePath="Id"
+              SelectedValue="{Binding SelectedThemeId, Mode=TwoWay}"
+              Margin="0,0,0,16" />
+    <CheckBox Style="{StaticResource CheckBox.Standard}"
+              Content="Status bar visible"
+              IsChecked="{Binding BarVisible}"
+              Margin="0,0,0,16" />
+    <Label Style="{StaticResource Label.Standard}" Content="Status bar dock" />
+    <ComboBox Style="{StaticResource ComboBox.Standard}"
+              ItemsSource="{Binding BarPositions}"
+              SelectedItem="{Binding BarPosition}" />
+  </StackPanel>
+</UserControl>

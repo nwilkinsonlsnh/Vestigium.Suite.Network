@@ -1,80 +1,37 @@
 <Window x:Class="Vestigium.Suite.Network.RouteIQ.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="RouteIQ" Height="720" Width="1100"
-        MinHeight="480" MinWidth="800">
-  <DockPanel Margin="16">
-    <StackPanel DockPanel.Dock="Top" Margin="0,0,0,12">
-      <TextBlock FontSize="20" FontWeight="SemiBold" Text="RouteIQ" Margin="0,0,0,12" />
-      <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-        <TextBlock Text="Family" VerticalAlignment="Center" Margin="0,0,8,0" />
-        <ComboBox Width="120"
-                  ItemsSource="{Binding Families}"
-                  SelectedItem="{Binding Family}"
-                  Margin="0,0,16,0" />
-        <Button Content="Refresh"
-                Command="{Binding RefreshCommand}"
-                Padding="16,4"
-                Margin="0,0,16,0" />
-        <TextBlock Text="Probe" VerticalAlignment="Center" Margin="0,0,8,0" />
-        <TextBox Width="220"
-                 Text="{Binding ProbeAddress, UpdateSourceTrigger=PropertyChanged}"
-                 Margin="0,0,8,0" />
-        <Button Content="Probe"
-                Command="{Binding ProbeCommand}"
-                Padding="16,4" />
-      </StackPanel>
-      <TextBlock Text="{Binding Status}" />
-      <TextBlock Text="{Binding ProbeLine}" Margin="0,2,0,0" />
-    </StackPanel>
-
-    <Grid>
-      <Grid.RowDefinitions>
-        <RowDefinition Height="Auto" />
-        <RowDefinition Height="*" />
-        <RowDefinition Height="Auto" />
-        <RowDefinition Height="*" />
-      </Grid.RowDefinitions>
-
-      <TextBlock Grid.Row="0" Text="Routes" FontWeight="SemiBold" Margin="0,0,0,4" />
-      <DataGrid Grid.Row="1"
-                ItemsSource="{Binding Routes}"
-                IsReadOnly="True"
-                AutoGenerateColumns="False"
-                CanUserAddRows="False"
-                CanUserDeleteRows="False"
-                HeadersVisibility="Column"
-                VerticalScrollBarVisibility="Auto"
-                HorizontalScrollBarVisibility="Auto">
-        <DataGrid.Columns>
-          <DataGridTextColumn Header="Destination" Binding="{Binding Destination}" Width="160" />
-          <DataGridTextColumn Header="PrefixLength" Binding="{Binding PrefixLength}" Width="100" />
-          <DataGridTextColumn Header="Mask" Binding="{Binding Mask}" Width="120" />
-          <DataGridTextColumn Header="Gateway" Binding="{Binding Gateway}" Width="160" />
-          <DataGridTextColumn Header="InterfaceName" Binding="{Binding InterfaceName}" Width="140" />
-          <DataGridTextColumn Header="InterfaceIndex" Binding="{Binding InterfaceIndex}" Width="110" />
-          <DataGridTextColumn Header="Metric" Binding="{Binding Metric}" Width="80" />
-          <DataGridTextColumn Header="Protocol" Binding="{Binding Protocol}" Width="*" />
-        </DataGrid.Columns>
-      </DataGrid>
-
-      <TextBlock Grid.Row="2" Text="Neighbors" FontWeight="SemiBold" Margin="0,12,0,4" />
-      <DataGrid Grid.Row="3"
-                ItemsSource="{Binding Neighbors}"
-                IsReadOnly="True"
-                AutoGenerateColumns="False"
-                CanUserAddRows="False"
-                CanUserDeleteRows="False"
-                HeadersVisibility="Column"
-                VerticalScrollBarVisibility="Auto"
-                HorizontalScrollBarVisibility="Auto">
-        <DataGrid.Columns>
-          <DataGridTextColumn Header="Address" Binding="{Binding Address}" Width="180" />
-          <DataGridTextColumn Header="MacAddress" Binding="{Binding MacAddress}" Width="160" />
-          <DataGridTextColumn Header="InterfaceName" Binding="{Binding InterfaceName}" Width="160" />
-          <DataGridTextColumn Header="State" Binding="{Binding State}" Width="*" />
-        </DataGrid.Columns>
-      </DataGrid>
-    </Grid>
+        xmlns:shell="clr-namespace:Vestigium.Controls.Shell;assembly=Vestigium.Controls"
+        Title="RouteIQ"
+        Height="760" Width="1100"
+        MinHeight="520" MinWidth="800"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource Vestigium.Brushes.Surface.Window}">
+  <DockPanel Style="{StaticResource DockPanel.Standard}">
+    <ItemsControl DockPanel.Dock="Top"
+                  Margin="12,8,12,0"
+                  ItemsSource="{Binding NavItems, ElementName=RootShell}">
+      <ItemsControl.ItemsPanel>
+        <ItemsPanelTemplate>
+          <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" />
+        </ItemsPanelTemplate>
+      </ItemsControl.ItemsPanel>
+      <ItemsControl.ItemTemplate>
+        <DataTemplate>
+          <RadioButton Style="{StaticResource RadioButton.HorizontalTab}"
+                       Content="{Binding Header}"
+                       IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                       IsEnabled="{Binding IsEnabled}"
+                       GroupName="RouteIqMainNav"
+                       Checked="MainNav_Checked"
+                       Margin="0,0,8,0" />
+        </DataTemplate>
+      </ItemsControl.ItemTemplate>
+    </ItemsControl>
+    <shell:VestigiumShell x:Name="RootShell"
+                          ShowNav="False"
+                          Status="{Binding Status}"
+                          StatusBarPosition="{Binding Status.Position, Mode=TwoWay}"
+                          ShowStatusBar="{Binding ShowStatusBar}" />
   </DockPanel>
 </Window>
