@@ -21,9 +21,9 @@ public sealed partial class MainViewModel : ObservableObject
 
     public ObservableCollection<NetworkRoute> Ipv6Routes { get; } = [];
 
-    public ObservableCollection<NetworkNeighbor> Ipv4Neighbors { get; } = [];
+    public ObservableCollection<NeighborGridRow> Ipv4Neighbors { get; } = [];
 
-    public ObservableCollection<NetworkNeighbor> Ipv6Neighbors { get; } = [];
+    public ObservableCollection<NeighborGridRow> Ipv6Neighbors { get; } = [];
 
     public Action<string>? ReportStatus { get; set; }
 
@@ -109,21 +109,23 @@ public sealed partial class MainViewModel : ObservableObject
         return (ipv4, ipv6, v4, v6);
     }
 
-    private static IReadOnlyList<NetworkNeighbor> ApplyPacked(IReadOnlyList<NetworkNeighbor> rows)
+    private static IReadOnlyList<NeighborGridRow> ApplyPacked(IReadOnlyList<NetworkNeighbor> rows)
     {
         return rows.Select(row =>
         {
-            if (!string.IsNullOrWhiteSpace(row.Vendor) || !CanLookup(row.MacAddress))
-                return row;
+            if (!CanLookup(row.MacAddress))
+                return new NeighborGridRow(row, null);
             var hit = NetworkHelper.LookupOuiPacked(row.MacAddress!);
-            return string.IsNullOrWhiteSpace(hit.Vendor) ? row : row with { Vendor = hit.Vendor };
+            if (string.IsNullOrWhiteSpace(hit.Vendor))
+                return new NeighborGridRow(row, null);
+            return new NeighborGridRow(row with { Vendor = hit.Vendor }, hit.Vendor);
         }).ToArray();
     }
 
     private async Task ResolveLiveVendors()
     {
         var pending = Ipv4Neighbors.Concat(Ipv6Neighbors)
-            .Where(row => string.IsNullOrWhiteSpace(row.Vendor) && CanLookup(row.MacAddress))
+            .Where(row => string.IsNullOrWhiteSpace(row.VendorText) && CanLookup(row.MacAddress))
             .GroupBy(row => Oui(row.MacAddress!), StringComparer.OrdinalIgnoreCase)
             .Select(group => group.First())
             .ToArray();
@@ -152,7 +154,11 @@ public sealed partial class MainViewModel : ObservableObject
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
                     if (string.IsNullOrWhiteSpace(hit.Vendor))
+                    {
                         misses.Add(oui);
+                        Stamp(Ipv4Neighbors, oui, null);
+                        Stamp(Ipv6Neighbors, oui, null);
+                    }
                     else
                     {
                         filled++;
@@ -169,6 +175,8 @@ public sealed partial class MainViewModel : ObservableObject
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
                     misses.Add(oui + " " + ex.Message);
+                    Stamp(Ipv4Neighbors, oui, null);
+                    Stamp(Ipv6Neighbors, oui, null);
                     Report($"OUI {filled} filled, {misses.Count} missed");
                 });
             }
@@ -198,14 +206,15 @@ public sealed partial class MainViewModel : ObservableObject
         }
     }
 
-    private static void Stamp(ObservableCollection<NetworkNeighbor> rows, string oui, string vendor)
+    private static void Stamp(ObservableCollection<NeighborGridRow> rows, string oui, string? vendor)
     {
         for (var i = 0; i < rows.Count; i++)
         {
             var row = rows[i];
             if (!string.Equals(Oui(row.MacAddress), oui, StringComparison.OrdinalIgnoreCase))
                 continue;
-            rows[i] = row with { Vendor = vendor };
+            var source = string.IsNullOrWhiteSpace(vendor) ? row.Source with { Vendor = null } : row.Source with { Vendor = vendor };
+            rows[i] = new NeighborGridRow(source, string.IsNullOrWhiteSpace(vendor) ? "--" : vendor);
         }
     }
 
@@ -270,7 +279,7 @@ public sealed partial class MainViewModel : ObservableObject
         return text.ToString();
     }
 
-    private static void AppendNeighbors(StringBuilder text, string title, IReadOnlyList<NetworkNeighbor> rows)
+    private static void AppendNeighbors(StringBuilder text, string title, IReadOnlyList<NeighborGridRow> rows)
     {
         if (text.Length > 0)
             text.AppendLine();
@@ -282,7 +291,7 @@ public sealed partial class MainViewModel : ObservableObject
             text.Append(Pad(row.MacAddress, 19));
             text.Append(Pad(row.InterfaceName, 21));
             text.Append(Pad(row.State, 17));
-            text.AppendLine(row.Vendor);
+            text.AppendLine(row.VendorText);
         }
 
         if (rows.Count == 0)
