@@ -1,0 +1,49 @@
+<UserControl x:Class="Vestigium.Suite.Network.RouteIQ.Views.NetBiosView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="{DynamicResource Vestigium.Brushes.Surface.Window}">
+  <DockPanel Margin="16,12,16,16">
+    <StackPanel DockPanel.Dock="Top"
+                Style="{StaticResource StackPanel.Toolbar}"
+                Orientation="Horizontal"
+                HorizontalAlignment="Left"
+                Margin="0,0,0,12">
+      <Button Content="Refresh"
+              Style="{StaticResource Button.Primary}"
+              Command="{Binding RefreshCommand}"
+              Padding="16,4"
+              Margin="0,0,8,0" />
+      <Button Content="Copy"
+              Style="{StaticResource Button.Secondary}"
+              Command="{Binding CopyNetBiosCommand}"
+              Padding="16,4" />
+    </StackPanel>
+    <TextBlock DockPanel.Dock="Top"
+               Style="{StaticResource TextBlock.Caption}"
+               Text="NetBIOS names. Local is nbtstat -n. Cache is nbtstat -c."
+               Margin="0,0,0,4" />
+    <Border BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
+      <DataGrid ItemsSource="{Binding NetBiosNames}"
+                Style="{StaticResource DataGrid.Compact}"
+                RowHeight="28"
+                IsReadOnly="True"
+                AutoGenerateColumns="False"
+                CanUserAddRows="False"
+                CanUserDeleteRows="False"
+                HeadersVisibility="Column"
+                VerticalAlignment="Stretch"
+                VerticalScrollBarVisibility="Auto"
+                HorizontalScrollBarVisibility="Auto">
+        <DataGrid.Columns>
+          <DataGridTextColumn Header="Table" Binding="{Binding Table}" Width="90" />
+          <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="180" />
+          <DataGridTextColumn Header="Suffix" Binding="{Binding Suffix}" Width="80" />
+          <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="100" />
+          <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="120" />
+          <DataGridTextColumn Header="Address" Binding="{Binding Address}" Width="160" />
+          <DataGridTextColumn Header="LifeSeconds" Binding="{Binding LifeSeconds}" Width="110" />
+        </DataGrid.Columns>
+      </DataGrid>
+    </Border>
+  </DockPanel>
+</UserControl>

@@ -50,13 +50,19 @@ public partial class App : Application
                 {
                     Title = "RouteIQ",
                     Subject = "Route table",
-                    Description = "IPv4 and IPv6 prints. Family filters which table shows."
+                    Description = "IPv4 and IPv6 prints."
                 },
                 new VestigiumNavItemSpec("Neighbors")
                 {
                     Title = "Neighbors",
                     Subject = "Neighbor cache",
-                    Description = "Print the stack neighbor cache. Refresh does not resolve one address."
+                    Description = "Print the stack neighbor cache."
+                },
+                new VestigiumNavItemSpec("NetBIOS")
+                {
+                    Title = "NetBIOS",
+                    Subject = "NetBIOS names",
+                    Description = "Local names and the remote name cache."
                 },
                 new VestigiumNavItemSpec("Settings")
             }
@@ -82,6 +88,10 @@ public partial class App : Application
         var neighbors = window.HostShell["Neighbors"];
         if (neighbors is not null)
             neighbors.Content = new NeighborsView { DataContext = host };
+
+        var netbios = window.HostShell["NetBIOS"];
+        if (netbios is not null)
+            netbios.Content = new NetBiosView { DataContext = host };
 
         var settingsItem = window.HostShell["Settings"];
         if (settingsItem is not null)
