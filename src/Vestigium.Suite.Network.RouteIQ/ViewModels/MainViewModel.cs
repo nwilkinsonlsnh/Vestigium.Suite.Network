@@ -23,6 +23,7 @@ public sealed partial class MainViewModel : ObservableObject
     public ObservableCollection<NeighborGridRow> Ipv4Neighbors { get; } = [];
     public ObservableCollection<NeighborGridRow> Ipv6Neighbors { get; } = [];
     public ObservableCollection<NetworkNetBiosName> NetBiosNames { get; } = [];
+    public ObservableCollection<NetworkLmHostEntry> LmHosts { get; } = [];
     public Action<string>? ReportStatus { get; set; }
     public Func<int>? OuiPoolSize { get; set; }
 
@@ -45,7 +46,9 @@ public sealed partial class MainViewModel : ObservableObject
             Replace(Ipv4Neighbors, ApplyPacked(snapshot.Ipv4Neighbors));
             Replace(Ipv6Neighbors, ApplyPacked(snapshot.Ipv6Neighbors));
             Replace(NetBiosNames, snapshot.NetBios);
+            Replace(LmHosts, snapshot.LmHosts);
             ApplyNetBiosStats();
+            ApplyLmHostSummary(snapshot.LmHosts.Count);
             var vendors = ResolveLiveVendors();
             var probes = ProbeNeighbors();
             var vendorLine = await vendors.ConfigureAwait(true);
@@ -73,6 +76,9 @@ public sealed partial class MainViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanCopy))]
     private void CopyNetBios() { try { Clipboard.SetText(FormatNetBios()); } catch (Exception ex) { Report(ex.Message); } }
 
+    [RelayCommand(CanExecute = nameof(CanCopy))]
+    private void CopyLmHosts() { try { Clipboard.SetText(FormatLmHosts()); } catch (Exception ex) { Report(ex.Message); } }
+
     private bool CanRefresh() => !_busy;
     private bool CanCopy() => !_busy;
 
@@ -82,11 +88,12 @@ public sealed partial class MainViewModel : ObservableObject
         CopyCommand.NotifyCanExecuteChanged();
         CopyNeighborsCommand.NotifyCanExecuteChanged();
         CopyNetBiosCommand.NotifyCanExecuteChanged();
+        CopyLmHostsCommand.NotifyCanExecuteChanged();
     }
 
     private void Report(string text) => ReportStatus?.Invoke(text);
 
-    private static (IReadOnlyList<NetworkRoute> Ipv4, IReadOnlyList<NetworkRoute> Ipv6, IReadOnlyList<NetworkNeighbor> Ipv4Neighbors, IReadOnlyList<NetworkNeighbor> Ipv6Neighbors, IReadOnlyList<NetworkNetBiosName> NetBios) Load()
+    private static (IReadOnlyList<NetworkRoute> Ipv4, IReadOnlyList<NetworkRoute> Ipv6, IReadOnlyList<NetworkNeighbor> Ipv4Neighbors, IReadOnlyList<NetworkNeighbor> Ipv6Neighbors, IReadOnlyList<NetworkNetBiosName> NetBios, IReadOnlyList<NetworkLmHostEntry> LmHosts) Load()
     {
         var ipv4 = ByAddress(NetworkHelper.GetRoutes(RouteFamily.Pv4), row => row.Destination);
         var ipv6 = ByAddress(NetworkHelper.GetRoutes(RouteFamily.Pv6), row => row.Destination);
@@ -97,7 +104,8 @@ public sealed partial class MainViewModel : ObservableObject
             .OrderBy(row => row.IsCache)
             .ThenBy(row => row.Name, StringComparer.OrdinalIgnoreCase)
             .ToArray();
-        return (ipv4, ipv6, v4, v6, names);
+        var hosts = NetworkHelper.GetLmHosts();
+        return (ipv4, ipv6, v4, v6, names, hosts);
     }
 
     private static IReadOnlyList<NeighborGridRow> ApplyPacked(IReadOnlyList<NetworkNeighbor> rows)
@@ -300,6 +308,24 @@ public sealed partial class MainViewModel : ObservableObject
             text.AppendLine(row.LifeSeconds?.ToString(CultureInfo.InvariantCulture));
         }
         if (NetBiosNames.Count == 0) text.AppendLine("None");
+        return text.ToString();
+    }
+
+    private string FormatLmHosts()
+    {
+        var text = new StringBuilder();
+        text.AppendLine(LmHostSummary);
+        text.AppendLine("Address          Name                 Preload  Domain           MultiHome  Include");
+        foreach (var row in LmHosts)
+        {
+            text.Append(Pad(row.Address, 17));
+            text.Append(Pad(row.Name, 21));
+            text.Append(Pad(row.Preload ? "True" : "False", 9));
+            text.Append(Pad(row.Domain, 17));
+            text.Append(Pad(row.MultiHome ? "True" : "False", 11));
+            text.AppendLine(row.IncludePath ?? NoValue);
+        }
+        if (LmHosts.Count == 0) text.AppendLine("None");
         return text.ToString();
     }
 
