@@ -4,11 +4,12 @@
 **Version:** 1.0  
 **Status:** Locked for the first shippable window  
 **Date:** 24 September 2026  
-**Project:** `Vestigium.Suite.Network.NicIQ`  
+**Project:** `src/Vestigium.Suite.Network.NicIQ`  
 **Kind:** WPF exe, `net10.0-windows`, MVVM  
 **APPID:** `NicIQ` (never `Network`)  
 **Library:** `Vestigium.Helpers.Network` 1.2.0  
-**Binding:** Helpers.Network Requirements v1.6 wins on protocol. This file wins on the window.
+**Binding:** Helpers.Network Requirements v1.6 wins on protocol. This file wins on the window.  
+**Superseded by:** [Requirements_v1.1.md](Requirements_v1.1.md) for monitoring, [Requirements_v1.2.md](Requirements_v1.2.md) for the current window. This file stays first and ten.
 
 First and ten is “which NIC, is it up, how fast.” One list. One selected adapter. One watch. No packet send. No plot required.
 
@@ -105,3 +106,5 @@ One window. No tabs. No chart control this release. Speed is a number on the row
 | Version | Date | Change |
 |---|---|---|
 | 1.0 | 24 Sep 2026 | First and ten. List + detail + watch. |
+| 1.1 | 29 Sep 2026 | Monitoring slice. See [Requirements_v1.1.md](Requirements_v1.1.md). Body above is unchanged. |
+| 1.2 | 2 Oct 2026 | Current window. See [Requirements_v1.2.md](Requirements_v1.2.md). Body above is unchanged. |
