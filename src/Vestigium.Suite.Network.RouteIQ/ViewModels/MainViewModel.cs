@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -39,8 +40,9 @@ public sealed partial class MainViewModel : ObservableObject
             var snapshot = await Task.Run(Load).ConfigureAwait(true);
             Replace(Ipv4Routes, snapshot.Ipv4);
             Replace(Ipv6Routes, snapshot.Ipv6);
-            Replace(Ipv4Neighbors, snapshot.Ipv4Neighbors);
-            Replace(Ipv6Neighbors, snapshot.Ipv6Neighbors);
+            Replace(Ipv4Neighbors, ApplyPacked(snapshot.Ipv4Neighbors));
+            Replace(Ipv6Neighbors, ApplyPacked(snapshot.Ipv6Neighbors));
+            await ResolveLiveVendors().ConfigureAwait(true);
             Report(string.Empty);
         }
         catch (Exception ex)
@@ -103,6 +105,62 @@ public sealed partial class MainViewModel : ObservableObject
         return (ipv4, ipv6, v4, v6);
     }
 
+    private static IReadOnlyList<NetworkNeighbor> ApplyPacked(IReadOnlyList<NetworkNeighbor> rows)
+    {
+        return rows.Select(row =>
+        {
+            if (!string.IsNullOrWhiteSpace(row.Vendor) || !CanLookup(row.MacAddress))
+                return row;
+            var hit = NetworkHelper.LookupOuiPacked(row.MacAddress!);
+            return string.IsNullOrWhiteSpace(hit.Vendor) ? row : row with { Vendor = hit.Vendor };
+        }).ToArray();
+    }
+
+    private async Task ResolveLiveVendors()
+    {
+        var pending = Ipv4Neighbors.Concat(Ipv6Neighbors)
+            .Where(row => string.IsNullOrWhiteSpace(row.Vendor) && CanLookup(row.MacAddress))
+            .GroupBy(row => Oui(row.MacAddress!), StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        foreach (var group in pending)
+        {
+            var hit = await NetworkHelper.LookupOuiAsync(group.Key).ConfigureAwait(true);
+            if (string.IsNullOrWhiteSpace(hit.Vendor))
+                continue;
+            Stamp(Ipv4Neighbors, group.Key, hit.Vendor);
+            Stamp(Ipv6Neighbors, group.Key, hit.Vendor);
+        }
+    }
+
+    private static void Stamp(ObservableCollection<NetworkNeighbor> rows, string oui, string vendor)
+    {
+        for (var i = 0; i < rows.Count; i++)
+        {
+            var row = rows[i];
+            if (!string.Equals(Oui(row.MacAddress), oui, StringComparison.OrdinalIgnoreCase))
+                continue;
+            rows[i] = row with { Vendor = vendor };
+        }
+    }
+
+    private static bool CanLookup(string? mac)
+    {
+        if (string.IsNullOrWhiteSpace(mac))
+            return false;
+        var parts = mac.Split(':', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length < 3 || !byte.TryParse(parts[0], NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var first))
+            return false;
+        if ((first & 0x01) != 0)
+            return false;
+        return !mac.StartsWith("FF:FF:FF", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string Oui(string? mac)
+    {
+        var parts = mac?.Split(':', StringSplitOptions.RemoveEmptyEntries) ?? [];
+        return parts.Length < 3 ? string.Empty : string.Join(':', parts[0], parts[1], parts[2]);
+    }
+
     private static IReadOnlyList<T> ByAddress<T>(IEnumerable<T> rows, Func<T, string?> address)
     {
         return rows
@@ -151,13 +209,14 @@ public sealed partial class MainViewModel : ObservableObject
         if (text.Length > 0)
             text.AppendLine();
         text.AppendLine(title);
-        text.AppendLine("Address              MAC                Interface            State");
+        text.AppendLine("Address              MAC                Interface            State            Vendor");
         foreach (var row in rows)
         {
             text.Append(Pad(row.Address, 21));
             text.Append(Pad(row.MacAddress, 19));
             text.Append(Pad(row.InterfaceName, 21));
-            text.AppendLine(row.State);
+            text.Append(Pad(row.State, 17));
+            text.AppendLine(row.Vendor);
         }
 
         if (rows.Count == 0)
