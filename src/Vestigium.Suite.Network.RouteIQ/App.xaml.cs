@@ -46,11 +46,11 @@ public partial class App : Application
         {
             Items =
             {
-                new VestigiumNavItemSpec("Routes")
+                new VestigiumNavItemSpec("RouteIQ")
                 {
-                    Title = "Routes",
+                    Title = "RouteIQ",
                     Subject = "Route table",
-                    Description = "Print the stack route table. Family filters the print."
+                    Description = "IPv4 and IPv6 prints. Family filters which table shows."
                 },
                 new VestigiumNavItemSpec("Neighbors")
                 {
@@ -71,7 +71,7 @@ public partial class App : Application
         };
         session.Attach(settings);
 
-        var routes = window.HostShell["Routes"];
+        var routes = window.HostShell["RouteIQ"];
         if (routes is not null)
         {
             routes.Content = new RoutesView { DataContext = host };
