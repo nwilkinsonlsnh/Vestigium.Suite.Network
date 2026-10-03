@@ -78,7 +78,6 @@ public sealed partial class MainViewModel : ObservableObject
     }
 
     private bool CanRefresh() => !_busy;
-
     private bool CanCopy() => !_busy;
 
     private void RaiseCanExecute()
@@ -178,31 +177,35 @@ public sealed partial class MainViewModel : ObservableObject
     private async Task ProbeNeighbors()
     {
         var pending = Ipv4Neighbors.Concat(Ipv6Neighbors)
-            .Select(row => row.Address)
-            .Where(CanPing)
-            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Where(row => CanPing(row.Address))
+            .GroupBy(row => row.Address, StringComparer.OrdinalIgnoreCase)
+            .Select(group => group.First())
             .ToArray();
         var options = new IcmpEchoOptions
         {
             Count = 1,
             Timeout = TimeSpan.FromSeconds(1),
-            Interval = TimeSpan.FromMilliseconds(200)
+            Interval = TimeSpan.FromMilliseconds(200),
+            Ttl = 128
         };
         using var slots = new SemaphoreSlim(4, 4);
-        var tasks = pending.Select(async address =>
+        var tasks = pending.Select(async row =>
         {
             await slots.WaitAsync().ConfigureAwait(false);
             try
             {
-                var result = await NetworkHelper.Ping(address, options).RunAsync().ConfigureAwait(false);
-                var text = result.Received > 0 && result.AverageMs is not null
-                    ? $"{Math.Round(result.AverageMs.Value)} ms"
-                    : result.Status.ToString();
-                await Application.Current.Dispatcher.InvokeAsync(() => StampPing(address, text));
+                var target = EchoTarget(row);
+                var result = await NetworkHelper.Ping(target, options).RunAsync().ConfigureAwait(false);
+                var reply = result.Replies.FirstOrDefault();
+                var rtt = result.Received > 0 && result.AverageMs is not null
+                    ? Math.Round(result.AverageMs.Value).ToString(CultureInfo.InvariantCulture)
+                    : "--";
+                var hops = reply is null ? "--" : EstimateHops(reply.Ttl).ToString(CultureInfo.InvariantCulture);
+                await Application.Current.Dispatcher.InvokeAsync(() => StampProbe(row.Address, rtt, hops));
             }
             catch (Exception)
             {
-                await Application.Current.Dispatcher.InvokeAsync(() => StampPing(address, "failed"));
+                await Application.Current.Dispatcher.InvokeAsync(() => StampProbe(row.Address, "--", "--"));
             }
             finally
             {
@@ -210,6 +213,21 @@ public sealed partial class MainViewModel : ObservableObject
             }
         });
         await Task.WhenAll(tasks).ConfigureAwait(true);
+    }
+
+    private static string EchoTarget(NeighborGridRow row)
+    {
+        if (IPAddress.TryParse(row.Address, out var ip) && ip.IsIPv6LinkLocal && row.InterfaceIndex is > 0)
+            return row.Address + "%" + row.InterfaceIndex.Value.ToString(CultureInfo.InvariantCulture);
+        return row.Address;
+    }
+
+    private static int EstimateHops(int ttl)
+    {
+        if (ttl <= 0)
+            return 0;
+        var origin = ttl <= 64 ? 64 : ttl <= 128 ? 128 : 255;
+        return Math.Max(0, origin - ttl);
     }
 
     private async Task PaceOuiSend()
@@ -236,24 +254,24 @@ public sealed partial class MainViewModel : ObservableObject
             if (!string.Equals(Oui(row.MacAddress), oui, StringComparison.OrdinalIgnoreCase))
                 continue;
             var source = string.IsNullOrWhiteSpace(vendor) ? row.Source with { Vendor = null } : row.Source with { Vendor = vendor };
-            rows[i] = new NeighborGridRow(source, string.IsNullOrWhiteSpace(vendor) ? "--" : vendor, row.PingText);
+            rows[i] = new NeighborGridRow(source, string.IsNullOrWhiteSpace(vendor) ? "--" : vendor, row.RttMs, row.Hops);
         }
     }
 
-    private void StampPing(string address, string text)
+    private void StampProbe(string address, string rtt, string hops)
     {
-        StampPing(Ipv4Neighbors, address, text);
-        StampPing(Ipv6Neighbors, address, text);
+        StampProbe(Ipv4Neighbors, address, rtt, hops);
+        StampProbe(Ipv6Neighbors, address, rtt, hops);
     }
 
-    private static void StampPing(ObservableCollection<NeighborGridRow> rows, string address, string text)
+    private static void StampProbe(ObservableCollection<NeighborGridRow> rows, string address, string rtt, string hops)
     {
         for (var i = 0; i < rows.Count; i++)
         {
             var row = rows[i];
             if (!string.Equals(row.Address, address, StringComparison.OrdinalIgnoreCase))
                 continue;
-            rows[i] = row with { PingText = text };
+            rows[i] = row with { RttMs = rtt, Hops = hops };
         }
     }
 
@@ -273,7 +291,7 @@ public sealed partial class MainViewModel : ObservableObject
     {
         if (!IPAddress.TryParse(address, out var ip))
             return false;
-        if (IPAddress.IsLoopback(ip))
+        if (IPAddress.IsLoopback(ip) || ip.Equals(IPAddress.IPv6Any) || ip.Equals(IPAddress.Any))
             return false;
         if (ip.AddressFamily == AddressFamily.InterNetwork)
         {
@@ -281,7 +299,7 @@ public sealed partial class MainViewModel : ObservableObject
             return first is < 224 and not 0;
         }
 
-        return !ip.IsIPv6Multicast && !ip.IsIPv6LinkLocal;
+        return !ip.IsIPv6Multicast;
     }
 
     private static string Oui(string? mac)
@@ -338,7 +356,7 @@ public sealed partial class MainViewModel : ObservableObject
         if (text.Length > 0)
             text.AppendLine();
         text.AppendLine(title);
-        text.AppendLine("Address              MAC                Interface            State            Vendor               Ping");
+        text.AppendLine("Address              MAC                Interface            State            Vendor               RTT   Hops");
         foreach (var row in rows)
         {
             text.Append(Pad(row.Address, 21));
@@ -346,7 +364,8 @@ public sealed partial class MainViewModel : ObservableObject
             text.Append(Pad(row.InterfaceName, 21));
             text.Append(Pad(row.State, 17));
             text.Append(Pad(row.VendorText, 21));
-            text.AppendLine(row.PingText);
+            text.Append(Pad(row.RttMs, 6));
+            text.AppendLine(row.Hops);
         }
 
         if (rows.Count == 0)
