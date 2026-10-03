@@ -114,7 +114,7 @@ public sealed partial class MainViewModel
         var added = rows.Count(row => row.Change == "Added");
         var dropped = rows.Count(row => row.Change == "Dropped");
         var returned = rows.Count(row => row.Change == "Returned");
-        var open = rows.Count - dropped;
+        var open = rows.Length - dropped;
         ConnectionSummary = $"Open {open}. Added {added}. Dropped {dropped}. Returned {returned}.";
     }
 
