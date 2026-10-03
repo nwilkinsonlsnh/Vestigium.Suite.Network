@@ -90,14 +90,7 @@ public sealed partial class MainViewModel : ObservableObject
         return (ipv4, ipv6, neighbors);
     }
 
-    private static string FormatTables()
-    {
-        var text = new StringBuilder();
-        Append(text, "IPv4 Route Table", Array.Empty<NetworkRoute>());
-        return text.ToString();
-    }
-
-    private string FormatTablesLive()
+    private string FormatTables()
     {
         var text = new StringBuilder();
         Append(text, "IPv4 Route Table", Ipv4Routes);
