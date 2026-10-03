@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Net.Sockets;
 using System.Text;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -15,7 +16,9 @@ public sealed partial class MainViewModel : ObservableObject
 
     public ObservableCollection<NetworkRoute> Ipv6Routes { get; } = [];
 
-    public ObservableCollection<NetworkNeighbor> Neighbors { get; } = [];
+    public ObservableCollection<NetworkNeighbor> Ipv4Neighbors { get; } = [];
+
+    public ObservableCollection<NetworkNeighbor> Ipv6Neighbors { get; } = [];
 
     public Action<string>? ReportStatus { get; set; }
 
@@ -35,7 +38,8 @@ public sealed partial class MainViewModel : ObservableObject
             var snapshot = await Task.Run(Load).ConfigureAwait(true);
             Replace(Ipv4Routes, snapshot.Ipv4);
             Replace(Ipv6Routes, snapshot.Ipv6);
-            Replace(Neighbors, snapshot.Neighbors);
+            Replace(Ipv4Neighbors, snapshot.Ipv4Neighbors);
+            Replace(Ipv6Neighbors, snapshot.Ipv6Neighbors);
             Report(string.Empty);
         }
         catch (Exception ex)
@@ -88,12 +92,14 @@ public sealed partial class MainViewModel : ObservableObject
 
     private void Report(string text) => ReportStatus?.Invoke(text);
 
-    private static (IReadOnlyList<NetworkRoute> Ipv4, IReadOnlyList<NetworkRoute> Ipv6, IReadOnlyList<NetworkNeighbor> Neighbors) Load()
+    private static (IReadOnlyList<NetworkRoute> Ipv4, IReadOnlyList<NetworkRoute> Ipv6, IReadOnlyList<NetworkNeighbor> Ipv4Neighbors, IReadOnlyList<NetworkNeighbor> Ipv6Neighbors) Load()
     {
         var ipv4 = NetworkHelper.GetRoutes(RouteFamily.Pv4);
         var ipv6 = NetworkHelper.GetRoutes(RouteFamily.Pv6);
         var neighbors = NetworkHelper.GetNeighbors();
-        return (ipv4, ipv6, neighbors);
+        var v4 = neighbors.Where(row => row.Family == AddressFamily.InterNetwork).ToArray();
+        var v6 = neighbors.Where(row => row.Family == AddressFamily.InterNetworkV6).ToArray();
+        return (ipv4, ipv6, v4, v6);
     }
 
     private string FormatTables()
@@ -107,9 +113,18 @@ public sealed partial class MainViewModel : ObservableObject
     private string FormatNeighbors()
     {
         var text = new StringBuilder();
-        text.AppendLine("Neighbor Cache");
+        AppendNeighbors(text, "IPv4 Neighbor Cache", Ipv4Neighbors);
+        AppendNeighbors(text, "IPv6 Neighbor Cache", Ipv6Neighbors);
+        return text.ToString();
+    }
+
+    private static void AppendNeighbors(StringBuilder text, string title, IReadOnlyList<NetworkNeighbor> rows)
+    {
+        if (text.Length > 0)
+            text.AppendLine();
+        text.AppendLine(title);
         text.AppendLine("Address              MAC                Interface            State");
-        foreach (var row in Neighbors)
+        foreach (var row in rows)
         {
             text.Append(Pad(row.Address, 21));
             text.Append(Pad(row.MacAddress, 19));
@@ -117,9 +132,8 @@ public sealed partial class MainViewModel : ObservableObject
             text.AppendLine(row.State);
         }
 
-        if (Neighbors.Count == 0)
+        if (rows.Count == 0)
             text.AppendLine("None");
-        return text.ToString();
     }
 
     private static void AppendRoutes(StringBuilder text, string title, IReadOnlyList<NetworkRoute> rows)
