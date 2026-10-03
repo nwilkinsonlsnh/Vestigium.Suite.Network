@@ -22,9 +22,9 @@
     <Grid>
       <Grid.RowDefinitions>
         <RowDefinition Height="Auto" />
-        <RowDefinition Height="360" />
+        <RowDefinition Height="*" />
         <RowDefinition Height="Auto" />
-        <RowDefinition Height="220" />
+        <RowDefinition Height="276" />
       </Grid.RowDefinitions>
 
       <TextBlock Grid.Row="0"
@@ -34,10 +34,10 @@
       <Border Grid.Row="1"
               BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
               BorderThickness="1"
-              Margin="0,0,0,12"
-              Height="360">
+              Margin="0,0,0,12">
         <DataGrid ItemsSource="{Binding Ipv4Routes}"
                   Style="{StaticResource DataGrid.Compact}"
+                  RowHeight="28"
                   IsReadOnly="True"
                   AutoGenerateColumns="False"
                   CanUserAddRows="False"
@@ -66,9 +66,10 @@
       <Border Grid.Row="3"
               BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
               BorderThickness="1"
-              Height="220">
+              Height="276">
         <DataGrid ItemsSource="{Binding Ipv6Routes}"
                   Style="{StaticResource DataGrid.Compact}"
+                  RowHeight="28"
                   IsReadOnly="True"
                   AutoGenerateColumns="False"
                   CanUserAddRows="False"
