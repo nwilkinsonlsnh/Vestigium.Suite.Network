@@ -34,7 +34,7 @@ Shell does not wrap `NetworkHelper`. No port sweep. No default-route write. No H
 | PingIQ | exe | Echo grid. Probe N/X. Persist. Charts. | [Requirements](PingIQ/Requirements_v1.1.md) | [Design](PingIQ/Design_v1.1.md) | [PR-Plans](PingIQ/PR-Plans/README.md) |
 | TraceIQ | exe | One target. One walk. Hop list. | [Requirements](TraceIQ/Requirements_v1.0.md) | [Design](TraceIQ/Design_v1.0.md) | [PR-Plans](TraceIQ/PR-Plans/README.md) |
 | DnsIQ | exe | One name. Lookup. All types. | [Requirements](DnsIQ/Requirements_v1.0.md) | [Design](DnsIQ/Design_v1.0.md) | [PR-Plans](DnsIQ/PR-Plans/README.md) |
-| NicIQ | exe | Which NIC, is it up, how fast. | [Requirements](NicIQ/Requirements_v1.0.md) | [Design](NicIQ/Design_v1.0.md) | [PR-Plans](NicIQ/PR-Plans/README.md) |
+| NicIQ | exe | Which NIC, is it up, how fast. | [Requirements](NicIQ/Requirements_v1.2.md) | [Design](NicIQ/Design_v1.1.md) | [PR-Plans](NicIQ/PR-Plans/README.md) |
 | RouteIQ | exe | Print routes and neighbors. One probe. | [Requirements](RouteIQ/Requirements_v1.0.md) | [Design](RouteIQ/Design_v1.0.md) | [PR-Plans](RouteIQ/PR-Plans/README.md) |
 | ProbeHost | exe | One snapshot. Four lists. Read-only. | [Requirements](ProbeHost/Requirements_v1.0.md) | [Design](ProbeHost/Design_v1.0.md) | [PR-Plans](ProbeHost/PR-Plans/README.md) |
 | ShareIQ | exe | One UNC. One run. No password. | [Requirements](ShareIQ/Requirements_v1.0.md) | [Design](ShareIQ/Requirements_v1.0.md) | [PR-Plans](ShareIQ/PR-Plans/README.md) |
@@ -42,6 +42,8 @@ Shell does not wrap `NetworkHelper`. No port sweep. No default-route write. No H
 Implement against Requirements. Design is the class and window map, not a second lock table.
 
 DnsIQ is live: [PR02 -- Implementation Plan.md](DnsIQ/PR-Plans/PR02/PR02%20--%20Implementation%20Plan.md).
+
+NicIQ current papers are Requirements v1.2 and Design v1.1. v1.0 and Requirements v1.1 stay in the folder.
 
 ## Tree
 
