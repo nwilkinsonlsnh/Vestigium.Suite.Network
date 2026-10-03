@@ -64,6 +64,12 @@ public partial class App : Application
                     Subject = "NetBIOS names",
                     Description = "Local names and the remote name cache."
                 },
+                new VestigiumNavItemSpec("LMHOSTS")
+                {
+                    Title = "LMHOSTS",
+                    Subject = "LMHOSTS file",
+                    Description = "Read the system LMHOSTS file."
+                },
                 new VestigiumNavItemSpec("Settings")
             }
         });
@@ -92,6 +98,10 @@ public partial class App : Application
         var netbios = window.HostShell["NetBIOS"];
         if (netbios is not null)
             netbios.Content = new NetBiosView { DataContext = host };
+
+        var lmhosts = window.HostShell["LMHOSTS"];
+        if (lmhosts is not null)
+            lmhosts.Content = new LmHostsView { DataContext = host };
 
         var settingsItem = window.HostShell["Settings"];
         if (settingsItem is not null)
