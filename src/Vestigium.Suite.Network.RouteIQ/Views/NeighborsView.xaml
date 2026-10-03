@@ -53,11 +53,12 @@
                     HorizontalScrollBarVisibility="Auto"
                     ScrollViewer.VerticalScrollBarVisibility="Auto">
             <DataGrid.Columns>
-              <DataGridTextColumn Header="Address" Binding="{Binding Address}" Width="220" />
+              <DataGridTextColumn Header="Address" Binding="{Binding Address}" Width="180" />
+              <DataGridTextColumn Header="Class" Binding="{Binding ClassText}" Width="70" />
               <DataGridTextColumn Header="MacAddress" Binding="{Binding MacAddress}" Width="160" />
               <DataGridTextColumn Header="InterfaceName" Binding="{Binding InterfaceName}" Width="180" />
               <DataGridTextColumn Header="InterfaceIndex" Binding="{Binding InterfaceIndex}" Width="120" />
-              <DataGridTextColumn Header="State" Binding="{Binding State}" Width="120" />
+              <DataGridTextColumn Header="State" Binding="{Binding State}" Width="100" />
               <DataGridTextColumn Header="IsMulticast" Binding="{Binding IsMulticast}" Width="110" />
               <DataGridTextColumn Header="Vendor" Binding="{Binding VendorText}" Width="180" />
               <DataGridTextColumn Header="RTT (ms)" Binding="{Binding RttMs}" Width="90" />
@@ -90,11 +91,12 @@
                     HorizontalScrollBarVisibility="Auto"
                     ScrollViewer.VerticalScrollBarVisibility="Auto">
             <DataGrid.Columns>
-              <DataGridTextColumn Header="Address" Binding="{Binding Address}" Width="220" />
+              <DataGridTextColumn Header="Address" Binding="{Binding Address}" Width="180" />
+              <DataGridTextColumn Header="Class" Binding="{Binding ClassText}" Width="70" />
               <DataGridTextColumn Header="MacAddress" Binding="{Binding MacAddress}" Width="160" />
               <DataGridTextColumn Header="InterfaceName" Binding="{Binding InterfaceName}" Width="180" />
               <DataGridTextColumn Header="InterfaceIndex" Binding="{Binding InterfaceIndex}" Width="120" />
-              <DataGridTextColumn Header="State" Binding="{Binding State}" Width="120" />
+              <DataGridTextColumn Header="State" Binding="{Binding State}" Width="100" />
               <DataGridTextColumn Header="IsMulticast" Binding="{Binding IsMulticast}" Width="110" />
               <DataGridTextColumn Header="Vendor" Binding="{Binding VendorText}" Width="160" />
               <DataGridTextColumn Header="RTT (ms)" Binding="{Binding RttMs}" Width="90" />

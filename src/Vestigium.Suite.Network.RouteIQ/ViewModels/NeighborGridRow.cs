@@ -7,6 +7,7 @@ namespace Vestigium.Suite.Network.RouteIQ.ViewModels;
 public sealed record NeighborGridRow(NetworkNeighbor Source, string? VendorText, string? RttMs = null, string? Hops = null)
 {
     public string Address => Source.Address;
+    public string? ClassText { get; } = Letter(Source.Address);
     public string? MacAddress => Source.MacAddress;
     public string? InterfaceName => Source.InterfaceName;
     public int? InterfaceIndex => Source.InterfaceIndex;
@@ -15,6 +16,21 @@ public sealed record NeighborGridRow(NetworkNeighbor Source, string? VendorText,
     public bool IsMulticast => Multicast(Source.Address);
     public string? LastReachableText => FormatReachable(Source.LastReachable);
     public string? Vendor => Source.Vendor;
+
+    private static string? Letter(string? address)
+    {
+        if (string.IsNullOrWhiteSpace(address))
+            return null;
+        try
+        {
+            var traditional = NetworkHelper.ClassifyAddress(address).TraditionalClass;
+            return traditional == TraditionalClass.None ? null : traditional.ToString();
+        }
+        catch (Exception)
+        {
+            return null;
+        }
+    }
 
     private static bool Multicast(string? address)
     {
