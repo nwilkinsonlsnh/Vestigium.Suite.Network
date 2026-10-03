@@ -11,11 +11,30 @@ public partial class ConnectionsView : UserControl
     public ConnectionsView()
     {
         InitializeComponent();
-        Loaded += async (_, _) =>
-        {
-            if (DataContext is MainViewModel host && host.Connections.Count == 0)
-                await host.SnapshotConnectionsCommand.ExecuteAsync(null);
-        };
+        Loaded += OnLoaded;
+        SizeChanged += (_, _) => FitGrid();
+    }
+
+    private async void OnLoaded(object sender, RoutedEventArgs e)
+    {
+        FitGrid();
+        if (Window.GetWindow(this) is Window window)
+            window.SizeChanged += (_, _) => FitGrid();
+        if (DataContext is MainViewModel host && host.Connections.Count == 0)
+            await host.SnapshotConnectionsCommand.ExecuteAsync(null);
+    }
+
+    private void FitGrid()
+    {
+        var window = Window.GetWindow(this);
+        if (window is null || ConnectionGrid.ActualWidth <= 0)
+            return;
+        var origin = ConnectionGrid.TranslatePoint(new Point(0, 0), window);
+        var height = window.ActualHeight - origin.Y - 56;
+        if (height < 240)
+            height = 240;
+        ConnectionGrid.Height = height;
+        ConnectionGrid.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
     }
 
     private void OnWheel(object sender, MouseWheelEventArgs e)
