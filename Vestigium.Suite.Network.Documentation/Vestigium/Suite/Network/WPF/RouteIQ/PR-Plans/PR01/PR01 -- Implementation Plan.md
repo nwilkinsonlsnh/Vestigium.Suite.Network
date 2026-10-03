@@ -137,7 +137,7 @@ Combo map:
 ### Refresh
 
 1. If busy, command does nothing.
-2. Status = `Running`. Clear the probe line only if this click is Refresh — leave the previous probe line. Do not clear the grids yet.
+2. Status = `Running`. Leave the previous probe line. Do not clear the grids yet.
 3. Off the UI thread: `GetRoutes(mappedFamily)` and `GetNeighbors()`, then filter neighbors.
 4. Success: replace both lists. Status = `Idle`.
 5. Exception: keep the previous lists. Status = `Failed`. Error text = `ex.Message` (covers `NetworkRouteDenied`).
@@ -166,7 +166,7 @@ Build order is the Order column.
 | Order | ID | Do | State |
 | ---: | :--- | :--- | :--- |
 | 1 | PR01-01 | Window. Delete `Log`. Family, Refresh, probe box, Probe, two grids, status line. No write controls. | Done |
-| 2 | PR01-02 | `RouteIqInput` + Refresh. Pass family. Filter neighbors. Failure keeps lists. Off UI thread. | Open |
+| 2 | PR01-02 | `RouteIqInput` + Refresh. Pass family. Filter neighbors. Failure keeps lists. Off UI thread. | Done |
 | 3 | PR01-03 | Probe. Blank disabled. Garbage rejects before the library. Found / not-found status line. | Open |
 | 4 | PR01-04 | Host tests for parse and family map. No stack. | Open |
 | 5 | PR01-05 | Owner runs the window against Requirements §4. | Owner |
@@ -184,7 +184,9 @@ Held for later slices, on purpose:
 
 ### PR01-02
 
-`RouteIqInput.ToRouteFamily` is the only family map. Refresh command is the only library call in this slice. Probe button may be present and disabled. `ConfigureAwait(true)` after the off-thread call so list replace stays on the UI thread. Do not marshal by hand.
+Done. `RouteIqInput.TryMapFamily` is the only family map: All / IPv4 / IPv6 → `All` / `Pv4` / `Pv6`. Unknown label fails before the library. Refresh passes that family to `GetRoutes`, calls `GetNeighbors`, and filters neighbors in the VM. Both calls run in one `Task.Run`. List replace is after `ConfigureAwait(true)`. Failure does not clear the grids. Probe line is left alone. Probe `CanExecute` is still false.
+
+`TryParseProbe` is on the type for PR01-03. This slice does not call it.
 
 ### PR01-03
 
@@ -250,4 +252,4 @@ When this plan finishes, move the whole `PR01/` folder to `PR-Plans/Completed/PR
 
 ## Next action
 
-PR01-02. `RouteIqInput` plus Refresh using family. `GetNeighbors`, filter, failure keeps both lists, off the UI thread. Probe stays disabled.
+PR01-03. Probe. Blank stays disabled. Garbage rejects in `TryParseProbe` before `ProbeNeighbor`. Found writes address + MAC. Miss is Failed and no MAC.
