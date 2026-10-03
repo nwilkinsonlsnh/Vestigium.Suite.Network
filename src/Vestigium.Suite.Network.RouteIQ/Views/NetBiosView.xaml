@@ -2,6 +2,13 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              Background="{DynamicResource Vestigium.Brushes.Surface.Window}">
+  <UserControl.Resources>
+    <CollectionViewSource x:Key="NetBiosGroups" Source="{Binding NetBiosNames}">
+      <CollectionViewSource.GroupDescriptions>
+        <PropertyGroupDescription PropertyName="Adapter" />
+      </CollectionViewSource.GroupDescriptions>
+    </CollectionViewSource>
+  </UserControl.Resources>
   <DockPanel Margin="16,12,16,16">
     <StackPanel DockPanel.Dock="Top"
                 Style="{StaticResource StackPanel.Toolbar}"
@@ -23,7 +30,7 @@
                Text="{Binding NetBiosSummary}"
                Margin="0,0,0,4" />
     <Border BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
-      <DataGrid ItemsSource="{Binding NetBiosNames}"
+      <DataGrid ItemsSource="{Binding Source={StaticResource NetBiosGroups}}"
                 Style="{StaticResource DataGrid.Compact}"
                 RowHeight="28"
                 IsReadOnly="True"
@@ -34,6 +41,26 @@
                 VerticalAlignment="Stretch"
                 VerticalScrollBarVisibility="Auto"
                 HorizontalScrollBarVisibility="Auto">
+        <DataGrid.GroupStyle>
+          <GroupStyle>
+            <GroupStyle.ContainerStyle>
+              <Style TargetType="GroupItem">
+                <Setter Property="Template">
+                  <Setter.Value>
+                    <ControlTemplate TargetType="GroupItem">
+                      <Expander IsExpanded="True" Background="Transparent" Margin="0,4,0,0">
+                        <Expander.Header>
+                          <TextBlock FontWeight="SemiBold" Text="{Binding Name, TargetNullValue=--}" />
+                        </Expander.Header>
+                        <ItemsPresenter />
+                      </Expander>
+                    </ControlTemplate>
+                  </Setter.Value>
+                </Setter>
+              </Style>
+            </GroupStyle.ContainerStyle>
+          </GroupStyle>
+        </DataGrid.GroupStyle>
         <DataGrid.Columns>
           <DataGridTextColumn Header="IsCache" Binding="{Binding IsCache}" Width="80" />
           <DataGridTextColumn Header="Adapter" Binding="{Binding Adapter, TargetNullValue=--}" Width="160" />
