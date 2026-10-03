@@ -47,7 +47,10 @@ public sealed partial class MainViewModel : ObservableObject
             Replace(Ipv6Routes, snapshot.Ipv6);
             Replace(Ipv4Neighbors, ApplyPacked(snapshot.Ipv4Neighbors));
             Replace(Ipv6Neighbors, ApplyPacked(snapshot.Ipv6Neighbors));
-            await ResolveLiveVendors().ConfigureAwait(true);
+            var vendorLine = await ResolveLiveVendors().ConfigureAwait(true);
+            Report(vendorLine);
+            await ProbeNeighbors().ConfigureAwait(true);
+            Report(vendorLine);
         }
         catch (Exception ex)
         {
@@ -63,27 +66,15 @@ public sealed partial class MainViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanCopy))]
     private void Copy()
     {
-        try
-        {
-            Clipboard.SetText(FormatTables());
-        }
-        catch (Exception ex)
-        {
-            Report(ex.Message);
-        }
+        try { Clipboard.SetText(FormatTables()); }
+        catch (Exception ex) { Report(ex.Message); }
     }
 
     [RelayCommand(CanExecute = nameof(CanCopy))]
     private void CopyNeighbors()
     {
-        try
-        {
-            Clipboard.SetText(FormatNeighbors());
-        }
-        catch (Exception ex)
-        {
-            Report(ex.Message);
-        }
+        try { Clipboard.SetText(FormatNeighbors()); }
+        catch (Exception ex) { Report(ex.Message); }
     }
 
     private bool CanRefresh() => !_busy;
@@ -122,7 +113,7 @@ public sealed partial class MainViewModel : ObservableObject
         }).ToArray();
     }
 
-    private async Task ResolveLiveVendors()
+    private async Task<string> ResolveLiveVendors()
     {
         var pending = Ipv4Neighbors.Concat(Ipv6Neighbors)
             .Where(row => string.IsNullOrWhiteSpace(row.VendorText) && CanLookup(row.MacAddress))
@@ -130,15 +121,12 @@ public sealed partial class MainViewModel : ObservableObject
             .Select(group => group.First())
             .ToArray();
         if (pending.Length == 0)
-        {
-            Report(string.Empty);
-            return;
-        }
+            return "Vendor lookups complete. None to ask.";
 
         var pool = OuiPoolSize?.Invoke() ?? 10;
         if (pool < 1) pool = 1;
         if (pool > 20) pool = 20;
-        var misses = new List<string>();
+        var misses = 0;
         var filled = 0;
         var options = new OuiLookupOptions { Timeout = TimeSpan.FromSeconds(8) };
         using var slots = new SemaphoreSlim(pool, pool);
@@ -155,29 +143,26 @@ public sealed partial class MainViewModel : ObservableObject
                 {
                     if (string.IsNullOrWhiteSpace(hit.Vendor))
                     {
-                        misses.Add(oui);
-                        Stamp(Ipv4Neighbors, oui, null);
-                        Stamp(Ipv6Neighbors, oui, null);
+                        misses++;
+                        StampVendor(Ipv4Neighbors, oui, null);
+                        StampVendor(Ipv6Neighbors, oui, null);
                     }
                     else
                     {
                         filled++;
-                        Stamp(Ipv4Neighbors, oui, hit.Vendor);
-                        Stamp(Ipv6Neighbors, oui, hit.Vendor);
+                        StampVendor(Ipv4Neighbors, oui, hit.Vendor);
+                        StampVendor(Ipv6Neighbors, oui, hit.Vendor);
                     }
-
-                    Report($"OUI {filled} filled, {misses.Count} missed");
                 });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 var oui = Oui(sample.MacAddress);
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    misses.Add(oui + " " + ex.Message);
-                    Stamp(Ipv4Neighbors, oui, null);
-                    Stamp(Ipv6Neighbors, oui, null);
-                    Report($"OUI {filled} filled, {misses.Count} missed");
+                    misses++;
+                    StampVendor(Ipv4Neighbors, oui, null);
+                    StampVendor(Ipv6Neighbors, oui, null);
                 });
             }
             finally
@@ -187,7 +172,44 @@ public sealed partial class MainViewModel : ObservableObject
         });
 
         await Task.WhenAll(tasks).ConfigureAwait(true);
-        Report(misses.Count == 0 ? string.Empty : "OUI miss: " + string.Join(", ", misses));
+        return $"Vendor lookups complete. {filled} found, {misses} missed.";
+    }
+
+    private async Task ProbeNeighbors()
+    {
+        var pending = Ipv4Neighbors.Concat(Ipv6Neighbors)
+            .Select(row => row.Address)
+            .Where(CanPing)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var options = new IcmpEchoOptions
+        {
+            Count = 1,
+            Timeout = TimeSpan.FromSeconds(1),
+            Interval = TimeSpan.FromMilliseconds(200)
+        };
+        using var slots = new SemaphoreSlim(4, 4);
+        var tasks = pending.Select(async address =>
+        {
+            await slots.WaitAsync().ConfigureAwait(false);
+            try
+            {
+                var result = await NetworkHelper.Ping(address, options).RunAsync().ConfigureAwait(false);
+                var text = result.Received > 0 && result.AverageMs is not null
+                    ? $"{Math.Round(result.AverageMs.Value)} ms"
+                    : result.Status.ToString();
+                await Application.Current.Dispatcher.InvokeAsync(() => StampPing(address, text));
+            }
+            catch (Exception)
+            {
+                await Application.Current.Dispatcher.InvokeAsync(() => StampPing(address, "failed"));
+            }
+            finally
+            {
+                slots.Release();
+            }
+        });
+        await Task.WhenAll(tasks).ConfigureAwait(true);
     }
 
     private async Task PaceOuiSend()
@@ -206,7 +228,7 @@ public sealed partial class MainViewModel : ObservableObject
         }
     }
 
-    private static void Stamp(ObservableCollection<NeighborGridRow> rows, string oui, string? vendor)
+    private static void StampVendor(ObservableCollection<NeighborGridRow> rows, string oui, string? vendor)
     {
         for (var i = 0; i < rows.Count; i++)
         {
@@ -214,7 +236,24 @@ public sealed partial class MainViewModel : ObservableObject
             if (!string.Equals(Oui(row.MacAddress), oui, StringComparison.OrdinalIgnoreCase))
                 continue;
             var source = string.IsNullOrWhiteSpace(vendor) ? row.Source with { Vendor = null } : row.Source with { Vendor = vendor };
-            rows[i] = new NeighborGridRow(source, string.IsNullOrWhiteSpace(vendor) ? "--" : vendor);
+            rows[i] = new NeighborGridRow(source, string.IsNullOrWhiteSpace(vendor) ? "--" : vendor, row.PingText);
+        }
+    }
+
+    private void StampPing(string address, string text)
+    {
+        StampPing(Ipv4Neighbors, address, text);
+        StampPing(Ipv6Neighbors, address, text);
+    }
+
+    private static void StampPing(ObservableCollection<NeighborGridRow> rows, string address, string text)
+    {
+        for (var i = 0; i < rows.Count; i++)
+        {
+            var row = rows[i];
+            if (!string.Equals(row.Address, address, StringComparison.OrdinalIgnoreCase))
+                continue;
+            rows[i] = row with { PingText = text };
         }
     }
 
@@ -228,6 +267,21 @@ public sealed partial class MainViewModel : ObservableObject
         if ((first & 0x01) != 0)
             return false;
         return !mac.StartsWith("FF:FF:FF", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool CanPing(string? address)
+    {
+        if (!IPAddress.TryParse(address, out var ip))
+            return false;
+        if (IPAddress.IsLoopback(ip))
+            return false;
+        if (ip.AddressFamily == AddressFamily.InterNetwork)
+        {
+            var first = ip.GetAddressBytes()[0];
+            return first is < 224 and not 0;
+        }
+
+        return !ip.IsIPv6Multicast && !ip.IsIPv6LinkLocal;
     }
 
     private static string Oui(string? mac)
@@ -284,14 +338,15 @@ public sealed partial class MainViewModel : ObservableObject
         if (text.Length > 0)
             text.AppendLine();
         text.AppendLine(title);
-        text.AppendLine("Address              MAC                Interface            State            Vendor");
+        text.AppendLine("Address              MAC                Interface            State            Vendor               Ping");
         foreach (var row in rows)
         {
             text.Append(Pad(row.Address, 21));
             text.Append(Pad(row.MacAddress, 19));
             text.Append(Pad(row.InterfaceName, 21));
             text.Append(Pad(row.State, 17));
-            text.AppendLine(row.VendorText);
+            text.Append(Pad(row.VendorText, 21));
+            text.AppendLine(row.PingText);
         }
 
         if (rows.Count == 0)
