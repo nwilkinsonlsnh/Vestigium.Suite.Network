@@ -10,7 +10,7 @@ namespace Vestigium.Suite.Network.RouteIQ.ViewModels;
 
 public sealed partial class MainViewModel
 {
-    private readonly Dictionary<string, WatchSlot> _slots = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, List<WatchSlot>> _slots = new(StringComparer.OrdinalIgnoreCase);
     private CancellationTokenSource? _watch;
     private int _batch;
 
@@ -32,7 +32,7 @@ public sealed partial class MainViewModel
 
     [RelayCommand]
     private Task SnapshotConnections()
-        => FillAsync(reset: true);
+        => FillAsync();
 
     [RelayCommand]
     private async Task WatchConnections()
@@ -63,10 +63,10 @@ public sealed partial class MainViewModel
         try
         {
             var text = ConnectionSummary + Environment.NewLine
-                + "Change    Protocol  Local                         Remote                        State        Process          Time  Returns"
+                + "Change     Protocol  Local                         Remote                        State        Process          Time"
                 + Environment.NewLine
                 + string.Join(Environment.NewLine, Connections.Select(row =>
-                    $"{row.Change,-9} {row.Protocol,-8} {row.LocalAddress}:{row.LocalPort,-16} {row.RemoteAddress}:{row.RemotePort,-16} {row.State,-12} {row.Process,-16} {row.TimeSeconds,4}  {row.Returns}"));
+                    $"{row.Change,-10} {row.Protocol,-8} {row.LocalAddress}:{row.LocalPort,-16} {row.RemoteAddress}:{row.RemotePort,-16} {row.State,-12} {row.Process,-16} {row.TimeSeconds,4}"));
             System.Windows.Clipboard.SetText(text);
         }
         catch (Exception ex)
@@ -75,7 +75,7 @@ public sealed partial class MainViewModel
         }
     }
 
-    private async Task FillAsync(bool reset)
+    private async Task FillAsync()
     {
         var batch = Interlocked.Increment(ref _batch);
         ConnectionSummary = "Reading connections.";
@@ -83,10 +83,9 @@ public sealed partial class MainViewModel
         if (batch != _batch)
             return;
         var now = DateTime.UtcNow;
-        if (reset)
-            _slots.Clear();
+        _slots.Clear();
         foreach (var row in rows)
-            _slots[Key(row)] = new WatchSlot(row, now, now, false, 0);
+            _slots[Key(row)] = [new WatchSlot(row, now, now, "Open")];
         await Paint().ConfigureAwait(true);
     }
 
@@ -98,21 +97,33 @@ public sealed partial class MainViewModel
         {
             var key = Key(row);
             seen.Add(key);
-            if (_slots.TryGetValue(key, out var slot))
+            if (!_slots.TryGetValue(key, out var list))
             {
-                var returns = slot.Dropped ? slot.Returns + 1 : slot.Returns;
-                _slots[key] = slot with { Row = row, LastSeen = now, Dropped = false, Returns = returns };
+                _slots[key] = [new WatchSlot(row, now, now, "Added")];
+                continue;
             }
-            else
+
+            var active = list.FindIndex(slot => slot.Change != "Dropped");
+            if (active >= 0)
             {
-                _slots[key] = new WatchSlot(row, now, now, false, 0);
+                var slot = list[active];
+                list[active] = slot with { Row = row, LastSeen = now };
+                continue;
             }
+
+            list.Add(new WatchSlot(row, now, now, "Returned"));
         }
 
-        foreach (var key in _slots.Keys.ToArray())
+        foreach (var key in _slots.Keys)
         {
-            if (!seen.Contains(key))
-                _slots[key] = _slots[key] with { Dropped = true, LastSeen = now };
+            if (seen.Contains(key))
+                continue;
+            var list = _slots[key];
+            var active = list.FindIndex(slot => slot.Change != "Dropped");
+            if (active < 0)
+                continue;
+            var slot = list[active];
+            list[active] = slot with { Change = "Dropped", LastSeen = now };
         }
     }
 
@@ -120,10 +131,11 @@ public sealed partial class MainViewModel
     {
         var now = DateTime.UtcNow;
         var rows = _slots.Values
+            .SelectMany(list => list)
             .Select(slot => ToGrid(slot, now))
             .OrderBy(row => ConnectionAddressKey(row.LocalAddress), Comparer<byte[]>.Create(CompareConnectionAddress))
             .ThenBy(row => row.LocalPort)
-            .ThenBy(row => ConnectionAddressKey(row.RemoteAddress), Comparer<byte[]>.Create(CompareConnectionAddress))
+            .ThenBy(row => Rank(row.Change))
             .ToArray();
         Connections.Clear();
         for (var i = 0; i < rows.Length; i++)
@@ -133,30 +145,40 @@ public sealed partial class MainViewModel
                 await System.Windows.Application.Current.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.Background);
         }
 
+        var open = 0;
         var added = 0;
         var dropped = 0;
         var returned = 0;
         foreach (var row in rows)
         {
-            if (row.Change == "Added") added++;
+            if (row.Change == "Open") open++;
+            else if (row.Change == "Added") added++;
             else if (row.Change == "Dropped") dropped++;
             else if (row.Change == "Returned") returned++;
         }
 
-        ConnectionSummary = $"Open {rows.Length - dropped}. Added {added}. Dropped {dropped}. Returned {returned}.";
+        ConnectionSummary = $"Open {open}. Added {added}. Dropped {dropped}. Returned {returned}.";
     }
 
     private static ConnectionGridRow ToGrid(WatchSlot slot, DateTime now)
     {
-        var fresh = (now - slot.FirstSeen).TotalSeconds < 2;
-        var change = slot.Dropped ? "Dropped" : slot.Returns > 0 ? "Returned" : fresh ? "Added" : "Open";
-        var end = slot.Dropped ? slot.LastSeen : now;
+        var end = slot.Change == "Dropped" ? slot.LastSeen : now;
         var time = (int)Math.Max(0, (end - slot.FirstSeen).TotalSeconds);
         var remote = string.IsNullOrWhiteSpace(slot.Row.RemoteAddress) ? "--" : slot.Row.RemoteAddress;
         var remotePort = slot.Row.RemotePort?.ToString() ?? "--";
         var process = string.IsNullOrWhiteSpace(slot.Row.ProcessName) ? slot.Row.ProcessId?.ToString() ?? "--" : slot.Row.ProcessName;
-        return new ConnectionGridRow(change, slot.Row.Protocol.ToString(), slot.Row.LocalAddress, slot.Row.LocalPort, remote, remotePort, slot.Row.State ?? "--", process, time, slot.Returns);
+        return new ConnectionGridRow(slot.Change, Mark(slot.Change), slot.Row.Protocol.ToString(), slot.Row.LocalAddress, slot.Row.LocalPort, remote, remotePort, slot.Row.State ?? "--", process, time);
     }
+
+    private static string Mark(string change) => change switch
+    {
+        "Added" => "\uE710",
+        "Dropped" => "\uE738",
+        "Returned" => "\uE72C",
+        _ => "\uEA3B"
+    };
+
+    private static int Rank(string change) => change switch { "Open" => 0, "Added" => 1, "Returned" => 2, "Dropped" => 3, _ => 4 };
 
     private static byte[] ConnectionAddressKey(string? text)
     {
@@ -186,5 +208,5 @@ public sealed partial class MainViewModel
     private static string Key(NetworkConnection row)
         => row.Protocol + "|" + row.LocalAddress + "|" + row.LocalPort + "|" + row.RemoteAddress + "|" + row.RemotePort + "|" + row.ProcessId;
 
-    private sealed record WatchSlot(NetworkConnection Row, DateTime FirstSeen, DateTime LastSeen, bool Dropped, int Returns);
+    private sealed record WatchSlot(NetworkConnection Row, DateTime FirstSeen, DateTime LastSeen, string Change);
 }

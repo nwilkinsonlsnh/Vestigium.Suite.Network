@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using Vestigium.Suite.Network.RouteIQ.ViewModels;
@@ -22,6 +23,35 @@ public partial class ConnectionsView : UserControl
             window.SizeChanged += (_, _) => FitGrid();
         if (DataContext is MainViewModel host && host.Connections.Count == 0)
             await host.SnapshotConnectionsCommand.ExecuteAsync(null);
+    }
+
+    private void OnLegend(object sender, RoutedEventArgs e)
+    {
+        if (FindPopup() is Popup popup)
+            popup.IsOpen = !popup.IsOpen;
+    }
+
+    private Popup? FindPopup()
+    {
+        foreach (var child in LogicalTreeHelper.GetChildren(this))
+        {
+            if (child is Grid grid)
+            {
+                foreach (var item in LogicalTreeHelper.GetChildren(grid))
+                {
+                    if (item is StackPanel panel)
+                    {
+                        foreach (var node in LogicalTreeHelper.GetChildren(panel))
+                        {
+                            if (node is Popup popup)
+                                return popup;
+                        }
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 
     private void FitGrid()

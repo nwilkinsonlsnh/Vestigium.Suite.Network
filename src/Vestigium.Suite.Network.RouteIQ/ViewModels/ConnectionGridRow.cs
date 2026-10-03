@@ -2,6 +2,7 @@ namespace Vestigium.Suite.Network.RouteIQ.ViewModels;
 
 public sealed record ConnectionGridRow(
     string Change,
+    string Mark,
     string Protocol,
     string LocalAddress,
     int LocalPort,
@@ -9,5 +10,4 @@ public sealed record ConnectionGridRow(
     string RemotePort,
     string State,
     string Process,
-    int TimeSeconds,
-    int Returns);
+    int TimeSeconds);
