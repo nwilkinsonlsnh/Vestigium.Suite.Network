@@ -11,7 +11,6 @@
 
   <ItemGroup>
     <Folder Include="Vestigium\Suite\Network\WPF\TraceIQ\PR-Plans\Completed\" />
-    <Folder Include="Vestigium\Suite\Network\WPF\TraceIQ\PR-Plans\PR01\" />
     <None Include="Vestigium\**\*.md" />
     <EmbeddedResource Remove="Vestigium\Suite\Network\WPF\NicIQ\PR-Plans\PR01\**" />
     <None Remove="Vestigium\Suite\Network\WPF\NicIQ\PR-Plans\PR01\**" />
