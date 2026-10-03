@@ -83,8 +83,9 @@ A `.md` file is what Git keeps. Empty `Completed/` or `PRnn/` folders in the `.c
 | Window / chrome | that host's `Requirements_v1.0.md` |
 | Class and window map | that host's `Design_v1.0.md` |
 | What we build this week | `PR-Plans/PRnn/PRnn -- Implementation Plan.md` |
+| Which package version restores | `Directory.Build.props` |
 
-Design is not a second lock table. A plan does not reopen Requirements.
+Design is not a second lock table. A plan does not reopen Requirements. This briefing does not override the pin file.
 
 ---
 
@@ -127,17 +128,21 @@ How packages actually attach today: **Shell lists the Vestigium packages. Every 
 
 The GUI is a window. It is not a library. If the window needs behavior we do not have, **update the owned package** in [Vestigium.Helpers](https://github.com/nwilkinsonlsnh/Vestigium.Helpers) or [Vestigium.Logging](https://github.com/nwilkinsonlsnh/Vestigium.Logging), ship it, bump the pin here. Do not paste that logic into a ViewModel to ship Tuesday.
 
-### Pins (`Directory.Build.props`)
+### Pins (`Directory.Build.props`) — checked 3 Oct 2026
+
+The 25 Sep table in this file said Network **1.2.0** and Charts **1.0.1**. That lost. Props win, and both current pins are published on nuget.org. Do not roll a host back to the September numbers to match this paper.
 
 | Package | Pin | Purpose |
 |---|---|---|
-| `Vestigium.Helpers.Network` | 1.2.0 | Protocol and inventory doors. Echo, trace, DNS, adapters, routes, snapshot, share campaigns. This suite's primary consume. |
+| `Vestigium.Helpers.Network` | 1.3.6 | Protocol and inventory doors. Echo, trace, DNS, adapters, routes, neighbors, snapshot, share campaigns. `1.2.0` is PR10 (24 Sep 2026). Not the pin. |
 | `Vestigium.Helpers.Analytics` | 1.0.1 | NumericSeries: five-number, bands, P95, intervals, control limits. Compute lives here, not in the window. |
-| `Vestigium.Helpers.Charts` | 1.0.1 | ScottPlot wrapper. Draws a series. Does not invent UCL/LCL. First-and-ten hosts may reference it through Shell and still draw nothing. |
+| `Vestigium.Helpers.Charts` | 1.0.9 | ScottPlot wrapper. Draws a series. Does not invent UCL/LCL. First-and-ten hosts may reference it through Shell and still draw nothing. |
 | `Vestigium.Logging` | 1.7.1 | JSON Lines, required EVENTID. Hosts initialize through `HostLog`. Libraries never call `Initialize`. |
 | `CommunityToolkit.Mvvm` | 8.4.0 | Observable + commands. Third party. UI shape only. |
 
 Versions move in `Directory.Build.props`, not in seven host csproj files.
+
+Props also name Themes, Controls, Converters, PerfMon, and SystemInfo. Shell does not reference those. A host that wants chrome adds that package reference on the host, still versioned from props. RouteIQ first-and-ten does not.
 
 ### Who references what
 
@@ -150,11 +155,15 @@ Versions move in `Directory.Build.props`, not in seven host csproj files.
 
 ShareIQ reaches FileIo **through Network**, not by vendoring FileIo types into the exe. If that door is wrong, fix Network / FileIo. Do not write a share walker in the ViewModel.
 
-### Owned packages not pinned here yet
+RouteIQ consume, this slice: Shell only. `HostLog.Initialize(HostIds.RouteIQ)` sets APPID `RouteIQ`, registers `NetworkCatalog`, and writes `%ProgramData%\Vestigium\Logs\RouteIQ\`. The VM may call `GetRoutes`, `GetNeighbors`, and `ProbeNeighbor`. It does not take FileIo, Charts, Analytics, Themes, or PerfMon as its own reference. Charts stay unused (Requirements R8).
 
-These live in Helpers. This suite does not consume them until a host has a real door. Adding one is a package pin, not a source copy.
+### Owned packages not pinned on Shell
 
-`FileIo`, `Hashing`, `Encryption`, `Json`, `Xml`, `Csv`, `ClosedXml`, `WinReg`, `Processes`, `Services`.
+These live in Helpers or as chrome packs. This suite does not consume them on Shell until a host has a real door. Adding one is a package pin, not a source copy.
+
+`FileIo`, `Hashing`, `Encryption`, `Json`, `Xml`, `Csv`, `ClosedXml`, `WinReg`, `Processes`, `Services`, Themes, Controls, PerfMon, SystemInfo.
+
+FileIo, Hashing, and Json already ride in through Network. Do not add a second direct reference to look busy.
 
 ### What belongs where
 
@@ -199,7 +208,8 @@ A ViewModel may call a library door, map rows, reject a blank field, and cancel 
 ## Document control
 
 | Version | Date | Change |
-|---|---|
+|---|---|---|
 | 1.0 | 25 Sep 2026 | First briefing. Two trees. Owner goal left editable. |
 | 1.0.1 | 25 Sep 2026 | Consume contract. Package pins, purpose, GUI is not a library. |
 | 1.0.2 | 25 Sep 2026 | Live PR plan path is `PR-Plans/PRnn/`, not the queue root. |
+| 1.0.3 | 3 Oct 2026 | Pin table matched `Directory.Build.props`. Network 1.3.6, Charts 1.0.9. 1.2.0 is not the pin. |
