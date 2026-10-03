@@ -47,6 +47,7 @@ public sealed partial class MainViewModel : ObservableObject
             Replace(Ipv6Neighbors, ApplyPacked(snapshot.Ipv6Neighbors));
             Replace(NetBiosNames, snapshot.NetBios);
             Replace(LmHosts, snapshot.LmHosts);
+            LoadConnections(snapshot.Connections);
             ApplyNetBiosStats();
             ApplyLmHostSummary(snapshot.LmHosts.Count);
             var vendors = ResolveLiveVendors();
@@ -93,7 +94,7 @@ public sealed partial class MainViewModel : ObservableObject
 
     private void Report(string text) => ReportStatus?.Invoke(text);
 
-    private static (IReadOnlyList<NetworkRoute> Ipv4, IReadOnlyList<NetworkRoute> Ipv6, IReadOnlyList<NetworkNeighbor> Ipv4Neighbors, IReadOnlyList<NetworkNeighbor> Ipv6Neighbors, IReadOnlyList<NetworkNetBiosName> NetBios, IReadOnlyList<NetworkLmHostEntry> LmHosts) Load()
+    private static (IReadOnlyList<NetworkRoute> Ipv4, IReadOnlyList<NetworkRoute> Ipv6, IReadOnlyList<NetworkNeighbor> Ipv4Neighbors, IReadOnlyList<NetworkNeighbor> Ipv6Neighbors, IReadOnlyList<NetworkNetBiosName> NetBios, IReadOnlyList<NetworkLmHostEntry> LmHosts, IReadOnlyList<NetworkConnection> Connections) Load()
     {
         var ipv4 = ByAddress(NetworkHelper.GetRoutes(RouteFamily.Pv4), row => row.Destination);
         var ipv6 = ByAddress(NetworkHelper.GetRoutes(RouteFamily.Pv6), row => row.Destination);
@@ -105,7 +106,8 @@ public sealed partial class MainViewModel : ObservableObject
             .ThenBy(row => row.Name, StringComparer.OrdinalIgnoreCase)
             .ToArray();
         var hosts = NetworkHelper.GetLmHosts();
-        return (ipv4, ipv6, v4, v6, names, hosts);
+        var connections = NetworkHelper.GetConnections();
+        return (ipv4, ipv6, v4, v6, names, hosts, connections);
     }
 
     private static IReadOnlyList<NeighborGridRow> ApplyPacked(IReadOnlyList<NetworkNeighbor> rows)
