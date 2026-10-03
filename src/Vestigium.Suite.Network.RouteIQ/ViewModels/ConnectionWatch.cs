@@ -15,6 +15,7 @@ public sealed partial class MainViewModel
     private int _batch;
 
     public ObservableCollection<ConnectionGridRow> Connections { get; } = [];
+    public Action<int, int>? ReportWatch { get; set; }
 
     [ObservableProperty]
     private int _watchSeconds = 10;
@@ -44,9 +45,12 @@ public sealed partial class MainViewModel
         var until = DateTime.UtcNow.AddSeconds(seconds);
         try
         {
+            ReportWatch?.Invoke(seconds, seconds);
             while (DateTime.UtcNow < until && !token.IsCancellationRequested)
             {
                 await Task.Delay(TimeSpan.FromSeconds(1), token).ConfigureAwait(true);
+                var left = Math.Max(0, (int)Math.Ceiling((until - DateTime.UtcNow).TotalSeconds));
+                ReportWatch?.Invoke(left, seconds);
                 var rows = await Task.Run(() => NetworkHelper.GetConnections(), token).ConfigureAwait(true);
                 ApplyWatch(rows);
                 await Paint().ConfigureAwait(true);
@@ -54,6 +58,10 @@ public sealed partial class MainViewModel
         }
         catch (OperationCanceledException)
         {
+        }
+        finally
+        {
+            ReportWatch?.Invoke(0, 0);
         }
     }
 

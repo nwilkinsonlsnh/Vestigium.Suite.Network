@@ -2,6 +2,7 @@ using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using Vestigium.Controls.DependencyInjection;
 using Vestigium.Controls.Shell;
+using Vestigium.Controls.StatusBar;
 using Vestigium.Converters;
 using Vestigium.Converters.DependencyInjection;
 using Vestigium.Suite.Network.RouteIQ.ViewModels;
@@ -86,6 +87,23 @@ public partial class App : Application
         var host = new MainViewModel
         {
             ReportStatus = text => chrome.Status.Message = text,
+            ReportWatch = (left, total) =>
+            {
+                if (total <= 0 || left <= 0)
+                {
+                    chrome.Status.Message = string.Empty;
+                    chrome.Status.Engine.PostImmediate("progress", new StatusBarUpdate { Progress = 0, IsProgressVisible = false });
+                    return;
+                }
+
+                chrome.Status.Message = "Watch " + left + "s left";
+                chrome.Status.Engine.PostImmediate("progress", new StatusBarUpdate
+                {
+                    Progress = (total - left) * 100d / total,
+                    IsIndeterminate = false,
+                    IsProgressVisible = true
+                });
+            },
             OuiPoolSize = () => session.OuiPoolSize
         };
         session.Attach(settings);
