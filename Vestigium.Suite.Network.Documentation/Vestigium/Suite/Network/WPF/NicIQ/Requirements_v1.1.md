@@ -4,9 +4,10 @@
 **Version:** 1.1  
 **Status:** Locked for the monitoring slice  
 **Date:** 29 September 2026  
-**Project:** `Vestigium.Suite.Network.NicIQ`  
+**Project:** `src/Vestigium.Suite.Network.NicIQ`  
 **Library:** `Vestigium.Helpers.PerfMon` 0.1.1 + `Vestigium.Helpers.PerfMon.Network` 0.1.1  
 **Binding:** Helpers.PerfMon wins on PDH. Helpers.Network still wins on inventory and status watch. This file wins on the window.
+**Superseded by:** [Requirements_v1.2.md](Requirements_v1.2.md) for the current window. This file stays the monitoring slice.
 
 v1.0 list + detail + status watch stays. This version adds live counter sampling.
 
@@ -58,3 +59,4 @@ Status watch (`WatchAdapter`) stays a separate button. It does not own the sampl
 |---|---|---|
 | 1.0 | 24 Sep 2026 | List + detail + watch. |
 | 1.1 | 29 Sep 2026 | PerfMon sample on primary NIC. Settings counter list. |
+| 1.2 | 2 Oct 2026 | Current window. See [Requirements_v1.2.md](Requirements_v1.2.md). This file is unchanged below the control table. |
