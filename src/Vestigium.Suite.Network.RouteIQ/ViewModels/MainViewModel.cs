@@ -45,6 +45,7 @@ public sealed partial class MainViewModel : ObservableObject
             Replace(Ipv4Neighbors, ApplyPacked(snapshot.Ipv4Neighbors));
             Replace(Ipv6Neighbors, ApplyPacked(snapshot.Ipv6Neighbors));
             Replace(NetBiosNames, snapshot.NetBios);
+            ApplyNetBiosStats();
             var vendors = ResolveLiveVendors();
             var probes = ProbeNeighbors();
             var vendorLine = await vendors.ConfigureAwait(true);
@@ -64,25 +65,13 @@ public sealed partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand(CanExecute = nameof(CanCopy))]
-    private void Copy()
-    {
-        try { Clipboard.SetText(FormatTables()); }
-        catch (Exception ex) { Report(ex.Message); }
-    }
+    private void Copy() { try { Clipboard.SetText(FormatTables()); } catch (Exception ex) { Report(ex.Message); } }
 
     [RelayCommand(CanExecute = nameof(CanCopy))]
-    private void CopyNeighbors()
-    {
-        try { Clipboard.SetText(FormatNeighbors()); }
-        catch (Exception ex) { Report(ex.Message); }
-    }
+    private void CopyNeighbors() { try { Clipboard.SetText(FormatNeighbors()); } catch (Exception ex) { Report(ex.Message); } }
 
     [RelayCommand(CanExecute = nameof(CanCopy))]
-    private void CopyNetBios()
-    {
-        try { Clipboard.SetText(FormatNetBios()); }
-        catch (Exception ex) { Report(ex.Message); }
-    }
+    private void CopyNetBios() { try { Clipboard.SetText(FormatNetBios()); } catch (Exception ex) { Report(ex.Message); } }
 
     private bool CanRefresh() => !_busy;
     private bool CanCopy() => !_busy;
@@ -105,7 +94,7 @@ public sealed partial class MainViewModel : ObservableObject
         var v4 = ByAddress(neighbors.Where(row => row.Family == AddressFamily.InterNetwork), row => row.Address);
         var v6 = ByAddress(neighbors.Where(row => row.Family == AddressFamily.InterNetworkV6), row => row.Address);
         var names = NetworkHelper.GetNetBiosNames()
-            .OrderBy(row => row.Table, StringComparer.OrdinalIgnoreCase)
+            .OrderBy(row => row.IsCache)
             .ThenBy(row => row.Name, StringComparer.OrdinalIgnoreCase)
             .ToArray();
         return (ipv4, ipv6, v4, v6, names);
@@ -152,54 +141,25 @@ public sealed partial class MainViewModel : ObservableObject
                 var hit = await NetworkHelper.LookupOuiAsync(mac, options).ConfigureAwait(false);
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    if (string.IsNullOrWhiteSpace(hit.Vendor))
-                    {
-                        misses++;
-                        StampVendor(Ipv4Neighbors, oui, null);
-                        StampVendor(Ipv6Neighbors, oui, null);
-                    }
-                    else
-                    {
-                        filled++;
-                        StampVendor(Ipv4Neighbors, oui, hit.Vendor);
-                        StampVendor(Ipv6Neighbors, oui, hit.Vendor);
-                    }
+                    if (string.IsNullOrWhiteSpace(hit.Vendor)) { misses++; StampVendor(Ipv4Neighbors, oui, null); StampVendor(Ipv6Neighbors, oui, null); }
+                    else { filled++; StampVendor(Ipv4Neighbors, oui, hit.Vendor); StampVendor(Ipv6Neighbors, oui, hit.Vendor); }
                 });
             }
             catch (Exception)
             {
                 var oui = Oui(sample.MacAddress);
-                await Application.Current.Dispatcher.InvokeAsync(() =>
-                {
-                    misses++;
-                    StampVendor(Ipv4Neighbors, oui, null);
-                    StampVendor(Ipv6Neighbors, oui, null);
-                });
+                await Application.Current.Dispatcher.InvokeAsync(() => { misses++; StampVendor(Ipv4Neighbors, oui, null); StampVendor(Ipv6Neighbors, oui, null); });
             }
-            finally
-            {
-                slots.Release();
-            }
+            finally { slots.Release(); }
         });
-
         await Task.WhenAll(tasks).ConfigureAwait(true);
         return $"Vendor lookups complete. {filled} found, {misses} missed.";
     }
 
     private async Task ProbeNeighbors()
     {
-        var pending = Ipv4Neighbors.Concat(Ipv6Neighbors)
-            .Where(row => CanPing(row.Address))
-            .GroupBy(row => row.Address, StringComparer.OrdinalIgnoreCase)
-            .Select(group => group.First())
-            .ToArray();
-        var options = new IcmpEchoOptions
-        {
-            Count = 1,
-            Timeout = TimeSpan.FromSeconds(1),
-            Interval = TimeSpan.FromMilliseconds(200),
-            Ttl = 128
-        };
+        var pending = Ipv4Neighbors.Concat(Ipv6Neighbors).Where(row => CanPing(row.Address)).GroupBy(row => row.Address, StringComparer.OrdinalIgnoreCase).Select(group => group.First()).ToArray();
+        var options = new IcmpEchoOptions { Count = 1, Timeout = TimeSpan.FromSeconds(1), Interval = TimeSpan.FromMilliseconds(200), Ttl = 128 };
         using var slots = new SemaphoreSlim(4, 4);
         var tasks = pending.Select(async row =>
         {
@@ -207,19 +167,11 @@ public sealed partial class MainViewModel : ObservableObject
             try
             {
                 var result = await NetworkHelper.Ping(EchoTarget(row), options).RunAsync().ConfigureAwait(false);
-                var rtt = result.Received > 0 && result.AverageMs is not null
-                    ? Math.Round(result.AverageMs.Value).ToString(CultureInfo.InvariantCulture)
-                    : NoValue;
+                var rtt = result.Received > 0 && result.AverageMs is not null ? Math.Round(result.AverageMs.Value).ToString(CultureInfo.InvariantCulture) : NoValue;
                 await Application.Current.Dispatcher.InvokeAsync(() => StampProbe(row.Address, rtt));
             }
-            catch (Exception)
-            {
-                await Application.Current.Dispatcher.InvokeAsync(() => StampProbe(row.Address, NoValue));
-            }
-            finally
-            {
-                slots.Release();
-            }
+            catch (Exception) { await Application.Current.Dispatcher.InvokeAsync(() => StampProbe(row.Address, NoValue)); }
+            finally { slots.Release(); }
         });
         await Task.WhenAll(tasks).ConfigureAwait(true);
     }
@@ -237,14 +189,10 @@ public sealed partial class MainViewModel : ObservableObject
         try
         {
             var wait = OuiGapMs - (int)(DateTime.UtcNow - _ouiSentAt).TotalMilliseconds;
-            if (wait > 0)
-                await Task.Delay(wait).ConfigureAwait(false);
+            if (wait > 0) await Task.Delay(wait).ConfigureAwait(false);
             _ouiSentAt = DateTime.UtcNow;
         }
-        finally
-        {
-            _ouiPace.Release();
-        }
+        finally { _ouiPace.Release(); }
     }
 
     private static void StampVendor(ObservableCollection<NeighborGridRow> rows, string oui, string? vendor)
@@ -252,8 +200,7 @@ public sealed partial class MainViewModel : ObservableObject
         for (var i = 0; i < rows.Count; i++)
         {
             var row = rows[i];
-            if (!string.Equals(Oui(row.MacAddress), oui, StringComparison.OrdinalIgnoreCase))
-                continue;
+            if (!string.Equals(Oui(row.MacAddress), oui, StringComparison.OrdinalIgnoreCase)) continue;
             var source = string.IsNullOrWhiteSpace(vendor) ? row.Source with { Vendor = null } : row.Source with { Vendor = vendor };
             rows[i] = new NeighborGridRow(source, string.IsNullOrWhiteSpace(vendor) ? NoValue : vendor, row.RttMs, row.Hops);
         }
@@ -270,36 +217,29 @@ public sealed partial class MainViewModel : ObservableObject
         for (var i = 0; i < rows.Count; i++)
         {
             var row = rows[i];
-            if (!string.Equals(row.Address, address, StringComparison.OrdinalIgnoreCase))
-                continue;
+            if (!string.Equals(row.Address, address, StringComparison.OrdinalIgnoreCase)) continue;
             rows[i] = row with { RttMs = string.IsNullOrWhiteSpace(rtt) ? NoValue : rtt };
         }
     }
 
     private static bool CanLookup(string? mac)
     {
-        if (string.IsNullOrWhiteSpace(mac))
-            return false;
+        if (string.IsNullOrWhiteSpace(mac)) return false;
         var parts = mac.Split(':', StringSplitOptions.RemoveEmptyEntries);
-        if (parts.Length < 6 || !byte.TryParse(parts[0], NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var first))
-            return false;
-        if ((first & 0x01) != 0)
-            return false;
+        if (parts.Length < 6 || !byte.TryParse(parts[0], NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var first)) return false;
+        if ((first & 0x01) != 0) return false;
         return !mac.StartsWith("FF:FF:FF", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool CanPing(string? address)
     {
-        if (!IPAddress.TryParse(address, out var ip))
-            return false;
-        if (IPAddress.IsLoopback(ip) || ip.Equals(IPAddress.IPv6Any) || ip.Equals(IPAddress.Any))
-            return false;
+        if (!IPAddress.TryParse(address, out var ip)) return false;
+        if (IPAddress.IsLoopback(ip) || ip.Equals(IPAddress.IPv6Any) || ip.Equals(IPAddress.Any)) return false;
         if (ip.AddressFamily == AddressFamily.InterNetwork)
         {
             var first = ip.GetAddressBytes()[0];
             return first is < 224 and not 0;
         }
-
         return !ip.IsIPv6Multicast;
     }
 
@@ -312,8 +252,7 @@ public sealed partial class MainViewModel : ObservableObject
     private static IReadOnlyList<T> ByAddress<T>(IEnumerable<T> rows, Func<T, string?> address)
         => rows.OrderBy(row => AddressKey(address(row)), Comparer<byte[]>.Create(CompareBytes)).ToArray();
 
-    private static byte[] AddressKey(string? text)
-        => IPAddress.TryParse(text, out var address) ? address.GetAddressBytes() : [0xFF];
+    private static byte[] AddressKey(string? text) => IPAddress.TryParse(text, out var address) ? address.GetAddressBytes() : [0xFF];
 
     private static int CompareBytes(byte[] left, byte[] right)
     {
@@ -321,10 +260,8 @@ public sealed partial class MainViewModel : ObservableObject
         for (var i = 0; i < count; i++)
         {
             var diff = left[i].CompareTo(right[i]);
-            if (diff != 0)
-                return diff;
+            if (diff != 0) return diff;
         }
-
         return left.Length.CompareTo(right.Length);
     }
 
@@ -347,27 +284,28 @@ public sealed partial class MainViewModel : ObservableObject
     private string FormatNetBios()
     {
         var text = new StringBuilder();
-        text.AppendLine("Table   Name                 Suffix  Type        Status           Address          Life");
+        text.AppendLine(NetBiosSummary);
+        text.AppendLine("Cache  Adapter              Node             Name                 Suffix  Meaning            Type      Status           Address          Life");
         foreach (var row in NetBiosNames)
         {
-            text.Append(Pad(row.Table, 8));
+            text.Append(Pad(row.IsCache ? "True" : "False", 7));
+            text.Append(Pad(row.Adapter, 21));
+            text.Append(Pad(row.NodeAddress, 17));
             text.Append(Pad(row.Name, 21));
             text.Append(Pad(row.Suffix, 8));
-            text.Append(Pad(row.Type, 12));
+            text.Append(Pad(row.SuffixName, 19));
+            text.Append(Pad(row.Type, 10));
             text.Append(Pad(row.Status, 17));
             text.Append(Pad(row.Address, 17));
             text.AppendLine(row.LifeSeconds?.ToString(CultureInfo.InvariantCulture));
         }
-
-        if (NetBiosNames.Count == 0)
-            text.AppendLine("None");
+        if (NetBiosNames.Count == 0) text.AppendLine("None");
         return text.ToString();
     }
 
     private static void AppendNeighbors(StringBuilder text, string title, IReadOnlyList<NeighborGridRow> rows)
     {
-        if (text.Length > 0)
-            text.AppendLine();
+        if (text.Length > 0) text.AppendLine();
         text.AppendLine(title);
         text.AppendLine("Address              MAC                Interface            State            Multicast  Vendor               RTT");
         foreach (var row in rows)
@@ -380,15 +318,12 @@ public sealed partial class MainViewModel : ObservableObject
             text.Append(Pad(row.VendorText, 21));
             text.AppendLine(row.RttMs);
         }
-
-        if (rows.Count == 0)
-            text.AppendLine("None");
+        if (rows.Count == 0) text.AppendLine("None");
     }
 
     private static void AppendRoutes(StringBuilder text, string title, IReadOnlyList<NetworkRoute> rows)
     {
-        if (text.Length > 0)
-            text.AppendLine();
+        if (text.Length > 0) text.AppendLine();
         text.AppendLine(title);
         text.AppendLine("Destination          Prefix  Mask             Gateway            Interface           Index  Metric  Protocol");
         foreach (var row in rows)
@@ -402,9 +337,7 @@ public sealed partial class MainViewModel : ObservableObject
             text.Append(Pad(row.Metric.ToString(), 8));
             text.AppendLine(row.Protocol);
         }
-
-        if (rows.Count == 0)
-            text.AppendLine("None");
+        if (rows.Count == 0) text.AppendLine("None");
     }
 
     private static string Pad(string? value, int width)
@@ -416,7 +349,6 @@ public sealed partial class MainViewModel : ObservableObject
     private static void Replace<T>(ObservableCollection<T> target, IReadOnlyList<T> source)
     {
         target.Clear();
-        foreach (var item in source)
-            target.Add(item);
+        foreach (var item in source) target.Add(item);
     }
 }
