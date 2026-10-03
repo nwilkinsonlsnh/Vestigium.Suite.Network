@@ -53,10 +53,10 @@
                     HorizontalScrollBarVisibility="Auto"
                     ScrollViewer.VerticalScrollBarVisibility="Auto">
             <DataGrid.Columns>
-              <DataGridTextColumn Header="Address" Binding="{Binding Address}" Width="180" />
+              <DataGridTextColumn Header="Address" Binding="{Binding Address}" Width="260" />
               <DataGridTextColumn Header="MacAddress" Binding="{Binding MacAddress}" Width="160" />
-              <DataGridTextColumn Header="InterfaceName" Binding="{Binding InterfaceName}" Width="160" />
-              <DataGridTextColumn Header="State" Binding="{Binding State}" Width="*" />
+              <DataGridTextColumn Header="InterfaceName" Binding="{Binding InterfaceName}" Width="180" />
+              <DataGridTextColumn Header="State" Binding="{Binding State}" Width="140" />
             </DataGrid.Columns>
           </DataGrid>
         </Grid>
@@ -87,8 +87,8 @@
             <DataGrid.Columns>
               <DataGridTextColumn Header="Address" Binding="{Binding Address}" Width="260" />
               <DataGridTextColumn Header="MacAddress" Binding="{Binding MacAddress}" Width="160" />
-              <DataGridTextColumn Header="InterfaceName" Binding="{Binding InterfaceName}" Width="160" />
-              <DataGridTextColumn Header="State" Binding="{Binding State}" Width="*" />
+              <DataGridTextColumn Header="InterfaceName" Binding="{Binding InterfaceName}" Width="180" />
+              <DataGridTextColumn Header="State" Binding="{Binding State}" Width="140" />
             </DataGrid.Columns>
           </DataGrid>
         </Grid>
