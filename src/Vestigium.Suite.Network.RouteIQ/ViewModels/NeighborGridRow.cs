@@ -14,6 +14,7 @@ public sealed record NeighborGridRow(NetworkNeighbor Source, string? VendorText,
     public string State => Source.State;
     public bool? IsRouter => Source.IsRouter;
     public bool IsMulticast => Multicast(Source.Address);
+    public bool IsBroadcast => Broadcast(Source.Address, Source.MacAddress);
     public string? LastReachableText => FormatReachable(Source.LastReachable);
     public string? Vendor => Source.Vendor;
 
@@ -29,6 +30,24 @@ public sealed record NeighborGridRow(NetworkNeighbor Source, string? VendorText,
         catch (Exception)
         {
             return null;
+        }
+    }
+
+    private static bool Broadcast(string? address, string? mac)
+    {
+        if (string.Equals(mac, "FF:FF:FF:FF:FF:FF", StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (string.Equals(address, "255.255.255.255", StringComparison.Ordinal))
+            return true;
+        if (string.IsNullOrWhiteSpace(address))
+            return false;
+        try
+        {
+            return NetworkHelper.ClassifyAddress(address).Kind.HasFlag(AddressKind.Broadcast);
+        }
+        catch (Exception)
+        {
+            return false;
         }
     }
 
