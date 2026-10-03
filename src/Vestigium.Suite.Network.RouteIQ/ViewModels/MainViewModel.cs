@@ -18,15 +18,10 @@ public sealed partial class MainViewModel : ObservableObject
     private DateTime _ouiSentAt = DateTime.UtcNow.AddSeconds(-2);
 
     public ObservableCollection<NetworkRoute> Ipv4Routes { get; } = [];
-
     public ObservableCollection<NetworkRoute> Ipv6Routes { get; } = [];
-
     public ObservableCollection<NeighborGridRow> Ipv4Neighbors { get; } = [];
-
     public ObservableCollection<NeighborGridRow> Ipv6Neighbors { get; } = [];
-
     public Action<string>? ReportStatus { get; set; }
-
     public Func<int>? OuiPoolSize { get; set; }
 
     public MainViewModel() => _ = Refresh();
@@ -47,9 +42,11 @@ public sealed partial class MainViewModel : ObservableObject
             Replace(Ipv6Routes, snapshot.Ipv6);
             Replace(Ipv4Neighbors, ApplyPacked(snapshot.Ipv4Neighbors));
             Replace(Ipv6Neighbors, ApplyPacked(snapshot.Ipv6Neighbors));
-            var vendorLine = await ResolveLiveVendors().ConfigureAwait(true);
+            var vendors = ResolveLiveVendors();
+            var probes = ProbeNeighbors();
+            var vendorLine = await vendors.ConfigureAwait(true);
             Report(vendorLine);
-            await ProbeNeighbors().ConfigureAwait(true);
+            await probes.ConfigureAwait(true);
             Report(vendorLine);
         }
         catch (Exception ex)
@@ -309,18 +306,10 @@ public sealed partial class MainViewModel : ObservableObject
     }
 
     private static IReadOnlyList<T> ByAddress<T>(IEnumerable<T> rows, Func<T, string?> address)
-    {
-        return rows
-            .OrderBy(row => AddressKey(address(row)), Comparer<byte[]>.Create(CompareBytes))
-            .ToArray();
-    }
+        => rows.OrderBy(row => AddressKey(address(row)), Comparer<byte[]>.Create(CompareBytes)).ToArray();
 
     private static byte[] AddressKey(string? text)
-    {
-        if (IPAddress.TryParse(text, out var address))
-            return address.GetAddressBytes();
-        return [0xFF];
-    }
+        => IPAddress.TryParse(text, out var address) ? address.GetAddressBytes() : [0xFF];
 
     private static int CompareBytes(byte[] left, byte[] right)
     {
@@ -356,13 +345,14 @@ public sealed partial class MainViewModel : ObservableObject
         if (text.Length > 0)
             text.AppendLine();
         text.AppendLine(title);
-        text.AppendLine("Address              MAC                Interface            State            Vendor               RTT   Hops");
+        text.AppendLine("Address              MAC                Interface            State            Multicast  Vendor               RTT   Hops");
         foreach (var row in rows)
         {
             text.Append(Pad(row.Address, 21));
             text.Append(Pad(row.MacAddress, 19));
             text.Append(Pad(row.InterfaceName, 21));
             text.Append(Pad(row.State, 17));
+            text.Append(Pad(row.IsMulticast ? "True" : "False", 11));
             text.Append(Pad(row.VendorText, 21));
             text.Append(Pad(row.RttMs, 6));
             text.AppendLine(row.Hops);
