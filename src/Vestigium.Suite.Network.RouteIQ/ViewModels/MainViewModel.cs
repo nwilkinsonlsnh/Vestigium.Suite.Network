@@ -21,13 +21,7 @@ public sealed partial class MainViewModel : ObservableObject
     public ObservableCollection<NetworkNeighbor> Neighbors { get; } = [];
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(ShowIpv4))]
-    [NotifyPropertyChangedFor(nameof(ShowIpv6))]
     private string _family = "All";
-
-    public bool ShowIpv4 => Family is "All" or "IPv4";
-
-    public bool ShowIpv6 => Family is "All" or "IPv6";
 
     public Action<string>? ReportStatus { get; set; }
 
@@ -90,23 +84,24 @@ public sealed partial class MainViewModel : ObservableObject
 
     private static (IReadOnlyList<NetworkRoute> Ipv4, IReadOnlyList<NetworkRoute> Ipv6, IReadOnlyList<NetworkNeighbor> Neighbors) Load(RouteFamily family)
     {
-        var ipv4 = family == RouteFamily.Pv6
-            ? Array.Empty<NetworkRoute>()
-            : NetworkHelper.GetRoutes(RouteFamily.Pv4);
-        var ipv6 = family == RouteFamily.Pv4
-            ? Array.Empty<NetworkRoute>()
-            : NetworkHelper.GetRoutes(RouteFamily.Pv6);
+        var ipv4 = NetworkHelper.GetRoutes(RouteFamily.Pv4);
+        var ipv6 = NetworkHelper.GetRoutes(RouteFamily.Pv6);
         var neighbors = Filter(NetworkHelper.GetNeighbors(), family);
         return (ipv4, ipv6, neighbors);
     }
 
-    private string FormatTables()
+    private static string FormatTables()
     {
         var text = new StringBuilder();
-        if (ShowIpv4)
-            Append(text, "IPv4 Route Table", Ipv4Routes);
-        if (ShowIpv6)
-            Append(text, "IPv6 Route Table", Ipv6Routes);
+        Append(text, "IPv4 Route Table", Array.Empty<NetworkRoute>());
+        return text.ToString();
+    }
+
+    private string FormatTablesLive()
+    {
+        var text = new StringBuilder();
+        Append(text, "IPv4 Route Table", Ipv4Routes);
+        Append(text, "IPv6 Route Table", Ipv6Routes);
         return text.ToString();
     }
 
