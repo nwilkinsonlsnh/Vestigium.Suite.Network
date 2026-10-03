@@ -47,7 +47,6 @@ public sealed partial class MainViewModel : ObservableObject
             Replace(Ipv6Neighbors, ApplyPacked(snapshot.Ipv6Neighbors));
             Replace(NetBiosNames, snapshot.NetBios);
             Replace(LmHosts, snapshot.LmHosts);
-            LoadConnections(snapshot.Connections);
             ApplyNetBiosStats();
             ApplyLmHostSummary(snapshot.LmHosts.Count);
             var vendors = ResolveLiveVendors();
@@ -94,20 +93,16 @@ public sealed partial class MainViewModel : ObservableObject
 
     private void Report(string text) => ReportStatus?.Invoke(text);
 
-    private static (IReadOnlyList<NetworkRoute> Ipv4, IReadOnlyList<NetworkRoute> Ipv6, IReadOnlyList<NetworkNeighbor> Ipv4Neighbors, IReadOnlyList<NetworkNeighbor> Ipv6Neighbors, IReadOnlyList<NetworkNetBiosName> NetBios, IReadOnlyList<NetworkLmHostEntry> LmHosts, IReadOnlyList<NetworkConnection> Connections) Load()
+    private static (IReadOnlyList<NetworkRoute> Ipv4, IReadOnlyList<NetworkRoute> Ipv6, IReadOnlyList<NetworkNeighbor> Ipv4Neighbors, IReadOnlyList<NetworkNeighbor> Ipv6Neighbors, IReadOnlyList<NetworkNetBiosName> NetBios, IReadOnlyList<NetworkLmHostEntry> LmHosts) Load()
     {
         var ipv4 = ByAddress(NetworkHelper.GetRoutes(RouteFamily.Pv4), row => row.Destination);
         var ipv6 = ByAddress(NetworkHelper.GetRoutes(RouteFamily.Pv6), row => row.Destination);
         var neighbors = NetworkHelper.GetNeighbors();
         var v4 = ByAddress(neighbors.Where(row => row.Family == AddressFamily.InterNetwork), row => row.Address);
         var v6 = ByAddress(neighbors.Where(row => row.Family == AddressFamily.InterNetworkV6), row => row.Address);
-        var names = NetworkHelper.GetNetBiosNames()
-            .OrderBy(row => row.IsCache)
-            .ThenBy(row => row.Name, StringComparer.OrdinalIgnoreCase)
-            .ToArray();
+        var names = NetworkHelper.GetNetBiosNames().OrderBy(row => row.IsCache).ThenBy(row => row.Name, StringComparer.OrdinalIgnoreCase).ToArray();
         var hosts = NetworkHelper.GetLmHosts();
-        var connections = NetworkHelper.GetConnections();
-        return (ipv4, ipv6, v4, v6, names, hosts, connections);
+        return (ipv4, ipv6, v4, v6, names, hosts);
     }
 
     private static IReadOnlyList<NeighborGridRow> ApplyPacked(IReadOnlyList<NetworkNeighbor> rows)
@@ -125,14 +120,9 @@ public sealed partial class MainViewModel : ObservableObject
 
     private async Task<string> ResolveLiveVendors()
     {
-        var pending = Ipv4Neighbors.Concat(Ipv6Neighbors)
-            .Where(row => row.VendorText == NoValue && CanLookup(row.MacAddress))
-            .GroupBy(row => Oui(row.MacAddress!), StringComparer.OrdinalIgnoreCase)
-            .Select(group => group.First())
-            .ToArray();
+        var pending = Ipv4Neighbors.Concat(Ipv6Neighbors).Where(row => row.VendorText == NoValue && CanLookup(row.MacAddress)).GroupBy(row => Oui(row.MacAddress!), StringComparer.OrdinalIgnoreCase).Select(group => group.First()).ToArray();
         if (pending.Length == 0)
             return "Vendor lookups complete. None to ask.";
-
         var pool = OuiPoolSize?.Invoke() ?? 10;
         if (pool < 1) pool = 1;
         if (pool > 20) pool = 20;
