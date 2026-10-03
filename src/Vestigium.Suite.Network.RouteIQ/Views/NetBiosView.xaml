@@ -48,9 +48,16 @@
                 <Setter Property="Template">
                   <Setter.Value>
                     <ControlTemplate TargetType="GroupItem">
-                      <Expander IsExpanded="True" Background="Transparent" Margin="0,4,0,0">
+                      <Expander IsExpanded="True"
+                                Background="Transparent"
+                                Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}"
+                                BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
+                                Margin="4,4,0,0">
                         <Expander.Header>
-                          <TextBlock FontWeight="SemiBold" Text="{Binding Name, TargetNullValue=--}" />
+                          <TextBlock Style="{StaticResource TextBlock.Caption}"
+                                     FontWeight="SemiBold"
+                                     Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}"
+                                     Text="{Binding Name, TargetNullValue=--}" />
                         </Expander.Header>
                         <ItemsPresenter />
                       </Expander>
