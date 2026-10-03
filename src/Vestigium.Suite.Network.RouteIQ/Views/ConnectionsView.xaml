@@ -3,6 +3,13 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:nud="clr-namespace:Vestigium.Controls.NumericUpDown;assembly=Vestigium.Controls.NumericUpDown"
              Background="{DynamicResource Vestigium.Brushes.Surface.Window}">
+  <UserControl.Resources>
+    <CollectionViewSource x:Key="ConnectionGroups" Source="{Binding Connections}">
+      <CollectionViewSource.GroupDescriptions>
+        <PropertyGroupDescription PropertyName="LocalAddress" />
+      </CollectionViewSource.GroupDescriptions>
+    </CollectionViewSource>
+  </UserControl.Resources>
   <Grid Margin="16,12,16,16">
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
@@ -44,7 +51,8 @@
                Text="{Binding ConnectionSummary}"
                Margin="0,0,0,4" />
     <Border Grid.Row="2" BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
-      <DataGrid ItemsSource="{Binding Connections}"
+      <DataGrid x:Name="ConnectionGrid"
+                ItemsSource="{Binding Source={StaticResource ConnectionGroups}}"
                 Style="{StaticResource DataGrid.Compact}"
                 RowHeight="28"
                 IsReadOnly="True"
@@ -52,16 +60,38 @@
                 CanUserAddRows="False"
                 CanUserDeleteRows="False"
                 CanUserResizeRows="False"
-                EnableRowVirtualization="True"
-                EnableColumnVirtualization="False"
-                VirtualizingPanel.IsVirtualizing="True"
-                VirtualizingPanel.VirtualizationMode="Recycling"
-                VirtualizingPanel.ScrollUnit="Pixel"
-                ScrollViewer.CanContentScroll="True"
+                PreviewMouseWheel="OnWheel"
                 HeadersVisibility="Column"
                 VerticalAlignment="Stretch"
                 VerticalScrollBarVisibility="Auto"
                 HorizontalScrollBarVisibility="Auto">
+        <DataGrid.GroupStyle>
+          <GroupStyle>
+            <GroupStyle.ContainerStyle>
+              <Style TargetType="GroupItem">
+                <Setter Property="Template">
+                  <Setter.Value>
+                    <ControlTemplate TargetType="GroupItem">
+                      <Expander IsExpanded="True"
+                                Background="Transparent"
+                                Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}"
+                                BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
+                                Margin="4,4,0,0">
+                        <Expander.Header>
+                          <TextBlock Style="{StaticResource TextBlock.Caption}"
+                                     FontWeight="SemiBold"
+                                     Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}"
+                                     Text="{Binding Name, TargetNullValue=--}" />
+                        </Expander.Header>
+                        <ItemsPresenter />
+                      </Expander>
+                    </ControlTemplate>
+                  </Setter.Value>
+                </Setter>
+              </Style>
+            </GroupStyle.ContainerStyle>
+          </GroupStyle>
+        </DataGrid.GroupStyle>
         <DataGrid.Columns>
           <DataGridTextColumn Header="Change" Binding="{Binding Change}" Width="90" />
           <DataGridTextColumn Header="Protocol" Binding="{Binding Protocol}" Width="80" />
