@@ -7,16 +7,19 @@
       <RowDefinition Height="Auto" />
       <RowDefinition Height="*" />
     </Grid.RowDefinitions>
-    <StackPanel Style="{StaticResource StackPanel.Toolbar}" Orientation="Horizontal" Margin="0,0,0,12">
-      <Label Style="{StaticResource Label.Standard}" Content="Family" VerticalAlignment="Center" Margin="0,0,8,0" />
-      <ComboBox Width="120"
-                Style="{StaticResource ComboBox.Standard}"
-                ItemsSource="{Binding Families}"
-                SelectedItem="{Binding Family}"
-                Margin="0,0,16,0" />
+    <StackPanel Grid.Row="0"
+                Style="{StaticResource StackPanel.Toolbar}"
+                Orientation="Horizontal"
+                HorizontalAlignment="Left"
+                Margin="0,0,0,12">
       <Button Content="Refresh"
               Style="{StaticResource Button.Primary}"
               Command="{Binding RefreshCommand}"
+              Padding="16,4"
+              Margin="0,0,8,0" />
+      <Button Content="Copy"
+              Style="{StaticResource Button.Secondary}"
+              Command="{Binding CopyNeighborsCommand}"
               Padding="16,4" />
     </StackPanel>
     <Border Grid.Row="1" BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">

@@ -1,5 +1,4 @@
 using System.Collections.ObjectModel;
-using System.Net.Sockets;
 using System.Text;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -12,16 +11,11 @@ public sealed partial class MainViewModel : ObservableObject
 {
     private bool _busy;
 
-    public IReadOnlyList<string> Families { get; } = ["All", "IPv4", "IPv6"];
-
     public ObservableCollection<NetworkRoute> Ipv4Routes { get; } = [];
 
     public ObservableCollection<NetworkRoute> Ipv6Routes { get; } = [];
 
     public ObservableCollection<NetworkNeighbor> Neighbors { get; } = [];
-
-    [ObservableProperty]
-    private string _family = "All";
 
     public Action<string>? ReportStatus { get; set; }
 
@@ -33,19 +27,12 @@ public sealed partial class MainViewModel : ObservableObject
         if (_busy)
             return;
 
-        if (!RouteIqInput.TryMapFamily(Family, out var family, out var reason))
-        {
-            Report(reason ?? "Family must be All, IPv4, or IPv6.");
-            return;
-        }
-
         _busy = true;
-        RefreshCommand.NotifyCanExecuteChanged();
-        CopyCommand.NotifyCanExecuteChanged();
+        RaiseCanExecute();
         Report(string.Empty);
         try
         {
-            var snapshot = await Task.Run(() => Load(family)).ConfigureAwait(true);
+            var snapshot = await Task.Run(Load).ConfigureAwait(true);
             Replace(Ipv4Routes, snapshot.Ipv4);
             Replace(Ipv6Routes, snapshot.Ipv6);
             Replace(Neighbors, snapshot.Neighbors);
@@ -58,8 +45,7 @@ public sealed partial class MainViewModel : ObservableObject
         finally
         {
             _busy = false;
-            RefreshCommand.NotifyCanExecuteChanged();
-            CopyCommand.NotifyCanExecuteChanged();
+            RaiseCanExecute();
         }
     }
 
@@ -76,29 +62,67 @@ public sealed partial class MainViewModel : ObservableObject
         }
     }
 
+    [RelayCommand(CanExecute = nameof(CanCopy))]
+    private void CopyNeighbors()
+    {
+        try
+        {
+            Clipboard.SetText(FormatNeighbors());
+        }
+        catch (Exception ex)
+        {
+            Report(ex.Message);
+        }
+    }
+
     private bool CanRefresh() => !_busy;
 
     private bool CanCopy() => !_busy;
 
+    private void RaiseCanExecute()
+    {
+        RefreshCommand.NotifyCanExecuteChanged();
+        CopyCommand.NotifyCanExecuteChanged();
+        CopyNeighborsCommand.NotifyCanExecuteChanged();
+    }
+
     private void Report(string text) => ReportStatus?.Invoke(text);
 
-    private static (IReadOnlyList<NetworkRoute> Ipv4, IReadOnlyList<NetworkRoute> Ipv6, IReadOnlyList<NetworkNeighbor> Neighbors) Load(RouteFamily family)
+    private static (IReadOnlyList<NetworkRoute> Ipv4, IReadOnlyList<NetworkRoute> Ipv6, IReadOnlyList<NetworkNeighbor> Neighbors) Load()
     {
         var ipv4 = NetworkHelper.GetRoutes(RouteFamily.Pv4);
         var ipv6 = NetworkHelper.GetRoutes(RouteFamily.Pv6);
-        var neighbors = Filter(NetworkHelper.GetNeighbors(), family);
+        var neighbors = NetworkHelper.GetNeighbors();
         return (ipv4, ipv6, neighbors);
     }
 
     private string FormatTables()
     {
         var text = new StringBuilder();
-        Append(text, "IPv4 Route Table", Ipv4Routes);
-        Append(text, "IPv6 Route Table", Ipv6Routes);
+        AppendRoutes(text, "IPv4 Route Table", Ipv4Routes);
+        AppendRoutes(text, "IPv6 Route Table", Ipv6Routes);
         return text.ToString();
     }
 
-    private static void Append(StringBuilder text, string title, IReadOnlyList<NetworkRoute> rows)
+    private string FormatNeighbors()
+    {
+        var text = new StringBuilder();
+        text.AppendLine("Neighbor Cache");
+        text.AppendLine("Address              MAC                Interface            State");
+        foreach (var row in Neighbors)
+        {
+            text.Append(Pad(row.Address, 21));
+            text.Append(Pad(row.MacAddress, 19));
+            text.Append(Pad(row.InterfaceName, 21));
+            text.AppendLine(row.State);
+        }
+
+        if (Neighbors.Count == 0)
+            text.AppendLine("None");
+        return text.ToString();
+    }
+
+    private static void AppendRoutes(StringBuilder text, string title, IReadOnlyList<NetworkRoute> rows)
     {
         if (text.Length > 0)
             text.AppendLine();
@@ -124,17 +148,6 @@ public sealed partial class MainViewModel : ObservableObject
     {
         var text = value ?? string.Empty;
         return text.Length >= width ? text + " " : text.PadRight(width);
-    }
-
-    private static IReadOnlyList<NetworkNeighbor> Filter(IReadOnlyList<NetworkNeighbor> rows, RouteFamily family)
-    {
-        if (family == RouteFamily.All)
-            return rows;
-
-        var want = family == RouteFamily.Pv4
-            ? AddressFamily.InterNetwork
-            : AddressFamily.InterNetworkV6;
-        return rows.Where(row => row.Family == want).ToArray();
     }
 
     private static void Replace<T>(ObservableCollection<T> target, IReadOnlyList<T> source)
