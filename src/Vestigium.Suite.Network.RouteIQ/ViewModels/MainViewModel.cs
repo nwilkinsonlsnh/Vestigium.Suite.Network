@@ -12,9 +12,10 @@ namespace Vestigium.Suite.Network.RouteIQ.ViewModels;
 
 public sealed partial class MainViewModel : ObservableObject
 {
+    private const int OuiGapMs = 1200;
     private bool _busy;
     private readonly SemaphoreSlim _ouiPace = new(1, 1);
-    private DateTime _ouiSentAt = DateTime.UtcNow.AddSeconds(-1);
+    private DateTime _ouiSentAt = DateTime.UtcNow.AddSeconds(-2);
 
     public ObservableCollection<NetworkRoute> Ipv4Routes { get; } = [];
 
@@ -186,7 +187,7 @@ public sealed partial class MainViewModel : ObservableObject
         await _ouiPace.WaitAsync().ConfigureAwait(false);
         try
         {
-            var wait = 1000 - (int)(DateTime.UtcNow - _ouiSentAt).TotalMilliseconds;
+            var wait = OuiGapMs - (int)(DateTime.UtcNow - _ouiSentAt).TotalMilliseconds;
             if (wait > 0)
                 await Task.Delay(wait).ConfigureAwait(false);
             _ouiSentAt = DateTime.UtcNow;
