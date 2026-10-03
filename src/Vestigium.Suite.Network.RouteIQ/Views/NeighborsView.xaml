@@ -62,7 +62,6 @@
               <DataGridTextColumn Header="IsMulticast" Binding="{Binding IsMulticast}" Width="110" />
               <DataGridTextColumn Header="Vendor" Binding="{Binding VendorText}" Width="180" />
               <DataGridTextColumn Header="RTT (ms)" Binding="{Binding RttMs}" Width="90" />
-              <DataGridTextColumn Header="Hops" Binding="{Binding Hops}" Width="70" />
             </DataGrid.Columns>
           </DataGrid>
         </Grid>
@@ -100,7 +99,6 @@
               <DataGridTextColumn Header="IsMulticast" Binding="{Binding IsMulticast}" Width="110" />
               <DataGridTextColumn Header="Vendor" Binding="{Binding VendorText}" Width="160" />
               <DataGridTextColumn Header="RTT (ms)" Binding="{Binding RttMs}" Width="90" />
-              <DataGridTextColumn Header="Hops" Binding="{Binding Hops}" Width="70" />
               <DataGridTextColumn Header="IsRouter" Binding="{Binding IsRouter}" Width="90" />
               <DataGridTextColumn Header="LastReachable" Binding="{Binding LastReachableText}" Width="120" />
             </DataGrid.Columns>
