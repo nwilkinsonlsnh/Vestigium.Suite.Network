@@ -5,6 +5,8 @@
     <LangVersion>latest</LangVersion>
     <Authors>Vestigium</Authors>
     <Company>Wilkinson Business</Company>
+    <Copyright>Copyright (c) 2026 Vestigium / Wilkinson Business</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <NeutralLanguage>en-US</NeutralLanguage>
     <VestigiumNetworkVersion>1.3.6</VestigiumNetworkVersion>
     <VestigiumAnalyticsVersion>1.0.1</VestigiumAnalyticsVersion>
