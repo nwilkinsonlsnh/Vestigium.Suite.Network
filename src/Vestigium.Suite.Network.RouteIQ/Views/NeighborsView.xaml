@@ -53,10 +53,12 @@
                     HorizontalScrollBarVisibility="Auto"
                     ScrollViewer.VerticalScrollBarVisibility="Auto">
             <DataGrid.Columns>
-              <DataGridTextColumn Header="Address" Binding="{Binding Address}" Width="260" />
+              <DataGridTextColumn Header="Address" Binding="{Binding Address}" Width="220" />
               <DataGridTextColumn Header="MacAddress" Binding="{Binding MacAddress}" Width="160" />
               <DataGridTextColumn Header="InterfaceName" Binding="{Binding InterfaceName}" Width="180" />
-              <DataGridTextColumn Header="State" Binding="{Binding State}" Width="140" />
+              <DataGridTextColumn Header="InterfaceIndex" Binding="{Binding InterfaceIndex}" Width="120" />
+              <DataGridTextColumn Header="State" Binding="{Binding State}" Width="120" />
+              <DataGridTextColumn Header="Vendor" Binding="{Binding Vendor}" Width="180" />
             </DataGrid.Columns>
           </DataGrid>
         </Grid>
@@ -85,10 +87,15 @@
                     HorizontalScrollBarVisibility="Auto"
                     ScrollViewer.VerticalScrollBarVisibility="Auto">
             <DataGrid.Columns>
-              <DataGridTextColumn Header="Address" Binding="{Binding Address}" Width="260" />
+              <DataGridTextColumn Header="Address" Binding="{Binding Address}" Width="220" />
               <DataGridTextColumn Header="MacAddress" Binding="{Binding MacAddress}" Width="160" />
               <DataGridTextColumn Header="InterfaceName" Binding="{Binding InterfaceName}" Width="180" />
-              <DataGridTextColumn Header="State" Binding="{Binding State}" Width="140" />
+              <DataGridTextColumn Header="InterfaceIndex" Binding="{Binding InterfaceIndex}" Width="120" />
+              <DataGridTextColumn Header="State" Binding="{Binding State}" Width="120" />
+              <DataGridTextColumn Header="Vendor" Binding="{Binding Vendor}" Width="160" />
+              <DataGridTextColumn Header="IsRouter" Binding="{Binding IsRouter}" Width="90" />
+              <DataGridTextColumn Header="IsUnreachable" Binding="{Binding IsUnreachable}" Width="120" />
+              <DataGridTextColumn Header="LastReachable" Binding="{Binding LastReachable}" Width="120" />
             </DataGrid.Columns>
           </DataGrid>
         </Grid>
