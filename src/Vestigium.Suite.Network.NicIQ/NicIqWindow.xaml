@@ -14,6 +14,9 @@
       <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="pack://application:,,,/Vestigium.Controls;component/Shell/MenuChrome.xaml" />
       </ResourceDictionary.MergedDictionaries>
+      <ControlTemplate x:Key="MenuDividerTemplate" TargetType="Separator">
+        <Border Height="1" Margin="8,6" HorizontalAlignment="Stretch" Background="#9AA8B8" />
+      </ControlTemplate>
     </ResourceDictionary>
   </Window.Resources>
   <DockPanel Style="{StaticResource DockPanel.Standard}">
@@ -23,13 +26,13 @@
       </MenuItem>
       <MenuItem Header="_View" Style="{StaticResource MenuItem.Standard}">
         <MenuItem Header="Status bar _visible" Style="{StaticResource MenuItem.Standard}" IsCheckable="True" IsChecked="{Binding ShowStatusBar}" />
-        <Separator Style="{StaticResource Separator.Menu}" />
+        <Separator Template="{StaticResource MenuDividerTemplate}" />
         <MenuItem Header="Status bar at _Bottom" Style="{StaticResource MenuItem.Standard}" Command="{Binding DockStatusBarBottomCommand}" />
         <MenuItem Header="Status bar at _Top" Style="{StaticResource MenuItem.Standard}" Command="{Binding DockStatusBarTopCommand}" />
-        <Separator Style="{StaticResource Separator.Menu}" />
+        <Separator Template="{StaticResource MenuDividerTemplate}" />
         <MenuItem Header="_Adapter details" Style="{StaticResource MenuItem.Standard}" Click="AdapterDetails_Click" />
         <MenuItem Header="_System details" Style="{StaticResource MenuItem.Standard}" Click="SystemDetails_Click" />
-        <Separator Style="{StaticResource Separator.Menu}" />
+        <Separator Template="{StaticResource MenuDividerTemplate}" />
         <MenuItem x:Name="ThemeMenu" Header="_Theme" Style="{StaticResource MenuItem.Standard}" />
       </MenuItem>
     </Menu>
