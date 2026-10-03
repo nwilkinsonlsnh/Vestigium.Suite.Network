@@ -119,9 +119,8 @@ public sealed partial class MainViewModel : ObservableObject
     {
         var pending = Ipv4Neighbors.Concat(Ipv6Neighbors)
             .Where(row => string.IsNullOrWhiteSpace(row.Vendor) && CanLookup(row.MacAddress))
-            .Select(row => Oui(row.MacAddress!))
-            .Where(oui => oui.Length > 0)
-            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .GroupBy(row => Oui(row.MacAddress!), StringComparer.OrdinalIgnoreCase)
+            .Select(group => group.First())
             .ToArray();
         if (pending.Length == 0)
         {
@@ -131,12 +130,14 @@ public sealed partial class MainViewModel : ObservableObject
 
         var misses = new List<string>();
         var options = new OuiLookupOptions { Timeout = TimeSpan.FromSeconds(8) };
-        foreach (var oui in pending)
+        foreach (var sample in pending)
         {
+            var mac = sample.MacAddress!;
+            var oui = Oui(mac);
             Report($"OUI {oui}");
             try
             {
-                var hit = await NetworkHelper.LookupOuiAsync(oui, options).ConfigureAwait(true);
+                var hit = await NetworkHelper.LookupOuiAsync(mac, options).ConfigureAwait(true);
                 if (string.IsNullOrWhiteSpace(hit.Vendor))
                     misses.Add(oui);
                 else
@@ -172,7 +173,7 @@ public sealed partial class MainViewModel : ObservableObject
         if (string.IsNullOrWhiteSpace(mac))
             return false;
         var parts = mac.Split(':', StringSplitOptions.RemoveEmptyEntries);
-        if (parts.Length < 3 || !byte.TryParse(parts[0], NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var first))
+        if (parts.Length < 6 || !byte.TryParse(parts[0], NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var first))
             return false;
         if ((first & 0x01) != 0)
             return false;
