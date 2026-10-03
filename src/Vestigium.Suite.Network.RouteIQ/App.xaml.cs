@@ -58,6 +58,12 @@ public partial class App : Application
                     Subject = "Neighbor cache",
                     Description = "Print the stack neighbor cache."
                 },
+                new VestigiumNavItemSpec("Connections")
+                {
+                    Title = "Connections",
+                    Subject = "Connection table",
+                    Description = "Snapshot, then watch added, dropped, and returned rows."
+                },
                 new VestigiumNavItemSpec("NetBIOS")
                 {
                     Title = "NetBIOS",
@@ -94,6 +100,10 @@ public partial class App : Application
         var neighbors = window.HostShell["Neighbors"];
         if (neighbors is not null)
             neighbors.Content = new NeighborsView { DataContext = host };
+
+        var connections = window.HostShell["Connections"];
+        if (connections is not null)
+            connections.Content = new ConnectionsView { DataContext = host };
 
         var netbios = window.HostShell["NetBIOS"];
         if (netbios is not null)
