@@ -24,6 +24,8 @@ public sealed partial class MainViewModel : ObservableObject
 
     public Action<string>? ReportStatus { get; set; }
 
+    public Func<int>? OuiPoolSize { get; set; }
+
     public MainViewModel() => _ = Refresh();
 
     [RelayCommand(CanExecute = nameof(CanRefresh))]
@@ -128,32 +130,43 @@ public sealed partial class MainViewModel : ObservableObject
             return;
         }
 
+        var pool = OuiPoolSize?.Invoke() ?? 10;
+        if (pool < 1) pool = 1;
+        if (pool > 20) pool = 20;
         var misses = new List<string>();
         var options = new OuiLookupOptions { Timeout = TimeSpan.FromSeconds(8) };
-        foreach (var sample in pending)
+        using var slots = new SemaphoreSlim(pool, pool);
+        var tasks = pending.Select(async sample =>
         {
-            var mac = sample.MacAddress!;
-            var oui = Oui(mac);
-            Report($"OUI {oui}");
+            await slots.WaitAsync().ConfigureAwait(false);
             try
             {
-                var hit = await NetworkHelper.LookupOuiAsync(mac, options).ConfigureAwait(true);
-                if (string.IsNullOrWhiteSpace(hit.Vendor))
-                    misses.Add(oui);
-                else
+                var mac = sample.MacAddress!;
+                var oui = Oui(mac);
+                var hit = await NetworkHelper.LookupOuiAsync(mac, options).ConfigureAwait(false);
+                await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    Stamp(Ipv4Neighbors, oui, hit.Vendor);
-                    Stamp(Ipv6Neighbors, oui, hit.Vendor);
-                }
+                    if (string.IsNullOrWhiteSpace(hit.Vendor))
+                        misses.Add(oui);
+                    else
+                    {
+                        Stamp(Ipv4Neighbors, oui, hit.Vendor);
+                        Stamp(Ipv6Neighbors, oui, hit.Vendor);
+                    }
+                });
             }
             catch (Exception ex)
             {
-                misses.Add(oui + " " + ex.Message);
+                var oui = Oui(sample.MacAddress);
+                await Application.Current.Dispatcher.InvokeAsync(() => misses.Add(oui + " " + ex.Message));
             }
+            finally
+            {
+                slots.Release();
+            }
+        });
 
-            await Task.Delay(1100).ConfigureAwait(true);
-        }
-
+        await Task.WhenAll(tasks).ConfigureAwait(true);
         Report(misses.Count == 0 ? string.Empty : "OUI miss: " + string.Join(", ", misses));
     }
 
