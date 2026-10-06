@@ -2,7 +2,7 @@
 
 **Document ID:** VEST-SUITE-NETWORK-ROUTEIQ-PLN-PR07
 **Version:** PR07
-**Status:** Live. Step 6 done. Pin is still `1.4.5`. Step 7 is the restore pin.
+**Status:** Live. Step 7 done. Pin is `1.5.0`. Owner has not accepted the slice.
 **Date:** 6 October 2026
 **Binding:** `PR07 -- Requirements.md`. This file wins on order. Requirements win on the cut. PR06 wins on the log. PR05 wins on the load path. PR04 wins on vendor lookup, ICMP, and the settings path.
 
@@ -20,6 +20,7 @@ Step 3 closed 6 October 2026. Protocol lookup on Helpers `2dd1e0e`. `TryByPort(4
 Step 4 closed 6 October 2026. Async print doors on Helpers `791bc0d`. Six methods. Token before the hop throws. Not a `NetworkJob`. No second log line. `NetworkHelper.cs` was not reopened. Not published.
 Step 5 closed 6 October 2026. Owner pushed `Vestigium.Helpers.Network` `1.5.0`. `1.4.6` is out. README surface is Helpers `8b49c35`. That commit does not republish the package.
 Step 6 closed 6 October 2026. Host cut on suite `85a6ca0`. Parsers deleted. Prints await the library. Pin not moved.
+Step 7 closed 6 October 2026. Pin is `1.5.0` on suite `27320d8`. No other pin moved. Flat container listed `1.5.0` before the pin.
 
 The folder stays live until the owner accepts the slice.
 
@@ -49,7 +50,7 @@ Out: a public second parser. A host catalog that "stays small." A `NetworkJob` p
 | 4 | L9–L12, T-F | `NetworkHelper.Async.cs`, `NetworkPrintAsyncTests.cs`. | Done. `791bc0d`. Six doors. Cancel before the hop throws. Not a `NetworkJob`. |
 | 5 | Publish | Helpers package `1.5.0`. README surface. | Done. Owner push. README `8b49c35`. Package not republished for the README. |
 | 6 | R1–R3, R5–R10, T-D, T-E | Suite host files. | Done. `85a6ca0`. Parsers deleted. Stamp hop gone. Pin not moved. |
-| 7 | R4 | `Directory.Build.props` pin `1.5.0`. | Pin matches the package that step 6 compiled against. |
+| 7 | R4 | `Directory.Build.props` pin `1.5.0`. | Done. `27320d8`. No other pin moved. |
 
 `NeighborGridRow.cs` is not edited. `PrintCoordinator.cs` is not edited. `RouteIqLog.cs` is not edited. Shell is not edited. PingIQ, DnsIQ, and NicIQ are not edited. `NetworkPortGuess.cs` was not edited. The record already had a transport.
 
@@ -121,7 +122,7 @@ Delete `NeighborTables.cs` and `ConnectionServices.cs` in this step, not before 
 
 ## 7. Step 7 — pin
 
-`Directory.Build.props` `VestigiumNetworkVersion` becomes `1.5.0`. No other pin moves. Not until step 6 compiled against a restore of `1.5.0`.
+Closed 6 October 2026. Suite `27320d8`. `VestigiumNetworkVersion` is `1.5.0`. No other pin moved. Flat container listed `1.5.0` before the pin. This environment has no `dotnet`, so the restore was not run here.
 
 ---
 
@@ -161,3 +162,4 @@ Route-table name-lookup cleanup. Grid-row multicast helper. Exe publish. A Helpe
 | PR07 | 6 Oct 2026 | Step 4. Six async print doors. Helpers `791bc0d`. Not published. |
 | PR07 | 6 Oct 2026 | Step 5. Owner pushed `1.5.0`. `1.4.6` is out. README `8b49c35` is source only. |
 | PR07 | 6 Oct 2026 | Step 6. Host cut. Suite `85a6ca0`. Pin not moved. |
+| PR07 | 6 Oct 2026 | Step 7. Pin `1.5.0`. Suite `27320d8`. |
