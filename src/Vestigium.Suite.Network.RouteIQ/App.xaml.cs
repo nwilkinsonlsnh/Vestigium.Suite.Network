@@ -171,6 +171,7 @@ public partial class App : Application
         host.ExportNetBios = session.ExportNetBios;
         host.ExportLmHosts = session.ExportLmHosts;
         host.ExportOpenAfter = session.ExportOpenAfter;
+        host.ExportOpenFolder = session.ExportOpenFolder;
 
         var routes = window.HostShell["RouteIQ"];
         if (routes is not null)
