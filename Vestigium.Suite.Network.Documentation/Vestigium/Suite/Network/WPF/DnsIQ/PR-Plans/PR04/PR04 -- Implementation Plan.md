@@ -136,7 +136,7 @@ No chart. No Requests / Seconds. No second Server box.
 | Order | ID | Do | State |
 | ---: | :--- | :--- | :--- |
 | 1 | PR04-01 | LogParser types. Pack 1.0.0. No HAR, no scrape, no sockets. | Done |
-| 2 | PR04-02 | `UrlReader` in LogParser.Url + dump tests. Pack 1.0.0. | Open |
+| 2 | PR04-02 | `UrlReader` in LogParser.Url + dump tests. Pack 1.0.0. | Done |
 | 3 | PR04-03 | `HarReader` + corpus tests. Pack 1.0.0. | Open |
 | 4 | PR04-04 | Pin the three packages in suite `Directory.Build.props`. File → Open capture (`.har` / `.txt`). HAR tab + grid. No probe yet. | Open |
 | 5 | PR04-05 | Probe DNS loop. A + AAAA. Cancel. Skipped addresses. | Open |
@@ -232,4 +232,4 @@ When this plan finishes, move `PR04/` to `PR-Plans/Completed/PR04/` and point th
 
 ## Next action
 
-PR04-02. `UrlReader` is already on the feed as `Vestigium.Helpers.LogParser.Url` 1.0.0. Close that slice, then PR04-04 pins the three packages in DnsIQ.
+PR04-03. `HarReader` is already on the feed as `Vestigium.Helpers.LogParser.Har` 1.0.0. Close that slice, then PR04-04 pins the three packages in DnsIQ.
