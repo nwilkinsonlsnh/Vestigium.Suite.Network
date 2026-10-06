@@ -24,7 +24,7 @@
         <Button Content="Copy" Style="{StaticResource Button.Secondary}" Command="{Binding CopyConnectionsCommand}" Padding="16,4" Margin="0,0,8,0" />
       </StackPanel>
       <Button x:Name="LegendButton" Grid.Column="1" Content="Legend" Style="{StaticResource Button.Secondary}" Padding="16,4" HorizontalAlignment="Right" VerticalAlignment="Center" Click="OnLegend" />
-      <Popup x:Name="LegendPopup" PlacementTarget="{Binding ElementName=LegendButton}" Placement="Bottom" StaysOpen="False" AllowsTransparency="True">
+      <Popup x:Name="LegendPopup" PlacementTarget="{Binding ElementName=LegendButton}" Placement="Custom" CustomPopupPlacementCallback="PlaceLegend" StaysOpen="False" AllowsTransparency="True">
         <Border Background="{DynamicResource Vestigium.Brushes.Surface.Window}" BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1" Padding="12" Margin="0,4,0,0">
           <StackPanel>
             <StackPanel Orientation="Horizontal" Margin="0,0,0,6">

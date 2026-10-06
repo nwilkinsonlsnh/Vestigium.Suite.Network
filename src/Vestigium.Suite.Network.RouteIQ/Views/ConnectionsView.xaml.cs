@@ -27,6 +27,9 @@ public partial class ConnectionsView : UserControl
     private void OnLegend(object sender, RoutedEventArgs e)
         => LegendPopup.IsOpen = !LegendPopup.IsOpen;
 
+    private CustomPopupPlacement[] PlaceLegend(Size popupSize, Size targetSize, Point offset)
+        => [new CustomPopupPlacement(new Point(targetSize.Width - popupSize.Width, targetSize.Height + 4), PopupPrimaryAxis.Horizontal)];
+
     private void OnConnectionCommit(object sender, RoutedEventArgs e)
     {
         if (DataContext is MainViewModel host)
