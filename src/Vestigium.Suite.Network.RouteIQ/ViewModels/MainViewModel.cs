@@ -209,22 +209,19 @@ public sealed partial class MainViewModel : ObservableObject
     {
         try
         {
-            var rows = await Task.Run(() =>
-            {
-                var neighbors = NetworkHelper.GetNeighbors();
-                var v4 = ByAddress(neighbors.Where(row => row.Family == AddressFamily.InterNetwork), row => row.Address);
-                var v6 = ByAddress(neighbors.Where(row => row.Family == AddressFamily.InterNetworkV6), row => row.Address);
-                return (v4, v6);
-            }, cancellationToken).ConfigureAwait(false);
+            var v4 = await Task.Run(NeighborTables.ReadIpv4, cancellationToken).ConfigureAwait(false);
             if (!scope.IsCurrent)
                 return;
-            await OnUi(() =>
-            {
-                Replace(Ipv4Neighbors, Blank(rows.v4));
-                Replace(Ipv6Neighbors, Blank(rows.v6));
-            });
-            RouteIqLog.PrintApplied("Neighbors", rows.v4.Count + rows.v6.Count, scope.Generation);
-            StartEnrich(scope, rows.v4, rows.v6);
+            var shown4 = ByAddress(v4, row => row.Address);
+            await OnUi(() => Replace(Ipv4Neighbors, Blank(shown4)));
+            var v6 = await Task.Run(NeighborTables.ReadIpv6, cancellationToken).ConfigureAwait(false);
+            if (!scope.IsCurrent)
+                return;
+            var shown6 = ByAddress(v6, row => row.Address);
+            await OnUi(() => Replace(Ipv6Neighbors, Blank(shown6)));
+            RouteIqLog.PrintApplied("Neighbors", shown4.Count + shown6.Count, scope.Generation);
+            StartEnrich(scope, shown4, shown6);
+            _ = StampInterfaceNames(scope, shown4, shown6);
         }
         catch (Exception ex)
         {
@@ -370,6 +367,41 @@ public sealed partial class MainViewModel : ObservableObject
         if (dispatcher is null)
             return Task.CompletedTask;
         return dispatcher.InvokeAsync(action).Task;
+    }
+
+    private async Task StampInterfaceNames(PrintScope scope, IReadOnlyList<NetworkNeighbor> v4, IReadOnlyList<NetworkNeighbor> v6)
+    {
+        try
+        {
+            var names = await Task.Run(NeighborTables.Names).ConfigureAwait(false);
+            if (!scope.IsCurrent)
+                return;
+            await OnUi(() =>
+            {
+                if (scope.IsCurrent)
+                    ApplyNames(Ipv4Neighbors, names);
+                if (scope.IsCurrent)
+                    ApplyNames(Ipv6Neighbors, names);
+            });
+        }
+        catch (Exception ex)
+        {
+            if (scope.IsCurrent)
+                RouteIqLog.Fail(ex, RouteIqLog.PrintFailedId, SourceBag("Neighbors"));
+        }
+    }
+
+    private static void ApplyNames(QuietCollection<NeighborGridRow> rows, IReadOnlyDictionary<int, string> names)
+    {
+        for (var i = 0; i < rows.Count; i++)
+        {
+            var row = rows[i];
+            if (row.InterfaceIndex is not int index || !names.TryGetValue(index, out var name))
+                continue;
+            if (string.Equals(row.InterfaceName, name, StringComparison.Ordinal))
+                continue;
+            rows[i] = row with { Source = row.Source with { InterfaceName = name } };
+        }
     }
 
     private async Task ReportVendors()
