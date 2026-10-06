@@ -6,11 +6,17 @@
              SizeChanged="OnSizeChanged">
   <DockPanel Margin="16,12,16,16">
     <StackPanel x:Name="Toolbar" DockPanel.Dock="Top" Margin="0,0,0,12">
-      <StackPanel Style="{StaticResource StackPanel.Toolbar}" Orientation="Horizontal" HorizontalAlignment="Left">
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <StackPanel Style="{StaticResource StackPanel.Toolbar}" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
         <Button Content="Refresh" Style="{StaticResource Button.Primary}" Command="{Binding RefreshNeighborsCommand}" Padding="16,4" Margin="0,0,8,0" />
         <Button Content="Copy" Style="{StaticResource Button.Secondary}" Command="{Binding CopyNeighborsCommand}" Padding="16,4" />
-        <TextBlock Style="{StaticResource TextBlock.Caption}" Text="{Binding NeighborSummary}" VerticalAlignment="Center" Margin="12,0,0,0" />
-      </StackPanel>
+        </StackPanel>
+        <TextBlock Grid.Column="1" Style="{StaticResource TextBlock.Caption}" Text="{Binding NeighborSummary}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+      </Grid>
       <query:VestigiumQueryBar Margin="0,8,0,0"
                                Text="{Binding NeighborQuery, UpdateSourceTrigger=PropertyChanged}"
                                Session="{Binding NeighborSession}"
