@@ -2,7 +2,7 @@
 
 **Document ID:** VEST-SUITE-NETWORK-ROUTEIQ-PLN-PR06
 **Version:** PR06
-**Status:** Live. Step 2 done. Not moved to Completed.
+**Status:** Live. Step 3 done. Not moved to Completed.
 **Date:** 6 October 2026
 **Binding:** `PR06 -- Requirements.md`. This file wins on order. Requirements win on the log. PR05 wins on the load path. PR04 wins on vendor lookup, ICMP, and the settings path.
 
@@ -14,6 +14,7 @@ One pass per file. A later step that reopens a file from an earlier step is rewo
 
 Step 1 closed 6 October 2026. Requirements accepted. This plan is the paper you implement.
 Step 2 closed 6 October 2026. `RouteIqCatalog` registers the 16 story rows and the `RouteIQ` / `Host` taxonomy. `RouteIqLog` owns the fixed messages. `Fail` writes `Thrown`, then the story. Cancel is rejected. The sink is the test seam.
+Step 3 closed 6 October 2026. A run reports one start. Source catches log one failure and do not rethrow. Vendor miss is one line after the join. Session logs the settings reason from the store's exception. Watch cancel is not a failure.
 
 The folder stays live until the owner accepts the slice.
 
@@ -36,7 +37,7 @@ Each step names the files it may touch. A file not in the row is out of that ste
 |---|---|---|---|
 | 1 | Paper | This folder. Keeper. | Done. Requirements and this plan are the live papers. |
 | 2 | R1 catalog, R2, R3 door, T-A, T-C | `ViewModels/RouteIqCatalog.cs`. `ViewModels/RouteIqLog.cs`. `tests/.../RouteIqLogTests.cs`. | Done. Sixteen rows, no 10075. `Fail` is Thrown then the story. Cancel does not call the sink. A MAC or a path is rejected. |
-| 3 | R3–R8, R11, T-B, T-D, T-E | `PrintCoordinator.cs`. `MainViewModel.cs`. `RouteIqExport.cs`. `RouteIqSession.cs`. `ConnectionWatch.cs`. `tests/.../RouteIqPrintCoordinatorTests.cs`. | A run emits one start. A source catch logs one failure and leaves the list. Vendor miss is one line. Settings reason is logged by the session. Watch cancel is not a failure. |
+| 3 | R3–R8, R11, T-B, T-D, T-E | `PrintCoordinator.cs`. `MainViewModel.cs`. `RouteIqExport.cs`. `RouteIqSession.cs`. `RouteIqSettingsStore.cs`. `ConnectionWatch.cs`. `tests/.../RouteIqPrintCoordinatorTests.cs`. | Done. One start per generation. Source catch logs and does not rethrow. Vendor miss is one line. Settings reason carries the exception. Watch cancel is not a failure. |
 | 4 | R1 initialize, R9, R10 | `App.xaml.cs`. | Catalog registered in the existing callback. Host started / stopped. Dispatcher and domain unhandled call `Thrown`. |
 
 `KqlBars.cs` is not edited. A compile miss already reports. It is not an exception. `NeighborGridRow.cs` is not edited. Per-row parse misses stay quiet.
@@ -55,7 +56,9 @@ Closed 6 October 2026.
 
 ## 3. Step 3 — host wiring
 
-`PrintCoordinator` gains one optional `Action<int>? started`, called once at the top of `RunOnce` with the generation. Existing join, fault, and progress behavior stay. The new argument is last so current tests still compile. One new test: a run reports one start, a follow-up reports a second start, and two concurrent runs do not happen.
+Closed 6 October 2026.
+
+`PrintCoordinator` gained one optional `Action<int>? started`, called once at the top of `RunOnce` with the generation. Existing join, fault, and progress behavior stay. The new argument is last so current tests still compile. One new test: a run reports one start, a follow-up reports a second start, and two concurrent runs do not happen.
 
 `MainViewModel` passes that callback to `RouteIqLog.PrintRequested`. Do not log the request in `BeginPrints` or `Refresh`. Those return the same task when busy.
 
@@ -118,3 +121,4 @@ Log viewer. Seal. Archive. Janitor. Custom exception rows. Per-row parse logging
 |---|---|---|
 | PR06 | 6 Oct 2026 | Plan opened. Step 1 done. Log at the existing catch. One start callback. Vendor miss is one line. |
 | PR06 | 6 Oct 2026 | Step 2. Catalog and door. No host wiring. |
+| PR06 | 6 Oct 2026 | Step 3. Log at the existing catch. Start callback. Store carries the exception. Catalog register is still step 4. |

@@ -42,7 +42,7 @@ public sealed class RouteIqSettings
     public List<RouteIqQueryEntry> Queries { get; set; } = [];
 }
 
-public sealed record RouteIqSettingsResult(RouteIqSettings Settings, string? Reason)
+public sealed record RouteIqSettingsResult(RouteIqSettings Settings, string? Reason, Exception? Error = null)
 {
     public bool Ok => Reason is null;
 }
@@ -84,8 +84,8 @@ public sealed class RouteIqSettingsStore
         if (!File.Exists(FilePath))
         {
             var copied = CopyLegacyOnce();
-            if (copied is not null)
-                return new RouteIqSettingsResult(new RouteIqSettings(), copied);
+            if (copied.Reason is not null)
+                return new RouteIqSettingsResult(new RouteIqSettings(), copied.Reason, copied.Error);
         }
 
         if (!File.Exists(FilePath))
@@ -99,7 +99,7 @@ public sealed class RouteIqSettingsStore
         }
         catch (Exception ex)
         {
-            return new RouteIqSettingsResult(new RouteIqSettings(), "Settings file could not be read. " + ex.Message);
+            return new RouteIqSettingsResult(new RouteIqSettings(), "Settings file could not be read. " + ex.Message, ex);
         }
     }
 
@@ -113,25 +113,25 @@ public sealed class RouteIqSettingsStore
         }
         catch (Exception ex)
         {
-            return new RouteIqSettingsResult(settings, "Settings were not saved. " + ex.Message);
+            return new RouteIqSettingsResult(settings, "Settings were not saved. " + ex.Message, ex);
         }
     }
 
-    private string? CopyLegacyOnce()
+    private (string? Reason, Exception? Error) CopyLegacyOnce()
     {
         var legacy = _legacyFilePath ?? LegacyFilePath;
         if (!File.Exists(legacy))
-            return null;
+            return (null, null);
 
         try
         {
             Directory.CreateDirectory(RootDirectory);
             File.Copy(legacy, FilePath, overwrite: false);
-            return null;
+            return (null, null);
         }
         catch (Exception ex)
         {
-            return "Settings were not copied from the old folder. " + ex.Message;
+            return ("Settings were not copied from the old folder. " + ex.Message, ex);
         }
     }
 }

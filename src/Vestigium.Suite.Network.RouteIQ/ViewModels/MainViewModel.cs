@@ -55,7 +55,8 @@ public sealed partial class MainViewModel : ObservableObject
             LoadNetBios,
             LoadLmHosts,
             OnPrintProgress,
-            OnPrintFault);
+            OnPrintFault,
+            RouteIqLog.PrintRequested);
     }
 
     public Task BeginPrints()
@@ -82,6 +83,7 @@ public sealed partial class MainViewModel : ObservableObject
         catch (Exception ex)
         {
             Report(ex.Message);
+            RouteIqLog.Fail(ex, RouteIqLog.PrintFailedId);
         }
         finally
         {
@@ -91,16 +93,16 @@ public sealed partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand(CanExecute = nameof(CanCopy))]
-    private void Copy() { try { Clipboard.SetText(FormatTables()); } catch (Exception ex) { Report(ex.Message); } }
+    private void Copy() { try { Clipboard.SetText(FormatTables()); } catch (Exception ex) { Report(ex.Message); RouteIqLog.Fail(ex, RouteIqLog.ClipboardFailedId); } }
 
     [RelayCommand(CanExecute = nameof(CanCopy))]
-    private void CopyNeighbors() { try { Clipboard.SetText(FormatNeighbors()); } catch (Exception ex) { Report(ex.Message); } }
+    private void CopyNeighbors() { try { Clipboard.SetText(FormatNeighbors()); } catch (Exception ex) { Report(ex.Message); RouteIqLog.Fail(ex, RouteIqLog.ClipboardFailedId); } }
 
     [RelayCommand(CanExecute = nameof(CanCopy))]
-    private void CopyNetBios() { try { Clipboard.SetText(FormatNetBios()); } catch (Exception ex) { Report(ex.Message); } }
+    private void CopyNetBios() { try { Clipboard.SetText(FormatNetBios()); } catch (Exception ex) { Report(ex.Message); RouteIqLog.Fail(ex, RouteIqLog.ClipboardFailedId); } }
 
     [RelayCommand(CanExecute = nameof(CanCopy))]
-    private void CopyLmHosts() { try { Clipboard.SetText(FormatLmHosts()); } catch (Exception ex) { Report(ex.Message); } }
+    private void CopyLmHosts() { try { Clipboard.SetText(FormatLmHosts()); } catch (Exception ex) { Report(ex.Message); RouteIqLog.Fail(ex, RouteIqLog.ClipboardFailedId); } }
 
     private bool CanRefresh() => !_busy;
     private bool CanCopy() => !_busy;
@@ -146,6 +148,7 @@ public sealed partial class MainViewModel : ObservableObject
                 StampProbe(Ipv6Neighbors, address, rtt);
             });
             Report(address + " " + rtt);
+            RouteIqLog.ProbeFinished(result.Received > 0);
         }
         catch (Exception ex)
         {
@@ -155,6 +158,7 @@ public sealed partial class MainViewModel : ObservableObject
                 StampProbe(Ipv6Neighbors, address, NoValue);
             });
             Report(ex.Message);
+            RouteIqLog.Fail(ex, RouteIqLog.ProbeFailedId);
         }
         finally
         {
@@ -179,7 +183,20 @@ public sealed partial class MainViewModel : ObservableObject
     }
 
     private void OnPrintFault(string source, Exception ex)
-        => OnUi(() => Report(source + " " + ex.Message));
+    {
+        try
+        {
+            RouteIqLog.Fail(ex, RouteIqLog.PrintFailedId, SourceBag(source));
+            OnUi(() => Report(source + " " + ex.Message));
+        }
+        catch (Exception second)
+        {
+            RouteIqLog.Fail(second);
+        }
+    }
+
+    private static Dictionary<string, string?> SourceBag(string source)
+        => new(StringComparer.Ordinal) { ["source"] = source };
 
     private async Task LoadIpv4(PrintScope scope, CancellationToken cancellationToken)
     {
@@ -189,10 +206,12 @@ public sealed partial class MainViewModel : ObservableObject
             if (!scope.IsCurrent)
                 return;
             await OnUi(() => Replace(Ipv4Routes, rows));
+            RouteIqLog.PrintApplied("IPv4 routes", rows.Count, scope.Generation);
         }
         catch (Exception ex)
         {
             await OnUi(() => Report("IPv4 routes " + ex.Message));
+            RouteIqLog.Fail(ex, RouteIqLog.PrintFailedId, SourceBag("IPv4 routes"));
         }
         finally
         {
@@ -208,10 +227,12 @@ public sealed partial class MainViewModel : ObservableObject
             if (!scope.IsCurrent)
                 return;
             await OnUi(() => Replace(Ipv6Routes, rows));
+            RouteIqLog.PrintApplied("IPv6 routes", rows.Count, scope.Generation);
         }
         catch (Exception ex)
         {
             await OnUi(() => Report("IPv6 routes " + ex.Message));
+            RouteIqLog.Fail(ex, RouteIqLog.PrintFailedId, SourceBag("IPv6 routes"));
         }
         finally
         {
@@ -246,10 +267,12 @@ public sealed partial class MainViewModel : ObservableObject
                 Replace(Ipv4Neighbors, packed4);
                 Replace(Ipv6Neighbors, packed6);
             });
+            RouteIqLog.PrintApplied("Neighbors", packed4.Count + packed6.Count, scope.Generation);
         }
         catch (Exception ex)
         {
             await OnUi(() => Report("Neighbors " + ex.Message));
+            RouteIqLog.Fail(ex, RouteIqLog.PrintFailedId, SourceBag("Neighbors"));
         }
         finally
         {
@@ -271,10 +294,12 @@ public sealed partial class MainViewModel : ObservableObject
                 Replace(NetBiosNames, names);
                 ApplyNetBiosStats();
             });
+            RouteIqLog.PrintApplied("NetBIOS", names.Length, scope.Generation);
         }
         catch (Exception ex)
         {
             await OnUi(() => Report("NetBIOS " + ex.Message));
+            RouteIqLog.Fail(ex, RouteIqLog.PrintFailedId, SourceBag("NetBIOS"));
         }
         finally
         {
@@ -294,10 +319,12 @@ public sealed partial class MainViewModel : ObservableObject
                 Replace(LmHosts, hosts);
                 ApplyLmHostSummary(hosts.Count);
             });
+            RouteIqLog.PrintApplied("LMHOSTS", hosts.Count, scope.Generation);
         }
         catch (Exception ex)
         {
             await OnUi(() => Report("LMHOSTS " + ex.Message));
+            RouteIqLog.Fail(ex, RouteIqLog.PrintFailedId, SourceBag("LMHOSTS"));
         }
         finally
         {
@@ -347,6 +374,7 @@ public sealed partial class MainViewModel : ObservableObject
         if (pool > 20) pool = 20;
         var misses = 0;
         var filled = 0;
+        Exception? vendorFault = null;
         var options = new OuiLookupOptions { Timeout = TimeSpan.FromSeconds(8) };
         using var slots = new SemaphoreSlim(pool, pool);
         var tasks = pending.Select(async sample =>
@@ -365,14 +393,17 @@ public sealed partial class MainViewModel : ObservableObject
                     else { filled++; StampVendor(Ipv4Neighbors, oui, vendor); StampVendor(Ipv6Neighbors, oui, vendor); }
                 });
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Interlocked.CompareExchange(ref vendorFault, ex, null);
                 var oui = Oui(sample.MacAddress);
                 await OnUi(() => { misses++; StampVendor(Ipv4Neighbors, oui, null); StampVendor(Ipv6Neighbors, oui, null); });
             }
             finally { slots.Release(); }
         });
         await Task.WhenAll(tasks).ConfigureAwait(true);
+        if (vendorFault is not null)
+            RouteIqLog.Fail(vendorFault, RouteIqLog.PrintFailedId, SourceBag(RouteIqLog.VendorSource));
         return $"Vendor lookups complete. {filled} found, {misses} missed.";
     }
 

@@ -143,6 +143,33 @@ public sealed class RouteIqPrintCoordinatorTests
             || name.Contains("vendor", StringComparison.OrdinalIgnoreCase));
     }
 
+    [Fact]
+    public async Task Run_reports_one_start_and_the_follow_up_reports_another()
+    {
+        var starts = new ConcurrentBag<int>();
+        var started = 0;
+        var opened = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        PrintSource source = async (_, _) =>
+        {
+            if (Interlocked.Increment(ref started) == PrintCoordinator.SourceCount)
+                opened.TrySetResult();
+            await release.Task;
+        };
+
+        var coordinator = new PrintCoordinator(source, source, source, source, source, source, started: starts.Add);
+        var run = coordinator.Request();
+        await opened.Task;
+        var follow = coordinator.Request();
+        Assert.Same(run, follow);
+        release.TrySetResult();
+        await run;
+
+        Assert.Equal(PrintCoordinator.SourceCount * 2, started);
+        Assert.Equal([1, 2], starts.OrderBy(value => value));
+    }
+
+
     private static PrintCoordinator Create(PrintSource source, Action<PrintProgress>? progress = null)
         => new(source, source, source, source, source, source, progress);
 }

@@ -44,6 +44,8 @@ public sealed partial class MainViewModel
         var token = _watch.Token;
         var seconds = Math.Clamp(WatchSeconds, 5, 180);
         var until = DateTime.UtcNow.AddSeconds(seconds);
+        var reason = "operator";
+        RouteIqLog.WatchStarted(seconds);
         try
         {
             ReportWatch?.Invoke(seconds, seconds);
@@ -59,9 +61,16 @@ public sealed partial class MainViewModel
         }
         catch (OperationCanceledException)
         {
+            reason = "cancel";
+        }
+        catch (Exception ex)
+        {
+            Report(ex.Message);
+            RouteIqLog.Fail(ex, RouteIqLog.WatchFailedId);
         }
         finally
         {
+            RouteIqLog.WatchStopped(reason);
             ReportWatch?.Invoke(0, 0);
         }
     }
@@ -81,6 +90,7 @@ public sealed partial class MainViewModel
         catch (Exception ex)
         {
             Report(ex.Message);
+            RouteIqLog.Fail(ex, RouteIqLog.ClipboardFailedId);
         }
     }
 
@@ -101,10 +111,12 @@ public sealed partial class MainViewModel
             });
             await Paint().ConfigureAwait(false);
             MarkConnectionsReady();
+            RouteIqLog.PrintApplied("Connections", rows.Count, scope.Generation);
         }
         catch (Exception ex)
         {
             await OnUi(() => Report("Connections " + ex.Message));
+            RouteIqLog.Fail(ex, RouteIqLog.PrintFailedId, SourceBag("Connections"));
         }
         finally
         {

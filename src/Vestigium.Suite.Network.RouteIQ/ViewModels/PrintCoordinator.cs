@@ -36,6 +36,7 @@ public sealed class PrintCoordinator
     private readonly PrintSource[] _sources;
     private readonly Action<PrintProgress>? _progress;
     private readonly Action<string, Exception>? _fault;
+    private readonly Action<int>? _started;
     private readonly Lock _gate = new();
     private Task? _inflight;
     private bool _again;
@@ -49,7 +50,8 @@ public sealed class PrintCoordinator
         PrintSource netBios,
         PrintSource lmHosts,
         Action<PrintProgress>? progress = null,
-        Action<string, Exception>? fault = null)
+        Action<string, Exception>? fault = null,
+        Action<int>? started = null)
     {
         _sources =
         [
@@ -62,6 +64,7 @@ public sealed class PrintCoordinator
         ];
         _progress = progress;
         _fault = fault;
+        _started = started;
     }
 
     public int Generation => Volatile.Read(ref _generation);
@@ -101,6 +104,7 @@ public sealed class PrintCoordinator
 
     private async Task RunOnce(int generation)
     {
+        _started?.Invoke(generation);
         var finished = 0;
         var tasks = new Task[SourceCount];
         for (var i = 0; i < SourceCount; i++)
@@ -126,7 +130,7 @@ public sealed class PrintCoordinator
             }
             catch (Exception)
             {
-                // A host fault handler must not fail the join.
+                // A host fault handler must not fail the join. The host logs that second throw.
             }
         }
 

@@ -68,24 +68,23 @@ public sealed partial class MainViewModel
 
     private void WriteExport(bool routes, bool neighbors, bool connections, bool netbios, bool lmhosts)
     {
-        var folder = ExportFolder();
         var name = "RouteIQ-export-" + DateTime.Now.ToString("yyyyMMdd-HHmmss") + ".xlsx";
         var dialog = new Microsoft.Win32.SaveFileDialog
         {
             Filter = "Excel workbook (*.xlsx)|*.xlsx",
             FileName = name,
-            InitialDirectory = folder,
             RestoreDirectory = true,
             AddExtension = true,
             DefaultExt = ".xlsx",
             OverwritePrompt = true
         };
-        if (dialog.ShowDialog() != true)
-            return;
-
-        var path = string.IsNullOrWhiteSpace(dialog.FileName) ? Path.Combine(folder, name) : dialog.FileName;
         try
         {
+            var folder = ExportFolder();
+            dialog.InitialDirectory = folder;
+            if (dialog.ShowDialog() != true)
+                return;
+            var path = string.IsNullOrWhiteSpace(dialog.FileName) ? Path.Combine(folder, name) : dialog.FileName;
             using var book = WorkbookHelper.Create("Cover", "RouteIQ");
             var cover = new List<(string Key, object? Value)>
             {
@@ -96,16 +95,32 @@ public sealed partial class MainViewModel
                 ("Neighbor query", string.IsNullOrWhiteSpace(NeighborQuery) ? "--" : NeighborQuery),
                 ("Connection query", string.IsNullOrWhiteSpace(ConnectionQuery) ? "--" : ConnectionQuery)
             };
+            var sheets = 1;
             if (routes)
+            {
                 cover.Add(("Routes", (Ipv4Routes.Count + Ipv6Routes.Count).ToString(CultureInfo.InvariantCulture)));
+                sheets++;
+            }
             if (neighbors)
+            {
                 cover.Add(("Neighbors", (Ipv4Neighbors.Count + Ipv6Neighbors.Count).ToString(CultureInfo.InvariantCulture)));
+                sheets++;
+            }
             if (connections)
+            {
                 cover.Add(("Connections", Connections.Count.ToString(CultureInfo.InvariantCulture)));
+                sheets++;
+            }
             if (netbios)
+            {
                 cover.Add(("NetBIOS", NetBiosNames.Count.ToString(CultureInfo.InvariantCulture)));
+                sheets++;
+            }
             if (lmhosts)
+            {
                 cover.Add(("LMHOSTS", LmHosts.Count.ToString(CultureInfo.InvariantCulture)));
+                sheets++;
+            }
             book.Sheet("Cover").WriteTable(SheetTable.KeyValue("Field", "Value", cover, "Cover"));
             if (routes)
                 book.Sheet("Routes").WriteTable(RouteTable());
@@ -121,25 +136,31 @@ public sealed partial class MainViewModel
             if (!File.Exists(saved))
             {
                 Report("Export did not write " + path);
+                RouteIqLog.Fail(new IOException("Export did not write."), RouteIqLog.ExportFailedId);
                 return;
             }
 
             Report("Exported " + saved);
-            if (!ExportOpenAfter && !ExportOpenFolder)
-                return;
-            if (!string.Equals(saved, path, StringComparison.OrdinalIgnoreCase) || !saved.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase))
+            if (ExportOpenAfter || ExportOpenFolder)
             {
-                Report("Export was written. It was not opened.");
-                return;
+                if (!string.Equals(saved, path, StringComparison.OrdinalIgnoreCase) || !saved.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase))
+                {
+                    Report("Export was written. It was not opened.");
+                    RouteIqLog.ExportFinished(sheets);
+                    return;
+                }
+                if (ExportOpenAfter)
+                    Process.Start(new ProcessStartInfo(saved) { UseShellExecute = true });
+                if (ExportOpenFolder)
+                    Process.Start(new ProcessStartInfo(Path.GetDirectoryName(saved)!) { UseShellExecute = true });
             }
-            if (ExportOpenAfter)
-                Process.Start(new ProcessStartInfo(saved) { UseShellExecute = true });
-            if (ExportOpenFolder)
-                Process.Start(new ProcessStartInfo(Path.GetDirectoryName(saved)!) { UseShellExecute = true });
+
+            RouteIqLog.ExportFinished(sheets);
         }
         catch (Exception ex)
         {
             Report(ex.Message);
+            RouteIqLog.Fail(ex, RouteIqLog.ExportFailedId);
         }
     }
 

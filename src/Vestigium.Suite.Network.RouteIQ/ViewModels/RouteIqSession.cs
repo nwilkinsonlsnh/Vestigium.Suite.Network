@@ -24,7 +24,7 @@ public sealed class RouteIqSession
         _chrome = chrome;
         var loaded = store.Load();
         Current = loaded.Settings;
-        Report(loaded.Reason);
+        Report(loaded, loaded.Reason?.Contains("copied", StringComparison.OrdinalIgnoreCase) == true ? "copy" : "load");
         QueryMruLimit = Clamp(Current.QueryMruLimit);
         WatchSeconds = Current.WatchSeconds is >= 5 and <= 180 ? Current.WatchSeconds : 10;
         ExportRoutes = Current.ExportRoutes;
@@ -168,13 +168,22 @@ public sealed class RouteIqSession
             LiveVendorLookup = _settings.LiveVendorLookup,
             Queries = Queries.ToList()
         };
-        Report(_store.Save(Current).Reason);
+        Report(_store.Save(Current), "save");
     }
 
-    private void Report(string? reason)
+    private void Report(RouteIqSettingsResult result, string op)
     {
-        if (!string.IsNullOrWhiteSpace(reason))
-            _chrome.Status.Message = reason;
+        if (result.Ok)
+        {
+            if (op == "load")
+                RouteIqLog.SettingsLoaded("settings.json");
+            return;
+        }
+
+        if (result.Error is not null)
+            RouteIqLog.Fail(result.Error, RouteIqLog.SettingsRejectedId, new Dictionary<string, string?> { ["op"] = op });
+        if (!string.IsNullOrWhiteSpace(result.Reason))
+            _chrome.Status.Message = result.Reason;
     }
 
     private void Trim()
