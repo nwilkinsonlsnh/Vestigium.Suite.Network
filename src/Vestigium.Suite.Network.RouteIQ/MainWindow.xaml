@@ -5,7 +5,7 @@
         Title="RouteIQ"
         Height="920" Width="1380"
         MinHeight="720" MinWidth="1280"
-        WindowStartupLocation="CenterScreen"
+        WindowStartupLocation="Manual"
         Background="{DynamicResource Vestigium.Brushes.Surface.Window}">
   <Grid>
     <DockPanel Style="{StaticResource DockPanel.Standard}">

@@ -48,6 +48,7 @@ public partial class App : Application
 
         ShutdownMode = ShutdownMode.OnMainWindowClose;
         var window = CreateMainWindow(out var host);
+        CenterOnPrimary(window);
         MainWindow = window;
         window.ShowSplash("Opening", 0);
         window.Show();
@@ -91,6 +92,18 @@ public partial class App : Application
         if (window.HostShell["RouteIQ"] is { } routes)
             window.HostShell.SelectedItem = routes;
         window.HideSplash();
+    }
+
+    private static void CenterOnPrimary(Window window)
+    {
+        var area = SystemParameters.WorkArea;
+        var width = Math.Min(window.Width, area.Width);
+        var height = Math.Min(window.Height, area.Height);
+        window.WindowStartupLocation = WindowStartupLocation.Manual;
+        window.Width = width;
+        window.Height = height;
+        window.Left = area.Left + (area.Width - width) / 2;
+        window.Top = area.Top + (area.Height - height) / 2;
     }
 
     private static MainWindow CreateMainWindow(out MainViewModel host)

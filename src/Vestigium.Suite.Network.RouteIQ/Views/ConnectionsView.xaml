@@ -11,13 +11,19 @@
       <RowDefinition Height="Auto" />
       <RowDefinition Height="*" />
     </Grid.RowDefinitions>
-    <StackPanel Grid.Row="0" Style="{StaticResource StackPanel.Toolbar}" Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,0,8">
-      <Button Content="Refresh" Style="{StaticResource Button.Primary}" Command="{Binding SnapshotConnectionsCommand}" Padding="16,4" Margin="0,0,8,0" />
-      <TextBlock Text="Window" Style="{StaticResource TextBlock.Caption}" VerticalAlignment="Center" Margin="8,0,6,0" />
-      <nud:VestigiumNumericUpDown Value="{Binding WatchSeconds, Mode=TwoWay}" Minimum="5" Maximum="180" Increment="5" Width="88" Margin="0,0,8,0" />
-      <Button Content="Watch" Style="{StaticResource Button.Secondary}" Command="{Binding WatchConnectionsCommand}" Padding="16,4" Margin="0,0,8,0" />
-      <Button Content="Copy" Style="{StaticResource Button.Secondary}" Command="{Binding CopyConnectionsCommand}" Padding="16,4" Margin="0,0,8,0" />
-      <Button x:Name="LegendButton" Content="Legend" Style="{StaticResource Button.Secondary}" Padding="16,4" Click="OnLegend" />
+    <Grid Grid.Row="0" Margin="0,0,0,8">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="Auto" />
+      </Grid.ColumnDefinitions>
+      <StackPanel Style="{StaticResource StackPanel.Toolbar}" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
+        <Button Content="Refresh" Style="{StaticResource Button.Primary}" Command="{Binding SnapshotConnectionsCommand}" Padding="16,4" Margin="0,0,8,0" />
+        <TextBlock Text="Window" Style="{StaticResource TextBlock.Caption}" VerticalAlignment="Center" Margin="8,0,6,0" />
+        <nud:VestigiumNumericUpDown Value="{Binding WatchSeconds, Mode=TwoWay}" Minimum="5" Maximum="180" Increment="5" Width="88" Margin="0,0,8,0" />
+        <Button Content="Watch" Style="{StaticResource Button.Secondary}" Command="{Binding WatchConnectionsCommand}" Padding="16,4" Margin="0,0,8,0" />
+        <Button Content="Copy" Style="{StaticResource Button.Secondary}" Command="{Binding CopyConnectionsCommand}" Padding="16,4" Margin="0,0,8,0" />
+      </StackPanel>
+      <Button x:Name="LegendButton" Grid.Column="1" Content="Legend" Style="{StaticResource Button.Secondary}" Padding="16,4" HorizontalAlignment="Right" VerticalAlignment="Center" Click="OnLegend" />
       <Popup x:Name="LegendPopup" PlacementTarget="{Binding ElementName=LegendButton}" Placement="Bottom" StaysOpen="False" AllowsTransparency="True">
         <Border Background="{DynamicResource Vestigium.Brushes.Surface.Window}" BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1" Padding="12" Margin="0,4,0,0">
           <StackPanel>
@@ -40,7 +46,7 @@
           </StackPanel>
         </Border>
       </Popup>
-    </StackPanel>
+    </Grid>
     <query:VestigiumQueryBar Grid.Row="1"
                              Text="{Binding ConnectionQuery, UpdateSourceTrigger=PropertyChanged}"
                              Session="{Binding ConnectionSession}"
