@@ -63,11 +63,22 @@ public sealed partial class MainViewModel : ObservableObject
         => _prints.Request();
 
     [RelayCommand(CanExecute = nameof(CanRefresh))]
-    private async Task Refresh()
+    private Task RefreshRoutes() => RefreshPage(PrintCoordinator.RouteMask, vendors: false);
+
+    [RelayCommand(CanExecute = nameof(CanRefresh))]
+    private Task RefreshNeighbors() => RefreshPage(PrintCoordinator.NeighborMask, vendors: true);
+
+    [RelayCommand(CanExecute = nameof(CanRefresh))]
+    private Task RefreshNetBios() => RefreshPage(PrintCoordinator.NetBiosMask, vendors: false);
+
+    [RelayCommand(CanExecute = nameof(CanRefresh))]
+    private Task RefreshLmHosts() => RefreshPage(PrintCoordinator.LmHostMask, vendors: false);
+
+    private async Task RefreshPage(int mask, bool vendors)
     {
         if (_busy)
         {
-            _prints.Request();
+            _prints.Request(mask);
             return;
         }
 
@@ -76,8 +87,8 @@ public sealed partial class MainViewModel : ObservableObject
         Report(string.Empty);
         try
         {
-            await _prints.Request().ConfigureAwait(true);
-            if (LiveVendorLookup?.Invoke() == true)
+            await _prints.Request(mask).ConfigureAwait(true);
+            if (vendors && LiveVendorLookup?.Invoke() == true)
                 Report(await ResolveLiveVendors().ConfigureAwait(true));
         }
         catch (Exception ex)

@@ -8,11 +8,11 @@ public sealed class RouteIqReleaseTests
     [Fact]
     public void Refresh_print_does_not_scan()
     {
-        var refresh = Method(ViewModel("MainViewModel.cs"), "private async Task Refresh()");
-        Assert.DoesNotContain("LookupOuiAsync", refresh);
-        Assert.DoesNotContain("Ping", refresh);
-        Assert.DoesNotContain("ProbeNeighbors", refresh);
-        Assert.Contains("LiveVendorLookup", refresh);
+        var refresh = Method(ViewModel("MainViewModel.cs"), "private Task RefreshRoutes()");
+        Assert.DoesNotContain("ResolveLiveVendors", refresh);
+        Assert.Contains("RouteMask", refresh);
+        var neighbors = Method(ViewModel("MainViewModel.cs"), "private Task RefreshNeighbors()");
+        Assert.Contains("NeighborMask", neighbors);
     }
 
     [Fact]

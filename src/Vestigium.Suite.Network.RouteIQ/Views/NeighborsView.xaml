@@ -7,7 +7,7 @@
   <DockPanel Margin="16,12,16,16">
     <StackPanel x:Name="Toolbar" DockPanel.Dock="Top" Margin="0,0,0,12">
       <StackPanel Style="{StaticResource StackPanel.Toolbar}" Orientation="Horizontal" HorizontalAlignment="Left">
-        <Button Content="Refresh" Style="{StaticResource Button.Primary}" Command="{Binding RefreshCommand}" Padding="16,4" Margin="0,0,8,0" />
+        <Button Content="Refresh" Style="{StaticResource Button.Primary}" Command="{Binding RefreshNeighborsCommand}" Padding="16,4" Margin="0,0,8,0" />
         <Button Content="Copy" Style="{StaticResource Button.Secondary}" Command="{Binding CopyNeighborsCommand}" Padding="16,4" />
       </StackPanel>
       <query:VestigiumQueryBar Margin="0,8,0,0"

@@ -173,6 +173,29 @@ public sealed class RouteIqPrintCoordinatorTests
     }
 
 
+
+    [Fact]
+    public async Task Route_request_does_not_start_the_other_pages()
+    {
+        var started = new ConcurrentBag<string>();
+        PrintSource Source(string name) => (_, _) =>
+        {
+            started.Add(name);
+            return Task.CompletedTask;
+        };
+        var coordinator = new PrintCoordinator(
+            Source("IPv4 routes"),
+            Source("IPv6 routes"),
+            Source("Neighbors"),
+            Source("Connections"),
+            Source("NetBIOS"),
+            Source("LMHOSTS"));
+
+        await coordinator.Request(PrintCoordinator.RouteMask);
+
+        Assert.Equal(["IPv4 routes", "IPv6 routes"], started.OrderBy(name => name));
+    }
+
     private static PrintCoordinator Create(PrintSource source, Action<PrintProgress>? progress = null)
         => new(source, source, source, source, source, source, progress);
 }

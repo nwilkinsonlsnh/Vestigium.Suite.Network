@@ -72,10 +72,23 @@ public sealed class PrintCoordinator
     public bool IsCurrent(int generation)
         => generation > 0 && generation == Generation;
 
-    public Task Request()
+    public const int AllMask = (1 << SourceCount) - 1;
+    public const int RouteMask = 1 | 2;
+    public const int NeighborMask = 4;
+    public const int NetBiosMask = 16;
+    public const int LmHostMask = 32;
+
+    private int _pending;
+
+    public Task Request() => Request(AllMask);
+
+    public Task Request(int mask)
     {
+        if ((mask & AllMask) == 0)
+            throw new ArgumentOutOfRangeException(nameof(mask));
         lock (_gate)
         {
+            _pending |= mask & AllMask;
             _again = true;
             return _inflight ??= Pump();
         }
@@ -86,37 +99,49 @@ public sealed class PrintCoordinator
         while (true)
         {
             int generation;
+            int mask;
             lock (_gate)
             {
-                if (!_again)
+                if (!_again || _pending == 0)
                 {
+                    _again = false;
                     _inflight = null;
                     return;
                 }
 
                 _again = false;
+                mask = _pending;
+                _pending = 0;
                 generation = Interlocked.Increment(ref _generation);
             }
 
-            await RunOnce(generation).ConfigureAwait(false);
+            await RunOnce(generation, mask).ConfigureAwait(false);
         }
     }
 
-    private async Task RunOnce(int generation)
+    private async Task RunOnce(int generation, int mask)
     {
         _started?.Invoke(generation);
-        var finished = 0;
-        var tasks = new Task[SourceCount];
+        var indexes = new List<int>(SourceCount);
         for (var i = 0; i < SourceCount; i++)
         {
-            var index = i;
-            tasks[i] = RunSource(Names[index], _sources[index], generation, () => Interlocked.Increment(ref finished));
+            if ((mask & (1 << i)) != 0)
+                indexes.Add(i);
+        }
+
+        var finished = 0;
+        var started = indexes.Count;
+        var tasks = new Task[started];
+        for (var i = 0; i < started; i++)
+        {
+            var index = indexes[i];
+            tasks[i] = RunSource(Names[index], _sources[index], generation, started, () => Interlocked.Increment(ref finished));
         }
 
         await Task.WhenAll(tasks).ConfigureAwait(false);
     }
 
-    private async Task RunSource(string name, PrintSource source, int generation, Func<int> markFinished)
+    private async Task RunSource(string name, PrintSource source, int generation, int started, Func<int> markFinished)
     {
         try
         {
@@ -137,7 +162,7 @@ public sealed class PrintCoordinator
         var done = markFinished();
         try
         {
-            _progress?.Invoke(new PrintProgress(name, done, SourceCount, generation));
+            _progress?.Invoke(new PrintProgress(name, done, started, generation));
         }
         catch (Exception)
         {
