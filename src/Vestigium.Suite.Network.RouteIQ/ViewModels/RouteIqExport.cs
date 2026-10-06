@@ -30,7 +30,10 @@ public sealed partial class MainViewModel
     [ObservableProperty]
     private bool _exportOpenAfter;
 
-    public void RememberExportChecks(bool routes, bool neighbors, bool connections, bool netbios, bool lmhosts, bool openAfter)
+    [ObservableProperty]
+    private bool _exportOpenFolder;
+
+    public void RememberExportChecks(bool routes, bool neighbors, bool connections, bool netbios, bool lmhosts, bool openAfter, bool openFolder)
     {
         _exportQuiet = true;
         ExportRoutes = routes;
@@ -39,8 +42,9 @@ public sealed partial class MainViewModel
         ExportNetBios = netbios;
         ExportLmHosts = lmhosts;
         ExportOpenAfter = openAfter;
+        ExportOpenFolder = openFolder;
         _exportQuiet = false;
-        QueryBook?.SetExports(routes, neighbors, connections, netbios, lmhosts, openAfter);
+        QueryBook?.SetExports(routes, neighbors, connections, netbios, lmhosts, openAfter, openFolder);
         ExportSelectedCommand.NotifyCanExecuteChanged();
     }
 
@@ -121,14 +125,17 @@ public sealed partial class MainViewModel
             }
 
             Report("Exported " + saved);
-            if (!ExportOpenAfter)
+            if (!ExportOpenAfter && !ExportOpenFolder)
                 return;
             if (!string.Equals(saved, path, StringComparison.OrdinalIgnoreCase) || !saved.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase))
             {
                 Report("Export was written. It was not opened.");
                 return;
             }
-            Process.Start(new ProcessStartInfo(saved) { UseShellExecute = true });
+            if (ExportOpenAfter)
+                Process.Start(new ProcessStartInfo(saved) { UseShellExecute = true });
+            if (ExportOpenFolder)
+                Process.Start(new ProcessStartInfo(Path.GetDirectoryName(saved)!) { UseShellExecute = true });
         }
         catch (Exception ex)
         {
