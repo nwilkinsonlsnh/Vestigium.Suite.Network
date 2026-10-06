@@ -89,7 +89,7 @@ public sealed partial class MainViewModel : ObservableObject
         {
             await _prints.Request(mask).ConfigureAwait(true);
             if (vendors && LiveVendorLookup?.Invoke() == true)
-                Report(await ResolveLiveVendors().ConfigureAwait(true));
+                _ = ReportVendors();
         }
         catch (Exception ex)
         {
@@ -223,17 +223,8 @@ public sealed partial class MainViewModel : ObservableObject
                 Replace(Ipv4Neighbors, Blank(rows.v4));
                 Replace(Ipv6Neighbors, Blank(rows.v6));
             });
-            var packed4 = await Task.Run(() => ApplyPacked(rows.v4)).ConfigureAwait(false);
-            var packed6 = await Task.Run(() => ApplyPacked(rows.v6)).ConfigureAwait(false);
-            if (!scope.IsCurrent)
-                return;
-            await OnUi(() =>
-            {
-                Replace(Ipv4Neighbors, packed4);
-                Replace(Ipv6Neighbors, packed6);
-            });
-            RouteIqLog.PrintApplied("Neighbors", packed4.Count + packed6.Count, scope.Generation);
-            StartRtt(scope, packed4, packed6);
+            RouteIqLog.PrintApplied("Neighbors", rows.v4.Count + rows.v6.Count, scope.Generation);
+            StartEnrich(scope, rows.v4, rows.v6);
         }
         catch (Exception ex)
         {
@@ -381,10 +372,62 @@ public sealed partial class MainViewModel : ObservableObject
         return dispatcher.InvokeAsync(action).Task;
     }
 
-    private void StartRtt(PrintScope scope, IReadOnlyList<NeighborGridRow> v4, IReadOnlyList<NeighborGridRow> v6)
+    private async Task ReportVendors()
+    {
+        try
+        {
+            Report(await ResolveLiveVendors().ConfigureAwait(true));
+        }
+        catch (Exception ex)
+        {
+            Report(ex.Message);
+            RouteIqLog.Fail(ex, RouteIqLog.PrintFailedId, SourceBag(RouteIqLog.VendorSource));
+        }
+    }
+
+    private void StartEnrich(PrintScope scope, IReadOnlyList<NetworkNeighbor> v4, IReadOnlyList<NetworkNeighbor> v6)
     {
         _rtt?.Cancel();
         _rtt = new CancellationTokenSource();
+        var token = _rtt.Token;
+        var shown = Blank(v4).Concat(Blank(v6)).ToArray();
+        StartRtt(scope, shown.Where(row => row.Address.Contains(':')).ToArray(), shown.Where(row => !row.Address.Contains(':')).ToArray());
+        _ = StampPacked(scope, v4, v6, token);
+    }
+
+    private async Task StampPacked(PrintScope scope, IReadOnlyList<NetworkNeighbor> v4, IReadOnlyList<NetworkNeighbor> v6, CancellationToken token)
+    {
+        try
+        {
+            var packed = await Task.Run(() => ApplyPacked(v4).Concat(ApplyPacked(v6)).ToArray(), token).ConfigureAwait(false);
+            if (token.IsCancellationRequested || !scope.IsCurrent)
+                return;
+            await OnUi(() =>
+            {
+                if (!scope.IsCurrent)
+                    return;
+                foreach (var row in packed)
+                {
+                    if (row.VendorText == NoValue || string.IsNullOrWhiteSpace(row.MacAddress))
+                        continue;
+                    var oui = Oui(row.MacAddress);
+                    StampVendor(Ipv4Neighbors, oui, row.VendorText);
+                    StampVendor(Ipv6Neighbors, oui, row.VendorText);
+                }
+            });
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (Exception ex)
+        {
+            if (scope.IsCurrent)
+                RouteIqLog.Fail(ex, RouteIqLog.PrintFailedId, SourceBag("Neighbors"));
+        }
+    }
+
+    private void StartRtt(PrintScope scope, IReadOnlyList<NeighborGridRow> v4, IReadOnlyList<NeighborGridRow> v6)
+    {
         var targets = v4.Concat(v6)
             .Where(row => CanPing(row.Address))
             .Select(row => (row.Address, EchoTarget(row)))

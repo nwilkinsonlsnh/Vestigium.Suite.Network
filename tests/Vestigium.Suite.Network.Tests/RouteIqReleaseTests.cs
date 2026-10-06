@@ -19,7 +19,7 @@ public sealed class RouteIqReleaseTests
     public void Neighbor_fill_starts_rtt_and_the_probe_button_is_gone()
     {
         var load = Method(ViewModel("MainViewModel.cs"), "private async Task LoadNeighbors(");
-        Assert.Contains("StartRtt", load);
+        Assert.Contains("StartEnrich", load);
         var view = File.ReadAllText(Path.Combine(Path.GetDirectoryName(ViewModel("MainViewModel.cs"))!, "..", "Views", "NeighborsView.xaml"));
         Assert.DoesNotContain("Probe", view);
         Assert.Contains("private async Task FillRtt", File.ReadAllText(ViewModel("MainViewModel.cs")));
