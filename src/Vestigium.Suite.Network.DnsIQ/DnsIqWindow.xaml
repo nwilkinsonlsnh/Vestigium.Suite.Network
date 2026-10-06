@@ -4,8 +4,8 @@
         xmlns:shell="clr-namespace:Vestigium.Controls.Shell;assembly=Vestigium.Controls"
         Title="DnsIQ"
         Icon="pack://application:,,,/Assets/DnsIQ.ico"
-        Height="720" Width="1100"
-        MinHeight="480" MinWidth="720"
+        Height="920" Width="1380"
+        MinHeight="720" MinWidth="1280"
         WindowStartupLocation="Manual"
         Background="{DynamicResource Vestigium.Brushes.Surface.Window}">
   <DockPanel Style="{StaticResource DockPanel.Standard}">
