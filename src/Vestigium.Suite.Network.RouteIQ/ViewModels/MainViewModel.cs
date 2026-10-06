@@ -267,8 +267,8 @@ public sealed partial class MainViewModel : ObservableObject
     {
         try
         {
-            var names = await NetworkHelper.GetNetBiosNamesAsync(cancellationToken).ConfigureAwait(false);
-            var stats = await NetworkHelper.GetNetBiosStatsAsync(cancellationToken).ConfigureAwait(false);
+            var names = await WithinAsync(NetworkHelper.GetNetBiosNamesAsync(cancellationToken), cancellationToken).ConfigureAwait(false);
+            var stats = await WithinAsync(NetworkHelper.GetNetBiosStatsAsync(cancellationToken), cancellationToken).ConfigureAwait(false);
             if (!scope.IsCurrent)
                 return;
             var shown = names.OrderBy(row => row.IsCache).ThenBy(row => row.Name, StringComparer.OrdinalIgnoreCase).ToArray();

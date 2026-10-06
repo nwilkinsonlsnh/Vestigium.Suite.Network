@@ -14,3 +14,13 @@ public sealed partial class MainViewModel
         NetBiosSummary = $"Node {node}. Broadcast {stats.ResolvedByBroadcast}, WINS {stats.ResolvedByNameServer}. Registered broadcast {stats.RegisteredByBroadcast}, WINS {stats.RegisteredByNameServer}.";
     }
 }
+
+    private static async Task<T> WithinAsync<T>(Task<T> work, CancellationToken cancellation)
+    {
+        var cap = Task.Delay(TimeSpan.FromSeconds(8), cancellation);
+        var done = await Task.WhenAny(work, cap).ConfigureAwait(false);
+        if (done != work)
+            throw new TimeoutException("NetBIOS did not return in 8 seconds.");
+        return await work.ConfigureAwait(false);
+    }
+
