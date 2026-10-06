@@ -15,11 +15,21 @@ public sealed partial class MainViewModel : ObservableObject
 {
     private const string NoValue = "--";
     private const int OuiGapMs = 1200;
+    private const int Ipv4Bit = 1;
+    private const int Ipv6Bit = 2;
+    private const int NeighborBit = 4;
+    private const int ConnectionBit = 8;
+    private const int NetBiosBit = 16;
+    private const int LmHostBit = 32;
+    private const int AllPrints = 63;
     private bool _busy;
     private bool _probing;
-    private bool _tablesReady;
     private bool _connectionsReady;
+    private int _printedGen;
+    private int _printedMask;
+    private readonly Lock _printedGate = new();
     private readonly SemaphoreSlim _ouiPace = new(1, 1);
+    private readonly PrintCoordinator _prints;
     private DateTime _ouiSentAt = DateTime.UtcNow.AddSeconds(-2);
 
     public QuietCollection<NetworkRoute> Ipv4Routes { get; } = [];
@@ -29,53 +39,43 @@ public sealed partial class MainViewModel : ObservableObject
     public QuietCollection<NetworkNetBiosName> NetBiosNames { get; } = [];
     public QuietCollection<NetworkLmHostEntry> LmHosts { get; } = [];
     public Action<string>? ReportStatus { get; set; }
-    public bool PrintsReady => _tablesReady && _connectionsReady;
+    public Action<string, double>? ReportSplash { get; set; }
+    public bool PrintsReady => _connectionsReady && _printedMask == AllPrints && _printedGen == _prints.Generation;
     public Func<int>? OuiPoolSize { get; set; }
     public Func<bool>? LiveVendorLookup { get; set; }
     public const string LiveVendorUrl = "https://api.macvendors.com/{oui}";
 
     public MainViewModel()
     {
-        var dispatcher = Application.Current?.Dispatcher;
-        if (dispatcher is null)
-        {
-            _ = Refresh();
-            _ = SnapshotConnections();
-            return;
-        }
-
-        dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, () =>
-        {
-            _ = Refresh();
-            _ = SnapshotConnections();
-        });
+        _prints = new PrintCoordinator(
+            LoadIpv4,
+            LoadIpv6,
+            LoadNeighbors,
+            LoadConnections,
+            LoadNetBios,
+            LoadLmHosts,
+            OnPrintProgress,
+            OnPrintFault);
     }
+
+    public Task BeginPrints()
+        => _prints.Request();
 
     [RelayCommand(CanExecute = nameof(CanRefresh))]
     private async Task Refresh()
     {
         if (_busy)
+        {
+            _prints.Request();
             return;
+        }
 
         _busy = true;
         RaiseCanExecute();
         Report(string.Empty);
         try
         {
-            var snapshot = await Task.Run(Load).ConfigureAwait(true);
-            var packed4 = await Task.Run(() => ApplyPacked(snapshot.Ipv4Neighbors)).ConfigureAwait(true);
-            var packed6 = await Task.Run(() => ApplyPacked(snapshot.Ipv6Neighbors)).ConfigureAwait(true);
-            Replace(Ipv4Routes, snapshot.Ipv4);
-            Replace(Ipv6Routes, snapshot.Ipv6);
-            Replace(Ipv4Neighbors, packed4);
-            Replace(Ipv6Neighbors, packed6);
-            Replace(NetBiosNames, snapshot.NetBios);
-            Replace(LmHosts, snapshot.LmHosts);
-            await Dispatcher.Yield(DispatcherPriority.Background);
-            ApplyNetBiosStats();
-            ApplyLmHostSummary(snapshot.LmHosts.Count);
-            _tablesReady = true;
-            RaiseCanExecute();
+            await _prints.Request().ConfigureAwait(true);
             if (LiveVendorLookup?.Invoke() == true)
                 Report(await ResolveLiveVendors().ConfigureAwait(true));
         }
@@ -165,17 +165,164 @@ public sealed partial class MainViewModel : ObservableObject
 
     private void Report(string text) => ReportStatus?.Invoke(text);
 
-    private static (IReadOnlyList<NetworkRoute> Ipv4, IReadOnlyList<NetworkRoute> Ipv6, IReadOnlyList<NetworkNeighbor> Ipv4Neighbors, IReadOnlyList<NetworkNeighbor> Ipv6Neighbors, IReadOnlyList<NetworkNetBiosName> NetBios, IReadOnlyList<NetworkLmHostEntry> LmHosts) Load()
+    private void OnPrintProgress(PrintProgress progress)
     {
-        var ipv4 = ByAddress(NetworkHelper.GetRoutes(RouteFamily.Pv4), row => row.Destination);
-        var ipv6 = ByAddress(NetworkHelper.GetRoutes(RouteFamily.Pv6), row => row.Destination);
-        var neighbors = NetworkHelper.GetNeighbors();
-        var v4 = ByAddress(neighbors.Where(row => row.Family == AddressFamily.InterNetwork), row => row.Address);
-        var v6 = ByAddress(neighbors.Where(row => row.Family == AddressFamily.InterNetworkV6), row => row.Address);
-        var names = NetworkHelper.GetNetBiosNames().OrderBy(row => row.IsCache).ThenBy(row => row.Name, StringComparer.OrdinalIgnoreCase).ToArray();
-        var hosts = NetworkHelper.GetLmHosts();
-        return (ipv4, ipv6, v4, v6, names, hosts);
+        var percent = progress.Started == 0 ? 0d : progress.Finished * 100d / progress.Started;
+        var dispatcher = Application.Current?.Dispatcher;
+        if (dispatcher is null || dispatcher.CheckAccess())
+        {
+            ReportSplash?.Invoke(progress.Source, percent);
+            return;
+        }
+
+        dispatcher.BeginInvoke(() => ReportSplash?.Invoke(progress.Source, percent));
     }
+
+    private void OnPrintFault(string source, Exception ex)
+        => OnUi(() => Report(source + " " + ex.Message));
+
+    private async Task LoadIpv4(PrintScope scope, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var rows = await Task.Run(() => ByAddress(NetworkHelper.GetRoutes(RouteFamily.Pv4), row => row.Destination), cancellationToken).ConfigureAwait(false);
+            if (!scope.IsCurrent)
+                return;
+            await OnUi(() => Replace(Ipv4Routes, rows));
+        }
+        catch (Exception ex)
+        {
+            await OnUi(() => Report("IPv4 routes " + ex.Message));
+        }
+        finally
+        {
+            MarkPrinted(scope, Ipv4Bit);
+        }
+    }
+
+    private async Task LoadIpv6(PrintScope scope, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var rows = await Task.Run(() => ByAddress(NetworkHelper.GetRoutes(RouteFamily.Pv6), row => row.Destination), cancellationToken).ConfigureAwait(false);
+            if (!scope.IsCurrent)
+                return;
+            await OnUi(() => Replace(Ipv6Routes, rows));
+        }
+        catch (Exception ex)
+        {
+            await OnUi(() => Report("IPv6 routes " + ex.Message));
+        }
+        finally
+        {
+            MarkPrinted(scope, Ipv6Bit);
+        }
+    }
+
+    private async Task LoadNeighbors(PrintScope scope, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var rows = await Task.Run(() =>
+            {
+                var neighbors = NetworkHelper.GetNeighbors();
+                var v4 = ByAddress(neighbors.Where(row => row.Family == AddressFamily.InterNetwork), row => row.Address);
+                var v6 = ByAddress(neighbors.Where(row => row.Family == AddressFamily.InterNetworkV6), row => row.Address);
+                return (v4, v6);
+            }, cancellationToken).ConfigureAwait(false);
+            if (!scope.IsCurrent)
+                return;
+            await OnUi(() =>
+            {
+                Replace(Ipv4Neighbors, Blank(rows.v4));
+                Replace(Ipv6Neighbors, Blank(rows.v6));
+            });
+            var packed4 = await Task.Run(() => ApplyPacked(rows.v4)).ConfigureAwait(false);
+            var packed6 = await Task.Run(() => ApplyPacked(rows.v6)).ConfigureAwait(false);
+            if (!scope.IsCurrent)
+                return;
+            await OnUi(() =>
+            {
+                Replace(Ipv4Neighbors, packed4);
+                Replace(Ipv6Neighbors, packed6);
+            });
+        }
+        catch (Exception ex)
+        {
+            await OnUi(() => Report("Neighbors " + ex.Message));
+        }
+        finally
+        {
+            MarkPrinted(scope, NeighborBit);
+        }
+    }
+
+    private async Task LoadNetBios(PrintScope scope, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var names = await Task.Run(
+                () => NetworkHelper.GetNetBiosNames().OrderBy(row => row.IsCache).ThenBy(row => row.Name, StringComparer.OrdinalIgnoreCase).ToArray(),
+                cancellationToken).ConfigureAwait(false);
+            if (!scope.IsCurrent)
+                return;
+            await OnUi(() =>
+            {
+                Replace(NetBiosNames, names);
+                ApplyNetBiosStats();
+            });
+        }
+        catch (Exception ex)
+        {
+            await OnUi(() => Report("NetBIOS " + ex.Message));
+        }
+        finally
+        {
+            MarkPrinted(scope, NetBiosBit);
+        }
+    }
+
+    private async Task LoadLmHosts(PrintScope scope, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var hosts = await Task.Run(() => NetworkHelper.GetLmHosts(), cancellationToken).ConfigureAwait(false);
+            if (!scope.IsCurrent)
+                return;
+            await OnUi(() =>
+            {
+                Replace(LmHosts, hosts);
+                ApplyLmHostSummary(hosts.Count);
+            });
+        }
+        catch (Exception ex)
+        {
+            await OnUi(() => Report("LMHOSTS " + ex.Message));
+        }
+        finally
+        {
+            MarkPrinted(scope, LmHostBit);
+        }
+    }
+
+    private void MarkPrinted(PrintScope scope, int bit)
+    {
+        if (!scope.IsCurrent)
+            return;
+        lock (_printedGate)
+        {
+            if (scope.Generation != _printedGen)
+            {
+                _printedGen = scope.Generation;
+                _printedMask = 0;
+            }
+
+            _printedMask |= bit;
+        }
+    }
+
+    private static NeighborGridRow[] Blank(IReadOnlyList<NetworkNeighbor> rows)
+        => rows.Select(row => new NeighborGridRow(row, NoValue, NoValue)).ToArray();
 
     private static IReadOnlyList<NeighborGridRow> ApplyPacked(IReadOnlyList<NetworkNeighbor> rows)
     {

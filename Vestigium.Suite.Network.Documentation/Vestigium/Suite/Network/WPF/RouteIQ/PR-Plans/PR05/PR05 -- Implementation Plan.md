@@ -2,7 +2,7 @@
 
 **Document ID:** VEST-SUITE-NETWORK-ROUTEIQ-PLN-PR05
 **Version:** PR05
-**Status:** Live. Step 2 done.
+**Status:** Live. Step 3 done.
 **Date:** 6 October 2026
 **Binding:** `PR05 -- Requirements.md`. This file wins on order. Requirements win on the load path. PR04 wins on vendor lookup, ICMP, and the settings path.
 
@@ -14,8 +14,9 @@ One pass per file. A later step that reopens a file from an earlier step is rewo
 
 Step 1 closed 6 October 2026. Requirements accepted. This plan is the paper you implement.
 Step 2 closed 6 October 2026. `PrintCoordinator` starts the six R1 sources together, joins with `Task.WhenAll`, and arms one follow-up. Packed OUI is not a source.
+Step 3 closed 6 October 2026. `Refresh` and `BeginPrints` call the coordinator. `Load()` is gone. `LiveVendorLookup` stays inside `Refresh()`. Watch projects off the UI thread. App does not call `BeginPrints` yet.
 
-Not done: steps 3–4.
+Not done: step 4.
 
 ---
 
@@ -36,10 +37,10 @@ Each step names the files it may touch. A file not in the row is out of that ste
 |---|---|---|---|
 | 1 | Paper | This folder. Keeper. | Done. Requirements and this plan are the live papers. |
 | 2 | R1, R4, R5, R10, T-A–T-D | `ViewModels/PrintCoordinator.cs`. `tests/.../RouteIqPrintCoordinatorTests.cs`. | Done. A run starts every source before any returns. A throw does not cancel the others. A second request arms one follow-up. A stale generation is not current. Packed OUI is not a gated source. |
-| 3 | R2, R3, R9, R11, T1, T3, T5 | `MainViewModel.cs`. `ConnectionWatch.cs`. | `Refresh` and cold start call the coordinator. `Load()` is gone. `LiveVendorLookup` stays inside `Refresh()` so the existing source scan still passes. Watch projects off the UI thread. |
+| 3 | R2, R3, R9, R11, T1, T3, T5 | `MainViewModel.cs`. `ConnectionWatch.cs`. | Done. Cold start is `BeginPrints()`. `Refresh` joins the same coordinator, then opt-in vendor. A busy click arms one follow-up. Packed OUI starts from the neighbor source. |
 | 4 | R6, R7, R8, T2 | `App.xaml.cs`. `MainWindow.xaml.cs`. | Splash starts the print, reports real progress, hides on completion or at 8s, selects RouteIQ. `Warm` is gone. |
 
-`RouteIqReleaseTests` is not edited. Step 3 must leave its four asserts true. KQL files are not edited. T4 is a ceiling, not a step.
+`RouteIqReleaseTests` is not edited. Step 3 left `LiveVendorLookup` inside `Refresh()` and left `LookupOuiAsync`, `Ping`, and `ProbeNeighbors` out of that method. KQL files were not edited. T4 stays a ceiling.
 
 ---
 
@@ -53,30 +54,11 @@ Closed 6 October 2026.
 
 ## 3. Step 3 — host wiring
 
-`MainViewModel.Refresh` becomes the request. It does not call `GetRoutes`, `GetNeighbors`, `GetNetBiosNames`, or `GetLmHosts`.
+Closed 6 October 2026.
 
-Constructor stops scheduling `Refresh` and `SnapshotConnections`. Cold start is `BeginPrints()`, called by App in step 4. A second call is a `Request()`.
+Constructor no longer schedules a print. `BeginPrints` is the cold start. `Refresh` awaits the same `Request`. A click while busy calls `Request` and returns. `LiveVendorLookup` remains in the `Refresh` body, after the join. Packed OUI runs inside the neighbor source, after that snapshot, and is not a splash gate. Each list is one `Reset`. A failed source reports and leaves the last list. Watch copies slots on the caller, projects on the pool, and `Reset`s on the dispatcher.
 
-Each source:
-
-1. Read on the pool thread.
-2. Sort on that same thread. `ByAddress` stays.
-3. Apply with one `QuietCollection.Reset` on the dispatcher, if the generation is current.
-4. Report the source name.
-
-Neighbor apply starts packed OUI on the pool. Packed does not sit in front of the other five applies. Live vendor stays where it is: after the lists are up, only when `LiveVendorLookup` is true. That call stays textually inside `Refresh()`, after the coordinator join, so `RouteIqReleaseTests.Refresh_print_does_not_scan` still sees `LiveVendorLookup` and does not see `LookupOuiAsync`, `Ping`, or `ProbeNeighbors` in the method body. Do not move the opt-in behind a helper that hides the token from the scan.
-
-Failure: leave the last list. `Report` names the source. Do not clear a grid to show the error.
-
-`_busy` remains the command gate. A click while busy calls `Request()` and returns. It does not start a second `Refresh` body.
-
-`ConnectionWatch`:
-
-- Snapshot is the connections source. It still bumps `_batch` and replaces `_slots`. Watch does not start at splash.
-- `Paint` copies the slots on the caller, projects and sorts on the pool, then `Reset`s on the dispatcher. Do not read `_slots` from the pool thread.
-- Poll stays 1s. Window stays 5–180. Glyphs stay.
-
-`PrintsReady` becomes "the six gated sources have applied or failed for this generation." App reads it. Do not invent a seventh flag for packed OUI.
+`ReportSplash` is on the view-model. Step 4 assigns it. Step 4 calls `BeginPrints`. Until then a cold start does not print.
 
 ---
 
@@ -124,3 +106,4 @@ New tab. New print. Charts. KQL rewrite. Help rewrite. Publishing. A shared spla
 |---|---|---|
 | PR05 | 6 Oct 2026 | Plan opened. Step 1 done. Walk deleted. Six sources, one coordinator, splash cap stays 8s. |
 | PR05 | 6 Oct 2026 | Step 2. `PrintCoordinator` and `RouteIqPrintCoordinatorTests`. No host wiring. |
+| PR05 | 6 Oct 2026 | Step 3. Host calls the coordinator. Cold start waits on step 4. |

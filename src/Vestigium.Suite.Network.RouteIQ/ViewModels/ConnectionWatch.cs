@@ -1,7 +1,5 @@
-using System.Collections.ObjectModel;
 using System.Net;
 using System.Net.Sockets;
-using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Vestigium.Helpers.Network;
@@ -86,6 +84,35 @@ public sealed partial class MainViewModel
         }
     }
 
+    private async Task LoadConnections(PrintScope scope, CancellationToken cancellationToken)
+    {
+        var batch = Interlocked.Increment(ref _batch);
+        try
+        {
+            var rows = await Task.Run(() => NetworkHelper.GetConnections(), cancellationToken).ConfigureAwait(false);
+            if (batch != _batch || !scope.IsCurrent)
+                return;
+            var now = DateTime.UtcNow;
+            await OnUi(() =>
+            {
+                if (batch != _batch || !scope.IsCurrent)
+                    return;
+                TakeSnapshot(rows, now);
+            });
+            await Paint().ConfigureAwait(false);
+            MarkConnectionsReady();
+        }
+        catch (Exception ex)
+        {
+            await OnUi(() => Report("Connections " + ex.Message));
+        }
+        finally
+        {
+            MarkConnectionsReady();
+            MarkPrinted(scope, ConnectionBit);
+        }
+    }
+
     private async Task FillAsync()
     {
         var batch = Interlocked.Increment(ref _batch);
@@ -94,11 +121,16 @@ public sealed partial class MainViewModel
         if (batch != _batch)
             return;
         var now = DateTime.UtcNow;
+        TakeSnapshot(rows, now);
+        await Paint().ConfigureAwait(true);
+        MarkConnectionsReady();
+    }
+
+    private void TakeSnapshot(IReadOnlyList<NetworkConnection> rows, DateTime now)
+    {
         _slots.Clear();
         foreach (var row in rows)
             _slots[Key(row)] = new WatchSlot(row, now, now, "Open");
-        await Paint().ConfigureAwait(true);
-        MarkConnectionsReady();
     }
 
     private void ApplyWatch(IReadOnlyList<NetworkConnection> rows)
@@ -132,15 +164,25 @@ public sealed partial class MainViewModel
     private async Task Paint()
     {
         var now = DateTime.UtcNow;
-        var rows = _slots.Values
+        var slots = _slots.Values.ToArray();
+        var rows = await Task.Run(() => Project(slots, now)).ConfigureAwait(false);
+        await OnUi(() =>
+        {
+            Connections.Reset(rows);
+            ConnectionSummary = Summarize(rows);
+        });
+    }
+
+    private static ConnectionGridRow[] Project(IReadOnlyList<WatchSlot> slots, DateTime now)
+        => slots
             .Select(slot => ToGrid(slot, now))
             .OrderBy(row => ConnectionAddressKey(row.LocalAddress), Comparer<byte[]>.Create(CompareConnectionAddress))
             .ThenBy(row => row.LocalPort)
             .ThenBy(row => Rank(row.Change))
             .ToArray();
-        Connections.Reset(rows);
-        await System.Windows.Application.Current.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.Background);
 
+    private static string Summarize(IReadOnlyList<ConnectionGridRow> rows)
+    {
         var open = 0;
         var added = 0;
         var dropped = 0;
@@ -153,7 +195,7 @@ public sealed partial class MainViewModel
             else if (row.Change == "Reopened") reopened++;
         }
 
-        ConnectionSummary = $"Open {open}. Added {added}. Dropped {dropped}. Reopened {reopened}.";
+        return $"Open {open}. Added {added}. Dropped {dropped}. Reopened {reopened}.";
     }
 
     private static ConnectionGridRow ToGrid(WatchSlot slot, DateTime now)
