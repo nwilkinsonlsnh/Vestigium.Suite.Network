@@ -7,7 +7,7 @@
 **Project:** `Vestigium.Suite.Network.RouteIQ`
 **Kind:** WPF exe, `net10.0-windows`, MVVM
 **APPID:** `RouteIQ` (never `Network`)
-**Library:** `Vestigium.Helpers.Network` pin `1.4.5` today. This slice consumes `1.5.0`.
+**Library:** `Vestigium.Helpers.Network` pin `1.5.0`. Suite `27320d8`.
 **Binding:** This file wins on what leaves the host. Helpers.Network owns the protocol facts after `1.5.0`. PR04 still wins on vendor lookup, ICMP, and the settings path. PR05 still wins on the load path. PR06 still wins on the log. A plan that adds a neighbor protocol, a port sweep, a second catalog, or a `NetworkJob` for a table print is wrong.
 
 PR07 deletes the two protocol implementations that still live in the host, and gives the host a print door it can await. It is not a new window.
@@ -42,7 +42,7 @@ The same RouteIQ window, printing from awaited library calls on `Vestigium.Helpe
 | Connection service label | `ConnectionServices.Label` prefers remote port, then local port, keyed `protocol\|port`. | `NetworkHelper.TryService(protocol, port)` with the same preference. Host file deleted. |
 | Help port list | `ConnectionServices.Catalog`. | `NetworkPorts.All`. One catalog. The Help list gets longer. That is the point. |
 | Probes | `LookupOuiAsync` and `IcmpEcho` / `RunAsync` already. | Unchanged. Do not add a second ping door. |
-| Pin | `Directory.Build.props` `VestigiumNetworkVersion` = `1.4.5`. | `1.5.0` after a restore can see it. Not before. |
+| Pin | `Directory.Build.props` `VestigiumNetworkVersion` = `1.5.0` on suite `27320d8`. | Held. No other pin moved. |
 
 ---
 
@@ -171,3 +171,4 @@ No UI test. No P/Invoke test that needs a real ARP table.
 | PR07 | 6 Oct 2026 | Offload opened. Neighbor parser and port catalog leave the host. Library grows a family filter and a protocol-aware port lookup. |
 | PR07 | 6 Oct 2026 | Async print door added. Table reads get `*Async`. They do not become `NetworkJob`. Host drops `Task.Run` on those prints and the interface-name stamp. |
 | PR07 | 6 Oct 2026 | Owner pushed `1.5.0`. `1.4.6` is out. Pin moves only after restore can see `1.5.0`. |
+| PR07 | 6 Oct 2026 | Pin is `1.5.0`. Suite `27320d8`. |
