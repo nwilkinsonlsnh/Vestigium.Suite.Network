@@ -11,7 +11,8 @@
     <CheckBox x:Name="ConnectionsBox" Style="{StaticResource CheckBox.Standard}" Content="Connections" Margin="0,0,0,8" Checked="OnCheck" Unchecked="OnCheck" />
     <CheckBox x:Name="NetBiosBox" Style="{StaticResource CheckBox.Standard}" Content="NetBIOS" Margin="0,0,0,8" Checked="OnCheck" Unchecked="OnCheck" />
     <CheckBox x:Name="LmHostsBox" Style="{StaticResource CheckBox.Standard}" Content="LMHOSTS" Margin="0,0,0,8" Checked="OnCheck" Unchecked="OnCheck" />
-    <CheckBox x:Name="OpenBox" Style="{StaticResource CheckBox.Standard}" Content="Open after saving" Margin="0,0,0,16" Checked="OnCheck" Unchecked="OnCheck" />
+    <CheckBox x:Name="OpenBox" Style="{StaticResource CheckBox.Standard}" Content="Open File after saving" Margin="0,0,0,8" Checked="OnCheck" Unchecked="OnCheck" />
+    <CheckBox x:Name="OpenFolderBox" Style="{StaticResource CheckBox.Standard}" Content="Open Folder after saving" Margin="0,0,0,16" Checked="OnCheck" Unchecked="OnCheck" />
     <StackPanel Orientation="Horizontal">
       <Button Content="Export" Style="{StaticResource Button.Primary}" Command="{Binding ExportSelectedCommand}" Padding="16,4" Margin="0,0,8,0" />
       <Button Content="Export All" Style="{StaticResource Button.Secondary}" Command="{Binding ExportAllCommand}" Padding="16,4" />

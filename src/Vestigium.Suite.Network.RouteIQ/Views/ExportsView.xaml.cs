@@ -24,6 +24,7 @@ public partial class ExportsView : UserControl
         NetBiosBox.IsChecked = host.ExportNetBios;
         LmHostsBox.IsChecked = host.ExportLmHosts;
         OpenBox.IsChecked = host.ExportOpenAfter;
+        OpenFolderBox.IsChecked = host.ExportOpenFolder;
         _loading = false;
         host.ExportSelectedCommand.NotifyCanExecuteChanged();
         host.ExportAllCommand.NotifyCanExecuteChanged();
@@ -39,6 +40,7 @@ public partial class ExportsView : UserControl
             ConnectionsBox.IsChecked == true,
             NetBiosBox.IsChecked == true,
             LmHostsBox.IsChecked == true,
-            OpenBox.IsChecked == true);
+            OpenBox.IsChecked == true,
+            OpenFolderBox.IsChecked == true);
     }
 }
