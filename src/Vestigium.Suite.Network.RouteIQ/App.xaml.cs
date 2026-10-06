@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Vestigium.Controls.DependencyInjection;
@@ -55,7 +56,8 @@ public partial class App : Application
     private static async Task FinishSplash(MainWindow window, Task prints)
     {
         await Task.WhenAny(prints, Task.Delay(TimeSpan.FromSeconds(8))).ConfigureAwait(true);
-        window.ShowSplash("Prints", 100);
+        window.ShowSplash("Connections", 100);
+        await window.WarmConnections().ConfigureAwait(true);
         if (window.HostShell["RouteIQ"] is { } routes)
             window.HostShell.SelectedItem = routes;
         window.HideSplash();
@@ -160,10 +162,17 @@ public partial class App : Application
         host.ExportOpenAfter = session.ExportOpenAfter;
         host.ExportOpenFolder = session.ExportOpenFolder;
 
+        var routesView = new RoutesView { DataContext = host };
+        var connectionsView = new ConnectionsView { DataContext = host };
+        var deck = new Grid();
+        deck.Children.Add(routesView);
+        deck.Children.Add(connectionsView);
+        window.HoldPages(routesView, connectionsView);
+
         var routes = window.HostShell["RouteIQ"];
         if (routes is not null)
         {
-            routes.Content = new RoutesView { DataContext = host };
+            routes.Content = deck;
             window.HostShell.SelectedItem = routes;
         }
 
@@ -173,7 +182,7 @@ public partial class App : Application
 
         var connections = window.HostShell["Connections"];
         if (connections is not null)
-            connections.Content = new ConnectionsView { DataContext = host };
+            connections.Content = deck;
 
         var netbios = window.HostShell["NetBIOS"];
         if (netbios is not null)

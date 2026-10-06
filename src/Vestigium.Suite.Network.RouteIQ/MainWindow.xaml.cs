@@ -1,6 +1,7 @@
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Threading;
 using Vestigium.Controls.Shell;
 using Vestigium.Suite.Network.RouteIQ.Views;
 
@@ -8,6 +9,9 @@ namespace Vestigium.Suite.Network.RouteIQ;
 
 public partial class MainWindow : Window
 {
+    private FrameworkElement? _routesPage;
+    private FrameworkElement? _connectionsPage;
+
     public MainWindow(VestigiumDefaultWindowViewModel viewModel)
     {
         ViewModel = viewModel;
@@ -30,6 +34,24 @@ public partial class MainWindow : Window
     public void HideSplash()
         => Splash.Visibility = Visibility.Collapsed;
 
+    public void HoldPages(FrameworkElement routes, FrameworkElement connections)
+    {
+        _routesPage = routes;
+        _connectionsPage = connections;
+        routes.Visibility = Visibility.Visible;
+        connections.Visibility = Visibility.Hidden;
+    }
+
+    public async Task WarmConnections()
+    {
+        if (_connectionsPage is null)
+            return;
+        _connectionsPage.Visibility = Visibility.Hidden;
+        await Dispatcher.InvokeAsync(() => { }, DispatcherPriority.Render);
+        await Dispatcher.InvokeAsync(() => { }, DispatcherPriority.Background);
+        UpdateLayout();
+    }
+
     private void MainNav_Checked(object sender, RoutedEventArgs e)
     {
         if (Splash.Visibility == Visibility.Visible)
@@ -40,6 +62,7 @@ public partial class MainWindow : Window
             return;
         CloseHelp();
         RootShell.SelectedItem = item;
+        ShowHeldPage(item);
     }
 
     private void MainNav_Click(object sender, RoutedEventArgs e)
@@ -54,6 +77,25 @@ public partial class MainWindow : Window
             return;
         CloseHelp();
         RootShell.SelectedItem = item;
+        ShowHeldPage(item);
+    }
+
+    private void ShowHeldPage(VestigiumNavItem item)
+    {
+        if (_routesPage is null || _connectionsPage is null)
+            return;
+        if (ReferenceEquals(item, HostShell["Connections"]))
+        {
+            _routesPage.Visibility = Visibility.Collapsed;
+            _connectionsPage.Visibility = Visibility.Visible;
+            return;
+        }
+
+        if (ReferenceEquals(item, HostShell["RouteIQ"]))
+        {
+            _connectionsPage.Visibility = Visibility.Hidden;
+            _routesPage.Visibility = Visibility.Visible;
+        }
     }
 
     private HelpView? _help;
