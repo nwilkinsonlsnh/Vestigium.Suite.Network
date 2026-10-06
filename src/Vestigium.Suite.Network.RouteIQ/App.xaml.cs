@@ -41,37 +41,23 @@ public partial class App : Application
         ShutdownMode = ShutdownMode.OnMainWindowClose;
         var window = CreateMainWindow();
         MainWindow = window;
-        window.ShowSplash("Opening", 5);
+        window.ShowSplash("Opening", 0);
         window.Show();
-        window.Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, () => _ = Warm(window));
+        var host = window.HostShell["RouteIQ"]?.Content is FrameworkElement view
+            ? view.DataContext as MainViewModel
+            : null;
+        var prints = host?.BeginPrints() ?? Task.CompletedTask;
+        window.Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, () => _ = FinishSplash(window, prints));
 
         base.OnStartup(e);
     }
 
-    private static async Task Warm(MainWindow window)
+    private static async Task FinishSplash(MainWindow window, Task prints)
     {
-        var shell = window.HostShell;
-        var steps = new (string Name, string Label, double Percent)[]
-        {
-            ("RouteIQ", "Routes", 15),
-            ("Neighbors", "Neighbors", 30),
-            ("Connections", "Connections", 45),
-            ("NetBIOS", "NetBIOS", 60),
-            ("LMHosts", "LMHOSTS", 70),
-            ("Exports", "Exports", 80),
-            ("Settings", "Settings", 90)
-        };
-        foreach (var step in steps)
-            await window.Warm(step.Label, step.Percent, shell[step.Name]);
-
-        window.ShowSplash("Prints", 95);
-        var host = shell["RouteIQ"]?.Content is System.Windows.FrameworkElement view
-            ? view.DataContext as ViewModels.MainViewModel
-            : null;
-        for (var i = 0; i < 80 && host is { PrintsReady: false }; i++)
-            await Task.Delay(100);
-        if (shell["RouteIQ"] is { } routes)
-            shell.SelectedItem = routes;
+        await Task.WhenAny(prints, Task.Delay(TimeSpan.FromSeconds(8))).ConfigureAwait(true);
+        window.ShowSplash("Prints", 100);
+        if (window.HostShell["RouteIQ"] is { } routes)
+            window.HostShell.SelectedItem = routes;
         window.HideSplash();
     }
 
@@ -138,6 +124,7 @@ public partial class App : Application
             Marks = settings.Marks,
             QueryBook = session,
             ReportStatus = text => chrome.Status.Message = text,
+            ReportSplash = (text, percent) => window.ShowSplash(text, percent),
             ReportQuery = text => chrome.Status.Engine.PostImmediate("query", new StatusBarUpdate
             {
                 Text = text,

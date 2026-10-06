@@ -2,7 +2,7 @@
 
 **Document ID:** VEST-SUITE-NETWORK-ROUTEIQ-PLN-PR05
 **Version:** PR05
-**Status:** Live. Step 3 done.
+**Status:** Live. Step 4 done. Not moved to Completed.
 **Date:** 6 October 2026
 **Binding:** `PR05 -- Requirements.md`. This file wins on order. Requirements win on the load path. PR04 wins on vendor lookup, ICMP, and the settings path.
 
@@ -14,9 +14,10 @@ One pass per file. A later step that reopens a file from an earlier step is rewo
 
 Step 1 closed 6 October 2026. Requirements accepted. This plan is the paper you implement.
 Step 2 closed 6 October 2026. `PrintCoordinator` starts the six R1 sources together, joins with `Task.WhenAll`, and arms one follow-up. Packed OUI is not a source.
-Step 3 closed 6 October 2026. `Refresh` and `BeginPrints` call the coordinator. `Load()` is gone. `LiveVendorLookup` stays inside `Refresh()`. Watch projects off the UI thread. App does not call `BeginPrints` yet.
+Step 3 closed 6 October 2026. `Refresh` and `BeginPrints` call the coordinator. `Load()` is gone. `LiveVendorLookup` stays inside `Refresh()`. Watch projects off the UI thread.
+Step 4 closed 6 October 2026. Splash calls `BeginPrints`, reports source progress, hides on the join or at 8s, and selects RouteIQ. `Warm` is gone. The cap does not cancel the run.
 
-Not done: step 4.
+The folder stays live until the owner accepts the slice.
 
 ---
 
@@ -38,9 +39,9 @@ Each step names the files it may touch. A file not in the row is out of that ste
 | 1 | Paper | This folder. Keeper. | Done. Requirements and this plan are the live papers. |
 | 2 | R1, R4, R5, R10, T-A–T-D | `ViewModels/PrintCoordinator.cs`. `tests/.../RouteIqPrintCoordinatorTests.cs`. | Done. A run starts every source before any returns. A throw does not cancel the others. A second request arms one follow-up. A stale generation is not current. Packed OUI is not a gated source. |
 | 3 | R2, R3, R9, R11, T1, T3, T5 | `MainViewModel.cs`. `ConnectionWatch.cs`. | Done. Cold start is `BeginPrints()`. `Refresh` joins the same coordinator, then opt-in vendor. A busy click arms one follow-up. Packed OUI starts from the neighbor source. |
-| 4 | R6, R7, R8, T2 | `App.xaml.cs`. `MainWindow.xaml.cs`. | Splash starts the print, reports real progress, hides on completion or at 8s, selects RouteIQ. `Warm` is gone. |
+| 4 | R6, R7, R8, T2 | `App.xaml.cs`. `MainWindow.xaml.cs`. | Done. Splash starts the print. Progress is the source that finished. Hide on join or 8s. RouteIQ stays selected. `Warm` deleted. |
 
-`RouteIqReleaseTests` is not edited. Step 3 left `LiveVendorLookup` inside `Refresh()` and left `LookupOuiAsync`, `Ping`, and `ProbeNeighbors` out of that method. KQL files were not edited. T4 stays a ceiling.
+`RouteIqReleaseTests` was not edited. KQL files were not edited.
 
 ---
 
@@ -58,21 +59,13 @@ Closed 6 October 2026.
 
 Constructor no longer schedules a print. `BeginPrints` is the cold start. `Refresh` awaits the same `Request`. A click while busy calls `Request` and returns. `LiveVendorLookup` remains in the `Refresh` body, after the join. Packed OUI runs inside the neighbor source, after that snapshot, and is not a splash gate. Each list is one `Reset`. A failed source reports and leaves the last list. Watch copies slots on the caller, projects on the pool, and `Reset`s on the dispatcher.
 
-`ReportSplash` is on the view-model. Step 4 assigns it. Step 4 calls `BeginPrints`. Until then a cold start does not print.
-
 ---
 
 ## 4. Step 4 — splash
 
-`App.OnStartup` shows the splash, shows the window, calls `BeginPrints()`. Delete the `foreach` over `Warm`. Delete the scripted percents.
+Closed 6 October 2026.
 
-`ReportSplash` is an `Action<string, double>` set in `CreateMainWindow`, same pattern as `ReportStatus`. Text is the source that just finished, or `Prints` when the join completes. Percent is finished / started. No 15/30/45 table.
-
-Hide when the join completes, or after 8 seconds, whichever is first. The cap does not cancel the run. A late apply may land if it is still the current generation. Then select the RouteIQ item and `HideSplash`.
-
-Delete `MainWindow.Warm`. `ShowSplash` and `HideSplash` stay. The nav handlers that no-op while the splash is visible stay. Do not select Neighbors, Connections, NetBIOS, LMHOSTS, Exports, or Settings during splash.
-
-Help stays lazy. Exports and Settings are not sources.
+`OnStartup` shows the splash, shows the window, then calls `BeginPrints`. `ReportSplash` writes the source name and finished/started percent. `FinishSplash` waits on the join or 8 seconds, whichever is first, then selects RouteIQ and hides. The delay is not cancelled, and the print is not cancelled. `MainWindow.Warm` is deleted. Nav still ignores clicks while the splash is visible. Help stays lazy.
 
 ---
 
@@ -107,3 +100,4 @@ New tab. New print. Charts. KQL rewrite. Help rewrite. Publishing. A shared spla
 | PR05 | 6 Oct 2026 | Plan opened. Step 1 done. Walk deleted. Six sources, one coordinator, splash cap stays 8s. |
 | PR05 | 6 Oct 2026 | Step 2. `PrintCoordinator` and `RouteIqPrintCoordinatorTests`. No host wiring. |
 | PR05 | 6 Oct 2026 | Step 3. Host calls the coordinator. Cold start waits on step 4. |
+| PR05 | 6 Oct 2026 | Step 4. Splash starts the print. Walk is gone. Folder stays live. |

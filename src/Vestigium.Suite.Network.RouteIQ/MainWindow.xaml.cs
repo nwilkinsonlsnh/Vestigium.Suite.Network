@@ -1,7 +1,6 @@
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Threading;
 using Vestigium.Controls.Shell;
 using Vestigium.Suite.Network.RouteIQ.Views;
 
@@ -30,15 +29,6 @@ public partial class MainWindow : Window
 
     public void HideSplash()
         => Splash.Visibility = Visibility.Collapsed;
-
-    public async Task Warm(string status, double percent, VestigiumNavItem? item)
-    {
-        ShowSplash(status, percent);
-        if (item is not null)
-            RootShell.SelectedItem = item;
-        await Dispatcher.InvokeAsync(() => { }, DispatcherPriority.Render);
-        await Dispatcher.InvokeAsync(() => { }, DispatcherPriority.Background);
-    }
 
     private void MainNav_Checked(object sender, RoutedEventArgs e)
     {
