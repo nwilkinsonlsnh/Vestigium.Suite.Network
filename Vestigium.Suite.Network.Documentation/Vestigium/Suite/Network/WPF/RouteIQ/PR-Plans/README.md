@@ -2,7 +2,7 @@
 
 **Host:** `Vestigium.Suite.Network.RouteIQ`
 **APPID:** `RouteIQ`
-**Status:** Live — [PR06 -- Requirements](PR06/PR06%20--%20Requirements.md). Implementation plan not started.
+**Status:** Live — [PR06 -- Implementation Plan](PR06/PR06%20--%20Implementation%20Plan.md)
 
 This file is the queue keeper. It is not the plan. Do not delete it when the plan is idle.
 
@@ -49,7 +49,8 @@ When the slice finishes, move the whole `PRnn/` folder under `Completed/`. Then 
 | Helpers.Network | Protocol facts. Props pin wins on the package version. |
 | [PR04 -- Requirements.md](Completed/PR04/PR04%20--%20Requirements.md) | Revision 2 window. Protocol honesty. |
 | [PR05 -- Requirements.md](Completed/PR05/PR05%20--%20Requirements.md) | Startup and refresh performance. |
-| [PR06 -- Requirements.md](PR06/PR06%20--%20Requirements.md) | Host story and exception catalog. The slice we are writing now. |
+| [PR06 -- Requirements.md](PR06/PR06%20--%20Requirements.md) | Host story and exception catalog. |
+| [PR06 -- Implementation Plan.md](PR06/PR06%20--%20Implementation%20Plan.md) | The slice we are building now. |
 
 If a plan and PR06 disagree on the log, PR06 requirements win. The plan wins on order.
 If a plan and PR05 disagree on the load path, PR05 requirements win.
