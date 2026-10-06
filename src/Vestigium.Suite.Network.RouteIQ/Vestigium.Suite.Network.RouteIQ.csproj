@@ -2,7 +2,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <RootNamespace>Vestigium.Suite.Network.RouteIQ</RootNamespace>
-    <AssemblyName>Vestigium.Suite.Network.RouteIQ</AssemblyName>
+    <AssemblyName>RouteIQ</AssemblyName>
     <ApplicationTitle>RouteIQ</ApplicationTitle>
     <ApplicationIcon>Assets\RouteIQ.ico</ApplicationIcon>
     <IsPackable>false</IsPackable>
