@@ -2,7 +2,7 @@
 
 **Document ID:** VEST-SUITE-NETWORK-ROUTEIQ-PLN-PR05
 **Version:** PR05
-**Status:** Live. Step 1 done.
+**Status:** Live. Step 2 done.
 **Date:** 6 October 2026
 **Binding:** `PR05 -- Requirements.md`. This file wins on order. Requirements win on the load path. PR04 wins on vendor lookup, ICMP, and the settings path.
 
@@ -13,8 +13,9 @@ One pass per file. A later step that reopens a file from an earlier step is rewo
 ## 0. Done
 
 Step 1 closed 6 October 2026. Requirements accepted. This plan is the paper you implement.
+Step 2 closed 6 October 2026. `PrintCoordinator` starts the six R1 sources together, joins with `Task.WhenAll`, and arms one follow-up. Packed OUI is not a source.
 
-Not done: steps 2–4.
+Not done: steps 3–4.
 
 ---
 
@@ -34,7 +35,7 @@ Each step names the files it may touch. A file not in the row is out of that ste
 | Step | Closes | Files | Exit |
 |---|---|---|---|
 | 1 | Paper | This folder. Keeper. | Done. Requirements and this plan are the live papers. |
-| 2 | R1, R4, R5, R10, T-A–T-D | `ViewModels/PrintCoordinator.cs`. `tests/.../RouteIqPrintCoordinatorTests.cs`. | A run starts every source before any returns. A throw does not cancel the others. A second request arms one follow-up. A stale generation does not apply. Packed OUI is not one of the gated sources. |
+| 2 | R1, R4, R5, R10, T-A–T-D | `ViewModels/PrintCoordinator.cs`. `tests/.../RouteIqPrintCoordinatorTests.cs`. | Done. A run starts every source before any returns. A throw does not cancel the others. A second request arms one follow-up. A stale generation is not current. Packed OUI is not a gated source. |
 | 3 | R2, R3, R9, R11, T1, T3, T5 | `MainViewModel.cs`. `ConnectionWatch.cs`. | `Refresh` and cold start call the coordinator. `Load()` is gone. `LiveVendorLookup` stays inside `Refresh()` so the existing source scan still passes. Watch projects off the UI thread. |
 | 4 | R6, R7, R8, T2 | `App.xaml.cs`. `MainWindow.xaml.cs`. | Splash starts the print, reports real progress, hides on completion or at 8s, selects RouteIQ. `Warm` is gone. |
 
@@ -44,28 +45,9 @@ Each step names the files it may touch. A file not in the row is out of that ste
 
 ## 2. Step 2 — coordinator
 
-New type `PrintCoordinator` in the RouteIQ view-model namespace. No `NetworkHelper`. No dispatcher. No `MainViewModel`.
+Closed 6 October 2026.
 
-Shape, not a framework:
-
-- Six sources, the R1 list: IPv4 routes, IPv6 routes, neighbors, connections, NetBIOS, LMHOSTS. Each source is a `Func<CancellationToken, Task>`. The host closes over the real API. The test closes over a gate.
-- `Request()` starts them together with `Task.WhenAll` only as the join. Each source applies itself when it finishes. Do not wait for the slowest before applying the fastest.
-- Progress callback: finished count, started count, source name. The host turns that into splash text. The coordinator does not know about a window.
-- One generation. `Request()` while a run is in flight sets a follow-up flag. When the run ends, if the flag is set, clear it and run once. Two concurrent runs are a failure.
-- Apply carries the generation. The host drops an apply whose generation is not current.
-- A source exception is captured, reported, and does not fault the join. The other sources still apply.
-- Packed OUI is not a source. The host starts it from the neighbor apply. It is not in the finished/started count.
-
-Tests in `RouteIqPrintCoordinatorTests`. Gates are `TaskCompletionSource`, not `Thread.Sleep`.
-
-| Test | Fails if |
-|---|---|
-| Overlap | Any source is started only after another has completed. |
-| Throw | A faulted source prevents another apply. |
-| Coalesce | Two `Request` calls during a run produce two follow-ups, or a second concurrent run. |
-| Generation | An apply from generation N writes after generation N+1 has started. |
-
-No network. No WPF.
+`PrintCoordinator` takes six `PrintSource` delegates. `Request` starts them together. `Task.WhenAll` is only the join. A source applies itself when it finishes. A throw is reported and does not fault the join. A second `Request` during a run returns the same task and arms one follow-up. `PrintScope.IsCurrent` is false once the next generation has started. Names are the six R1 prints. No vendor source. No dispatcher.
 
 ---
 
@@ -141,3 +123,4 @@ New tab. New print. Charts. KQL rewrite. Help rewrite. Publishing. A shared spla
 | Version | Date | Change |
 |---|---|---|
 | PR05 | 6 Oct 2026 | Plan opened. Step 1 done. Walk deleted. Six sources, one coordinator, splash cap stays 8s. |
+| PR05 | 6 Oct 2026 | Step 2. `PrintCoordinator` and `RouteIqPrintCoordinatorTests`. No host wiring. |
