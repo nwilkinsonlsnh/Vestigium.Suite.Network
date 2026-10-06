@@ -33,6 +33,7 @@ public sealed class RouteIqSession
         ExportNetBios = Current.ExportNetBios;
         ExportLmHosts = Current.ExportLmHosts;
         ExportOpenAfter = Current.ExportOpenAfter;
+        ExportOpenFolder = Current.ExportOpenFolder;
         foreach (var entry in Current.Queries)
             Queries.Add(entry);
         Trim();
@@ -58,6 +59,8 @@ public sealed class RouteIqSession
     public bool ExportLmHosts { get; private set; }
 
     public bool ExportOpenAfter { get; private set; }
+
+    public bool ExportOpenFolder { get; private set; }
 
     public bool QueryMruEnabled => QueryMruLimit > 0;
 
@@ -90,9 +93,9 @@ public sealed class RouteIqSession
         Save();
     }
 
-    public void SetExports(bool routes, bool neighbors, bool connections, bool netbios, bool lmhosts, bool openAfter)
+    public void SetExports(bool routes, bool neighbors, bool connections, bool netbios, bool lmhosts, bool openAfter, bool openFolder)
     {
-        if (ExportRoutes == routes && ExportNeighbors == neighbors && ExportConnections == connections && ExportNetBios == netbios && ExportLmHosts == lmhosts && ExportOpenAfter == openAfter)
+        if (ExportRoutes == routes && ExportNeighbors == neighbors && ExportConnections == connections && ExportNetBios == netbios && ExportLmHosts == lmhosts && ExportOpenAfter == openAfter && ExportOpenFolder == openFolder)
             return;
         ExportRoutes = routes;
         ExportNeighbors = neighbors;
@@ -100,6 +103,7 @@ public sealed class RouteIqSession
         ExportNetBios = netbios;
         ExportLmHosts = lmhosts;
         ExportOpenAfter = openAfter;
+        ExportOpenFolder = openFolder;
         Save();
     }
 
@@ -159,6 +163,7 @@ public sealed class RouteIqSession
             ExportNetBios = ExportNetBios,
             ExportLmHosts = ExportLmHosts,
             ExportOpenAfter = ExportOpenAfter,
+            ExportOpenFolder = ExportOpenFolder,
             ConnectionMarks = _settings.Marks.ToSettings(),
             LiveVendorLookup = _settings.LiveVendorLookup,
             Queries = Queries.ToList()
