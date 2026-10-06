@@ -128,6 +128,7 @@ public static class RouteIqLog
         }
 
         VestigiumLog.Thrown(exception, VestigiumStatus.Failed);
+        Persist();
     }
 
     private static void Story(int eventId, VestigiumLogLevel level, VestigiumStatus status, string message, IReadOnlyDictionary<string, string?>? properties)
@@ -139,6 +140,19 @@ public static class RouteIqLog
         }
 
         VestigiumLog.Write(eventId, level, status, RouteIqCatalog.Category, RouteIqCatalog.Subcategory, message, properties: properties);
+        Persist();
+    }
+
+    private static void Persist()
+    {
+        try
+        {
+            VestigiumLogger.Flush();
+        }
+        catch (Exception)
+        {
+            // A flush failure must not hide the story already queued.
+        }
     }
 
     private static Dictionary<string, string?> Generation(int generation)
