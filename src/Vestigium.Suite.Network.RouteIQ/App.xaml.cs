@@ -28,7 +28,11 @@ public partial class App : Application
         {
             KqlLoggingCatalog.Register(cfg);
             ClosedXmlCatalog.Register(cfg);
+            RouteIqCatalog.Register(cfg);
         });
+        RouteIqLog.HostStarted();
+        DispatcherUnhandledException += OnDispatcherUnhandled;
+        AppDomain.CurrentDomain.UnhandledException += OnDomainUnhandled;
 
         Themes.RegisterSuiteV1();
         Themes.Initialize(this, "LightBlue");
@@ -48,6 +52,31 @@ public partial class App : Application
         window.Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, () => _ = FinishSplash(window, prints));
 
         base.OnStartup(e);
+    }
+
+    protected override void OnExit(ExitEventArgs e)
+    {
+        RouteIqLog.HostStopped();
+        base.OnExit(e);
+    }
+
+    private static void OnDispatcherUnhandled(object sender, DispatcherUnhandledExceptionEventArgs e)
+    {
+        try
+        {
+            RouteIqLog.Fail(e.Exception);
+            e.Handled = true;
+        }
+        catch (Exception)
+        {
+            e.Handled = false;
+        }
+    }
+
+    private static void OnDomainUnhandled(object? sender, UnhandledExceptionEventArgs e)
+    {
+        if (e.ExceptionObject is Exception ex)
+            RouteIqLog.Fail(ex);
     }
 
     private static async Task FinishSplash(MainWindow window, Task prints)
