@@ -2,7 +2,7 @@
 
 **Document ID:** VEST-SUITE-NETWORK-ROUTEIQ-PLN-PR07
 **Version:** PR07
-**Status:** Live. Step 1 done. Library and host cuts are not started.
+**Status:** Live. Step 2 done. Port catalog and async door are not started.
 **Date:** 6 October 2026
 **Binding:** `PR07 -- Requirements.md`. This file wins on order. Requirements win on the cut. PR06 wins on the log. PR05 wins on the load path. PR04 wins on vendor lookup, ICMP, and the settings path.
 
@@ -15,6 +15,7 @@ Two repos. The library commit lands and publishes before the host pin moves. Do 
 ## 0. Done
 
 Step 1 closed 6 October 2026. Requirements accepted. This plan is the paper you implement.
+Step 2 closed 6 October 2026. `GetNeighbors(RouteFamily)` on Helpers `beede9f`. Windows reads one family. Name map built once. Parameterless call still means `All`. Route reads unchanged. Not published. Pin stays `1.4.5`.
 
 The folder stays live until the owner accepts the slice.
 
@@ -32,9 +33,9 @@ Out: a public second parser. A host catalog that "stays small." A `NetworkJob` p
 ## 1. Order
 
 | Step | Closes | Repo / files | Exit |
-|---|---|---|---|
+|---|---|---|
 | 1 | Paper | This folder. Keeper. | Done. |
-| 2 | L1, L2, L3 | `Vestigium.Helpers` `NetworkWindowsTables.cs`, `NetworkLinuxTables.cs`, `NetworkStackEngine.cs`, `NetworkHelper.cs`. | `GetNeighbors(RouteFamily)` reads one family on Windows. Name map built once. Parameterless call unchanged. |
+| 2 | L1, L2, L3 | `Vestigium.Helpers` `NetworkWindowsTables.cs`, `NetworkLinuxTables.cs`, `NetworkStackEngine.cs`, `NetworkHelper.cs`. | Done. `beede9f`. Family filter. Name map once. Parameterless call unchanged. |
 | 3 | L4–L8, T-A, T-B, T-C | `NetworkPorts.cs`, `NetworkPortGuess.cs` only if the record needs a second transport, `NetworkHelper.Ports.cs`, Helpers tests. | Protocol lookup matches the table in requirements. `TryByPort(443)` still https. No new EVENTID. |
 | 4 | L9–L12, T-F | New `NetworkHelper.Async.cs`. One test file. | Six `*Async` doors. Token before the hop throws. No `NetworkJob`. No second log line. |
 | 5 | Publish | Helpers package `1.4.6`. README surface row for `GetNeighbors(family)`, `TryService`, and the async doors. | Package on NuGet. Not a suite edit. |
@@ -47,13 +48,13 @@ Out: a public second parser. A host catalog that "stays small." A `NetworkJob` p
 
 ## 2. Step 2 — neighbor read
 
-In `NetworkWindowsTables`, build the index-to-name map once at the start of `GetNeighbors`. Pass it into both readers. `InterfaceName(index)` becomes a dictionary lookup. Delete the per-row `GetAllNetworkInterfaces` call on this path. Route reads may keep their own lookup; do not refactor them in this step.
+Closed 6 October 2026. Helpers `beede9f`.
 
-`GetNeighbors(RouteFamily family)` reads IPv4 only, IPv6 only, or both. `GetNeighbors()` calls `All`.
+`NetworkWindowsTables.GetNeighbors(RouteFamily)` builds one index-to-name map, then reads IPv4, IPv6, or both. Row index is the table index. A miss stays null. Index 0 is not rewritten to 1. Both v4 and v6 indexes are recorded when a NIC has them. Route reads still call `InterfaceName` per row. That cleanup is out.
 
-Linux filters the existing proc read. Do not add a new proc parser.
+Linux `GetNeighbors(Pv6)` returns empty. `/proc/net/arp` is IPv4. No new proc parser.
 
-`NetworkStackEngine` and `NetworkHelper` grow the same argument, default `All`, so current callers compile. This is the only edit to `NetworkHelper.cs` in this plan. Async does not reopen it.
+`NetworkStackEngine` and `NetworkHelper` take the same argument, default `All`. `GetSnapshot` still calls the parameterless form. This was the only edit to `NetworkHelper.cs`.
 
 ---
 
@@ -142,3 +143,4 @@ Route-table name-lookup cleanup. Grid-row multicast helper. Exe publish. A Helpe
 |---|---|---|
 | PR07 | 6 Oct 2026 | Plan opened. Step 1 done. Library first, then host delete, then pin. |
 | PR07 | 6 Oct 2026 | Step 4 is the async print door in a new file. Host step drops `Task.Run` on prints and the name stamp. |
+| PR07 | 6 Oct 2026 | Step 2. Family filter and one name map. Helpers `beede9f`. Not published. |
