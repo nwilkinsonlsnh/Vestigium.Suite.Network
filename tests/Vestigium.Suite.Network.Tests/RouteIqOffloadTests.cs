@@ -1,4 +1,5 @@
 using Vestigium.Suite.Network.RouteIQ.ViewModels;
+using Xunit;
 
 namespace Vestigium.Suite.Network.Tests;
 
