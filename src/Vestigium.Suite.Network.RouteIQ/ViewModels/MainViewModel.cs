@@ -179,15 +179,16 @@ public sealed partial class MainViewModel : ObservableObject
     {
         try
         {
-            var rows = await Task.Run(() => ByAddress(NetworkHelper.GetRoutes(RouteFamily.Pv4), row => row.Destination), cancellationToken).ConfigureAwait(false);
+            var rows = await NetworkHelper.GetRoutesAsync(RouteFamily.Pv4, cancellationToken).ConfigureAwait(false);
             if (!scope.IsCurrent)
                 return;
+            var shown = ByAddress(rows, row => row.Destination);
             await OnUi(() =>
             {
-                Replace(Ipv4Routes, rows);
+                Replace(Ipv4Routes, shown);
                 RouteSummary = Glance("IPv4", Ipv4Routes.Count, "IPv6", Ipv6Routes.Count);
             });
-            RouteIqLog.PrintApplied("IPv4 routes", rows.Count, scope.Generation);
+            RouteIqLog.PrintApplied("IPv4 routes", shown.Count, scope.Generation);
         }
         catch (Exception ex)
         {
@@ -204,15 +205,16 @@ public sealed partial class MainViewModel : ObservableObject
     {
         try
         {
-            var rows = await Task.Run(() => ByAddress(NetworkHelper.GetRoutes(RouteFamily.Pv6), row => row.Destination), cancellationToken).ConfigureAwait(false);
+            var rows = await NetworkHelper.GetRoutesAsync(RouteFamily.Pv6, cancellationToken).ConfigureAwait(false);
             if (!scope.IsCurrent)
                 return;
+            var shown = ByAddress(rows, row => row.Destination);
             await OnUi(() =>
             {
-                Replace(Ipv6Routes, rows);
+                Replace(Ipv6Routes, shown);
                 RouteSummary = Glance("IPv4", Ipv4Routes.Count, "IPv6", Ipv6Routes.Count);
             });
-            RouteIqLog.PrintApplied("IPv6 routes", rows.Count, scope.Generation);
+            RouteIqLog.PrintApplied("IPv6 routes", shown.Count, scope.Generation);
         }
         catch (Exception ex)
         {
@@ -229,7 +231,7 @@ public sealed partial class MainViewModel : ObservableObject
     {
         try
         {
-            var v4 = await Task.Run(NeighborTables.ReadIpv4, cancellationToken).ConfigureAwait(false);
+            var v4 = await NetworkHelper.GetNeighborsAsync(RouteFamily.Pv4, cancellationToken).ConfigureAwait(false);
             if (!scope.IsCurrent)
                 return;
             var shown4 = ByAddress(v4, row => row.Address);
@@ -238,7 +240,7 @@ public sealed partial class MainViewModel : ObservableObject
                 Replace(Ipv4Neighbors, Blank(shown4));
                 NeighborSummary = NeighborGlance();
             });
-            var v6 = await Task.Run(NeighborTables.ReadIpv6, cancellationToken).ConfigureAwait(false);
+            var v6 = await NetworkHelper.GetNeighborsAsync(RouteFamily.Pv6, cancellationToken).ConfigureAwait(false);
             if (!scope.IsCurrent)
                 return;
             var shown6 = ByAddress(v6, row => row.Address);
@@ -249,7 +251,6 @@ public sealed partial class MainViewModel : ObservableObject
             });
             RouteIqLog.PrintApplied("Neighbors", shown4.Count + shown6.Count, scope.Generation);
             StartEnrich(scope, shown4, shown6);
-            _ = StampInterfaceNames(scope, shown4, shown6);
         }
         catch (Exception ex)
         {
@@ -266,17 +267,17 @@ public sealed partial class MainViewModel : ObservableObject
     {
         try
         {
-            var names = await Task.Run(
-                () => NetworkHelper.GetNetBiosNames().OrderBy(row => row.IsCache).ThenBy(row => row.Name, StringComparer.OrdinalIgnoreCase).ToArray(),
-                cancellationToken).ConfigureAwait(false);
+            var names = await NetworkHelper.GetNetBiosNamesAsync(cancellationToken).ConfigureAwait(false);
+            var stats = await NetworkHelper.GetNetBiosStatsAsync(cancellationToken).ConfigureAwait(false);
             if (!scope.IsCurrent)
                 return;
+            var shown = names.OrderBy(row => row.IsCache).ThenBy(row => row.Name, StringComparer.OrdinalIgnoreCase).ToArray();
             await OnUi(() =>
             {
-                Replace(NetBiosNames, names);
-                ApplyNetBiosStats();
+                Replace(NetBiosNames, shown);
+                ApplyNetBiosStats(stats);
             });
-            RouteIqLog.PrintApplied("NetBIOS", names.Length, scope.Generation);
+            RouteIqLog.PrintApplied("NetBIOS", shown.Length, scope.Generation);
         }
         catch (Exception ex)
         {
@@ -293,7 +294,7 @@ public sealed partial class MainViewModel : ObservableObject
     {
         try
         {
-            var hosts = await Task.Run(() => NetworkHelper.GetLmHosts(), cancellationToken).ConfigureAwait(false);
+            var hosts = await NetworkHelper.GetLmHostsAsync(cancellationToken).ConfigureAwait(false);
             if (!scope.IsCurrent)
                 return;
             await OnUi(() =>
@@ -395,41 +396,6 @@ public sealed partial class MainViewModel : ObservableObject
         if (dispatcher is null)
             return Task.CompletedTask;
         return dispatcher.InvokeAsync(action).Task;
-    }
-
-    private async Task StampInterfaceNames(PrintScope scope, IReadOnlyList<NetworkNeighbor> v4, IReadOnlyList<NetworkNeighbor> v6)
-    {
-        try
-        {
-            var names = await Task.Run(NeighborTables.Names).ConfigureAwait(false);
-            if (!scope.IsCurrent)
-                return;
-            await OnUi(() =>
-            {
-                if (scope.IsCurrent)
-                    ApplyNames(Ipv4Neighbors, names);
-                if (scope.IsCurrent)
-                    ApplyNames(Ipv6Neighbors, names);
-            });
-        }
-        catch (Exception ex)
-        {
-            if (scope.IsCurrent)
-                RouteIqLog.Fail(ex, RouteIqLog.PrintFailedId, SourceBag("Neighbors"));
-        }
-    }
-
-    private static void ApplyNames(QuietCollection<NeighborGridRow> rows, IReadOnlyDictionary<int, string> names)
-    {
-        for (var i = 0; i < rows.Count; i++)
-        {
-            var row = rows[i];
-            if (row.InterfaceIndex is not int index || !names.TryGetValue(index, out var name))
-                continue;
-            if (string.Equals(row.InterfaceName, name, StringComparison.Ordinal))
-                continue;
-            rows[i] = row with { Source = row.Source with { InterfaceName = name } };
-        }
     }
 
     private async Task ReportVendors()

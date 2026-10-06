@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
+using Vestigium.Helpers.Network;
 
 namespace Vestigium.Suite.Network.RouteIQ.Views;
 
@@ -153,11 +154,11 @@ public partial class HelpView: UserControl
     {
         var lines = new List<string>( );
         var seen = new HashSet<int>( );
-        foreach (var row in ViewModels.ConnectionServices.Catalog)
+        foreach (var row in NetworkPorts.All)
         {
             if (row.Port < from || row.Port > to || !seen.Add(row.Port))
                 continue;
-            var names = string.Join(", ", ViewModels.ConnectionServices.Catalog.Where(item => item.Port == row.Port).Select(item => item.Name + " (" + item.Protocols + ")"));
+            var names = string.Join(", ", NetworkPorts.All.Where(item => item.Port == row.Port).Select(item => item.Name + " (" + item.Transport + ")"));
             lines.Add("\x16" + row.Port + "|" + names);
         }
 

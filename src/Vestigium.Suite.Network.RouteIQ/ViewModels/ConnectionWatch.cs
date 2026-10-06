@@ -54,7 +54,7 @@ public sealed partial class MainViewModel
                 await Task.Delay(TimeSpan.FromSeconds(1), token).ConfigureAwait(true);
                 var left = Math.Max(0, (int)Math.Ceiling((until - DateTime.UtcNow).TotalSeconds));
                 ReportWatch?.Invoke(left, seconds);
-                var rows = await Task.Run(() => NetworkHelper.GetConnections(), token).ConfigureAwait(true);
+                var rows = await NetworkHelper.GetConnectionsAsync(cancellation: token).ConfigureAwait(true);
                 ApplyWatch(rows);
                 await Paint().ConfigureAwait(true);
             }
@@ -99,7 +99,7 @@ public sealed partial class MainViewModel
         var batch = Interlocked.Increment(ref _batch);
         try
         {
-            var rows = await Task.Run(() => NetworkHelper.GetConnections(), cancellationToken).ConfigureAwait(false);
+            var rows = await NetworkHelper.GetConnectionsAsync(cancellation: cancellationToken).ConfigureAwait(false);
             if (batch != _batch || !scope.IsCurrent)
                 return;
             var now = DateTime.UtcNow;
@@ -129,7 +129,7 @@ public sealed partial class MainViewModel
     {
         var batch = Interlocked.Increment(ref _batch);
         ConnectionSummary = "Reading connections.";
-        var rows = await Task.Run(() => NetworkHelper.GetConnections()).ConfigureAwait(true);
+        var rows = await NetworkHelper.GetConnectionsAsync().ConfigureAwait(true);
         if (batch != _batch)
             return;
         var now = DateTime.UtcNow;
@@ -217,8 +217,17 @@ public sealed partial class MainViewModel
         var remote = string.IsNullOrWhiteSpace(slot.Row.RemoteAddress) ? "--" : slot.Row.RemoteAddress;
         var remotePort = slot.Row.RemotePort?.ToString() ?? "--";
         var process = string.IsNullOrWhiteSpace(slot.Row.ProcessName) ? slot.Row.ProcessId?.ToString() ?? "--" : slot.Row.ProcessName;
-        var service = ConnectionServices.Label(slot.Row.Protocol.ToString(), slot.Row.RemotePort, slot.Row.LocalPort);
+        var service = ServiceLabel(slot.Row.Protocol.ToString(), slot.Row.RemotePort, slot.Row.LocalPort);
         return new ConnectionGridRow(slot.Change, Mark(slot.Change), slot.Row.Protocol.ToString(), slot.Row.LocalAddress, slot.Row.LocalPort, remote, remotePort, service, slot.Row.State ?? "--", process, time);
+    }
+
+    private static string ServiceLabel(string? protocol, int? remotePort, int localPort)
+    {
+        if (remotePort is > 0 && NetworkHelper.TryService(protocol, remotePort.Value, out var remote))
+            return remote;
+        if (localPort > 0 && NetworkHelper.TryService(protocol, localPort, out var local))
+            return local;
+        return "--";
     }
 
     private static string Mark(string change) => change switch
