@@ -37,5 +37,5 @@ Product papers live **outside** this folder:
 | [PR04 -- Requirements.md](PR04/PR04%20--%20Requirements.md) | HAR host extract, text scrape of `.txt` dumps, DNS probe. |
 | [PR04 -- Implementation Plan.md](PR04/PR04%20--%20Implementation%20Plan.md) | Slice order + test gate. |
 | Helpers.Network 1.2.0 | Protocol |
-| LogParser 1.0.0 / LogParser.Har 1.0.0 | Capture read. Not packed yet. |
+| LogParser 1.0.0 / LogParser.Har 1.0.0 / LogParser.Url 1.0.0 | Capture read and text scrape. Not packed yet. |
 | Analytics 1.0.1 / Charts 1.0.5 | Dashboard |

@@ -28,7 +28,7 @@ DnsIQ does not grow a parser. `Vestigium.Helpers.Network` does not grow a parser
 
 Suite rule holds: DnsIQ takes **packages**, not a project reference into Helpers.
 
-Checked 6 October 2026: neither project is in `Vestigium.Helpers` on GitHub. The owner has created the two projects. This PR packs them. It does not invent a third.
+Checked 6 October 2026: none of these projects are in `Vestigium.Helpers` on GitHub. The owner created LogParser and LogParser.Har. This PR adds LogParser.Url beside them. It does not invent a fourth.
 
 ---
 
@@ -67,13 +67,12 @@ Types, nothing else:
 
 | Type | Role |
 |---|---|
-| `LogFormat` | `Unknown`, `Har`, `Text`. |
-| `LogHostSource` | Flags: `Request`, `Redirect`, `Location`, `Page`, `Text`. |
+| `LogFormat` | `Unknown`, `Har`, `Url`. |
+| `LogHostSource` | Flags: `Request`, `Redirect`, `Location`, `Page`, `Url`. |
 | `LogHost` | Host (ASCII, lower, no trailing dot), ports seen, hit count, sources, `IsAddress` when the host is already an IP. |
 | `LogReadResult` | Format, entry count, page count, hosts, warnings. |
-| `TextHostReader` | Scan UTF-8 text for URLs and domain names. The dump / email / spreadsheet door. |
 
-No `ILogParser`. No plugin host. HAR is structured. Text is a scrape. That is two doors, not a framework.
+No `ILogParser`. No plugin host. No scrape in this project. Har and Url both fill this bag.
 
 ### R04-02 HAR read (`Vestigium.Helpers.LogParser.Har`)
 
@@ -111,7 +110,7 @@ Rules:
 ### R04-03 DnsIQ opens the file
 
 - File menu: **Open capture…** Filter `*.har;*.txt`, plus HAR-only and text-only. No drag-drop. No last-path persist. No paste box. The owner pastes the email or the sheet into a `.txt` and opens that file.
-- Route: `.har` whose content is a HAR object → `HarReader`. Anything else that is UTF-8 text, including `.txt` and a `.har` that is not JSON, → `TextHostReader`. A valid HAR is not scraped a second time.
+- Route: `.har` whose content is a HAR object → `HarReader`. Anything else that is UTF-8 text, including `.txt` and a `.har` that is not JSON, → `UrlReader` in LogParser.Url. A valid HAR is not scraped a second time.
 - New top tab **HAR**, same HorizontalTab strip. Disabled until a file parses with zero throw. Lookup does not unlock it. Probe pulse does not unlock it. The tab name stays HAR. Text rows are the same grid.
 - Grid, read-only: Host, Ports, Hits, Sources, DNS, Answers.
 - Empty host list is a successful parse. Status: `No hosts`. Grid empty. Probe does nothing.
@@ -153,26 +152,30 @@ LogParser.Har tests, off the wire, against trimmed corpus fixtures:
 - Missing `log.entries` throws.
 - DnsIQ host tests do not open a socket and do not parse HAR JSON themselves.
 
-### R04-06 Text scrape (`TextHostReader` in LogParser)
+### R04-06 Text scrape (`UrlReader` in `Vestigium.Helpers.LogParser.Url`)
+
+`net10.0`. References LogParser only. First package **1.0.0**.
+
+The project name is Url. The contract is wider than scheme-URLs. A sheet column of `login.microsoftonline.com` and an email `user@q2valprod.services.idbs-cloud.com` are in. Someone who reads the name as "http only" fails this requirement.
 
 This is the dump door. A copied email, a spreadsheet saved as `.txt`, a notes file, or a `.har` that is not JSON. Same probe as R04-04. Same 64 MB cap. UTF-8, BOM allowed.
 
 Door:
 
 ```
-TextHostReader.Read(Stream)    → LogReadResult   Format = Text
-TextHostReader.ReadFile(path)  → LogReadResult
+UrlReader.Read(Stream)    → LogReadResult   Format = Url
+UrlReader.ReadFile(path)  → LogReadResult
 ```
 
 Pull a host from:
 
 | Hit | Source flag | Notes |
 |---|---|---|
-| `http://` or `https://` URL | `Text` | Same host/port rules as HAR. Drop `data:`, `blob:`, `about:`, `chrome:`. |
-| `mailto:` or `name@host` | `Text` | Host is the part after `@`. |
-| Bare domain | `Text` | Two or more labels. Each label 1–63, `[a-z0-9-]`, no leading or trailing hyphen. Last label is letters, length 2–24. |
-| Bare IPv4 | `Text` | `IsAddress=true`. Probe skips it. |
-| `localhost` | `Text` | No dot. Still a host. |
+| `http://` or `https://` URL | `Url` | Same host/port rules as HAR. Drop `data:`, `blob:`, `about:`, `chrome:`. |
+| `mailto:` or `name@host` | `Url` | Host is the part after `@`. |
+| Bare domain | `Url` | Two or more labels. Each label 1–63, `[a-z0-9-]`, no leading or trailing hyphen. Last label is letters, length 2–24. |
+| Bare IPv4 | `Url` | `IsAddress=true`. Probe skips it. |
+| `localhost` | `Url` | No dot. Still a host. |
 
 Reject, do not emit:
 
@@ -202,7 +205,7 @@ Hit count = times that host was seen. Ports only from URLs that carried one. No 
 3. Probe DNS walks the list on the current Server / Port / Interface / Source. Cancel stops the walk. Lookup and pulse cannot run at the same time.
 4. An IP-literal host shows Skipped and is not sent to `LookupAsync`.
 5. A truncated or non-HAR file sets the status line and does not throw.
-6. `dotnet test` for the Har project and the LogParser text tests is green. Suite host tests stay green and off the wire.
+6. `dotnet test` for the Har project and the LogParser.Url tests is green. Suite host tests stay green and off the wire.
 7. A `.txt` that is a pasted email or a sheet, containing `https://q2prod.idbs-cloud.com:8443/` and `user@q2valprod.services.idbs-cloud.com` and the bare name `login.microsoftonline.com`, yields those three hosts. `notes.txt` in the same file does not. Probe DNS runs on that list the same way it runs on a HAR.
 
 ---
@@ -229,7 +232,7 @@ Hit count = times that host was seen. Ports only from URLs that carried one. No 
 | Parser does not probe | LogParser must stay usable without a NIC and without Helpers.Network. |
 | A + AAAA only | The question is "does the name resolve." Eight types is the Lookup button. |
 | No `ILogParser` | Two doors, one result shape. An interface still has no second implementation that needs swapping. |
-| Text scrape lives in LogParser, not behind a keystroke | Owner's intake is a dump, a pasted email, or a sheet saved as `.txt`. A hidden gesture fails that. File filter is the easter egg. |
+| Text scrape lives in LogParser.Url, not in Har and not behind a keystroke | Owner's intake is a dump, a pasted email, or a sheet saved as `.txt`. A hidden gesture fails that. File filter is the easter egg. The name Url does not shrink the contract to scheme-URLs. |
 | Valid HAR wins over the scrape | Structured read keeps port 8443 and the source flags. Scraping a HAR would also work and would be worse. |
 
 ### Rejected
