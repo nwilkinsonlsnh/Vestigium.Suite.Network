@@ -2,7 +2,7 @@
 
 **Document ID:** VEST-SUITE-NETWORK-ROUTEIQ-PLN-PR07
 **Version:** PR07
-**Status:** Live. Step 2 done. Port catalog and async door are not started.
+**Status:** Live. Step 3 done. Async door is not started.
 **Date:** 6 October 2026
 **Binding:** `PR07 -- Requirements.md`. This file wins on order. Requirements win on the cut. PR06 wins on the log. PR05 wins on the load path. PR04 wins on vendor lookup, ICMP, and the settings path.
 
@@ -16,6 +16,7 @@ Two repos. The library commit lands and publishes before the host pin moves. Do 
 
 Step 1 closed 6 October 2026. Requirements accepted. This plan is the paper you implement.
 Step 2 closed 6 October 2026. `GetNeighbors(RouteFamily)` on Helpers `beede9f`. Windows reads one family. Name map built once. Parameterless call still means `All`. Route reads unchanged. Not published. Pin stays `1.4.5`.
+Step 3 closed 6 October 2026. Protocol lookup on Helpers `2dd1e0e`. `TryByPort(443)` stays https. `TryService` does not log. 860 was not added. Not published.
 
 The folder stays live until the owner accepts the slice.
 
@@ -33,16 +34,16 @@ Out: a public second parser. A host catalog that "stays small." A `NetworkJob` p
 ## 1. Order
 
 | Step | Closes | Repo / files | Exit |
-|---|---|---|
+|---|---|---|---|
 | 1 | Paper | This folder. Keeper. | Done. |
 | 2 | L1, L2, L3 | `Vestigium.Helpers` `NetworkWindowsTables.cs`, `NetworkLinuxTables.cs`, `NetworkStackEngine.cs`, `NetworkHelper.cs`. | Done. `beede9f`. Family filter. Name map once. Parameterless call unchanged. |
-| 3 | L4–L8, T-A, T-B, T-C | `NetworkPorts.cs`, `NetworkPortGuess.cs` only if the record needs a second transport, `NetworkHelper.Ports.cs`, Helpers tests. | Protocol lookup matches the table in requirements. `TryByPort(443)` still https. No new EVENTID. |
+| 3 | L4–L8, T-A, T-B, T-C | `NetworkPorts.cs`, `NetworkHelper.Ports.cs`, `NetworkPortCatalogTests.cs`. | Done. `2dd1e0e`. Protocol lookup. `TryByPort(443)` still https. No new EVENTID. |
 | 4 | L9–L12, T-F | New `NetworkHelper.Async.cs`. One test file. | Six `*Async` doors. Token before the hop throws. No `NetworkJob`. No second log line. |
 | 5 | Publish | Helpers package `1.4.6`. README surface row for `GetNeighbors(family)`, `TryService`, and the async doors. | Package on NuGet. Not a suite edit. |
 | 6 | R1–R3, R5–R10, T-D, T-E | Suite: `MainViewModel.cs`, `ConnectionWatch.cs`, `NetBiosSummary.cs`, `HelpView.xaml.cs`. Delete `NeighborTables.cs`, `ConnectionServices.cs`. | Host awaits the library. Stamp hop gone. Grids and label behavior hold. |
 | 7 | R4 | `Directory.Build.props` pin `1.4.6`. | Pin matches the package that step 6 compiled against. |
 
-`NeighborGridRow.cs` is not edited. `PrintCoordinator.cs` is not edited. `RouteIqLog.cs` is not edited. Shell is not edited. PingIQ, DnsIQ, and NicIQ are not edited.
+`NeighborGridRow.cs` is not edited. `PrintCoordinator.cs` is not edited. `RouteIqLog.cs` is not edited. Shell is not edited. PingIQ, DnsIQ, and NicIQ are not edited. `NetworkPortGuess.cs` was not edited. The record already had a transport.
 
 ---
 
@@ -60,15 +61,15 @@ Linux `GetNeighbors(Pv6)` returns empty. `/proc/net/arp` is IPv4. No new proc pa
 
 ## 3. Step 3 — one port catalog
 
-`NetworkPorts` keeps `ByPort` for `TryByPort`. Add a second index keyed by transport and port.
+Closed 6 October 2026. Helpers `2dd1e0e`.
 
-Lookup order: exact TCP or UDP row, then `Both`. `TryByPort` stays first-row-wins on the existing catalog order so 443 remains https.
+`ByPort` is first-row-wins, so `TryByPort(443)` stays `https`. `Try` looks up the exact transport, then `Both`. `Try("UDP", 443)` is `quic`. `Try("TCP", 514)` is `rsh`. `Try("UDP", 514)` is `syslog`.
 
-Add the rows in L5. Do not add 860. Aliases go in the name index only.
+Added rows: 443/UDP quic, 512 rexec, 513 rlogin, 514/TCP rsh, 524 ncp, 548 afp, 691 msexch-routing, 749 kerberos-adm. Aliases only: `dhcp-server`, `snmptrap`, `dns-over-tls`, `ike`, `portmap`, `svrloc`. 860 was not added. 3260 stays `iscsi`.
 
-`NetworkHelper.TryService` trims the protocol, treats blank as TCP, and returns the guess name. It does not log.
+`NetworkHelper.TryService` trims the protocol, treats blank as TCP, and returns the guess name. It does not log. A miss is false and an empty name.
 
-Tests are table locks. No socket.
+Locks are `NetworkPortCatalogTests`. No socket. No new EVENTID.
 
 ---
 
@@ -144,3 +145,4 @@ Route-table name-lookup cleanup. Grid-row multicast helper. Exe publish. A Helpe
 | PR07 | 6 Oct 2026 | Plan opened. Step 1 done. Library first, then host delete, then pin. |
 | PR07 | 6 Oct 2026 | Step 4 is the async print door in a new file. Host step drops `Task.Run` on prints and the name stamp. |
 | PR07 | 6 Oct 2026 | Step 2. Family filter and one name map. Helpers `beede9f`. Not published. |
+| PR07 | 6 Oct 2026 | Step 3. Protocol lookup and `TryService`. Helpers `2dd1e0e`. Not published. |
