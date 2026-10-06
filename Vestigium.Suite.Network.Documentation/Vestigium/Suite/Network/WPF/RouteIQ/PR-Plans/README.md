@@ -66,6 +66,6 @@ PR01, PR03, PR04, PR05, and PR06 are under `Completed/`. There is no PR02. Do no
 Print routes, neighbors, connections, NetBIOS, and LMHOSTS. KQL, export, settings, watch, Help.
 PR05 keeps those prints off the UI thread and starts them together at splash.
 PR06 writes what the host did, and hands trapped failures to `VestigiumLog.Thrown`.
-PR07 deletes the host neighbor parser and the host port catalog, and awaits Helpers.Network `1.4.6` for the print hop.
+PR07 deletes the host neighbor parser and the host port catalog, and awaits Helpers.Network `1.5.0` for the print hop.
 No mutate form. No default-route button. No row dump in the log.
 Source: `src/Vestigium.Suite.Network.RouteIQ`
