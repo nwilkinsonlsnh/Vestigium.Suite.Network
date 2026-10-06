@@ -108,8 +108,11 @@ public sealed class RouteIqPrintCoordinatorTests
         var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         PrintScope first = default;
+        var captured = 0;
         PrintSource slow = async (scope, _) =>
         {
+            if (Interlocked.Exchange(ref captured, 1) != 0)
+                return;
             first = scope;
             entered.TrySetResult();
             await release.Task;
