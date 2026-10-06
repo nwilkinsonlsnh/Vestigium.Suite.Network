@@ -10,9 +10,9 @@ This file is the **definition of done for PR04**. It is not a new product specif
 
 Baseline is the PR03 exe: Lookup, Probe pulse, persist, closed combos, Dashboard charts.
 
-**One sentence:** Open a Chrome HAR, list every host the browser had to reach, and ask DNS whether each name resolves.
+**One sentence:** Open a Chrome HAR, or any UTF-8 text dump saved as `.txt` or `.har`, list every host in it, and ask DNS whether each name resolves.
 
-**This version is not** a HAR analyzer. No waterfall, no timings, no cookies, no header dump, no body decode, no status-code story, no request replay, no TLS inspection.
+**This version is not** a HAR analyzer. No waterfall, no timings, no cookies, no header dump, no body decode, no status-code story, no request replay, no TLS inspection. The text door is a scrape, not a document parser.
 
 ---
 
@@ -22,8 +22,8 @@ DnsIQ does not grow a parser. `Vestigium.Helpers.Network` does not grow a parser
 
 | Project | Owns | Does not own |
 |---|---|---|
-| `Vestigium.Helpers.LogParser` | Shared host model. Format id. Read result. | HAR JSON. Sockets. WPF. |
-| `Vestigium.Helpers.LogParser.Har` | HAR 1.2 read. Map entries to that model. | DNS. UI. A second log format. |
+| `Vestigium.Helpers.LogParser` | Shared host model. Text scrape of URLs and domain names. | HAR JSON. Sockets. WPF. A Word/Excel parser. |
+| `Vestigium.Helpers.LogParser.Har` | HAR 1.2 read. Map entries to that model. | DNS. UI. The text scrape. A second log format. |
 | `Vestigium.Suite.Network.DnsIQ` | Open file. Grid. Probe loop. | JSON. A private host list type. |
 
 Suite rule holds: DnsIQ takes **packages**, not a project reference into Helpers.
@@ -67,12 +67,13 @@ Types, nothing else:
 
 | Type | Role |
 |---|---|
-| `LogFormat` | `Unknown`, `Har`. One value is enough. |
-| `LogHostSource` | Flags: `Request`, `Redirect`, `Location`, `Page`. |
+| `LogFormat` | `Unknown`, `Har`, `Text`. |
+| `LogHostSource` | Flags: `Request`, `Redirect`, `Location`, `Page`, `Text`. |
 | `LogHost` | Host (ASCII, lower, no trailing dot), ports seen, hit count, sources, `IsAddress` when the host is already an IP. |
 | `LogReadResult` | Format, entry count, page count, hosts, warnings. |
+| `TextHostReader` | Scan UTF-8 text for URLs and domain names. The dump / email / spreadsheet door. |
 
-No `ILogParser`. No plugin host. The second format does not exist. A shared bag of types is the seam.
+No `ILogParser`. No plugin host. HAR is structured. Text is a scrape. That is two doors, not a framework.
 
 ### R04-02 HAR read (`Vestigium.Helpers.LogParser.Har`)
 
@@ -109,14 +110,15 @@ Rules:
 
 ### R04-03 DnsIQ opens the file
 
-- File menu: **Open HAR…** (`*.har`). No drag-drop. No last-path persist.
-- New top tab **HAR**, same HorizontalTab strip. Disabled until a file parses with zero throw. Lookup does not unlock it. Probe pulse does not unlock it.
+- File menu: **Open capture…** Filter `*.har;*.txt`, plus HAR-only and text-only. No drag-drop. No last-path persist. No paste box. The owner pastes the email or the sheet into a `.txt` and opens that file.
+- Route: `.har` whose content is a HAR object → `HarReader`. Anything else that is UTF-8 text, including `.txt` and a `.har` that is not JSON, → `TextHostReader`. A valid HAR is not scraped a second time.
+- New top tab **HAR**, same HorizontalTab strip. Disabled until a file parses with zero throw. Lookup does not unlock it. Probe pulse does not unlock it. The tab name stays HAR. Text rows are the same grid.
 - Grid, read-only: Host, Ports, Hits, Sources, DNS, Answers.
 - Empty host list is a successful parse. Status: `No hosts`. Grid empty. Probe does nothing.
-- Bad file: status line = the exception message. Grid cleared. Tab stays disabled. No throw out of the UI.
+- Bad file (oversize, binary, undecodable): status line = the exception message. Grid cleared. Tab stays disabled. No throw out of the UI.
 - Opening a second file replaces the grid and clears prior DNS columns.
 
-Not on this page: the Lookup answer grid, Requests, Seconds, charts.
+Not on this page: the Lookup answer grid, Requests, Seconds, charts. Not a hidden keystroke. The owner called this an easter egg. Hiding it breaks the dump workflow, so the door is the file filter, not a secret.
 
 ### R04-04 DNS probe uses the live knobs
 
@@ -151,6 +153,35 @@ LogParser.Har tests, off the wire, against trimmed corpus fixtures:
 - Missing `log.entries` throws.
 - DnsIQ host tests do not open a socket and do not parse HAR JSON themselves.
 
+### R04-06 Text scrape (`TextHostReader` in LogParser)
+
+This is the dump door. A copied email, a spreadsheet saved as `.txt`, a notes file, or a `.har` that is not JSON. Same probe as R04-04. Same 64 MB cap. UTF-8, BOM allowed.
+
+Door:
+
+```
+TextHostReader.Read(Stream)    → LogReadResult   Format = Text
+TextHostReader.ReadFile(path)  → LogReadResult
+```
+
+Pull a host from:
+
+| Hit | Source flag | Notes |
+|---|---|---|
+| `http://` or `https://` URL | `Text` | Same host/port rules as HAR. Drop `data:`, `blob:`, `about:`, `chrome:`. |
+| `mailto:` or `name@host` | `Text` | Host is the part after `@`. |
+| Bare domain | `Text` | Two or more labels. Each label 1–63, `[a-z0-9-]`, no leading or trailing hyphen. Last label is letters, length 2–24. |
+| Bare IPv4 | `Text` | `IsAddress=true`. Probe skips it. |
+| `localhost` | `Text` | No dot. Still a host. |
+
+Reject, do not emit:
+
+- A token whose last label is a file extension: `txt`, `csv`, `tsv`, `xlsx`, `xls`, `json`, `har`, `log`, `xml`, `pdf`, `png`, `jpg`, `jpeg`, `gif`, `dll`, `exe`, `config`, `md`. `report.txt` in a sheet is a filename, not a zone.
+- A token with a label that is only digits, unless the whole token is an IPv4.
+- Single-letter labels (`e.g.`, `U.S.`).
+
+Hit count = times that host was seen. Ports only from URLs that carried one. No public-suffix list. No Word, no xlsx, no HTML parser. If it is not UTF-8 text in a `.txt` or a failed `.har`, it is out.
+
 ---
 
 ## Must not change in PR04
@@ -171,7 +202,8 @@ LogParser.Har tests, off the wire, against trimmed corpus fixtures:
 3. Probe DNS walks the list on the current Server / Port / Interface / Source. Cancel stops the walk. Lookup and pulse cannot run at the same time.
 4. An IP-literal host shows Skipped and is not sent to `LookupAsync`.
 5. A truncated or non-HAR file sets the status line and does not throw.
-6. `dotnet test` for the Har project is green. Suite host tests stay green and off the wire.
+6. `dotnet test` for the Har project and the LogParser text tests is green. Suite host tests stay green and off the wire.
+7. A `.txt` that is a pasted email or a sheet, containing `https://q2prod.idbs-cloud.com:8443/` and `user@q2valprod.services.idbs-cloud.com` and the bare name `login.microsoftonline.com`, yields those three hosts. `notes.txt` in the same file does not. Probe DNS runs on that list the same way it runs on a HAR.
 
 ---
 
@@ -182,8 +214,9 @@ LogParser.Har tests, off the wire, against trimmed corpus fixtures:
 - TCP / TLS reachability on the observed port (8443). Different question. Different tool.
 - Parallel lookups
 - Last-file persist, drag-drop, multi-file
-- Fiddler SAZ, ETL, netlog
-- `ILogParser` until a second format exists
+- Fiddler SAZ, ETL, netlog, `.xlsx`, `.docx`, `.csv` as a typed format (save the sheet as `.txt`)
+- `ILogParser` until a third door exists
+- A paste box. The file is the intake.
 
 ---
 
@@ -195,13 +228,17 @@ LogParser.Har tests, off the wire, against trimmed corpus fixtures:
 | SharePoint stays | It is in the capture. A "primary page" filter is a guess. The owner can ignore the row. |
 | Parser does not probe | LogParser must stay usable without a NIC and without Helpers.Network. |
 | A + AAAA only | The question is "does the name resolve." Eight types is the Lookup button. |
-| No `ILogParser` | One format. An interface with one implementation is a stunt. |
+| No `ILogParser` | Two doors, one result shape. An interface still has no second implementation that needs swapping. |
+| Text scrape lives in LogParser, not behind a keystroke | Owner's intake is a dump, a pasted email, or a sheet saved as `.txt`. A hidden gesture fails that. File filter is the easter egg. |
+| Valid HAR wins over the scrape | Structured read keeps port 8443 and the source flags. Scraping a HAR would also work and would be worse. |
 
 ### Rejected
 
 | Idea | Why out |
 |---|---|
 | Parse HAR inside DnsIQ | Next format would fork the exe. Owner already split the projects. |
+| Scrape a valid HAR instead of reading it | Loses ports and throws away the field map the corpus was built to prove. |
+| Open `.xlsx` natively | Owner already said the sheet is saved as `.txt`. ClosedXml in this slice is a stunt. |
 | Put HAR in Helpers.Network | Network is the protocol. A capture file is not a DNS message. |
 | Probe only the page-title host | Hides `login.microsoftonline.com` and both `aadcdn` hosts. |
 | Treat server IP as a name to resolve | It is already an address. Asking DNS is the wrong question. |

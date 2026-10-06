@@ -34,7 +34,7 @@ Product papers live **outside** this folder:
 |---|---|
 | [Requirements_v1.2.md](../Requirements_v1.2.md) | Window. Persist. Port. Combos. Probe prelude. Dashboard. Chrome. Unchanged by PR04 until fold. |
 | [Design_v1.2.md](../Design_v1.2.md) | Types and flow. Unchanged by PR04 until fold. |
-| [PR04 -- Requirements.md](PR04/PR04%20--%20Requirements.md) | HAR host extract + DNS probe delta. |
+| [PR04 -- Requirements.md](PR04/PR04%20--%20Requirements.md) | HAR host extract, text scrape of `.txt` dumps, DNS probe. |
 | [PR04 -- Implementation Plan.md](PR04/PR04%20--%20Implementation%20Plan.md) | Slice order + test gate. |
 | Helpers.Network 1.2.0 | Protocol |
 | LogParser 1.0.0 / LogParser.Har 1.0.0 | Capture read. Not packed yet. |
