@@ -9,6 +9,7 @@
       <StackPanel Style="{StaticResource StackPanel.Toolbar}" Orientation="Horizontal" HorizontalAlignment="Left">
         <Button Content="Refresh" Style="{StaticResource Button.Primary}" Command="{Binding RefreshNeighborsCommand}" Padding="16,4" Margin="0,0,8,0" />
         <Button Content="Copy" Style="{StaticResource Button.Secondary}" Command="{Binding CopyNeighborsCommand}" Padding="16,4" />
+        <TextBlock Style="{StaticResource TextBlock.Caption}" Text="{Binding NeighborSummary}" VerticalAlignment="Center" Margin="12,0,0,0" />
       </StackPanel>
       <query:VestigiumQueryBar Margin="0,8,0,0"
                                Text="{Binding NeighborQuery, UpdateSourceTrigger=PropertyChanged}"
@@ -19,7 +20,6 @@
                                LostFocus="OnNeighborCommit"
                                PreviewKeyDown="OnNeighborKey"
                                PinRequested="OnNeighborPin" />
-      <TextBlock Style="{StaticResource TextBlock.Caption}" Text="{Binding NeighborSummary}" Margin="0,8,0,0" />
     </StackPanel>
     <Grid>
       <Grid.RowDefinitions>
