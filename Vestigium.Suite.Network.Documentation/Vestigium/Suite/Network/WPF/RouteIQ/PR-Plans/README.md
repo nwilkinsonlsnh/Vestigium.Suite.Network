@@ -50,7 +50,7 @@ When the slice finishes, move the whole `PRnn/` folder under `Completed/`. Then 
 | [PR04 -- Requirements.md](Completed/PR04/PR04%20--%20Requirements.md) | Revision 2 window. Protocol honesty. |
 | [PR05 -- Requirements.md](Completed/PR05/PR05%20--%20Requirements.md) | Startup and refresh performance. |
 | [PR06 -- Requirements.md](Completed/PR06/PR06%20--%20Requirements.md) | Host story and exception catalog. |
-| [PR07 -- Requirements.md](PR07/PR07%20--%20Requirements.md) | Neighbor parser and port catalog leave the host. |
+| [PR07 -- Requirements.md](PR07/PR07%20--%20Requirements.md) | Neighbor parser, port catalog, and print hop leave the host. |
 | [PR07 -- Implementation Plan.md](PR07/PR07%20--%20Implementation%20Plan.md) | The slice we are building now. |
 
 If a plan and PR07 disagree on the offload, PR07 requirements win. The plan wins on order.
@@ -66,6 +66,6 @@ PR01, PR03, PR04, PR05, and PR06 are under `Completed/`. There is no PR02. Do no
 Print routes, neighbors, connections, NetBIOS, and LMHOSTS. KQL, export, settings, watch, Help.
 PR05 keeps those prints off the UI thread and starts them together at splash.
 PR06 writes what the host did, and hands trapped failures to `VestigiumLog.Thrown`.
-PR07 deletes the host neighbor parser and the host port catalog once Helpers.Network `1.4.6` can answer both.
+PR07 deletes the host neighbor parser and the host port catalog, and awaits Helpers.Network `1.4.6` for the print hop.
 No mutate form. No default-route button. No row dump in the log.
 Source: `src/Vestigium.Suite.Network.RouteIQ`
