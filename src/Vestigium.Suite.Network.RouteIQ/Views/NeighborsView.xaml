@@ -19,6 +19,7 @@
                                LostFocus="OnNeighborCommit"
                                PreviewKeyDown="OnNeighborKey"
                                PinRequested="OnNeighborPin" />
+      <TextBlock Style="{StaticResource TextBlock.Caption}" Text="{Binding NeighborSummary}" Margin="0,8,0,0" />
     </StackPanel>
     <Grid>
       <Grid.RowDefinitions>

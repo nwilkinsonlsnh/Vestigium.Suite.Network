@@ -19,6 +19,7 @@
                                LostFocus="OnRouteCommit"
                                PreviewKeyDown="OnRouteKey"
                                PinRequested="OnRoutePin" />
+      <TextBlock Style="{StaticResource TextBlock.Caption}" Text="{Binding RouteSummary}" Margin="0,8,0,0" />
     </StackPanel>
     <Grid>
       <Grid.RowDefinitions>

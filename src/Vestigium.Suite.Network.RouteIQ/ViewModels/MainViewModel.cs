@@ -160,6 +160,18 @@ public sealed partial class MainViewModel : ObservableObject
         }
     }
 
+    [ObservableProperty]
+    private string _routeSummary = "IPv4 0. IPv6 0.";
+
+    [ObservableProperty]
+    private string _neighborSummary = "IPv4 0. IPv6 0. Total 0.";
+
+    private string NeighborGlance()
+        => Glance("IPv4", Ipv4Neighbors.Count, "IPv6", Ipv6Neighbors.Count) + " Total " + (Ipv4Neighbors.Count + Ipv6Neighbors.Count).ToString(CultureInfo.InvariantCulture) + ".";
+
+    private static string Glance(string leftName, int left, string rightName, int right)
+        => leftName + " " + left.ToString(CultureInfo.InvariantCulture) + ". " + rightName + " " + right.ToString(CultureInfo.InvariantCulture) + ".";
+
     private static Dictionary<string, string?> SourceBag(string source)
         => new(StringComparer.Ordinal) { ["source"] = source };
 
@@ -170,7 +182,11 @@ public sealed partial class MainViewModel : ObservableObject
             var rows = await Task.Run(() => ByAddress(NetworkHelper.GetRoutes(RouteFamily.Pv4), row => row.Destination), cancellationToken).ConfigureAwait(false);
             if (!scope.IsCurrent)
                 return;
-            await OnUi(() => Replace(Ipv4Routes, rows));
+            await OnUi(() =>
+            {
+                Replace(Ipv4Routes, rows);
+                RouteSummary = Glance("IPv4", Ipv4Routes.Count, "IPv6", Ipv6Routes.Count);
+            });
             RouteIqLog.PrintApplied("IPv4 routes", rows.Count, scope.Generation);
         }
         catch (Exception ex)
@@ -191,7 +207,11 @@ public sealed partial class MainViewModel : ObservableObject
             var rows = await Task.Run(() => ByAddress(NetworkHelper.GetRoutes(RouteFamily.Pv6), row => row.Destination), cancellationToken).ConfigureAwait(false);
             if (!scope.IsCurrent)
                 return;
-            await OnUi(() => Replace(Ipv6Routes, rows));
+            await OnUi(() =>
+            {
+                Replace(Ipv6Routes, rows);
+                RouteSummary = Glance("IPv4", Ipv4Routes.Count, "IPv6", Ipv6Routes.Count);
+            });
             RouteIqLog.PrintApplied("IPv6 routes", rows.Count, scope.Generation);
         }
         catch (Exception ex)
@@ -213,12 +233,20 @@ public sealed partial class MainViewModel : ObservableObject
             if (!scope.IsCurrent)
                 return;
             var shown4 = ByAddress(v4, row => row.Address);
-            await OnUi(() => Replace(Ipv4Neighbors, Blank(shown4)));
+            await OnUi(() =>
+            {
+                Replace(Ipv4Neighbors, Blank(shown4));
+                NeighborSummary = NeighborGlance();
+            });
             var v6 = await Task.Run(NeighborTables.ReadIpv6, cancellationToken).ConfigureAwait(false);
             if (!scope.IsCurrent)
                 return;
             var shown6 = ByAddress(v6, row => row.Address);
-            await OnUi(() => Replace(Ipv6Neighbors, Blank(shown6)));
+            await OnUi(() =>
+            {
+                Replace(Ipv6Neighbors, Blank(shown6));
+                NeighborSummary = NeighborGlance();
+            });
             RouteIqLog.PrintApplied("Neighbors", shown4.Count + shown6.Count, scope.Generation);
             StartEnrich(scope, shown4, shown6);
             _ = StampInterfaceNames(scope, shown4, shown6);
