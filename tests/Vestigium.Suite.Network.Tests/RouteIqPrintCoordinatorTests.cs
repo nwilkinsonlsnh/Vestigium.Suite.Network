@@ -20,7 +20,7 @@ public sealed class RouteIqPrintCoordinatorTests
             await release.Task;
         };
 
-        var coordinator = Create(source, progress);
+        var coordinator = Create(source, progress.Add);
         var run = coordinator.Request();
         await opened.Task;
 
