@@ -2,7 +2,7 @@
 
 **Document ID:** VEST-SUITE-NETWORK-ROUTEIQ-PLN-PR07
 **Version:** PR07
-**Status:** Live. Step 3 done. Async door is not started.
+**Status:** Live. Step 4 done. Package and host cut are not started.
 **Date:** 6 October 2026
 **Binding:** `PR07 -- Requirements.md`. This file wins on order. Requirements win on the cut. PR06 wins on the log. PR05 wins on the load path. PR04 wins on vendor lookup, ICMP, and the settings path.
 
@@ -17,6 +17,7 @@ Two repos. The library commit lands and publishes before the host pin moves. Do 
 Step 1 closed 6 October 2026. Requirements accepted. This plan is the paper you implement.
 Step 2 closed 6 October 2026. `GetNeighbors(RouteFamily)` on Helpers `beede9f`. Windows reads one family. Name map built once. Parameterless call still means `All`. Route reads unchanged. Not published. Pin stays `1.4.5`.
 Step 3 closed 6 October 2026. Protocol lookup on Helpers `2dd1e0e`. `TryByPort(443)` stays https. `TryService` does not log. 860 was not added. Not published.
+Step 4 closed 6 October 2026. Async print doors on Helpers `791bc0d`. Six methods. Token before the hop throws. Not a `NetworkJob`. No second log line. `NetworkHelper.cs` was not reopened. Not published.
 
 The folder stays live until the owner accepts the slice.
 
@@ -38,7 +39,7 @@ Out: a public second parser. A host catalog that "stays small." A `NetworkJob` p
 | 1 | Paper | This folder. Keeper. | Done. |
 | 2 | L1, L2, L3 | `Vestigium.Helpers` `NetworkWindowsTables.cs`, `NetworkLinuxTables.cs`, `NetworkStackEngine.cs`, `NetworkHelper.cs`. | Done. `beede9f`. Family filter. Name map once. Parameterless call unchanged. |
 | 3 | L4–L8, T-A, T-B, T-C | `NetworkPorts.cs`, `NetworkHelper.Ports.cs`, `NetworkPortCatalogTests.cs`. | Done. `2dd1e0e`. Protocol lookup. `TryByPort(443)` still https. No new EVENTID. |
-| 4 | L9–L12, T-F | New `NetworkHelper.Async.cs`. One test file. | Six `*Async` doors. Token before the hop throws. No `NetworkJob`. No second log line. |
+| 4 | L9–L12, T-F | `NetworkHelper.Async.cs`, `NetworkPrintAsyncTests.cs`. | Done. `791bc0d`. Six doors. Cancel before the hop throws. Not a `NetworkJob`. |
 | 5 | Publish | Helpers package `1.4.6`. README surface row for `GetNeighbors(family)`, `TryService`, and the async doors. | Package on NuGet. Not a suite edit. |
 | 6 | R1–R3, R5–R10, T-D, T-E | Suite: `MainViewModel.cs`, `ConnectionWatch.cs`, `NetBiosSummary.cs`, `HelpView.xaml.cs`. Delete `NeighborTables.cs`, `ConnectionServices.cs`. | Host awaits the library. Stamp hop gone. Grids and label behavior hold. |
 | 7 | R4 | `Directory.Build.props` pin `1.4.6`. | Pin matches the package that step 6 compiled against. |
@@ -75,13 +76,13 @@ Locks are `NetworkPortCatalogTests`. No socket. No new EVENTID.
 
 ## 4. Step 4 — async print door
 
-New `NetworkHelper.Async.cs`. Six methods. Each checks the token, then `Task.Run` of the matching sync method. `ConfigureAwait(false)`. Do not catch and wrap. A throw from the sync method surfaces as the task exception.
+Closed 6 October 2026. Helpers `791bc0d`.
 
-`GetNeighborsAsync` takes `RouteFamily` and forwards it. `GetRoutesAsync` does the same. `GetConnectionsAsync` takes the existing query.
+`NetworkHelper.Async.cs` has `GetRoutesAsync`, `GetNeighborsAsync`, `GetConnectionsAsync`, `GetLmHostsAsync`, `GetNetBiosNamesAsync`, and `GetNetBiosStatsAsync`. Each throws if the token is already cancelled, then `Task.Run` of the sync method with `ConfigureAwait(false)`. No catch. No log call. No `NetworkJob`.
 
-No `NetworkJob` constructor. No progress event. No log call in this file.
+The token does not abort `iphlpapi` once the call is inside. `GetNeighborsAsync` and `GetRoutesAsync` forward `RouteFamily`. `GetConnectionsAsync` forwards the query.
 
-T-F cancels before the hop and expects `OperationCanceledException`. It does not need a live stack if the token is cancelled first.
+T-F is `NetworkPrintAsyncTests`. A cancelled token on `GetRoutesAsync` throws `OperationCanceledException`. The return type is `Task`, not `NetworkJob`.
 
 ---
 
@@ -146,3 +147,4 @@ Route-table name-lookup cleanup. Grid-row multicast helper. Exe publish. A Helpe
 | PR07 | 6 Oct 2026 | Step 4 is the async print door in a new file. Host step drops `Task.Run` on prints and the name stamp. |
 | PR07 | 6 Oct 2026 | Step 2. Family filter and one name map. Helpers `beede9f`. Not published. |
 | PR07 | 6 Oct 2026 | Step 3. Protocol lookup and `TryService`. Helpers `2dd1e0e`. Not published. |
+| PR07 | 6 Oct 2026 | Step 4. Six async print doors. Helpers `791bc0d`. Not published. |
