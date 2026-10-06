@@ -120,7 +120,10 @@ public sealed partial class MainViewModel : ObservableObject
 
     private void RaiseCanExecute()
     {
-        RefreshCommand.NotifyCanExecuteChanged();
+        RefreshRoutesCommand.NotifyCanExecuteChanged();
+        RefreshNeighborsCommand.NotifyCanExecuteChanged();
+        RefreshNetBiosCommand.NotifyCanExecuteChanged();
+        RefreshLmHostsCommand.NotifyCanExecuteChanged();
         CopyCommand.NotifyCanExecuteChanged();
         CopyNeighborsCommand.NotifyCanExecuteChanged();
         CopyNetBiosCommand.NotifyCanExecuteChanged();
