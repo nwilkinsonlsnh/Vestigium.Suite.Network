@@ -2,7 +2,7 @@
 
 **Document ID:** VEST-SUITE-NETWORK-ROUTEIQ-PLN-PR06
 **Version:** PR06
-**Status:** Live. Step 1 done. Not moved to Completed.
+**Status:** Live. Step 2 done. Not moved to Completed.
 **Date:** 6 October 2026
 **Binding:** `PR06 -- Requirements.md`. This file wins on order. Requirements win on the log. PR05 wins on the load path. PR04 wins on vendor lookup, ICMP, and the settings path.
 
@@ -13,6 +13,7 @@ One pass per file. A later step that reopens a file from an earlier step is rewo
 ## 0. Done
 
 Step 1 closed 6 October 2026. Requirements accepted. This plan is the paper you implement.
+Step 2 closed 6 October 2026. `RouteIqCatalog` registers the 16 story rows and the `RouteIQ` / `Host` taxonomy. `RouteIqLog` owns the fixed messages. `Fail` writes `Thrown`, then the story. Cancel is rejected. The sink is the test seam.
 
 The folder stays live until the owner accepts the slice.
 
@@ -34,7 +35,7 @@ Each step names the files it may touch. A file not in the row is out of that ste
 | Step | Closes | Files | Exit |
 |---|---|---|---|
 | 1 | Paper | This folder. Keeper. | Done. Requirements and this plan are the live papers. |
-| 2 | R1 catalog, R2, R3 door, T-A, T-C | `ViewModels/RouteIqCatalog.cs`. `ViewModels/RouteIqLog.cs`. `tests/.../RouteIqLogTests.cs`. | Catalog rows match section 3. `Fail` calls the sink once and does not throw. Cancel does not call `Fail`. MESSAGE constants cannot take a row. |
+| 2 | R1 catalog, R2, R3 door, T-A, T-C | `ViewModels/RouteIqCatalog.cs`. `ViewModels/RouteIqLog.cs`. `tests/.../RouteIqLogTests.cs`. | Done. Sixteen rows, no 10075. `Fail` is Thrown then the story. Cancel does not call the sink. A MAC or a path is rejected. |
 | 3 | R3–R8, R11, T-B, T-D, T-E | `PrintCoordinator.cs`. `MainViewModel.cs`. `RouteIqExport.cs`. `RouteIqSession.cs`. `ConnectionWatch.cs`. `tests/.../RouteIqPrintCoordinatorTests.cs`. | A run emits one start. A source catch logs one failure and leaves the list. Vendor miss is one line. Settings reason is logged by the session. Watch cancel is not a failure. |
 | 4 | R1 initialize, R9, R10 | `App.xaml.cs`. | Catalog registered in the existing callback. Host started / stopped. Dispatcher and domain unhandled call `Thrown`. |
 
@@ -44,15 +45,11 @@ Each step names the files it may touch. A file not in the row is out of that ste
 
 ## 2. Step 2 — catalog and door
 
-New files only. No host wiring.
+Closed 6 October 2026.
 
-`RouteIqCatalog.Register(VestigiumLoggerOptions)` calls `cfg.RegisterEvent` for the section 3 ids. Category `RouteIQ`. Subcategory `Host`. Full name `Vestigium.Suite.Network.RouteIQ.Events.{Name}`. Ids: 10000, 10005, 10010, 10015, 10020, 10025, 10030, 10035, 10040, 10045, 10050, 10055, 10060, 10065, 10070, 10080. Do not register 10075.
+`RouteIqCatalog.Register` registers the taxonomy, then `cfg.RegisterEvent` for the section 3 ids. Category `RouteIQ`. Subcategory `Host`. Full name `Vestigium.Suite.Network.RouteIQ.Events.{Name}`. No 10075. RouteIQ took a direct `Vestigium.Logging` reference because the shell package is not transitive. `InternalsVisibleTo` is the test seam only.
 
-`RouteIqLog` owns the MESSAGE constants and the properties. Production sink is `VestigiumLog.Information` / `Warning` for the story, and `VestigiumLog.Thrown(ex, status)` with no event id for a failure. Tests replace the sink. Do not wrap `VestigiumLogger`.
-
-`Fail(Exception, storyId, properties)` writes `Thrown` then the story warning. A null exception is a bug, not a silent return. `OperationCanceledException` is not a legal argument to `Fail`. The watch calls `WatchStopped` instead.
-
-No JSONL file in the test. No `%ProgramData%` write.
+`RouteIqLog` owns the MESSAGE constants. A source name must be a coordinator name or `vendor`. Settings take a file name, not a path. Watch stop is `operator` or `cancel`. `Fail` rejects null and `OperationCanceledException`, writes `Thrown`, then the failure story. `Fail(Exception)` is the no-story door for step 4. Production sink is `VestigiumLog`. Tests set `Sink` and do not initialize the logger.
 
 ---
 
@@ -120,3 +117,4 @@ Log viewer. Seal. Archive. Janitor. Custom exception rows. Per-row parse logging
 | Version | Date | Change |
 |---|---|---|
 | PR06 | 6 Oct 2026 | Plan opened. Step 1 done. Log at the existing catch. One start callback. Vendor miss is one line. |
+| PR06 | 6 Oct 2026 | Step 2. Catalog and door. No host wiring. |
