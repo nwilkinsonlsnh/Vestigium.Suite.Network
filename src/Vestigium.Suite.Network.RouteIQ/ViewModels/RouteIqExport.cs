@@ -48,7 +48,7 @@ public sealed partial class MainViewModel
         ExportSelectedCommand.NotifyCanExecuteChanged();
     }
 
-    private bool CanExport() => _tablesReady && _connectionsReady;
+    private bool CanExport() => PrintsReady;
 
     [RelayCommand(CanExecute = nameof(CanExport))]
     private void ExportSelected()
