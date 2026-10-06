@@ -11,6 +11,7 @@ public partial class MainWindow : Window
 {
     private FrameworkElement? _routesPage;
     private FrameworkElement? _connectionsPage;
+    private bool _splashClosed;
 
     public MainWindow(VestigiumDefaultWindowViewModel viewModel)
     {
@@ -26,13 +27,18 @@ public partial class MainWindow : Window
 
     public void ShowSplash(string status, double percent)
     {
+        if (_splashClosed)
+            return;
         Splash.Visibility = Visibility.Visible;
         SplashStatus.Text = status;
         SplashBar.Value = percent;
     }
 
     public void HideSplash()
-        => Splash.Visibility = Visibility.Collapsed;
+    {
+        _splashClosed = true;
+        Splash.Visibility = Visibility.Collapsed;
+    }
 
     public void HoldPages(FrameworkElement routes, FrameworkElement connections)
     {
