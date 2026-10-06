@@ -110,7 +110,7 @@ public sealed partial class MainViewModel
                 TakeSnapshot(rows, now);
             });
             await Paint().ConfigureAwait(false);
-            MarkConnectionsReady();
+            await OnUi(MarkConnectionsReady);
             RouteIqLog.PrintApplied("Connections", rows.Count, scope.Generation);
         }
         catch (Exception ex)
@@ -120,7 +120,7 @@ public sealed partial class MainViewModel
         }
         finally
         {
-            MarkConnectionsReady();
+            await OnUi(MarkConnectionsReady);
             MarkPrinted(scope, ConnectionBit);
         }
     }

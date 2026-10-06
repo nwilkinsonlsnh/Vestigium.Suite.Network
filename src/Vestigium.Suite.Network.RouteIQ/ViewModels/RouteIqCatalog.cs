@@ -12,6 +12,7 @@ public static class RouteIqCatalog
         ArgumentNullException.ThrowIfNull(options);
         var taxonomy = new VestigiumTaxonomy();
         taxonomy.Register(Category, Subcategory);
+        taxonomy.Register("System", "Core");
         options.RegisterTaxonomy(taxonomy);
 
         var registered = new VestigiumEventDefinition[Rows.Length];
