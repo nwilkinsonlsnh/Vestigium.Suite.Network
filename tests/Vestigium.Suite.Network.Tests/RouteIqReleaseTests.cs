@@ -1,3 +1,4 @@
+using System.IO;
 using Xunit;
 
 namespace Vestigium.Suite.Network.Tests;
