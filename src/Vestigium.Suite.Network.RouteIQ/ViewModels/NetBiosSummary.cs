@@ -13,7 +13,6 @@ public sealed partial class MainViewModel
         var node = string.IsNullOrWhiteSpace(stats.NodeType) ? "unknown" : stats.NodeType;
         NetBiosSummary = $"Node {node}. Broadcast {stats.ResolvedByBroadcast}, WINS {stats.ResolvedByNameServer}. Registered broadcast {stats.RegisteredByBroadcast}, WINS {stats.RegisteredByNameServer}.";
     }
-}
 
     private static async Task<T> WithinAsync<T>(Task<T> work, CancellationToken cancellation)
     {
@@ -23,4 +22,4 @@ public sealed partial class MainViewModel
             throw new TimeoutException("NetBIOS did not return in 8 seconds.");
         return await work.ConfigureAwait(false);
     }
-
+}
