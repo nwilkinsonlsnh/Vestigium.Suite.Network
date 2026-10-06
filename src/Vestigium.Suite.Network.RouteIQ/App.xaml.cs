@@ -40,14 +40,11 @@ public partial class App : Application
         VestigiumConverterHost.ServiceProvider = Services;
 
         ShutdownMode = ShutdownMode.OnMainWindowClose;
-        var window = CreateMainWindow();
+        var window = CreateMainWindow(out var host);
         MainWindow = window;
         window.ShowSplash("Opening", 0);
         window.Show();
-        var host = window.HostShell["RouteIQ"]?.Content is FrameworkElement view
-            ? view.DataContext as MainViewModel
-            : null;
-        var prints = host?.BeginPrints() ?? Task.CompletedTask;
+        var prints = host.BeginPrints();
         window.Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, () => _ = FinishSplash(window, prints));
 
         base.OnStartup(e);
@@ -63,7 +60,7 @@ public partial class App : Application
         window.HideSplash();
     }
 
-    private static MainWindow CreateMainWindow()
+    private static MainWindow CreateMainWindow(out MainViewModel host)
     {
         var chrome = Services.GetRequiredService<VestigiumDefaultWindowViewModel>();
         var window = new MainWindow(chrome);
@@ -121,7 +118,7 @@ public partial class App : Application
         var store = new RouteIqSettingsStore(RouteIqSettingsStore.DefaultRoot);
         var session = new RouteIqSession(store, Themes, chrome);
         var settings = new SettingsViewModel(Themes, chrome) { Session = session };
-        var host = new MainViewModel
+        host = new MainViewModel
         {
             Marks = settings.Marks,
             QueryBook = session,
@@ -164,7 +161,7 @@ public partial class App : Application
 
         var routesView = new RoutesView { DataContext = host };
         var connectionsView = new ConnectionsView { DataContext = host };
-        var deck = new Grid();
+        var deck = new Grid { DataContext = host };
         deck.Children.Add(routesView);
         deck.Children.Add(connectionsView);
         window.HoldPages(routesView, connectionsView);
