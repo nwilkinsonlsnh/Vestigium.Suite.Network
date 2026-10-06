@@ -8,7 +8,6 @@
     <StackPanel x:Name="Toolbar" DockPanel.Dock="Top" Margin="0,0,0,12">
       <StackPanel Style="{StaticResource StackPanel.Toolbar}" Orientation="Horizontal" HorizontalAlignment="Left">
         <Button Content="Refresh" Style="{StaticResource Button.Primary}" Command="{Binding RefreshCommand}" Padding="16,4" Margin="0,0,8,0" />
-        <Button Content="Probe" Style="{StaticResource Button.Secondary}" Command="{Binding ProbeCommand}" Padding="16,4" Margin="0,0,8,0" />
         <Button Content="Copy" Style="{StaticResource Button.Secondary}" Command="{Binding CopyNeighborsCommand}" Padding="16,4" />
       </StackPanel>
       <query:VestigiumQueryBar Margin="0,8,0,0"
@@ -30,7 +29,7 @@
       </Grid.RowDefinitions>
       <TextBlock x:Name="Ipv4Caption" Grid.Row="0" Style="{StaticResource TextBlock.Caption}" Text="IPv4 Neighbor Cache" Margin="0,0,0,4" />
       <Border x:Name="Ipv4Host" Grid.Row="1" BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1" Margin="0,0,0,12">
-        <DataGrid x:Name="Ipv4Grid" ItemsSource="{Binding Ipv4Neighbors}" SelectionChanged="OnNeighborSelected" Style="{StaticResource DataGrid.Compact}" RowHeight="28" IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" HeadersVisibility="Column" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+        <DataGrid x:Name="Ipv4Grid" ItemsSource="{Binding Ipv4Neighbors}" Style="{StaticResource DataGrid.Compact}" RowHeight="28" IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" HeadersVisibility="Column" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
           <DataGrid.Columns>
             <DataGridTextColumn Header="Address" Binding="{Binding Address}" Width="160" />
             <DataGridTextColumn Header="Class" Binding="{Binding ClassText}" Width="70" />
@@ -47,7 +46,7 @@
       </Border>
       <TextBlock x:Name="Ipv6Caption" Grid.Row="2" Style="{StaticResource TextBlock.Caption}" Text="IPv6 Neighbor Cache" Margin="0,0,0,4" />
       <Border Grid.Row="3" BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1" Height="276">
-        <DataGrid x:Name="Ipv6Grid" ItemsSource="{Binding Ipv6Neighbors}" SelectionChanged="OnNeighborSelected" Style="{StaticResource DataGrid.Compact}" RowHeight="28" IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" HeadersVisibility="Column" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+        <DataGrid x:Name="Ipv6Grid" ItemsSource="{Binding Ipv6Neighbors}" Style="{StaticResource DataGrid.Compact}" RowHeight="28" IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" HeadersVisibility="Column" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
           <DataGrid.Columns>
             <DataGridTextColumn Header="Address" Binding="{Binding Address}" Width="160" />
             <DataGridTextColumn Header="Class" Binding="{Binding ClassText}" Width="70" />

@@ -16,13 +16,13 @@ public sealed class RouteIqReleaseTests
     }
 
     [Fact]
-    public void Probe_targets_one_address()
+    public void Neighbor_fill_starts_rtt_and_the_probe_button_is_gone()
     {
-        var probe = Method(ViewModel("MainViewModel.cs"), "private async Task Probe()");
-        Assert.Contains("ProbeAddress", probe);
-        Assert.Equal(1, Count(probe, "NetworkHelper.Ping"));
-        Assert.DoesNotContain("ProbeNeighbors", probe);
-        Assert.DoesNotContain("GetNeighbors", probe);
+        var load = Method(ViewModel("MainViewModel.cs"), "private async Task LoadNeighbors(");
+        Assert.Contains("StartRtt", load);
+        var view = File.ReadAllText(Path.Combine(Path.GetDirectoryName(ViewModel("MainViewModel.cs"))!, "..", "Views", "NeighborsView.xaml"));
+        Assert.DoesNotContain("Probe", view);
+        Assert.Contains("private async Task FillRtt", File.ReadAllText(ViewModel("MainViewModel.cs")));
     }
 
     [Fact]

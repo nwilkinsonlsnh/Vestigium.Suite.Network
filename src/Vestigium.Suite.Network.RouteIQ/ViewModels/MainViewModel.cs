@@ -23,7 +23,7 @@ public sealed partial class MainViewModel : ObservableObject
     private const int LmHostBit = 32;
     private const int AllPrints = 63;
     private bool _busy;
-    private bool _probing;
+    private CancellationTokenSource? _rtt;
     private bool _connectionsReady;
     private int _printedGen;
     private int _printedMask;
@@ -116,55 +116,6 @@ public sealed partial class MainViewModel : ObservableObject
         CopyLmHostsCommand.NotifyCanExecuteChanged();
         ExportSelectedCommand.NotifyCanExecuteChanged();
         ExportAllCommand.NotifyCanExecuteChanged();
-        ProbeCommand.NotifyCanExecuteChanged();
-    }
-
-    [ObservableProperty]
-    private string _probeAddress = string.Empty;
-
-    partial void OnProbeAddressChanged(string value) => ProbeCommand.NotifyCanExecuteChanged();
-
-    private bool CanProbe() => !_probing && !_busy && CanPing(ProbeAddress);
-
-    [RelayCommand(CanExecute = nameof(CanProbe))]
-    private async Task Probe()
-    {
-        if (_probing || !CanPing(ProbeAddress))
-            return;
-
-        var address = ProbeAddress.Trim();
-        var row = Ipv4Neighbors.Concat(Ipv6Neighbors).FirstOrDefault(item => string.Equals(item.Address, address, StringComparison.OrdinalIgnoreCase));
-        var target = row is null ? address : EchoTarget(row);
-        _probing = true;
-        ProbeCommand.NotifyCanExecuteChanged();
-        try
-        {
-            var options = new IcmpEchoOptions { Count = 1, Timeout = TimeSpan.FromSeconds(1), Interval = TimeSpan.FromMilliseconds(200), Ttl = 128 };
-            var result = await NetworkHelper.Ping(target, options).RunAsync().ConfigureAwait(true);
-            var rtt = result.Received > 0 && result.AverageMs is not null ? Math.Round(result.AverageMs.Value).ToString(CultureInfo.InvariantCulture) : NoValue;
-            await OnUi(() =>
-            {
-                StampProbe(Ipv4Neighbors, address, rtt);
-                StampProbe(Ipv6Neighbors, address, rtt);
-            });
-            Report(address + " " + rtt);
-            RouteIqLog.ProbeFinished(result.Received > 0);
-        }
-        catch (Exception ex)
-        {
-            await OnUi(() =>
-            {
-                StampProbe(Ipv4Neighbors, address, NoValue);
-                StampProbe(Ipv6Neighbors, address, NoValue);
-            });
-            Report(ex.Message);
-            RouteIqLog.Fail(ex, RouteIqLog.ProbeFailedId);
-        }
-        finally
-        {
-            _probing = false;
-            ProbeCommand.NotifyCanExecuteChanged();
-        }
     }
 
     private void Report(string text) => ReportStatus?.Invoke(text);
@@ -268,6 +219,7 @@ public sealed partial class MainViewModel : ObservableObject
                 Replace(Ipv6Neighbors, packed6);
             });
             RouteIqLog.PrintApplied("Neighbors", packed4.Count + packed6.Count, scope.Generation);
+            StartRtt(scope, packed4, packed6);
         }
         catch (Exception ex)
         {
@@ -413,6 +365,70 @@ public sealed partial class MainViewModel : ObservableObject
         if (dispatcher is null)
             return Task.CompletedTask;
         return dispatcher.InvokeAsync(action).Task;
+    }
+
+    private void StartRtt(PrintScope scope, IReadOnlyList<NeighborGridRow> v4, IReadOnlyList<NeighborGridRow> v6)
+    {
+        _rtt?.Cancel();
+        _rtt = new CancellationTokenSource();
+        var targets = v4.Concat(v6)
+            .Where(row => CanPing(row.Address))
+            .Select(row => (row.Address, EchoTarget(row)))
+            .ToArray();
+        _ = FillRtt(scope, targets, _rtt.Token);
+    }
+
+    private async Task FillRtt(PrintScope scope, (string Address, string Target)[] targets, CancellationToken token)
+    {
+        Exception? first = null;
+        using var slots = new SemaphoreSlim(4, 4);
+        var tasks = targets.Select(async target =>
+        {
+            await slots.WaitAsync(token).ConfigureAwait(false);
+            try
+            {
+                var options = new IcmpEchoOptions { Count = 1, Timeout = TimeSpan.FromSeconds(1), Interval = TimeSpan.FromMilliseconds(200), Ttl = 128 };
+                var result = await NetworkHelper.Ping(target.Target, options).RunAsync().ConfigureAwait(false);
+                if (token.IsCancellationRequested || !scope.IsCurrent)
+                    return;
+                var rtt = result.Received > 0 && result.AverageMs is not null
+                    ? Math.Round(result.AverageMs.Value).ToString(CultureInfo.InvariantCulture)
+                    : NoValue;
+                await OnUi(() =>
+                {
+                    if (scope.IsCurrent)
+                        StampProbe(target.Address, rtt);
+                });
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            catch (Exception ex)
+            {
+                Interlocked.CompareExchange(ref first, ex, null);
+                if (!token.IsCancellationRequested && scope.IsCurrent)
+                    await OnUi(() =>
+                    {
+                        if (scope.IsCurrent)
+                            StampProbe(target.Address, NoValue);
+                    });
+            }
+            finally
+            {
+                slots.Release();
+            }
+        });
+        try
+        {
+            await Task.WhenAll(tasks).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
+
+        if (first is not null && scope.IsCurrent)
+            RouteIqLog.Fail(first, RouteIqLog.ProbeFailedId);
     }
 
     private static string EchoTarget(NeighborGridRow row)

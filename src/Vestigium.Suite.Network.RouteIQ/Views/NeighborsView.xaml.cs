@@ -17,14 +17,6 @@ public partial class NeighborsView : UserControl
 
     private void OnSizeChanged(object sender, SizeChangedEventArgs e) => FitIpv4();
 
-    private void OnNeighborSelected(object sender, SelectionChangedEventArgs e)
-    {
-        if (sender is not DataGrid grid || grid.SelectedItem is not NeighborGridRow row)
-            return;
-        if (DataContext is MainViewModel host)
-            host.ProbeAddress = row.Address;
-    }
-
     private void OnNeighborCommit(object sender, RoutedEventArgs e)
     {
         if (DataContext is MainViewModel host)
