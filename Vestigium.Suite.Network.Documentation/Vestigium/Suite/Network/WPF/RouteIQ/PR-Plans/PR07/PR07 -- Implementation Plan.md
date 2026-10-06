@@ -2,7 +2,7 @@
 
 **Document ID:** VEST-SUITE-NETWORK-ROUTEIQ-PLN-PR07
 **Version:** PR07
-**Status:** Live. Step 4 done. Package and host cut are not started.
+**Status:** Live. Step 5 done. Host cut is not started. Pin is `1.5.0`, not `1.4.6`.
 **Date:** 6 October 2026
 **Binding:** `PR07 -- Requirements.md`. This file wins on order. Requirements win on the cut. PR06 wins on the log. PR05 wins on the load path. PR04 wins on vendor lookup, ICMP, and the settings path.
 
@@ -18,12 +18,18 @@ Step 1 closed 6 October 2026. Requirements accepted. This plan is the paper you 
 Step 2 closed 6 October 2026. `GetNeighbors(RouteFamily)` on Helpers `beede9f`. Windows reads one family. Name map built once. Parameterless call still means `All`. Route reads unchanged. Not published. Pin stays `1.4.5`.
 Step 3 closed 6 October 2026. Protocol lookup on Helpers `2dd1e0e`. `TryByPort(443)` stays https. `TryService` does not log. 860 was not added. Not published.
 Step 4 closed 6 October 2026. Async print doors on Helpers `791bc0d`. Six methods. Token before the hop throws. Not a `NetworkJob`. No second log line. `NetworkHelper.cs` was not reopened. Not published.
+Step 5 closed 6 October 2026. Owner pushed `Vestigium.Helpers.Network` `1.5.0`. `1.4.6` is out. README surface is Helpers `8b49c35`. That commit does not republish the package.
 
 The folder stays live until the owner accepts the slice.
 
 ---
 
 ## 0.1 Mind change
+
+Old belief: the additive package is `1.4.6`.
+What arrived: the owner pushed `Vestigium.Helpers.Network.1.5.0.nupkg`. NuGet returned Created.
+New position: the pin is `1.5.0`. Do not publish `1.4.6`. Do not republish `1.5.0` to fix the README.
+Out: a host cut against a version restore cannot see.
 
 Old belief: RouteIQ needs its own neighbor reader because `GetNeighbors` is the wrong shape, and the host `Task.Run` is the async interface.
 What arrived: the parsers match. The host skipped the library to avoid a per-row `GetAllNetworkInterfaces` and to split families. `ConnectionServices` is the same kind of fork against `NetworkPorts`, plus a protocol key the library dictionary cannot express. The `Task.Run` wrappers are the same hop copied across six loads and the watch tick. Probes already have `RunAsync`. Table prints do not, so the host invented the hop.
@@ -40,9 +46,9 @@ Out: a public second parser. A host catalog that "stays small." A `NetworkJob` p
 | 2 | L1, L2, L3 | `Vestigium.Helpers` `NetworkWindowsTables.cs`, `NetworkLinuxTables.cs`, `NetworkStackEngine.cs`, `NetworkHelper.cs`. | Done. `beede9f`. Family filter. Name map once. Parameterless call unchanged. |
 | 3 | L4–L8, T-A, T-B, T-C | `NetworkPorts.cs`, `NetworkHelper.Ports.cs`, `NetworkPortCatalogTests.cs`. | Done. `2dd1e0e`. Protocol lookup. `TryByPort(443)` still https. No new EVENTID. |
 | 4 | L9–L12, T-F | `NetworkHelper.Async.cs`, `NetworkPrintAsyncTests.cs`. | Done. `791bc0d`. Six doors. Cancel before the hop throws. Not a `NetworkJob`. |
-| 5 | Publish | Helpers package `1.4.6`. README surface row for `GetNeighbors(family)`, `TryService`, and the async doors. | Package on NuGet. Not a suite edit. |
+| 5 | Publish | Helpers package `1.5.0`. README surface. | Done. Owner push. README `8b49c35`. Package not republished for the README. |
 | 6 | R1–R3, R5–R10, T-D, T-E | Suite: `MainViewModel.cs`, `ConnectionWatch.cs`, `NetBiosSummary.cs`, `HelpView.xaml.cs`. Delete `NeighborTables.cs`, `ConnectionServices.cs`. | Host awaits the library. Stamp hop gone. Grids and label behavior hold. |
-| 7 | R4 | `Directory.Build.props` pin `1.4.6`. | Pin matches the package that step 6 compiled against. |
+| 7 | R4 | `Directory.Build.props` pin `1.5.0`. | Pin matches the package that step 6 compiled against. |
 
 `NeighborGridRow.cs` is not edited. `PrintCoordinator.cs` is not edited. `RouteIqLog.cs` is not edited. Shell is not edited. PingIQ, DnsIQ, and NicIQ are not edited. `NetworkPortGuess.cs` was not edited. The record already had a transport.
 
@@ -88,9 +94,11 @@ T-F is `NetworkPrintAsyncTests`. A cancelled token on `GetRoutesAsync` throws `O
 
 ## 5. Step 5 — package
 
-Version `1.4.6`. README surface gains the family argument, `TryService`, and the six async doors. Say the token does not abort `iphlpapi`. Contract link stays the Helpers requirements document; this PR07 paper is the slice contract.
+Closed 6 October 2026. Owner pushed `1.5.0`. Gallery listing can lag the push. A restore that cannot see `1.5.0` is not a reason to pin it.
 
-Do not republish `1.4.5`.
+README on Helpers `8b49c35` names the family argument, `TryService`, and the six async doors, and says the token does not abort `iphlpapi`. That commit is source only. The pushed package keeps the README it was packed with.
+
+Do not republish `1.4.5`. Do not publish `1.4.6`. Do not republish `1.5.0` for the README.
 
 ---
 
@@ -110,7 +118,7 @@ Delete `NeighborTables.cs` and `ConnectionServices.cs` in this step, not before 
 
 ## 7. Step 7 — pin
 
-`Directory.Build.props` `VestigiumNetworkVersion` becomes `1.4.6`. No other pin moves.
+`Directory.Build.props` `VestigiumNetworkVersion` becomes `1.5.0`. No other pin moves. Not until step 6 compiled against a restore of `1.5.0`.
 
 ---
 
@@ -148,3 +156,4 @@ Route-table name-lookup cleanup. Grid-row multicast helper. Exe publish. A Helpe
 | PR07 | 6 Oct 2026 | Step 2. Family filter and one name map. Helpers `beede9f`. Not published. |
 | PR07 | 6 Oct 2026 | Step 3. Protocol lookup and `TryService`. Helpers `2dd1e0e`. Not published. |
 | PR07 | 6 Oct 2026 | Step 4. Six async print doors. Helpers `791bc0d`. Not published. |
+| PR07 | 6 Oct 2026 | Step 5. Owner pushed `1.5.0`. `1.4.6` is out. README `8b49c35` is source only. |
