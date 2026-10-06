@@ -36,6 +36,7 @@ public sealed class RouteIqSettings
     public bool ExportNetBios { get; set; } = true;
     public bool ExportLmHosts { get; set; } = true;
     public bool ExportOpenAfter { get; set; }
+    public bool ExportOpenFolder { get; set; }
     public bool LiveVendorLookup { get; set; }
     public ConnectionMarkSettings ConnectionMarks { get; set; } = new();
     public List<RouteIqQueryEntry> Queries { get; set; } = [];
