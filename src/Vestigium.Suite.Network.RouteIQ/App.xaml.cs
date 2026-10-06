@@ -9,6 +9,7 @@ using Vestigium.Converters;
 using Vestigium.Converters.DependencyInjection;
 using Vestigium.Helpers.ClosedXml;
 using Vestigium.Helpers.Kql;
+using Vestigium.Logging;
 using Vestigium.Suite.Network.RouteIQ.ViewModels;
 using Vestigium.Suite.Network.RouteIQ.Views;
 using Vestigium.Suite.Network.Shell;
@@ -31,6 +32,8 @@ public partial class App : Application
             RouteIqCatalog.Register(cfg);
         });
         RouteIqLog.HostStarted();
+        VestigiumLogger.BindLifetime(this);
+        VestigiumLogger.Flush();
         DispatcherUnhandledException += OnDispatcherUnhandled;
         AppDomain.CurrentDomain.UnhandledException += OnDomainUnhandled;
 
@@ -57,6 +60,7 @@ public partial class App : Application
     protected override void OnExit(ExitEventArgs e)
     {
         RouteIqLog.HostStopped();
+        VestigiumLogger.Flush();
         base.OnExit(e);
     }
 
