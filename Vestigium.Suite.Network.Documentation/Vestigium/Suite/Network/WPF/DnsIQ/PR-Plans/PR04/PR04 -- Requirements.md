@@ -28,7 +28,7 @@ DnsIQ does not grow a parser. `Vestigium.Helpers.Network` does not grow a parser
 
 Suite rule holds: DnsIQ takes **packages**, not a project reference into Helpers.
 
-Checked 6 October 2026: none of these projects are in `Vestigium.Helpers` on GitHub. The owner created LogParser and LogParser.Har. This PR adds LogParser.Url beside them. It does not invent a fourth.
+Checked 6 October 2026, later the same day: `Vestigium.Helpers.LogParser` 1.0.0, `Vestigium.Helpers.LogParser.Har` 1.0.0, and `Vestigium.Helpers.LogParser.Url` 1.0.0 are on nuget.org. `LogParser.Domain` was created and removed. Bare names live in Url.
 
 ---
 
