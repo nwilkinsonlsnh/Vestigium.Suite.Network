@@ -8,6 +8,7 @@ using Vestigium.Converters;
 using Vestigium.Converters.DependencyInjection;
 using Vestigium.Helpers.Analytics;
 using Vestigium.Helpers.Charts;
+using Vestigium.Helpers.ClosedXml;
 using Vestigium.Helpers.LogParser.Har;
 using Vestigium.Helpers.LogParser.Url;
 using Vestigium.Suite.Network.DnsIQ.ViewModels;
@@ -61,6 +62,7 @@ public partial class App : Application
         {
             AnalyticsCatalog.Register(cfg);
             ChartsCatalog.Register(cfg);
+            ClosedXmlCatalog.Register(cfg);
             HarCatalog.Register(cfg);
             UrlCatalog.Register(cfg);
         });
@@ -104,6 +106,12 @@ public partial class App : Application
                     Description = "Hosts from a HAR or a text dump. Opening the file probes DNS."
                 },
                 new VestigiumNavItemSpec("Dashboard"),
+                new VestigiumNavItemSpec("Exports")
+                {
+                    Title = "Exports",
+                    Subject = "Workbook",
+                    Description = "Write the checked prints to one workbook."
+                },
                 new VestigiumNavItemSpec("Settings")
             }
         });
@@ -151,6 +159,10 @@ public partial class App : Application
                 window.HostShell.SelectedItem = item;
         };
         dash.DashboardAvailabilityChanged = SetDashboardEnabled;
+
+        var exportsItem = window.HostShell["Exports"];
+        if (exportsItem is not null)
+            exportsItem.Content = new ExportsView { DataContext = dns };
 
         var settingsItem = window.HostShell["Settings"];
         if (settingsItem is not null)
