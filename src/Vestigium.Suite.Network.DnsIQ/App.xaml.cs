@@ -97,11 +97,11 @@ public partial class App : Application
                     Subject = "Lookup and pulse",
                     Description = "One name. Lookup writes records. Probe is the resolver pulse."
                 },
-                new VestigiumNavItemSpec("HAR")
+                new VestigiumNavItemSpec("Capture")
                 {
-                    Title = "HAR",
-                    Subject = "Capture hosts",
-                    Description = "Hosts from a HAR or a text dump. Probe is the next slice."
+                    Title = "Capture",
+                    Subject = "Hosts from a file",
+                    Description = "Hosts from a HAR or a text dump. Opening the file probes DNS."
                 },
                 new VestigiumNavItemSpec("Dashboard"),
                 new VestigiumNavItemSpec("Settings")
@@ -129,7 +129,7 @@ public partial class App : Application
             window.HostShell.SelectedItem = dnsItem;
         }
 
-        var harItem = window.HostShell["HAR"];
+        var harItem = window.HostShell["Capture"];
         if (harItem is not null)
         {
             harItem.Content = new Views.HarView { DataContext = dns };

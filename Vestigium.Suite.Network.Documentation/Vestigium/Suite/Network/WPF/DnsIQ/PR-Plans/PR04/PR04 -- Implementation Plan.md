@@ -141,7 +141,7 @@ No chart. No Requests / Seconds. No second Server box.
 | 4 | PR04-04 | Pin the three packages in suite `Directory.Build.props`. File → Open capture (`.har` / `.txt`). HAR tab + grid. No probe yet. | Done |
 | 5 | PR04-05 | Probe DNS loop. A + AAAA. Cancel. Skipped addresses. Unique hosts only. | Done |
 | 6 | PR04-06 | `dotnet test` Url, Har, and suite host tests. Zero failures. | Done |
-| 7 | PR04-07 | Owner gate on the two captures and a `.txt` dump. | Owner |
+| 7 | PR04-07 | Owner gate on the two captures and a `.txt` dump. | Done |
 
 ### PR04-01
 
@@ -232,4 +232,4 @@ When this plan finishes, move `PR04/` to `PR-Plans/Completed/PR04/` and point th
 
 ## Next action
 
-PR04-06. Suite and helper tests. No test calls `LookupAsync`. A name seen 500 times is one row.
+PR04 is closed. The tab is Capture. The owner confirmed the HAR files load and the probe works.
