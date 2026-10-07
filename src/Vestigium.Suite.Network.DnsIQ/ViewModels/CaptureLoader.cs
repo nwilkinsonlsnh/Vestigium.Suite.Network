@@ -1,3 +1,4 @@
+using System.IO;
 using System.Text.Json;
 using Vestigium.Helpers.LogParser;
 using Vestigium.Helpers.LogParser.Har;
