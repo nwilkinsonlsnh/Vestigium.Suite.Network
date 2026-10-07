@@ -47,6 +47,7 @@
         <DataGridTextColumn Header="Hits" Binding="{Binding Hits}" Width="80" />
         <DataGridTextColumn Header="Sources" Binding="{Binding Sources}" Width="180" />
         <DataGridTextColumn Header="DNS" Binding="{Binding Dns}" Width="120" />
+        <DataGridTextColumn Header="Error" Binding="{Binding Error}" Width="220" />
         <DataGridTextColumn Header="Answers" Binding="{Binding Answers}" Width="*" />
       </DataGrid.Columns>
     </DataGrid>

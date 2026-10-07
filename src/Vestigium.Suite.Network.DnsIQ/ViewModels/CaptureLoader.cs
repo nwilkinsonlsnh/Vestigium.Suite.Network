@@ -51,6 +51,40 @@ public static class CaptureLoader
         return unique;
     }
 
+    public static IReadOnlyDictionary<string, string> EntryErrors(string path)
+    {
+        var map = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (!path.EndsWith(".har", StringComparison.OrdinalIgnoreCase) || !File.Exists(path))
+            return map;
+
+        try
+        {
+            using var document = JsonDocument.Parse(File.ReadAllText(path));
+            if (!document.RootElement.TryGetProperty("log", out var log) || !log.TryGetProperty("entries", out var entries))
+                return map;
+            foreach (var entry in entries.EnumerateArray())
+            {
+                var error = "";
+                if (entry.TryGetProperty("_error", out var flag) && flag.ValueKind == JsonValueKind.String)
+                    error = flag.GetString() ?? "";
+                if (error.Length == 0)
+                    continue;
+                if (!entry.TryGetProperty("request", out var request) || !request.TryGetProperty("url", out var url))
+                    continue;
+                if (!Uri.TryCreate(url.GetString(), UriKind.Absolute, out var uri) || string.IsNullOrWhiteSpace(uri.IdnHost))
+                    continue;
+                var host = uri.IdnHost.Trim().TrimEnd('.').ToLowerInvariant();
+                if (!map.TryGetValue(host, out var existing) || !existing.Contains(error, StringComparison.Ordinal))
+                    map[host] = existing is null ? error : existing + "; " + error;
+            }
+        }
+        catch (JsonException)
+        {
+            return map;
+        }
+        return map;
+    }
+
     private sealed class Bucket(string host, bool isAddress)
     {
         public string Host { get; } = host;

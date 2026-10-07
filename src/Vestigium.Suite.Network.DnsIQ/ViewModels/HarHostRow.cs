@@ -28,5 +28,8 @@ public sealed partial class HarHostRow : ObservableObject
     [ObservableProperty]
     private string _answers = "";
 
+    [ObservableProperty]
+    private string _error = "";
+
     public bool IsAddress { get; }
 }

@@ -625,9 +625,15 @@ public sealed partial class MainViewModel : ObservableObject
         try
         {
             var result = CaptureLoader.Load(path);
+            var errors = CaptureLoader.EntryErrors(path);
             Hosts.Clear();
             foreach (var host in CaptureLoader.Unique(result.Hosts))
-                Hosts.Add(new HarHostRow(host));
+            {
+                var row = new HarHostRow(host);
+                if (errors.TryGetValue(host.Host, out var error))
+                    row.Error = error;
+                Hosts.Add(row);
+            }
             Status = Hosts.Count == 0 ? "No hosts" : $"{Hosts.Count} hosts";
             if (StatusBar is not null)
                 StatusBar.Message = Status;
