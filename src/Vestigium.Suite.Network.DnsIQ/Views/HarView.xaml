@@ -16,6 +16,8 @@
               Style="{StaticResource DataGrid.Compact}"
               RowHeight="28"
               IsReadOnly="True"
+              SelectionMode="Single"
+              SelectionUnit="FullRow"
               AutoGenerateColumns="False"
               CanUserAddRows="False"
               CanUserDeleteRows="False"
@@ -28,6 +30,17 @@
           <MenuItem Header="Lookup + Probe" Command="{Binding LookupAndProbeCommand}" CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
         </ContextMenu>
       </DataGrid.ContextMenu>
+      <DataGrid.CellStyle>
+        <Style TargetType="DataGridCell">
+          <Setter Property="BorderThickness" Value="0" />
+          <Style.Triggers>
+            <Trigger Property="IsSelected" Value="True">
+              <Setter Property="Background" Value="{DynamicResource Vestigium.Brushes.Accent}" />
+              <Setter Property="Foreground" Value="{DynamicResource Vestigium.Brushes.Text.OnAccent}" />
+            </Trigger>
+          </Style.Triggers>
+        </Style>
+      </DataGrid.CellStyle>
       <DataGrid.Columns>
         <DataGridTextColumn Header="Host" Binding="{Binding Host}" Width="*" />
         <DataGridTextColumn Header="Ports" Binding="{Binding Ports}" Width="120" />
