@@ -598,6 +598,16 @@ public sealed partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand]
+    private Task LookupAndProbe(HarHostRow? row)
+    {
+        if (row is null || IsBusy)
+            return Task.CompletedTask;
+        Name = row.Host;
+        SelectDns?.Invoke();
+        return ProbeAsync();
+    }
+
+    [RelayCommand]
     private void OpenCapture()
     {
         var dialog = new OpenFileDialog
