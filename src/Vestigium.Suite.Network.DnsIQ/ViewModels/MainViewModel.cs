@@ -105,7 +105,7 @@ public sealed partial class MainViewModel : ObservableObject
 
     partial void OnStatusChanged(string value)
     {
-        if (_pulseActive || StatusBar is null)
+        if (StatusBar is null)
             return;
         StatusBar.Message = value;
     }
@@ -465,7 +465,7 @@ public sealed partial class MainViewModel : ObservableObject
     {
         if (StatusBar is null)
             return;
-        StatusBar.Engine.PostImmediate("message", new StatusBarUpdate { Text = $"{sent} / {total}" });
+        StatusBar.Engine.PostImmediate("message", new StatusBarUpdate { Text = Status });
         StatusBar.Engine.PostImmediate("progress", new StatusBarUpdate
         {
             Progress = PercentOfWindow(elapsed, window),
@@ -585,6 +585,18 @@ public sealed partial class MainViewModel : ObservableObject
 
     public Action? SelectHar { get; set; }
 
+    public Action? SelectDns { get; set; }
+
+    [RelayCommand]
+    private Task LookupHost(HarHostRow? row)
+    {
+        if (row is null || IsBusy)
+            return Task.CompletedTask;
+        Name = row.Host;
+        SelectDns?.Invoke();
+        return LookupAsync();
+    }
+
     [RelayCommand]
     private void OpenCapture()
     {
@@ -610,6 +622,8 @@ public sealed partial class MainViewModel : ObservableObject
             if (StatusBar is not null)
                 StatusBar.Message = Status;
             SelectHar?.Invoke();
+            if (Hosts.Count > 0 && SelectHar is not null)
+                _ = ProbeCaptureAsync();
         }
         catch (Exception ex)
         {

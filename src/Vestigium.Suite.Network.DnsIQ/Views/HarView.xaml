@@ -7,12 +7,10 @@
       <RowDefinition Height="Auto" />
       <RowDefinition Height="*" />
     </Grid.RowDefinitions>
-    <DockPanel Grid.Row="0" Margin="0,0,0,12">
-      <Button DockPanel.Dock="Right" Content="Probe DNS" Style="{StaticResource Button.Primary}" Command="{Binding ProbeHostsCommand}" Padding="16,4" Margin="8,0,0,0" />
-      <Button DockPanel.Dock="Right" Content="Open capture…" Command="{Binding OpenCaptureCommand}" Padding="16,4" Margin="8,0,0,0" />
-      <Button DockPanel.Dock="Right" Content="Cancel" Command="{Binding CancelCommand}" Padding="16,4" />
-      <TextBlock Style="{StaticResource TextBlock.Caption}" Text="{Binding Status}" VerticalAlignment="Center" />
-    </DockPanel>
+    <StackPanel Grid.Row="0" Orientation="Horizontal" Style="{StaticResource StackPanel.Toolbar}" Margin="0,0,0,12">
+      <Button Content="Open capture…" Style="{StaticResource Button.Primary}" Command="{Binding OpenCaptureCommand}" Padding="16,4" Margin="0,0,8,0" />
+      <Button Content="Cancel" Style="{StaticResource Button.Secondary}" Command="{Binding CancelCommand}" Padding="16,4" />
+    </StackPanel>
     <DataGrid Grid.Row="1"
               ItemsSource="{Binding Hosts}"
               Style="{StaticResource DataGrid.Compact}"
@@ -24,6 +22,11 @@
               HeadersVisibility="Column"
               HorizontalScrollBarVisibility="Auto"
               VerticalScrollBarVisibility="Auto">
+      <DataGrid.ContextMenu>
+        <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
+          <MenuItem Header="Lookup" Command="{Binding LookupHostCommand}" CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+        </ContextMenu>
+      </DataGrid.ContextMenu>
       <DataGrid.Columns>
         <DataGridTextColumn Header="Host" Binding="{Binding Host}" Width="*" />
         <DataGridTextColumn Header="Ports" Binding="{Binding Ports}" Width="120" />

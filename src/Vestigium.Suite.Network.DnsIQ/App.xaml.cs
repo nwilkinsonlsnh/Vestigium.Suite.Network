@@ -134,6 +134,7 @@ public partial class App : Application
         {
             harItem.Content = new Views.HarView { DataContext = dns };
             dns.SelectHar = () => window.HostShell.SelectedItem = harItem;
+            dns.SelectDns = () => window.HostShell.SelectedItem = dnsItem;
         }
 
         var dashItem = window.HostShell["Dashboard"];
