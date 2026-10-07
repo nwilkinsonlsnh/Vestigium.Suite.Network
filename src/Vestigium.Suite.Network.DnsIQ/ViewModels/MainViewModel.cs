@@ -5,6 +5,7 @@ using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Vestigium.Controls.StatusBar;
+using Vestigium.Helpers.LogParser;
 using Vestigium.Helpers.Network;
 using Vestigium.Suite.Network.Shell;
 
@@ -75,6 +76,7 @@ public sealed partial class MainViewModel : ObservableObject
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(LookupCommand))]
     [NotifyCanExecuteChangedFor(nameof(ProbeCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ProbeHostsCommand))]
     [NotifyCanExecuteChangedFor(nameof(CancelCommand))]
     private bool _isBusy;
 
@@ -115,6 +117,85 @@ public sealed partial class MainViewModel : ObservableObject
 
     [RelayCommand(CanExecute = nameof(CanStartJob))]
     private Task ProbeAsync() => RunJobAsync(lookup: false);
+
+    [RelayCommand(CanExecute = nameof(CanStartJob))]
+    private Task ProbeHostsAsync() => ProbeCaptureAsync();
+
+    private async Task ProbeCaptureAsync()
+    {
+        if (IsBusy)
+            return;
+        if (Hosts.Count == 0)
+        {
+            Status = "No hosts";
+            return;
+        }
+        if (!DnsIqInput.TryCreate(
+                "localhost", Server, "A", Bind.InterfaceIndex, Bind.SourceAddress, (int)Port,
+                out var query, out var reject))
+        {
+            Status = reject ?? "Failed";
+            return;
+        }
+
+        _cts = new CancellationTokenSource();
+        var token = _cts.Token;
+        IsBusy = true;
+        var sent = 0;
+        var total = Hosts.Count;
+        try
+        {
+            foreach (var row in Hosts.ToList())
+            {
+                token.ThrowIfCancellationRequested();
+                sent++;
+                ShowProgress(sent * 100d / total, visible: true);
+                Status = $"{sent}/{total}";
+                if (row.IsAddress)
+                {
+                    var skipped = CaptureProbe.Map(row.IsAddress, row.Host, null, null);
+                    row.Dns = skipped.Dns;
+                    row.Answers = skipped.Answers;
+                    continue;
+                }
+
+                var a = await NetworkHelper.LookupAsync(row.Host, Copy(query!.Options, DnsRecordType.A), token).ConfigureAwait(true);
+                token.ThrowIfCancellationRequested();
+                var aaaa = await NetworkHelper.LookupAsync(row.Host, Copy(query.Options, DnsRecordType.Aaaa), token).ConfigureAwait(true);
+                var mapped = CaptureProbe.Map(false, row.Host, a, aaaa);
+                row.Dns = mapped.Dns;
+                row.Answers = mapped.Answers;
+            }
+            Status = "Done";
+        }
+        catch (OperationCanceledException)
+        {
+            Status = "Cancelled";
+        }
+        catch (Exception ex)
+        {
+            Status = string.IsNullOrWhiteSpace(ex.Message) ? "Failed" : ex.Message;
+        }
+        finally
+        {
+            ShowProgress(0, visible: false);
+            IsBusy = false;
+            _cts.Dispose();
+            _cts = null;
+        }
+    }
+
+    private static DnsLookupOptions Copy(DnsLookupOptions source, DnsRecordType type)
+        => new()
+        {
+            Type = type,
+            Server = source.Server,
+            Port = source.Port,
+            Timeout = source.Timeout,
+            RecursionDesired = source.RecursionDesired,
+            InterfaceIndex = source.InterfaceIndex,
+            SourceAddress = source.SourceAddress
+        };
 
     [RelayCommand(CanExecute = nameof(CanCancelJob))]
     private void Cancel()
@@ -509,7 +590,7 @@ public sealed partial class MainViewModel : ObservableObject
         {
             var result = CaptureLoader.Load(path);
             Hosts.Clear();
-            foreach (var host in result.Hosts)
+            foreach (var host in CaptureLoader.Unique(result.Hosts))
                 Hosts.Add(new HarHostRow(host));
             HarAvailabilityChanged?.Invoke(true);
             Status = Hosts.Count == 0 ? "No hosts" : $"{Hosts.Count} hosts";

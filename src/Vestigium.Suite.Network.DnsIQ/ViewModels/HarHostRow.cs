@@ -1,8 +1,9 @@
+using CommunityToolkit.Mvvm.ComponentModel;
 using Vestigium.Helpers.LogParser;
 
 namespace Vestigium.Suite.Network.DnsIQ.ViewModels;
 
-public sealed class HarHostRow
+public sealed partial class HarHostRow : ObservableObject
 {
     public HarHostRow(LogHost host)
     {
@@ -21,9 +22,11 @@ public sealed class HarHostRow
 
     public string Sources { get; }
 
-    public string Dns { get; set; } = "";
+    [ObservableProperty]
+    private string _dns = "";
 
-    public string Answers { get; set; } = "";
+    [ObservableProperty]
+    private string _answers = "";
 
     public bool IsAddress { get; }
 }
