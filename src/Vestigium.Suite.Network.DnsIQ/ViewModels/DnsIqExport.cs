@@ -3,7 +3,6 @@ using System.Globalization;
 using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Vestigium.Helpers.ClosedXml;
 
 namespace Vestigium.Suite.Network.DnsIQ.ViewModels;
 
@@ -94,46 +93,17 @@ public sealed partial class MainViewModel
             if (dialog.ShowDialog() != true)
                 return;
             var path = string.IsNullOrWhiteSpace(dialog.FileName) ? Path.Combine(folder, name) : dialog.FileName;
-            using var book = WorkbookHelper.Create("Cover", "DnsIQ");
-            var cover = new List<(string Key, object? Value)>
+            var cover = CoverRows(lookupRows.Count, captureRows.Count, probeRows.Count);
+            if (!DnsIqWorkbook.TryWrite(path, lookupRows, captureRows, probeRows, cover, out var saved, out _, out var reject) || saved is null)
             {
-                ("Host", Environment.MachineName),
-                ("Operator", Environment.UserName),
-                ("Taken", DateTimeOffset.Now.ToString("yyyy-MM-dd HH:mm:ss zzz")),
-                ("Name", string.IsNullOrWhiteSpace(Name) ? "localhost" : Name.Trim()),
-                ("Server", string.IsNullOrWhiteSpace(Server) ? "--" : Server.Trim()),
-                ("Port", Port.ToString(CultureInfo.InvariantCulture)),
-                ("Type", RecordType),
-                ("Interface", InterfaceLabel()),
-                ("Source", string.IsNullOrWhiteSpace(Bind.SourceAddress) ? "Any" : Bind.SourceAddress),
-                ("Requests", RequestCount.ToString(CultureInfo.InvariantCulture)),
-                ("Seconds", DurationSeconds.ToString(CultureInfo.InvariantCulture)),
-                ("Capture file", string.IsNullOrWhiteSpace(CapturePath) ? "--" : CapturePath)
-            };
-            if (lookupRows.Count > 0)
-                cover.Add(("Lookup", lookupRows.Count.ToString(CultureInfo.InvariantCulture)));
-            if (captureRows.Count > 0)
-                cover.Add(("Capture", captureRows.Count.ToString(CultureInfo.InvariantCulture)));
-            if (probeRows.Count > 0)
-                cover.Add(("Probe", probeRows.Count.ToString(CultureInfo.InvariantCulture)));
-            book.Sheet("Cover").WriteTable(SheetTable.KeyValue("Field", "Value", cover, "Cover"));
-            if (lookupRows.Count > 0)
-                book.Sheet("Lookup").WriteTable(LookupTable(lookupRows));
-            if (captureRows.Count > 0)
-                book.Sheet("Capture").WriteTable(CaptureTable(captureRows));
-            if (probeRows.Count > 0)
-                book.Sheet("Probe").WriteTable(ProbeTable(probeRows));
-            var saved = book.SaveAs(path);
-            if (!File.Exists(saved))
-            {
-                Status = "Export did not write " + path;
+                Status = reject ?? "Nothing loaded to export.";
                 return;
             }
 
             Status = "Exported " + saved;
             if (ExportOpenAfter || ExportOpenFolder)
             {
-                if (!string.Equals(saved, path, StringComparison.OrdinalIgnoreCase) || !saved.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase))
+                if (!DnsIqWorkbook.MayOpen(saved, path))
                 {
                     Status = "Export was written. It was not opened.";
                     return;
@@ -151,6 +121,32 @@ public sealed partial class MainViewModel
         }
     }
 
+    private List<(string Key, object? Value)> CoverRows(int lookup, int capture, int probe)
+    {
+        var cover = new List<(string Key, object? Value)>
+        {
+            ("Host", Environment.MachineName),
+            ("Operator", Environment.UserName),
+            ("Taken", DateTimeOffset.Now.ToString("yyyy-MM-dd HH:mm:ss zzz")),
+            ("Name", string.IsNullOrWhiteSpace(Name) ? "localhost" : Name.Trim()),
+            ("Server", string.IsNullOrWhiteSpace(Server) ? "--" : Server.Trim()),
+            ("Port", Port.ToString(CultureInfo.InvariantCulture)),
+            ("Type", RecordType),
+            ("Interface", InterfaceLabel()),
+            ("Source", string.IsNullOrWhiteSpace(Bind.SourceAddress) ? "Any" : Bind.SourceAddress),
+            ("Requests", RequestCount.ToString(CultureInfo.InvariantCulture)),
+            ("Seconds", DurationSeconds.ToString(CultureInfo.InvariantCulture)),
+            ("Capture file", string.IsNullOrWhiteSpace(CapturePath) ? "--" : CapturePath)
+        };
+        if (lookup > 0)
+            cover.Add(("Lookup", lookup.ToString(CultureInfo.InvariantCulture)));
+        if (capture > 0)
+            cover.Add(("Capture", capture.ToString(CultureInfo.InvariantCulture)));
+        if (probe > 0)
+            cover.Add(("Probe", probe.ToString(CultureInfo.InvariantCulture)));
+        return cover;
+    }
+
     private string InterfaceLabel()
         => Interfaces.FirstOrDefault(item => item.Index == SelectedInterfaceIndex)?.Label ?? SelectedInterfaceIndex.ToString(CultureInfo.InvariantCulture);
 
@@ -161,22 +157,4 @@ public sealed partial class MainViewModel
         Directory.CreateDirectory(folder);
         return folder;
     }
-
-    private static SheetTable LookupTable(IReadOnlyList<AnswerRow> rows)
-        => SheetTable.Create(
-            ["Type", "Name", "Data", "Ttl"],
-            rows.Select(row => (IReadOnlyList<object?>)[row.Type, row.Name, row.Data, row.Ttl]),
-            "Lookup");
-
-    private static SheetTable CaptureTable(IReadOnlyList<HarHostRow> rows)
-        => SheetTable.Create(
-            ["Host", "Ports", "Hits", "Sources", "DNS", "Error", "Answers"],
-            rows.Select(row => (IReadOnlyList<object?>)[row.Host, row.Ports, row.Hits, row.Sources, row.Dns, row.Error, row.Answers]),
-            "Capture");
-
-    private static SheetTable ProbeTable(IReadOnlyList<double> samples)
-        => SheetTable.Create(
-            ["Index", "RttMs"],
-            samples.Select((sample, index) => (IReadOnlyList<object?>)[index + 1, sample]),
-            "Probe");
 }
