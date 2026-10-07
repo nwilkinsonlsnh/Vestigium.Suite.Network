@@ -1,3 +1,4 @@
+using System.IO;
 using Vestigium.Helpers.LogParser;
 using Vestigium.Helpers.Network;
 using Vestigium.Suite.Network.DnsIQ.ViewModels;
