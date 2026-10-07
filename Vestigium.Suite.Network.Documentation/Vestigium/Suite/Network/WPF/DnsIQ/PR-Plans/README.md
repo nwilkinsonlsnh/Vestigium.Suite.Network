@@ -3,7 +3,7 @@
 **Host:** `Vestigium.Suite.Network.DnsIQ`
 **APPID:** `DnsIQ`
 **Status:** Live — [PR05 -- Implementation Plan.md](PR05/PR05%20--%20Implementation%20Plan.md)
-**Next slice:** PR05-02
+**Next slice:** PR05-03
 
 This file is the queue keeper. It is not the plan.
 
@@ -41,4 +41,4 @@ Product papers live **outside** this folder:
 | Helpers.Network 1.5.0 | Protocol. |
 | LogParser 1.0.0 / LogParser.Har 1.0.0 / LogParser.Url 1.0.0 | Capture read and text scrape. |
 | Analytics 1.0.1 / Charts 1.0.9 | Dashboard. |
-| ClosedXml 1.0.1 | Workbook. Pinned. DnsIQ does not reference it until PR05-02. |
+| ClosedXml 1.0.1 | Workbook. Referenced by DnsIQ as of PR05-02. Checks persist in PR05-03. |
