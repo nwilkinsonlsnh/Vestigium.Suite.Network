@@ -1,0 +1,27 @@
+<UserControl x:Class="Vestigium.Suite.Network.DnsIQ.Views.HarView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="{DynamicResource Vestigium.Brushes.Surface.Window}">
+  <Grid Margin="16">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+    </Grid.RowDefinitions>
+    <TextBlock Style="{StaticResource TextBlock.Caption}" Text="{Binding Status}" Margin="0,0,0,12" />
+    <DataGrid Grid.Row="1"
+              ItemsSource="{Binding Hosts}"
+              IsReadOnly="True"
+              AutoGenerateColumns="False"
+              CanUserAddRows="False"
+              HeadersVisibility="Column">
+      <DataGrid.Columns>
+        <DataGridTextColumn Header="Host" Binding="{Binding Host}" Width="*" />
+        <DataGridTextColumn Header="Ports" Binding="{Binding Ports}" Width="120" />
+        <DataGridTextColumn Header="Hits" Binding="{Binding Hits}" Width="80" />
+        <DataGridTextColumn Header="Sources" Binding="{Binding Sources}" Width="180" />
+        <DataGridTextColumn Header="DNS" Binding="{Binding Dns}" Width="120" />
+        <DataGridTextColumn Header="Answers" Binding="{Binding Answers}" Width="*" />
+      </DataGrid.Columns>
+    </DataGrid>
+  </Grid>
+</UserControl>

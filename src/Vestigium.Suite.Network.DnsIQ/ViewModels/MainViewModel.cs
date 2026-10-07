@@ -496,4 +496,34 @@ public sealed partial class MainViewModel : ObservableObject
         var value = ordered.Length % 2 == 1 ? ordered[mid] : (ordered[mid - 1] + ordered[mid]) / 2d;
         return (int)Math.Round(value);
     }
+
+    public ObservableCollection<HarHostRow> Hosts { get; } = [];
+
+    public Action<bool>? HarAvailabilityChanged { get; set; }
+
+    public Action? SelectHar { get; set; }
+
+    public void LoadCapture(string path)
+    {
+        try
+        {
+            var result = CaptureLoader.Load(path);
+            Hosts.Clear();
+            foreach (var host in result.Hosts)
+                Hosts.Add(new HarHostRow(host));
+            HarAvailabilityChanged?.Invoke(true);
+            Status = Hosts.Count == 0 ? "No hosts" : $"{Hosts.Count} hosts";
+            if (StatusBar is not null)
+                StatusBar.Message = Status;
+            SelectHar?.Invoke();
+        }
+        catch (Exception ex)
+        {
+            Hosts.Clear();
+            HarAvailabilityChanged?.Invoke(false);
+            Status = string.IsNullOrWhiteSpace(ex.Message) ? "Failed" : ex.Message;
+            if (StatusBar is not null)
+                StatusBar.Message = Status;
+        }
+    }
 }

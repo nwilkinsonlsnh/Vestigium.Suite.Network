@@ -27,6 +27,9 @@
     <VestigiumQueryBarVersion>1.0.3</VestigiumQueryBarVersion>
     <VestigiumClosedXmlVersion>1.0.1</VestigiumClosedXmlVersion>
     <VestigiumKqlVersion>1.0.4</VestigiumKqlVersion>
+    <VestigiumLogParserVersion>1.0.0</VestigiumLogParserVersion>
+    <VestigiumLogParserHarVersion>1.0.0</VestigiumLogParserHarVersion>
+    <VestigiumLogParserUrlVersion>1.0.0</VestigiumLogParserUrlVersion>
     <MicrosoftExtensionsDiVersion>10.0.12</MicrosoftExtensionsDiVersion>
   </PropertyGroup>
 
