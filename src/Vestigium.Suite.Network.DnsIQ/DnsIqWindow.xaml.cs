@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using Microsoft.Win32;
 using Vestigium.Controls.Shell;
 using Vestigium.Suite.Network.DnsIQ.ViewModels;
+using Vestigium.Suite.Network.DnsIQ.Views;
 
 namespace Vestigium.Suite.Network.DnsIQ;
 

@@ -1,6 +1,7 @@
 using Vestigium.Helpers.LogParser;
 using Vestigium.Helpers.Network;
 using Vestigium.Suite.Network.DnsIQ.ViewModels;
+using Xunit;
 
 namespace Vestigium.Suite.Network.Tests;
 
