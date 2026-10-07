@@ -22,6 +22,7 @@
     <PackageReference Include="Vestigium.Converters" Version="$(VestigiumConvertersVersion)" />
     <PackageReference Include="Vestigium.Helpers.Analytics" Version="$(VestigiumAnalyticsVersion)" />
     <PackageReference Include="Vestigium.Helpers.Charts" Version="$(VestigiumChartsVersion)" />
+    <PackageReference Include="Vestigium.Helpers.ClosedXml" Version="$(VestigiumClosedXmlVersion)" />
     <PackageReference Include="Vestigium.Helpers.LogParser" Version="$(VestigiumLogParserVersion)" />
     <PackageReference Include="Vestigium.Helpers.LogParser.Har" Version="$(VestigiumLogParserHarVersion)" />
     <PackageReference Include="Vestigium.Helpers.LogParser.Url" Version="$(VestigiumLogParserUrlVersion)" />

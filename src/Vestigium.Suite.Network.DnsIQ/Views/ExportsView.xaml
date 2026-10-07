@@ -1,0 +1,19 @@
+<UserControl x:Class="Vestigium.Suite.Network.DnsIQ.Views.ExportsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="{DynamicResource Vestigium.Brushes.Surface.Window}"
+             Loaded="OnLoaded">
+  <StackPanel HorizontalAlignment="Left" VerticalAlignment="Top" Width="520" Margin="16,12,0,16">
+    <TextBlock Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap" Margin="0,0,0,16"
+               Text="One workbook. Cover is always written. Export writes the checked prints. Export All writes every print. The dialog opens in Desktop\Vestigium\Exports\DnsIQ." />
+    <CheckBox x:Name="LookupBox" Style="{StaticResource CheckBox.Standard}" Content="Lookup" Margin="0,0,0,8" Checked="OnCheck" Unchecked="OnCheck" />
+    <CheckBox x:Name="CaptureBox" Style="{StaticResource CheckBox.Standard}" Content="Capture" Margin="0,0,0,8" Checked="OnCheck" Unchecked="OnCheck" />
+    <CheckBox x:Name="ProbeBox" Style="{StaticResource CheckBox.Standard}" Content="Probe" Margin="0,0,0,8" Checked="OnCheck" Unchecked="OnCheck" />
+    <CheckBox x:Name="OpenBox" Style="{StaticResource CheckBox.Standard}" Content="Open File after saving" Margin="0,0,0,8" Checked="OnCheck" Unchecked="OnCheck" />
+    <CheckBox x:Name="OpenFolderBox" Style="{StaticResource CheckBox.Standard}" Content="Open Folder after saving" Margin="0,0,0,16" Checked="OnCheck" Unchecked="OnCheck" />
+    <StackPanel Orientation="Horizontal">
+      <Button Content="Export" Style="{StaticResource Button.Primary}" Command="{Binding ExportSelectedCommand}" Padding="16,4" Margin="0,0,8,0" />
+      <Button Content="Export All" Style="{StaticResource Button.Secondary}" Command="{Binding ExportAllCommand}" Padding="16,4" />
+    </StackPanel>
+  </StackPanel>
+</UserControl>
