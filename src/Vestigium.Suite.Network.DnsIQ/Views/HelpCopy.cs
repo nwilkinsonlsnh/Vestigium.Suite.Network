@@ -11,10 +11,11 @@ public static class HelpCopy
         [
             new("Overview",
             [
-                "DnsIQ asks a resolver and prints the answer. It exists so an operator can see what a name resolves to, and whether that answer holds up over a short run, without opening a command window.",
-                "The pages are DnsIQ, Capture, Dashboard, Exports, and Settings. Help is this page. DnsIQ is one name. Capture is the hosts in a file. Dashboard is a reading of the last run. Exports writes the prints already loaded. Settings is where the window is adjusted.",
-                "DnsIQ does not change DNS, edit a zone, shell to nslookup.exe, or use HTTP DNS. If the print is wrong, the correction is made elsewhere. This host is the record of what the resolver said.",
-                "A row that says Resolved is not Reachable. A name can answer and the site can still fail to load."
+                "DnsIQ asks a resolver and prints the answer. The point of the window is a record of what that resolver said about a name, or about the names already sitting in a file. It does not change DNS, edit a zone, shell to nslookup.exe, or use HTTP DNS. If the print is wrong, the correction is made elsewhere.",
+                "The pages are DnsIQ, Capture, Dashboard, Exports, and Settings. Help is this page. DnsIQ is one name: Lookup writes the answer grid, and Probe is that lookup followed by a pulse. Capture is the hosts in a HAR or a text dump, and opening a file that parses starts the DNS probe. Dashboard is a reading of the last run, not a second measurement. Exports writes the prints already loaded. Settings holds the port, the source, the pulse length, and the theme.",
+                "Read a row for what it is. Lookup columns are Type, Name, Data, and Ttl. Capture adds DNS and Error. DNS is Resolved, NxDomain, TimedOut, Refused, Failed, or Skipped. A row that says Resolved is not Reachable. A name can answer and the site can still fail to load. Skipped is an address and is not sent.",
+                "The Type box is a closed list. All asks A, AAAA, CNAME, MX, NS, PTR, TXT, and SOA, one after another. It is not a DNS ANY query. The meaning of each type is on Glossary, under Records. A type that is not in that list is not asked.",
+                "Use DnsIQ when the question is one name. Use Capture when the names are already in a file. Use Probe when one answer is not enough and you need the times. Use Exports when another desk needs the rows. The workbook stays on this machine. It is not uploaded."
             ], []),
             new("Lookup",
             [
@@ -66,7 +67,7 @@ public static class HelpCopy
 
     private static Draft Glossary()
         => new("Glossary",
-            ["The words this window uses. A short meaning, in the sense of this print."],
+            ["The words this window uses. A short meaning, in the sense of this print. Record types are under Records."],
             [
                 new("Tabs",
                 [
@@ -76,6 +77,19 @@ public static class HelpCopy
                     Term("Export", "The checked prints, written to one workbook. Cover is always included."),
                     Term("Export All", "Every print that has rows, written to one workbook. The checks are ignored."),
                     Term("Cover", "The first sheet. Host, operator, time, the query on screen, and the count of each print that was written.")
+                ]),
+                new("Records",
+                [
+                    "These are the types the Type box can ask. A type that is not in this list is not sent.",
+                    Term("All", "A, AAAA, CNAME, MX, NS, PTR, TXT, and SOA, asked one after another. All is not a DNS ANY query."),
+                    Term("A", "The IPv4 address for the name."),
+                    Term("AAAA", "The IPv6 address for the name."),
+                    Term("CNAME", "An alias. Data is the other name, not an address."),
+                    Term("MX", "A mail exchanger. Data is the preference and the host that receives mail for the name."),
+                    Term("NS", "A nameserver for the zone. Data is the server name."),
+                    Term("PTR", "The name that an address points back to. Used on a reverse lookup."),
+                    Term("TXT", "A text string stored on the name."),
+                    Term("SOA", "Start of authority. The zone's primary record: the primary server, the contact, and the timers.")
                 ]),
                 new("Lookup",
                 [
