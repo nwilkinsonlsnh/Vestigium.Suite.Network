@@ -8,6 +8,8 @@ using Vestigium.Converters;
 using Vestigium.Converters.DependencyInjection;
 using Vestigium.Helpers.Analytics;
 using Vestigium.Helpers.Charts;
+using Vestigium.Helpers.LogParser.Har;
+using Vestigium.Helpers.LogParser.Url;
 using Vestigium.Suite.Network.DnsIQ.ViewModels;
 using Vestigium.Suite.Network.DnsIQ.Views;
 using Vestigium.Suite.Network.Shell;
@@ -59,6 +61,8 @@ public partial class App : Application
         {
             AnalyticsCatalog.Register(cfg);
             ChartsCatalog.Register(cfg);
+            HarCatalog.Register(cfg);
+            UrlCatalog.Register(cfg);
         });
 
         Themes.RegisterSuiteV1();

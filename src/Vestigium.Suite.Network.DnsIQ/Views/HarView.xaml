@@ -15,10 +15,15 @@
     </DockPanel>
     <DataGrid Grid.Row="1"
               ItemsSource="{Binding Hosts}"
+              Style="{StaticResource DataGrid.Compact}"
+              RowHeight="28"
               IsReadOnly="True"
               AutoGenerateColumns="False"
               CanUserAddRows="False"
-              HeadersVisibility="Column">
+              CanUserDeleteRows="False"
+              HeadersVisibility="Column"
+              HorizontalScrollBarVisibility="Auto"
+              VerticalScrollBarVisibility="Auto">
       <DataGrid.Columns>
         <DataGridTextColumn Header="Host" Binding="{Binding Host}" Width="*" />
         <DataGridTextColumn Header="Ports" Binding="{Binding Ports}" Width="120" />
