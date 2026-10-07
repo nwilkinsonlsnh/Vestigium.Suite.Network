@@ -19,6 +19,11 @@ public sealed class DnsIqSettings
     public bool ShowLegendProbeRtt { get; set; } = true;
     public bool ShowLegendProbeDist { get; set; } = true;
     public bool ShowLegendProbeControl { get; set; } = true;
+    public bool ExportLookup { get; set; } = true;
+    public bool ExportCapture { get; set; } = true;
+    public bool ExportProbe { get; set; } = true;
+    public bool ExportOpenAfter { get; set; }
+    public bool ExportOpenFolder { get; set; }
 }
 
 public sealed class DnsIqSettingsStore

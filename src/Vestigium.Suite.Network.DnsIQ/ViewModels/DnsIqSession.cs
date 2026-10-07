@@ -60,7 +60,12 @@ public sealed class DnsIqSession
             Seconds = (int)_settings.DefaultSeconds,
             StatusBarVisible = _settings.BarVisible,
             StatusBarDock = _settings.BarPosition == VestigiumStatusBarPosition.Top ? "Top" : "Bottom",
-            Source = _settings.SelectedSource
+            Source = _settings.SelectedSource,
+            ExportLookup = _main.ExportLookup,
+            ExportCapture = _main.ExportCapture,
+            ExportProbe = _main.ExportProbe,
+            ExportOpenAfter = _main.ExportOpenAfter,
+            ExportOpenFolder = _main.ExportOpenFolder
         };
         ChartTheme.CopyTo(Current);
         _store.Save(Current);
@@ -95,6 +100,11 @@ public sealed class DnsIqSession
             : 0;
         _main.RequestCount = Current.Requests;
         _main.DurationSeconds = Current.Seconds;
+        _main.ExportLookup = Current.ExportLookup;
+        _main.ExportCapture = Current.ExportCapture;
+        _main.ExportProbe = Current.ExportProbe;
+        _main.ExportOpenAfter = Current.ExportOpenAfter;
+        _main.ExportOpenFolder = Current.ExportOpenFolder;
         _settings.NarrowSources(_main.SelectedInterfaceIndex);
         _settings.LoadFrom(Current);
         _main.Bind.SourceAddress = _settings.SelectedSource;
