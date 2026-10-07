@@ -39,6 +39,8 @@ public sealed partial class DashboardViewModel : ObservableObject
 
     public Action<bool>? DashboardAvailabilityChanged { get; set; }
 
+    public IReadOnlyList<double> ProbeSamples { get; private set; } = [];
+
     public bool LookupPageOpen
     {
         get => DashboardPage == "Lookup";
@@ -99,6 +101,7 @@ public sealed partial class DashboardViewModel : ObservableObject
     public void ShowProbe(IReadOnlyList<double> rtts)
     {
         Unlock();
+        ProbeSamples = rtts;
         ProbeCurve = null;
         ProbeShape = null;
         ProbeControl = null;
