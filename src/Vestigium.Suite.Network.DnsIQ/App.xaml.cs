@@ -129,8 +129,6 @@ public partial class App : Application
         if (harItem is not null)
         {
             harItem.Content = new Views.HarView { DataContext = dns };
-            harItem.IsEnabled = false;
-            dns.HarAvailabilityChanged = enabled => harItem.IsEnabled = enabled;
             dns.SelectHar = () => window.HostShell.SelectedItem = harItem;
         }
 

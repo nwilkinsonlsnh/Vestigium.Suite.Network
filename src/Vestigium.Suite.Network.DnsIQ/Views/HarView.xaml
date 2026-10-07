@@ -9,6 +9,7 @@
     </Grid.RowDefinitions>
     <DockPanel Grid.Row="0" Margin="0,0,0,12">
       <Button DockPanel.Dock="Right" Content="Probe DNS" Style="{StaticResource Button.Primary}" Command="{Binding ProbeHostsCommand}" Padding="16,4" Margin="8,0,0,0" />
+      <Button DockPanel.Dock="Right" Content="Open capture…" Command="{Binding OpenCaptureCommand}" Padding="16,4" Margin="8,0,0,0" />
       <Button DockPanel.Dock="Right" Content="Cancel" Command="{Binding CancelCommand}" Padding="16,4" />
       <TextBlock Style="{StaticResource TextBlock.Caption}" Text="{Binding Status}" VerticalAlignment="Center" />
     </DockPanel>

@@ -16,16 +16,12 @@ public sealed class DnsIqCaptureTests
         try
         {
             var vm = new MainViewModel();
-            var enabled = false;
-            vm.HarAvailabilityChanged = value => enabled = value;
             vm.LoadCapture(path);
-            Assert.True(enabled);
             Assert.Contains(vm.Hosts, h => h.Host == "login.microsoftonline.com");
             Assert.DoesNotContain(vm.Hosts, h => h.Host == "notes.txt");
             Assert.Equal("", vm.Hosts[0].Dns);
 
             vm.LoadCapture(path + ".missing");
-            Assert.False(enabled);
             Assert.Empty(vm.Hosts);
             Assert.False(string.IsNullOrWhiteSpace(vm.Status));
         }

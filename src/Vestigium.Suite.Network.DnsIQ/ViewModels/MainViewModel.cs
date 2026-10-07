@@ -5,6 +5,7 @@ using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Vestigium.Controls.StatusBar;
+using Microsoft.Win32;
 using Vestigium.Helpers.LogParser;
 using Vestigium.Helpers.Network;
 using Vestigium.Suite.Network.Shell;
@@ -584,6 +585,19 @@ public sealed partial class MainViewModel : ObservableObject
 
     public Action? SelectHar { get; set; }
 
+    [RelayCommand]
+    private void OpenCapture()
+    {
+        var dialog = new OpenFileDialog
+        {
+            Filter = "Capture or text (*.har;*.txt)|*.har;*.txt|HAR (*.har)|*.har|Text (*.txt)|*.txt",
+            Title = "Open capture"
+        };
+        if (dialog.ShowDialog() != true)
+            return;
+        LoadCapture(dialog.FileName);
+    }
+
     public void LoadCapture(string path)
     {
         try
@@ -592,7 +606,6 @@ public sealed partial class MainViewModel : ObservableObject
             Hosts.Clear();
             foreach (var host in CaptureLoader.Unique(result.Hosts))
                 Hosts.Add(new HarHostRow(host));
-            HarAvailabilityChanged?.Invoke(true);
             Status = Hosts.Count == 0 ? "No hosts" : $"{Hosts.Count} hosts";
             if (StatusBar is not null)
                 StatusBar.Message = Status;
@@ -601,7 +614,6 @@ public sealed partial class MainViewModel : ObservableObject
         catch (Exception ex)
         {
             Hosts.Clear();
-            HarAvailabilityChanged?.Invoke(false);
             Status = string.IsNullOrWhiteSpace(ex.Message) ? "Failed" : ex.Message;
             if (StatusBar is not null)
                 StatusBar.Message = Status;
