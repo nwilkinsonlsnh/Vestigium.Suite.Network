@@ -12,7 +12,6 @@ public sealed partial class HarHostRow : ObservableObject
         Hits = host.HitCount;
         Sources = host.Sources.ToString();
         IsAddress = host.IsAddress;
-        Error = host.Error;
     }
 
     public string Host { get; }

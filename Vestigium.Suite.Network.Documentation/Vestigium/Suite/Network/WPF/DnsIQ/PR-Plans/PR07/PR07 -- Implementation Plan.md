@@ -3,7 +3,7 @@
 **Document ID:** VEST-SUITE-NETWORK-DNSIQ-PLAN-PR07
 **Host:** `Vestigium.Suite.Network.DnsIQ`
 **APPID:** `DnsIQ`
-**Status:** Live. PR07-04 done. Dashboard gate and mapped PTR are next.
+**Status:** Live. PR07-05 done. Owner gate is next. LogHost.Error is not on the 1.0.0 pin.
 **Date:** 8 October 2026
 **Binding:** [PR07 -- Requirements.md](PR07%20--%20Requirements.md) wins on this cut. Requirements_v1.2 wins on Lookup, the pulse shape, the settings path, and the Dashboard gate. PR06 wins on the capture print and on Skipped. This file wins on order.
 
@@ -84,7 +84,7 @@ No new package. No new shell item. No new sheet.
 | 2 | PR07-02 | Pulse in-flight cap 32. Details cap 8. | Done. Cancelled wait is not Failed. |
 | 3 | PR07-03 | HAR 32 MB gate. One parse for errors. | Done. Cap does not clear the grid. |
 | 4 | PR07-04 | Settings directory ACL. Path unchanged. | Done. Failure is a status, not a throw. |
-| 5 | PR07-05 | Dashboard `Unlock` only after Probe completes. Mapped PTR. | |
+| 5 | PR07-05 | Dashboard `Unlock` only after Probe completes. Mapped PTR. | Done. Lookup does not unlock. |
 | 6 | PR07-06 | Queue README. PR06 status line Closed. Host tests off the wire. | |
 | 7 | PR07-07 | Owner gate on the clone. | |
 
@@ -108,7 +108,7 @@ Done. Path stays ProgramData. Inheritance is stripped. Administrators full, curr
 
 ### PR07-05
 
-Delete the prelude `Unlock`. Call it where the pulse summary is posted. `ReverseName` maps before the nibble loop.
+Done. Prelude no longer unlocks. ShowProbe still does. Mapped IPv6 asks the IPv4 arpa name. LogHost on pin 1.0.0 has no Error. EntryErrors is back, after the 32 MB gate.
 
 ### PR07-06
 
@@ -163,4 +163,4 @@ Do not add KQL package references. Do not edit Helpers.Network. Do not move the 
 
 ## Next action
 
-PR07-05. Dashboard Unlock only after Probe completes. Mapped PTR. KQL stays parked.
+PR07-06. Queue README is current. PR06 status line Closed. Host tests off the wire. KQL stays parked.

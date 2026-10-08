@@ -47,18 +47,19 @@ public sealed class CaptureLoaderCapTests
     }
 
     [Fact]
-    public void Unique_keeps_the_error_har_already_parsed()
+    public void Entry_errors_come_from_the_har_pin_not_loghost()
     {
-        var hosts = new[]
+        var path = Path.Combine(Path.GetTempPath(), "dnsiq-" + Guid.NewGuid().ToString("N") + ".har");
+        File.WriteAllText(path, "{\"log\":{\"version\":\"1.2\",\"creator\":{\"name\":\"t\",\"version\":\"1\"},\"entries\":[{\"request\":{\"method\":\"GET\",\"url\":\"https://edge.example/\"},\"_error\":\"net::ERR_FAILED\"}]}}");
+        try
         {
-            new LogHost("edge.example", null, 1, LogHostSource.Request, false, "net::ERR_FAILED"),
-            new LogHost("edge.example", null, 1, LogHostSource.Request, false, "net::ERR_CONNECTION_RESET")
-        };
-
-        var unique = CaptureLoader.Unique(hosts);
-
-        Assert.Single(unique);
-        Assert.Equal("net::ERR_FAILED; net::ERR_CONNECTION_RESET", unique[0].Error);
+            var errors = CaptureLoader.EntryErrors(path);
+            Assert.Equal("net::ERR_FAILED", errors["edge.example"]);
+        }
+        finally
+        {
+            File.Delete(path);
+        }
     }
 
     [Fact]

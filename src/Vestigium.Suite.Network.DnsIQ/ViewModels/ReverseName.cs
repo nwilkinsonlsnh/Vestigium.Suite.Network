@@ -11,6 +11,9 @@ public static class ReverseName
         if (string.IsNullOrWhiteSpace(value) || !IPAddress.TryParse(value.Trim(), out var address))
             return false;
 
+        if (address.IsIPv4MappedToIPv6)
+            address = address.MapToIPv4();
+
         if (address.AddressFamily == AddressFamily.InterNetwork)
         {
             var bytes = address.GetAddressBytes();
