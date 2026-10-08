@@ -32,4 +32,16 @@ public sealed partial class HarHostRow : ObservableObject
     private string _error = "";
 
     public bool IsAddress { get; }
+
+    public IReadOnlyList<string> AnswerItems { get; private set; } = [];
+
+    public void SetAnswerItems(IReadOnlyList<string> items)
+        => AnswerItems = items ?? [];
+
+    partial void OnAnswersChanged(string value)
+    {
+        AnswerItems = string.IsNullOrWhiteSpace(value)
+            ? []
+            : value.Split(", ", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+    }
 }
