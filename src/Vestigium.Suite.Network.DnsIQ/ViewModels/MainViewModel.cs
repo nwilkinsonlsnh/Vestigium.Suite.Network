@@ -146,30 +146,40 @@ public sealed partial class MainViewModel : ObservableObject
         IsBusy = true;
         var sent = 0;
         var total = Hosts.Count;
+        var rows = Hosts.ToList();
         try
         {
-            foreach (var row in Hosts.ToList())
+            await LeaveUiAsync().ConfigureAwait(false);
+            foreach (var row in rows)
             {
                 token.ThrowIfCancellationRequested();
                 sent++;
-                ShowProgress(sent * 100d / total, visible: true);
-                Status = $"{sent}/{total}";
                 if (row.IsAddress)
                 {
                     var skipped = CaptureProbe.Map(row.IsAddress, row.Host, null, null);
-                    row.Dns = skipped.Dns;
-                    row.Answers = skipped.Answers;
+                    await OnUiAsync(() =>
+                    {
+                        row.Dns = skipped.Dns;
+                        row.Answers = skipped.Answers;
+                        ShowProgress(sent * 100d / total, visible: true);
+                        Status = $"{sent}/{total}";
+                    }).ConfigureAwait(false);
                     continue;
                 }
 
-                var a = await NetworkHelper.LookupAsync(row.Host, Copy(query!.Options, DnsRecordType.A), token).ConfigureAwait(true);
+                var a = await NetworkHelper.LookupAsync(row.Host, Copy(query!.Options, DnsRecordType.A), token).ConfigureAwait(false);
                 token.ThrowIfCancellationRequested();
-                var aaaa = await NetworkHelper.LookupAsync(row.Host, Copy(query.Options, DnsRecordType.Aaaa), token).ConfigureAwait(true);
+                var aaaa = await NetworkHelper.LookupAsync(row.Host, Copy(query.Options, DnsRecordType.Aaaa), token).ConfigureAwait(false);
                 var mapped = CaptureProbe.Map(false, row.Host, a, aaaa);
-                row.Dns = mapped.Dns;
-                row.Answers = mapped.Answers;
+                await OnUiAsync(() =>
+                {
+                    row.Dns = mapped.Dns;
+                    row.Answers = mapped.Answers;
+                    ShowProgress(sent * 100d / total, visible: true);
+                    Status = $"{sent}/{total}";
+                }).ConfigureAwait(false);
             }
-            Status = "Done";
+            await OnUiAsync(() => Status = "Done").ConfigureAwait(false);
         }
         catch (OperationCanceledException)
         {
@@ -181,8 +191,11 @@ public sealed partial class MainViewModel : ObservableObject
         }
         finally
         {
-            ShowProgress(0, visible: false);
-            IsBusy = false;
+            await OnUiAsync(() =>
+            {
+                ShowProgress(0, visible: false);
+                IsBusy = false;
+            }).ConfigureAwait(false);
             _cts.Dispose();
             _cts = null;
         }
@@ -231,16 +244,15 @@ public sealed partial class MainViewModel : ObservableObject
 
         try
         {
-            var preludeOk = await LookupAnswersAsync(query!, token).ConfigureAwait(true);
+            await LeaveUiAsync().ConfigureAwait(false);
+            var preludeOk = await LookupAnswersAsync(query!, token).ConfigureAwait(false);
             if (preludeOk)
-            {
-                Dashboard?.ShowLookup(Answers.ToList());
-            }
+                await OnUiAsync(() => Dashboard?.ShowLookup(Answers.ToList())).ConfigureAwait(false);
             if (lookup)
                 return;
             if (!PulsePrelude.MayStartPulse(preludeOk))
                 return;
-            await ProbeAnswersAsync(query!, token).ConfigureAwait(true);
+            await ProbeAnswersAsync(query!, token).ConfigureAwait(false);
         }
         catch (OperationCanceledException)
         {
@@ -254,15 +266,18 @@ public sealed partial class MainViewModel : ObservableObject
         }
         finally
         {
-            _pulseActive = false;
-            if (!lookup)
+            await OnUiAsync(() =>
             {
-                ShowProgress(0, visible: false);
-                StatusBar?.Engine.SetIdlePolicy(3000, "Idle. . .");
-            }
+                _pulseActive = false;
+                if (!lookup)
+                {
+                    ShowProgress(0, visible: false);
+                    StatusBar?.Engine.SetIdlePolicy(3000, "Idle. . .");
+                }
+                IsBusy = false;
+            }).ConfigureAwait(false);
             _cts.Dispose();
             _cts = null;
-            IsBusy = false;
         }
     }
 
@@ -270,18 +285,22 @@ public sealed partial class MainViewModel : ObservableObject
     {
         if (!query.AllTypes)
         {
-            var result = await NetworkHelper.LookupAsync(query.Name, query.Options, token).ConfigureAwait(true);
-            if (result.Rcode is DnsRcode.Timeout or DnsRcode.Failed)
+            var result = await NetworkHelper.LookupAsync(query.Name, query.Options, token).ConfigureAwait(false);
+            var failed = result.Rcode is DnsRcode.Timeout or DnsRcode.Failed;
+            var status = FormatLookupStatus(result.Rcode, result.Server ?? query.Options.Server, result.Elapsed, types: 1);
+            var records = result.Answers;
+            await OnUiAsync(() =>
             {
-                Answers.Clear();
-                Status = FormatLookupStatus(result.Rcode, result.Server ?? query.Options.Server, result.Elapsed, types: 1);
-                return false;
-            }
-
-            AppendAnswers(result.Answers);
-            SortAnswers();
-            Status = FormatLookupStatus(result.Rcode, result.Server ?? query.Options.Server, result.Elapsed, types: 1);
-            return true;
+                if (failed)
+                    Answers.Clear();
+                else
+                {
+                    AppendAnswers(records);
+                    SortAnswers();
+                }
+                Status = status;
+            }).ConfigureAwait(false);
+            return !failed;
         }
 
         DnsRcode? last = null;
@@ -292,27 +311,33 @@ public sealed partial class MainViewModel : ObservableObject
         foreach (var typed in TypedQueries(query))
         {
             token.ThrowIfCancellationRequested();
-            var result = await NetworkHelper.LookupAsync(typed.Name, typed.Options, token).ConfigureAwait(true);
+            var result = await NetworkHelper.LookupAsync(typed.Name, typed.Options, token).ConfigureAwait(false);
             last = result.Rcode;
             elapsed += result.Elapsed;
             server ??= result.Server;
             types++;
             if (result.Rcode is not DnsRcode.Timeout and not DnsRcode.Failed)
                 anyOk = true;
-            AppendAnswers(result.Answers);
+            var records = result.Answers;
+            await OnUiAsync(() => AppendAnswers(records)).ConfigureAwait(false);
         }
 
-        SortAnswers();
         var ok = anyOk || Answers.Count > 0;
-        if (!ok)
-            Answers.Clear();
         var rcode = ok ? DnsRcode.NoError : (last ?? DnsRcode.Failed);
-        Status = FormatLookupStatus(rcode, server, elapsed, types);
+        var status = FormatLookupStatus(rcode, server, elapsed, types);
+        await OnUiAsync(() =>
+        {
+            SortAnswers();
+            if (!ok)
+                Answers.Clear();
+            Status = status;
+        }).ConfigureAwait(false);
         return ok;
     }
 
     private async Task ProbeAnswersAsync(DnsIqQuery query, CancellationToken token)
     {
+        await LeaveUiAsync().ConfigureAwait(false);
         if (!PulsePlan.TryCreate(RequestCount, DurationSeconds, out var plan, out var reject))
         {
             Status = reject ?? "Failed";
@@ -391,7 +416,7 @@ public sealed partial class MainViewModel : ObservableObject
             Dashboard?.ShowProbe(samples);
             Status = summary;
             PostPulseBar(plan.Requests, plan.Requests, elapsed, window);
-        }).ConfigureAwait(true);
+        }).ConfigureAwait(false);
     }
 
     private static string FormatPulseLive(
@@ -413,13 +438,19 @@ public sealed partial class MainViewModel : ObservableObject
         });
     }
 
+    private static Task LeaveUiAsync()
+        => Task.Run(static () => { });
+
     private static void OnUi(Action action)
     {
         var dispatcher = Application.Current?.Dispatcher;
-        if (dispatcher is null || dispatcher.CheckAccess())
+        if (dispatcher is null)
+        {
             action();
-        else
-            dispatcher.BeginInvoke(action, DispatcherPriority.Background);
+            return;
+        }
+
+        dispatcher.BeginInvoke(action, DispatcherPriority.Background);
     }
 
     private static Task OnUiAsync(Action action)

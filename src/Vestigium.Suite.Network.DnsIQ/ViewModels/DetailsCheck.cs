@@ -44,6 +44,7 @@ public sealed class DetailsCheck
         var inflight = new List<Task>();
         try
         {
+            await Task.Run(static () => { }).ConfigureAwait(false);
             if (!string.Equals(line.Category, CaptureLines.Address, StringComparison.Ordinal))
             {
                 await InFlightGate.WaitAsync(inflight, MaxInFlight, token).ConfigureAwait(false);
@@ -178,7 +179,7 @@ public sealed class DetailsCheck
     private static void OnUi(Action action)
     {
         var dispatcher = Application.Current?.Dispatcher;
-        if (dispatcher is null || dispatcher.CheckAccess())
+        if (dispatcher is null)
         {
             action();
             return;
