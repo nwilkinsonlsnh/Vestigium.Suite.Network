@@ -3,7 +3,7 @@
 **Document ID:** VEST-SUITE-NETWORK-DNSIQ-PLAN-PR07
 **Host:** `Vestigium.Suite.Network.DnsIQ`
 **APPID:** `DnsIQ`
-**Status:** Live. PR07-01 done. Cap is not in.
+**Status:** Live. PR07-02 done. HAR gate is next.
 **Date:** 8 October 2026
 **Binding:** [PR07 -- Requirements.md](PR07%20--%20Requirements.md) wins on this cut. Requirements_v1.2 wins on Lookup, the pulse shape, the settings path, and the Dashboard gate. PR06 wins on the capture print and on Skipped. This file wins on order.
 
@@ -81,7 +81,7 @@ No new package. No new shell item. No new sheet.
 | Order | ID | Do | State |
 | ---: | :--- | :--- | :--- |
 | 1 | PR07-01 | `DetailsCheck`. View stops calling `NetworkHelper`. Close cancels. | Done. `0731412`. Cap is still 02. |
-| 2 | PR07-02 | Pulse in-flight cap 32. Details cap 8. | |
+| 2 | PR07-02 | Pulse in-flight cap 32. Details cap 8. | Done. Cancelled wait is not Failed. |
 | 3 | PR07-03 | HAR 32 MB gate. One parse for errors. | |
 | 4 | PR07-04 | Settings directory ACL. Path unchanged. | |
 | 5 | PR07-05 | Dashboard `Unlock` only after Probe completes. Mapped PTR. | |
@@ -96,7 +96,7 @@ Done. `DetailRow` and `DetailsCheck` own the token and the column writes. The vi
 
 ### PR07-02
 
-Pulse: before `inflight.Add`, wait until `inflight.Count < 32` or the token fires. Details: same shape, cap 8. A cancelled wait is not Failed.
+Done. Pulse waits for a slot at 32, then sends. Due time still slips if the slot is late. Details waits at 8, including the name confirm. A cancelled wait throws and does not write Failed.
 
 ### PR07-03
 
@@ -163,4 +163,4 @@ Do not add KQL package references. Do not edit Helpers.Network. Do not move the 
 
 ## Next action
 
-PR07-02. Pulse cap 32. Details cap 8. KQL stays parked.
+PR07-03. HAR 32 MB gate. One parse for errors. KQL stays parked.

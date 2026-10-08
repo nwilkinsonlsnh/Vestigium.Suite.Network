@@ -6,6 +6,8 @@ namespace Vestigium.Suite.Network.DnsIQ.ViewModels;
 
 public sealed class DetailsCheck
 {
+    public const int MaxInFlight = 8;
+
     private CancellationTokenSource? _cts;
 
     public IReadOnlyList<DetailRow> Start(
@@ -39,15 +41,23 @@ public sealed class DetailsCheck
         Action<string>? onHostCheck,
         CancellationToken token)
     {
-        var work = new List<Task>();
-        if (!string.Equals(line.Category, CaptureLines.Address, StringComparison.Ordinal))
-            work.Add(ConfirmHostAsync(line.Host, options, onHostCheck, token));
-        foreach (var row in rows)
-            work.Add(CheckRowAsync(row, options, token));
-
+        var inflight = new List<Task>();
         try
         {
-            await Task.WhenAll(work).ConfigureAwait(false);
+            if (!string.Equals(line.Category, CaptureLines.Address, StringComparison.Ordinal))
+            {
+                await InFlightGate.WaitAsync(inflight, MaxInFlight, token).ConfigureAwait(false);
+                inflight.Add(ConfirmHostAsync(line.Host, options, onHostCheck, token));
+            }
+
+            foreach (var row in rows)
+            {
+                token.ThrowIfCancellationRequested();
+                await InFlightGate.WaitAsync(inflight, MaxInFlight, token).ConfigureAwait(false);
+                inflight.Add(CheckRowAsync(row, options, token));
+            }
+
+            await Task.WhenAll(inflight).WaitAsync(token).ConfigureAwait(false);
         }
         catch (OperationCanceledException)
         {

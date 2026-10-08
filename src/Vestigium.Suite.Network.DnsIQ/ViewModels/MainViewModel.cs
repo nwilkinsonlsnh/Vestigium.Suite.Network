@@ -14,6 +14,8 @@ namespace Vestigium.Suite.Network.DnsIQ.ViewModels;
 
 public sealed partial class MainViewModel : ObservableObject
 {
+    public const int PulseInFlightCap = 32;
+
     private CancellationTokenSource? _cts;
     private bool _pulseActive;
     private bool _loading;
@@ -341,6 +343,7 @@ public sealed partial class MainViewModel : ObservableObject
         {
             token.ThrowIfCancellationRequested();
             await WaitUntilAsync(clock, plan.DueAt(i), token).ConfigureAwait(false);
+            await WaitForSlot().ConfigureAwait(false);
 
             var typed = cycle[(i - 1) % cycle.Count];
             inflight.Add(NetworkHelper.LookupAsync(typed.Name, typed.Options, token));
@@ -350,6 +353,19 @@ public sealed partial class MainViewModel : ObservableObject
                 sent, plan.Requests, clock.Elapsed, window,
                 FormatPulseLive(sent, plan.Requests, inflight.Count, server, clock.Elapsed, draining: false),
                 force: i == plan.Requests);
+        }
+
+        async Task WaitForSlot()
+        {
+            while (inflight.Count >= PulseInFlightCap)
+            {
+                token.ThrowIfCancellationRequested();
+                DrainCompleted(inflight, ref answered, ref timeout, ref refused, samples, ref server);
+                if (inflight.Count < PulseInFlightCap)
+                    return;
+                await Task.WhenAny(inflight).WaitAsync(token).ConfigureAwait(false);
+                DrainCompleted(inflight, ref answered, ref timeout, ref refused, samples, ref server);
+            }
         }
 
         while (inflight.Count > 0)
