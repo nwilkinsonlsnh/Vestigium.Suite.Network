@@ -69,6 +69,8 @@ public sealed class DnsIqSession
         };
         ChartTheme.CopyTo(Current);
         _store.Save(Current);
+        if (!string.IsNullOrWhiteSpace(_store.LastAclNote))
+            _main.Status = _store.LastAclNote;
     }
 
     private void ApplyThemeAndBar()

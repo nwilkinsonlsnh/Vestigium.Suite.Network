@@ -3,7 +3,7 @@
 **Document ID:** VEST-SUITE-NETWORK-DNSIQ-PLAN-PR07
 **Host:** `Vestigium.Suite.Network.DnsIQ`
 **APPID:** `DnsIQ`
-**Status:** Live. PR07-03 done. Settings ACL is next.
+**Status:** Live. PR07-04 done. Dashboard gate and mapped PTR are next.
 **Date:** 8 October 2026
 **Binding:** [PR07 -- Requirements.md](PR07%20--%20Requirements.md) wins on this cut. Requirements_v1.2 wins on Lookup, the pulse shape, the settings path, and the Dashboard gate. PR06 wins on the capture print and on Skipped. This file wins on order.
 
@@ -83,7 +83,7 @@ No new package. No new shell item. No new sheet.
 | 1 | PR07-01 | `DetailsCheck`. View stops calling `NetworkHelper`. Close cancels. | Done. `0731412`. Cap is still 02. |
 | 2 | PR07-02 | Pulse in-flight cap 32. Details cap 8. | Done. Cancelled wait is not Failed. |
 | 3 | PR07-03 | HAR 32 MB gate. One parse for errors. | Done. Cap does not clear the grid. |
-| 4 | PR07-04 | Settings directory ACL. Path unchanged. | |
+| 4 | PR07-04 | Settings directory ACL. Path unchanged. | Done. Failure is a status, not a throw. |
 | 5 | PR07-05 | Dashboard `Unlock` only after Probe completes. Mapped PTR. | |
 | 6 | PR07-06 | Queue README. PR06 status line Closed. Host tests off the wire. | |
 | 7 | PR07-07 | Owner gate on the clone. | |
@@ -104,7 +104,7 @@ Done. A `.har` at 32 MB sets status and returns. The grid stays. Text is not thi
 
 ### PR07-04
 
-After `CreateDirectory`, set the directory ACL. Do not fail the launch if the ACL set fails on a locked existing folder. Status on save, not a throw through startup. Existing world-writable folder is noted, not silently treated as fixed.
+Done. Path stays ProgramData. Inheritance is stripped. Administrators full, current user modify. A folder that stays Users-modify sets `AclOpenNote` on the status bar. A failed ACL set does not throw and does not skip the file write.
 
 ### PR07-05
 
@@ -163,4 +163,4 @@ Do not add KQL package references. Do not edit Helpers.Network. Do not move the 
 
 ## Next action
 
-PR07-04. Settings directory ACL. Path unchanged. KQL stays parked.
+PR07-05. Dashboard Unlock only after Probe completes. Mapped PTR. KQL stays parked.

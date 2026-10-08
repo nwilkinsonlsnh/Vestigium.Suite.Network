@@ -74,6 +74,30 @@ public sealed class DnsIqSettingsStoreTests
         Assert.Equal(expected, DnsIqSettingsStore.DefaultRoot);
     }
 
+    [Fact]
+    public void New_settings_directory_does_not_grant_users_modify()
+    {
+        var root = NewRoot();
+        var store = new DnsIqSettingsStore(root);
+        store.Save(new DnsIqSettings());
+
+        Assert.True(File.Exists(store.FilePath));
+        if (!OperatingSystem.IsWindows())
+            return;
+
+        Assert.Null(store.LastAclNote);
+        Assert.False(DnsIqSettingsStore.GrantsUsersModify(root));
+    }
+
+    [Fact]
+    public void A_locked_acl_does_not_throw_and_is_noted()
+    {
+        Assert.Equal(
+            "Settings folder is still writable by Users. The ACL was not replaced.",
+            DnsIqSettingsStore.AclOpenNote);
+        Assert.False(string.IsNullOrWhiteSpace(DnsIqSettingsStore.AclFailedNote));
+    }
+
     private static string NewRoot()
     {
         var root = Path.Combine(Path.GetTempPath(), "DnsIQ-tests", Guid.NewGuid().ToString("N"));
