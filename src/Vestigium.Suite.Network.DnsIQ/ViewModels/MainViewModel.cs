@@ -638,18 +638,20 @@ public sealed partial class MainViewModel : ObservableObject
 
     public void LoadCapture(string path)
     {
+        if (CaptureLoader.IsOverHarCap(path))
+        {
+            Status = CaptureLoader.HarCapStatus;
+            if (StatusBar is not null)
+                StatusBar.Message = Status;
+            return;
+        }
+
         try
         {
             var result = CaptureLoader.Load(path);
-            var errors = CaptureLoader.EntryErrors(path);
             Hosts.Clear();
             foreach (var host in CaptureLoader.Unique(result.Hosts))
-            {
-                var row = new HarHostRow(host);
-                if (errors.TryGetValue(host.Host, out var error))
-                    row.Error = error;
-                Hosts.Add(row);
-            }
+                Hosts.Add(new HarHostRow(host));
             Status = Hosts.Count == 0 ? "No hosts" : $"{Hosts.Count} hosts";
             if (StatusBar is not null)
                 StatusBar.Message = Status;

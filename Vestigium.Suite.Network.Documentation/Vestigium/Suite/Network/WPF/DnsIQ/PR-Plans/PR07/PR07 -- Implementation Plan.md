@@ -3,7 +3,7 @@
 **Document ID:** VEST-SUITE-NETWORK-DNSIQ-PLAN-PR07
 **Host:** `Vestigium.Suite.Network.DnsIQ`
 **APPID:** `DnsIQ`
-**Status:** Live. PR07-02 done. HAR gate is next.
+**Status:** Live. PR07-03 done. Settings ACL is next.
 **Date:** 8 October 2026
 **Binding:** [PR07 -- Requirements.md](PR07%20--%20Requirements.md) wins on this cut. Requirements_v1.2 wins on Lookup, the pulse shape, the settings path, and the Dashboard gate. PR06 wins on the capture print and on Skipped. This file wins on order.
 
@@ -82,7 +82,7 @@ No new package. No new shell item. No new sheet.
 | ---: | :--- | :--- | :--- |
 | 1 | PR07-01 | `DetailsCheck`. View stops calling `NetworkHelper`. Close cancels. | Done. `0731412`. Cap is still 02. |
 | 2 | PR07-02 | Pulse in-flight cap 32. Details cap 8. | Done. Cancelled wait is not Failed. |
-| 3 | PR07-03 | HAR 32 MB gate. One parse for errors. | |
+| 3 | PR07-03 | HAR 32 MB gate. One parse for errors. | Done. Cap does not clear the grid. |
 | 4 | PR07-04 | Settings directory ACL. Path unchanged. | |
 | 5 | PR07-05 | Dashboard `Unlock` only after Probe completes. Mapped PTR. | |
 | 6 | PR07-06 | Queue README. PR06 status line Closed. Host tests off the wire. | |
@@ -100,7 +100,7 @@ Done. Pulse waits for a slot at 32, then sends. Due time still slips if the slot
 
 ### PR07-03
 
-`new FileInfo(path).Length >= 32 * 1024 * 1024` refuses a `.har`. Text scrape path is not this gate. `EntryErrors` takes the `JsonDocument` already opened, or it is deleted and the error map is filled in `Load`.
+Done. A `.har` at 32 MB sets status and returns. The grid stays. Text is not this gate. `EntryErrors` is gone. `Unique` keeps the error `HarReader` already parsed.
 
 ### PR07-04
 
@@ -163,4 +163,4 @@ Do not add KQL package references. Do not edit Helpers.Network. Do not move the 
 
 ## Next action
 
-PR07-03. HAR 32 MB gate. One parse for errors. KQL stays parked.
+PR07-04. Settings directory ACL. Path unchanged. KQL stays parked.
