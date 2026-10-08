@@ -3,7 +3,7 @@
 **Document ID:** VEST-SUITE-NETWORK-DNSIQ-PLAN-PR07
 **Host:** `Vestigium.Suite.Network.DnsIQ`
 **APPID:** `DnsIQ`
-**Status:** Live. Papers only. No slice started.
+**Status:** Live. PR07-01 done. Cap is not in.
 **Date:** 8 October 2026
 **Binding:** [PR07 -- Requirements.md](PR07%20--%20Requirements.md) wins on this cut. Requirements_v1.2 wins on Lookup, the pulse shape, the settings path, and the Dashboard gate. PR06 wins on the capture print and on Skipped. This file wins on order.
 
@@ -80,7 +80,7 @@ No new package. No new shell item. No new sheet.
 
 | Order | ID | Do | State |
 | ---: | :--- | :--- | :--- |
-| 1 | PR07-01 | `DetailsCheck`. View stops calling `NetworkHelper`. Close cancels. | |
+| 1 | PR07-01 | `DetailsCheck`. View stops calling `NetworkHelper`. Close cancels. | Done. `0731412`. Cap is still 02. |
 | 2 | PR07-02 | Pulse in-flight cap 32. Details cap 8. | |
 | 3 | PR07-03 | HAR 32 MB gate. One parse for errors. | |
 | 4 | PR07-04 | Settings directory ACL. Path unchanged. | |
@@ -91,6 +91,8 @@ No new package. No new shell item. No new sheet.
 ### PR07-01
 
 Move the check loop out of `CaptureDetailsView.xaml.cs`. The view sets ItemsSource and listens for column changes. `Lookup` and `Lookup + Probe` stay commands on `MainViewModel`.
+
+Done. `DetailRow` and `DetailsCheck` own the token and the column writes. The view has no `NetworkHelper` call. Close and a new `Show` cancel. Fan-out is still unbounded. That is PR07-02.
 
 ### PR07-02
 
@@ -161,4 +163,4 @@ Do not add KQL package references. Do not edit Helpers.Network. Do not move the 
 
 ## Next action
 
-Papers are the push. PR07-01 waits until the owner accepts this cut. KQL stays parked.
+PR07-02. Pulse cap 32. Details cap 8. KQL stays parked.
