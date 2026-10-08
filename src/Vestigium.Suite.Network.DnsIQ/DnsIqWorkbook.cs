@@ -6,6 +6,9 @@ namespace Vestigium.Suite.Network.DnsIQ;
 
 public static class DnsIqWorkbook
 {
+    public static IReadOnlyList<string> CaptureHeaders { get; } =
+        ["Host", "Ports", "Hits", "Sources", "DNS", "Error", "Category", "Answer"];
+
     public static bool MayOpen(string saved, string dialogPath)
         => string.Equals(saved, dialogPath, StringComparison.OrdinalIgnoreCase)
            && saved.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase);
@@ -13,7 +16,7 @@ public static class DnsIqWorkbook
     public static bool TryWrite(
         string path,
         IReadOnlyList<AnswerRow> lookup,
-        IReadOnlyList<HarHostRow> capture,
+        IReadOnlyList<CaptureLine> capture,
         IReadOnlyList<double> probe,
         IReadOnlyList<(string Key, object? Value)> cover,
         out string? saved,
@@ -62,10 +65,10 @@ public static class DnsIqWorkbook
             rows.Select(row => (IReadOnlyList<object?>)[row.Type, row.Name, row.Data, row.Ttl]),
             "Lookup");
 
-    private static SheetTable CaptureTable(IReadOnlyList<HarHostRow> rows)
+    private static SheetTable CaptureTable(IReadOnlyList<CaptureLine> rows)
         => SheetTable.Create(
-            ["Host", "Ports", "Hits", "Sources", "DNS", "Error", "Answers"],
-            rows.Select(row => (IReadOnlyList<object?>)[row.Host, row.Ports, row.Hits, row.Sources, row.Dns, row.Error, row.Answers]),
+            CaptureHeaders,
+            rows.Select(row => (IReadOnlyList<object?>)[row.Host, row.Ports, row.Hits, row.Sources, row.Dns, row.Error, row.Category, row.Answer]),
             "Capture");
 
     private static SheetTable ProbeTable(IReadOnlyList<double> samples)
