@@ -1,5 +1,7 @@
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Vestigium.Suite.Network.DnsIQ.ViewModels;
 using Vestigium.Suite.Network.Shell;
 
 namespace Vestigium.Suite.Network.DnsIQ.Views;
@@ -24,6 +26,15 @@ public partial class DnsIqView : UserControl
             return;
 
         viewer.ScrollToVerticalOffset(viewer.VerticalOffset - e.Delta);
+        e.Handled = true;
+    }
+
+    private void AnswerGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+    {
+        if (sender is not DataGrid grid || grid.SelectedItem is not AnswerRow row || DataContext is not MainViewModel host)
+            return;
+        var lines = DetailRows.FromLookup(row, host.Answers.ToList());
+        CaptureDetailsWindow.Open(Window.GetWindow(this), host, DetailRows.Lead(row), lines);
         e.Handled = true;
     }
 

@@ -8,7 +8,6 @@ namespace Vestigium.Suite.Network.DnsIQ.Views;
 
 public partial class HarView : UserControl
 {
-    private CaptureDetailsWindow? _details;
     private ScrollViewer? _hostScroll;
     private ScrollBarVisibility _hostScrollWas;
 
@@ -45,17 +44,7 @@ public partial class HarView : UserControl
             .ToList();
         if (lines.Count == 0)
             lines.Add(line);
-
-        if (_details is null || !_details.IsLoaded)
-        {
-            _details = new CaptureDetailsWindow { Owner = Window.GetWindow(this) };
-            _details.Closed += (_, _) => _details = null;
-        }
-
-        _details.ShowHost(host, line, lines);
-        if (!_details.IsVisible)
-            _details.Show();
-        _details.Activate();
+        CaptureDetailsWindow.Open(Window.GetWindow(this), host, line, lines);
         e.Handled = true;
     }
 
