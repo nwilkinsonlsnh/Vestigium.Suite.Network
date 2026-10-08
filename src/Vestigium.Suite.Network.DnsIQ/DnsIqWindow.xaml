@@ -9,11 +9,6 @@
         WindowStartupLocation="Manual"
         Background="{DynamicResource Vestigium.Brushes.Surface.Window}">
   <DockPanel Style="{StaticResource DockPanel.Standard}">
-    <Menu DockPanel.Dock="Top">
-      <MenuItem Header="File">
-        <MenuItem Header="Open capture…" Click="OpenCapture_Click" />
-      </MenuItem>
-    </Menu>
     <Grid DockPanel.Dock="Top" Margin="12,8,12,0">
       <ItemsControl HorizontalAlignment="Left"
                     ItemsSource="{Binding NavItems, ElementName=RootShell}">

@@ -1,6 +1,5 @@
 using System.Windows;
 using System.Windows.Controls;
-using Microsoft.Win32;
 using Vestigium.Controls.Shell;
 using Vestigium.Suite.Network.DnsIQ.ViewModels;
 using Vestigium.Suite.Network.DnsIQ.Views;
@@ -77,20 +76,5 @@ public partial class DnsIqWindow : Window
     {
         if (HelpTab.IsChecked == true)
             HelpTab.IsChecked = false;
-    }
-
-    private void OpenCapture_Click(object sender, RoutedEventArgs e)
-    {
-        if (RootShell["DnsIQ"]?.Content is not DnsIqView { DataContext: MainViewModel dns })
-            return;
-
-        var dialog = new OpenFileDialog
-        {
-            Filter = "Capture or text (*.har;*.txt)|*.har;*.txt|HAR (*.har)|*.har|Text (*.txt)|*.txt",
-            Title = "Open capture"
-        };
-        if (dialog.ShowDialog(this) != true)
-            return;
-        dns.LoadCapture(dialog.FileName);
     }
 }
