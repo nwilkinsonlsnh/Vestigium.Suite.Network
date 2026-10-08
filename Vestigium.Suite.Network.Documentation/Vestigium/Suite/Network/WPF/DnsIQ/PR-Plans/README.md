@@ -3,7 +3,8 @@
 **Host:** `Vestigium.Suite.Network.DnsIQ`
 **APPID:** `DnsIQ`
 **Status:** Live — [PR07 -- Implementation Plan.md](PR07/PR07%20--%20Implementation%20Plan.md)
-**Next slice:** PR07-01
+**Next slice:** PR07-02
+**Done:** PR07-01. Checks left the view. Cap is not in.
 **Not this push:** KQL bar. Packages are pinned. DnsIQ does not reference them.
 
 This file is the queue keeper. It is not the plan.
@@ -39,7 +40,7 @@ Product papers live **outside** this folder:
 | [Requirements_v1.2.md](../Requirements_v1.2.md) | Window. Persist path. Port. Combos. Probe prelude. Dashboard gate. Chrome. |
 | [Design_v1.2.md](../Design_v1.2.md) | Types and flow. |
 | [PR07 -- Requirements.md](PR07/PR07%20--%20Requirements.md) | Details check owner. Fan-out caps. HAR gate. Settings ACL. Mapped PTR. |
-| [PR07 -- Implementation Plan.md](PR07/PR07%20--%20Implementation%20Plan.md) | Slice order. Not started. |
+| [PR07 -- Implementation Plan.md](PR07/PR07%20--%20Implementation%20Plan.md) | Slice order. PR07-01 done. |
 | [Completed/PR06](Completed/PR06/PR06%20--%20Requirements.md) | One capture line per answer. Details window. Reverse only there. Closed. |
 | [Completed/PR05](Completed/PR05/PR05%20--%20Requirements.md) | Help reader and Exports workbook. Closed. |
 | [Completed/PR04](Completed/PR04/PR04%20--%20Requirements.md) | HAR host extract, text scrape, DNS probe. Closed. |
