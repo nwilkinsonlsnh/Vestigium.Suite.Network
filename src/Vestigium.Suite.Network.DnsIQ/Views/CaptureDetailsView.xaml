@@ -11,7 +11,7 @@
       <Button Content="Close" Style="{StaticResource Button.Secondary}" Click="OnClose" Padding="16,4" Margin="0,0,8,0" />
       <Button Content="Lookup" Style="{StaticResource Button.Primary}" Click="OnLookup" Padding="16,4" Margin="0,0,8,0" />
       <Button Content="Lookup + Probe" Style="{StaticResource Button.Secondary}" Click="OnLookupAndProbe" Padding="16,4" Margin="0,0,8,0" />
-      <TextBlock x:Name="TitleBlock" Style="{StaticResource TextBlock.Section}" VerticalAlignment="Center" TextWrapping="Wrap" />
+      <TextBlock x:Name="TitleBlock" Style="{StaticResource TextBlock.Caption}" VerticalAlignment="Center" TextWrapping="Wrap" />
     </StackPanel>
     <DataGrid x:Name="Lines" Grid.Row="1"
               Style="{StaticResource DataGrid.Compact}"
