@@ -12,8 +12,7 @@ public static class DetailRows
         var lines = new List<CaptureLine>();
         foreach (var row in rows)
         {
-            lines.Add(Line(name, row.Type, row.Data));
-            lines.Add(Line(name, "Ttl", row.Ttl.ToString()));
+            lines.Add(Line(name, row.Type, row.Data, row.Ttl));
             lines.AddRange(Fields(name, row));
         }
 
@@ -25,7 +24,7 @@ public static class DetailRows
         var category = CaptureLines.Category(selected.Name);
         if (category.Length == 0)
             category = selected.Type;
-        return new CaptureLine(selected.Name, "", 0, selected.Type, "", "", category, selected.Data);
+        return new CaptureLine(selected.Name, "", selected.Ttl, selected.Type, "", "", category, selected.Data);
     }
 
     private static IEnumerable<CaptureLine> Fields(string host, AnswerRow row)
@@ -33,23 +32,23 @@ public static class DetailRows
         var parts = row.Data.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         if (row.Type.Equals("MX", StringComparison.OrdinalIgnoreCase) && parts.Length >= 2)
         {
-            yield return Line(host, "Preference", parts[0]);
-            yield return Line(host, "Exchanger", string.Join(' ', parts.Skip(1)));
+            yield return Line(host, "Preference", parts[0], row.Ttl);
+            yield return Line(host, "Exchanger", string.Join(' ', parts.Skip(1)), row.Ttl);
             yield break;
         }
 
         if (row.Type.Equals("SOA", StringComparison.OrdinalIgnoreCase) && parts.Length >= 7)
         {
-            yield return Line(host, "Primary", parts[0]);
-            yield return Line(host, "Contact", parts[1]);
-            yield return Line(host, "Serial", parts[2]);
-            yield return Line(host, "Refresh", parts[3]);
-            yield return Line(host, "Retry", parts[4]);
-            yield return Line(host, "Expire", parts[5]);
-            yield return Line(host, "Minimum", parts[6]);
+            yield return Line(host, "Primary", parts[0], row.Ttl);
+            yield return Line(host, "Contact", parts[1], row.Ttl);
+            yield return Line(host, "Serial", parts[2], row.Ttl);
+            yield return Line(host, "Refresh", parts[3], row.Ttl);
+            yield return Line(host, "Retry", parts[4], row.Ttl);
+            yield return Line(host, "Expire", parts[5], row.Ttl);
+            yield return Line(host, "Minimum", parts[6], row.Ttl);
         }
     }
 
-    private static CaptureLine Line(string host, string category, string answer)
-        => new(host, "", 0, "", "", "", category, answer);
+    private static CaptureLine Line(string host, string category, string answer, int ttl)
+        => new(host, "", ttl, "", "", "", category, answer);
 }
