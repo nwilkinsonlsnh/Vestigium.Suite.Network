@@ -7,6 +7,8 @@ namespace Vestigium.Suite.Network.DnsIQ.Views;
 
 public partial class HarView : UserControl
 {
+    private CaptureDetailsWindow? _details;
+
     public HarView()
     {
         InitializeComponent();
@@ -21,16 +23,17 @@ public partial class HarView : UserControl
             .ToList();
         if (lines.Count == 0)
             lines.Add(line);
-        Details.Show(host, line, lines);
-        GridHost.Visibility = Visibility.Collapsed;
-        Details.Visibility = Visibility.Visible;
-        e.Handled = true;
-    }
 
-    private void OnCloseDetails(object sender, EventArgs e)
-    {
-        Details.CancelChecks();
-        Details.Visibility = Visibility.Collapsed;
-        GridHost.Visibility = Visibility.Visible;
+        if (_details is null || !_details.IsLoaded)
+        {
+            _details = new CaptureDetailsWindow { Owner = Window.GetWindow(this) };
+            _details.Closed += (_, _) => _details = null;
+        }
+
+        _details.ShowHost(host, line, lines);
+        if (!_details.IsVisible)
+            _details.Show();
+        _details.Activate();
+        e.Handled = true;
     }
 }

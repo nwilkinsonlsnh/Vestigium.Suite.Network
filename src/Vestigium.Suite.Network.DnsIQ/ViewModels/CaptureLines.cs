@@ -8,6 +8,7 @@ public static class CaptureLines
     public const string Ipv4 = "IPv4";
     public const string Ipv6 = "IPv6";
     public const string Address = "Address";
+    public const string Fqdn = "FQDN";
 
     public static IReadOnlyList<CaptureLine> From(IEnumerable<HarHostRow> hosts)
     {
@@ -32,8 +33,10 @@ public static class CaptureLines
 
     public static string Category(string answer)
     {
-        if (!IPAddress.TryParse(answer, out var address))
+        if (string.IsNullOrWhiteSpace(answer))
             return "";
+        if (!IPAddress.TryParse(answer, out var address))
+            return Fqdn;
         return address.AddressFamily == AddressFamily.InterNetwork ? Ipv4 : Ipv6;
     }
 

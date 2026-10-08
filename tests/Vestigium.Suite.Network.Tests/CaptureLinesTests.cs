@@ -18,6 +18,13 @@ public sealed class CaptureLinesTests
     }
 
     [Fact]
+    public void A_name_answer_is_an_fqdn()
+    {
+        var lines = CaptureLines.From(Row("login.microsoftonline.com", address: false, "Resolved", "login.mso.msidentity.com", "20.190.152.19"));
+        Assert.Equal(["FQDN", "IPv4"], lines.Select(line => line.Category).ToArray());
+    }
+
+    [Fact]
     public void A_host_with_no_answers_keeps_one_line()
     {
         var lines = CaptureLines.From(Row("missing.example", address: false, "NxDomain"));
