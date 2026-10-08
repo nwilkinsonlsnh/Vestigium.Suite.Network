@@ -19,33 +19,35 @@ public static class HelpCopy
             ], []),
             new("Lookup",
             [
-                "The DnsIQ tab is one name. Lookup writes the answer grid. A blank Name means localhost. The name is not persisted.",
-                "Server, Port, Type, and Interface are the query. Server is the resolver. An empty server is the first adapter DNS. Port defaults to 53. Type defaults to All. Interface is a closed list from the adapters on this machine, plus Any.",
-                "Lookup writes Type, Name, Data, and Ttl. A failed Lookup clears the grid. One job in the process. Cancel stops it. Probe and Capture use that same job. A second click while one is running does not start another.",
-                Head("When to use it"),
-                "Use Lookup when the question is what this resolver says about one name. It is not a pulse. It does not open a capture."
+                "Lookup asks one name and writes the answer grid. A blank Name means localhost, and that name is not persisted. The question is what this resolver says right now. It is not a pulse, and it does not open a capture.",
+                "Server, Port, Type, and Interface are the query. Server is the resolver address. An empty server is the first adapter DNS. Port defaults to 53. Type defaults to All, which asks the closed list one type at a time and is not a DNS ANY query. Interface is the adapters on this machine, plus Any. Source, on Settings, is the local bind address. It is not spoofing.",
+                "Lookup writes Type, Name, Data, and Ttl. Read Type against Glossary, Records. Data is the answer for that type: an address, an alias, a mail host, a nameserver, a reverse name, a text string, or the zone's start of authority. Ttl is the resolver's time to live, in seconds. It is not a promise that the site will load.",
+                "A failed Lookup clears the grid. One job in the process. Cancel stops it. Probe and Capture use that same job. A second click while one is running does not start another. Lookup alone does not unlock Dashboard.",
+                "Use Lookup when the question is one name and one answer set. If you need the times, use Probe. If the names are already in a file, use Capture. The grid on this page is the print Export will write."
             ], []),
             new("Probe",
             [
-                "Probe is that Lookup, then a pulse of N lookups over X seconds. The prelude fills the grid. The pulse does not append rows.",
-                "Requests and Seconds live on Settings, on the Probe page. The defaults are 1000 and 60. The status bar during the pulse is sent/total. The center of the bar is the time rail.",
-                "Dashboard stays disabled until a Probe finishes. Lookup alone does not unlock it. NxDomain counts as answered. Timeout and Refused are counts only.",
-                Head("When to use it"),
-                "Use Probe when one answer is not enough and you need the times. The charts are a reading of those times. They are not a second measurement."
+                "Probe is that Lookup, then a pulse of N lookups over X seconds. The prelude fills the grid. The pulse does not append rows. The point is the times, not a second copy of the answers.",
+                "Requests and Seconds live on Settings, on the Probe page. The defaults are 1000 and 60. The status bar during the pulse is sent/total. The center of the bar is the time rail. Cancel stops the job. Probe uses the same single job as Lookup and Capture.",
+                "NxDomain counts as answered. Timeout and Refused are counts only. They do not become rows, and they do not become samples. The status line at the end is the median, the rate, and those counts. That line is the summary. It is not a second measurement.",
+                "Dashboard stays disabled until a Probe finishes. Lookup alone does not unlock it. A failed prelude does not start the pulse, and it does not unlock the charts. A later Probe replaces the sample list. It does not append to the last run.",
+                "Use Probe when one answer is not enough and you need the times. The charts are a reading of those times. Export writes them as Index and RttMs. The pulse itself does not write a row."
             ], []),
             new("Capture",
             [
-                "Capture is the hosts in a file. Open capture reads a HAR, or a UTF-8 .txt, or a .har that is not JSON. A file that parses starts the DNS probe. The row menu is Lookup, or Lookup + Probe, for that host.",
-                "Columns are Host, Ports, Hits, Sources, DNS, Error, and Answers. DNS is Resolved, NxDomain, TimedOut, Refused, Failed, or Skipped. Skipped is an address and is not sent.",
-                "Resolved is not Reachable. A name that answers is not a site that loaded. This page is not a HAR analyzer: no waterfall, no cookies, no header dump, no replay.",
-                Head("When to use it"),
-                "Use Capture when the names are already in a dump, a pasted email, or a sheet saved as text. The file is the intake. There is no paste box."
+                "Capture is the hosts in a file. Open capture reads a HAR, or a UTF-8 .txt, or a .har that is not JSON. A file that parses starts the DNS probe. There is no paste box. The file is the intake.",
+                "Columns are Host, Ports, Hits, Sources, DNS, Error, and Answers. Host is the name taken from the file. Ports and Hits say where it appeared and how often. Sources says whether it came from a request, a redirect, a page, or the text. DNS is the probe result. Answers is what A and AAAA returned.",
+                "DNS is Resolved, NxDomain, TimedOut, Refused, Failed, or Skipped. Skipped is an address and is not sent. Resolved is not Reachable. A name that answers is not a site that loaded. Error is the parse or probe failure for that row. It is not a second status line.",
+                "The row menu is Lookup, or Lookup + Probe, for that host. Both use the one job in the process. This page is not a HAR analyzer: no waterfall, no cookies, no header dump, no replay. Opening a new file replaces the grid. It does not append.",
+                "Use Capture when the names are already in a dump, a pasted email, or a sheet saved as text. Export writes this grid, including Error. It does not write the raw file."
             ], []),
             new("Dashboard",
             [
-                "Dashboard is a reading of the last run. It is not a second measurement.",
-                "The Lookup tab is the type mix of the last answer grid. The Probe tab is the RTT curve, the histogram, and the control chart when Analytics returns fences. The empty state points back to DnsIQ.",
-                "The tab stays disabled until a Probe finishes. Lookup alone does not unlock it."
+                "Dashboard is a reading of the last run. It is not a second measurement. The tab stays disabled until a Probe finishes. Lookup alone does not unlock it. The empty state points back to DnsIQ.",
+                "The Lookup tab is the type mix of the last answer grid. Each slice is a type and a count. It is the same rows Lookup already wrote. A failed lookup that cleared the grid leaves this tab empty.",
+                "The Probe tab is the RTT curve, the histogram, and the control chart when Analytics returns fences. The samples are the times the pulse kept. Timeout and Refused are not on the curve. A later Probe replaces the list.",
+                "The charts do not ask the resolver again. They do not change the grid. They do not write the workbook. Export writes the rows and the times. The picture is a reading of those numbers.",
+                "Use Dashboard after a Probe, when the question is the shape of the run rather than one row. If the tab is disabled, the pulse has not finished. Go back to DnsIQ and run Probe."
             ], []),
             new("Exports",
             [
