@@ -29,6 +29,7 @@ public partial class HarView : UserControl
 
     private void OnCloseDetails(object sender, EventArgs e)
     {
+        Details.CancelChecks();
         Details.Visibility = Visibility.Collapsed;
         GridHost.Visibility = Visibility.Visible;
     }
