@@ -1,0 +1,36 @@
+<UserControl x:Class="Vestigium.Suite.Network.DnsIQ.Views.CaptureDetailsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="{DynamicResource Vestigium.Brushes.Surface.Window}">
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+    </Grid.RowDefinitions>
+    <StackPanel Grid.Row="0" Orientation="Horizontal" Style="{StaticResource StackPanel.Toolbar}" Margin="0,0,0,12">
+      <Button Content="Close" Style="{StaticResource Button.Secondary}" Click="OnClose" Padding="16,4" Margin="0,0,8,0" />
+      <Button Content="Lookup" Style="{StaticResource Button.Primary}" Click="OnLookup" Padding="16,4" Margin="0,0,8,0" />
+      <Button Content="Lookup + Probe" Style="{StaticResource Button.Secondary}" Click="OnLookupAndProbe" Padding="16,4" Margin="0,0,8,0" />
+      <TextBlock x:Name="TitleBlock" Style="{StaticResource TextBlock.Section}" VerticalAlignment="Center" TextWrapping="Wrap" />
+    </StackPanel>
+    <DataGrid x:Name="Lines" Grid.Row="1"
+              Style="{StaticResource DataGrid.Compact}"
+              RowHeight="28"
+              IsReadOnly="True"
+              SelectionMode="Single"
+              SelectionUnit="FullRow"
+              AutoGenerateColumns="False"
+              CanUserAddRows="False"
+              CanUserDeleteRows="False"
+              HeadersVisibility="Column"
+              HorizontalScrollBarVisibility="Auto"
+              VerticalScrollBarVisibility="Auto">
+      <DataGrid.Columns>
+        <DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="90" />
+        <DataGridTextColumn Header="Answer" Binding="{Binding Answer}" Width="*" />
+        <DataGridTextColumn Header="Check" Binding="{Binding Check}" Width="140" />
+        <DataGridTextColumn Header="Question" Binding="{Binding Question}" Width="*" />
+      </DataGrid.Columns>
+    </DataGrid>
+  </Grid>
+</UserControl>
