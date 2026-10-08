@@ -38,6 +38,7 @@
             <Trigger Property="IsSelected" Value="True">
               <Setter Property="Background" Value="{DynamicResource Vestigium.Brushes.Accent}" />
               <Setter Property="Foreground" Value="{DynamicResource Vestigium.Brushes.Text.OnAccent}" />
+            </Trigger>
           </Style.Triggers>
         </Style>
       </DataGrid.CellStyle>
