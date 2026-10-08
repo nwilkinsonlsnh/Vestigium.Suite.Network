@@ -3,7 +3,7 @@
 **Document ID:** VEST-SUITE-NETWORK-DNSIQ-PLAN-PR07
 **Host:** `Vestigium.Suite.Network.DnsIQ`
 **APPID:** `DnsIQ`
-**Status:** Live. PR07-05 done. Owner gate is next. LogHost.Error is not on the 1.0.0 pin.
+**Status:** Live. PR07-06 done. Owner gate is next. KQL stays parked.
 **Date:** 8 October 2026
 **Binding:** [PR07 -- Requirements.md](PR07%20--%20Requirements.md) wins on this cut. Requirements_v1.2 wins on Lookup, the pulse shape, the settings path, and the Dashboard gate. PR06 wins on the capture print and on Skipped. This file wins on order.
 
@@ -85,7 +85,7 @@ No new package. No new shell item. No new sheet.
 | 3 | PR07-03 | HAR 32 MB gate. One parse for errors. | Done. Cap does not clear the grid. |
 | 4 | PR07-04 | Settings directory ACL. Path unchanged. | Done. Failure is a status, not a throw. |
 | 5 | PR07-05 | Dashboard `Unlock` only after Probe completes. Mapped PTR. | Done. Lookup does not unlock. |
-| 6 | PR07-06 | Queue README. PR06 status line Closed. Host tests off the wire. | |
+| 6 | PR07-06 | Queue README. PR06 status line Closed. Host tests off the wire. | Done. No socket. |
 | 7 | PR07-07 | Owner gate on the clone. | |
 
 ### PR07-01
@@ -100,7 +100,7 @@ Done. Pulse waits for a slot at 32, then sends. Due time still slips if the slot
 
 ### PR07-03
 
-Done. A `.har` at 32 MB sets status and returns. The grid stays. Text is not this gate. `EntryErrors` is gone. `Unique` keeps the error `HarReader` already parsed.
+Done. A `.har` at 32 MB sets status and returns. The grid stays. Text is not this gate. `LogHost` on pin 1.0.0 has no `Error`. `EntryErrors` fills the column after the gate.
 
 ### PR07-04
 
@@ -112,7 +112,7 @@ Done. Prelude no longer unlocks. ShowProbe still does. Mapped IPv6 asks the IPv4
 
 ### PR07-06
 
-README status is this plan. Tests: mapped arpa name, cap constants exist, HAR gate rejects a stub length, Dashboard flag stays false when only Lookup ran. No socket.
+Done. README points at this folder. PR06 status is Closed. Host tests already cover mapped arpa, caps 32 and 8, the 32 MB stub, and a lookup chart that does not unlock. No socket.
 
 ### PR07-07
 
@@ -163,4 +163,4 @@ Do not add KQL package references. Do not edit Helpers.Network. Do not move the 
 
 ## Next action
 
-PR07-06. Queue README is current. PR06 status line Closed. Host tests off the wire. KQL stays parked.
+PR07-07. Owner on the clone. This plan does not mark that gate closed. KQL stays parked.

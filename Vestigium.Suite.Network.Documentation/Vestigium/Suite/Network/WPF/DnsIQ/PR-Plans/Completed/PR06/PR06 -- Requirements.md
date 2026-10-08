@@ -2,7 +2,7 @@
 
 **Document ID:** VEST-SUITE-NETWORK-DNSIQ-PR06-REQ
 **Host:** `Vestigium.Suite.Network.DnsIQ`
-**Status:** Draft
+**Status:** Closed
 **Date:** 7 October 2026
 **Product papers (unchanged until this PR lands):** [Requirements_v1.2.md](../../Requirements_v1.2.md), [Design_v1.2.md](../../Design_v1.2.md)
 **Prior slice:** [PR05 -- Requirements.md](../PR05/PR05%20--%20Requirements.md) is still open through the owner gate. This file does not close it.

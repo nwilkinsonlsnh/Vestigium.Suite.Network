@@ -3,7 +3,7 @@
 **Document ID:** VEST-SUITE-NETWORK-DNSIQ-PLAN-PR06
 **Host:** `Vestigium.Suite.Network.DnsIQ`
 **APPID:** `DnsIQ`
-**Status:** Draft
+**Status:** Closed
 **Date:** 7 October 2026
 **Binding:** [PR06 -- Requirements.md](PR06%20--%20Requirements.md) wins on this slice. Requirements_v1.2 wins on Lookup, pulse, and the open-file probe until this PR folds. This file wins on order.
 
