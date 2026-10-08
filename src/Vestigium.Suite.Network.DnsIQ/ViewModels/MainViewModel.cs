@@ -287,7 +287,7 @@ public sealed partial class MainViewModel : ObservableObject
         {
             var result = await NetworkHelper.LookupAsync(query.Name, query.Options, token).ConfigureAwait(false);
             var failed = result.Rcode is DnsRcode.Timeout or DnsRcode.Failed;
-            var status = FormatLookupStatus(result.Rcode, result.Server ?? query.Options.Server, result.Elapsed, types: 1);
+            var lookupStatus = FormatLookupStatus(result.Rcode, result.Server ?? query.Options.Server, result.Elapsed, types: 1);
             var records = result.Answers;
             await OnUiAsync(() =>
             {
@@ -298,7 +298,7 @@ public sealed partial class MainViewModel : ObservableObject
                     AppendAnswers(records);
                     SortAnswers();
                 }
-                Status = status;
+                Status = lookupStatus;
             }).ConfigureAwait(false);
             return !failed;
         }
@@ -324,13 +324,13 @@ public sealed partial class MainViewModel : ObservableObject
 
         var ok = anyOk || Answers.Count > 0;
         var rcode = ok ? DnsRcode.NoError : (last ?? DnsRcode.Failed);
-        var status = FormatLookupStatus(rcode, server, elapsed, types);
+        var allTypesStatus = FormatLookupStatus(rcode, server, elapsed, types);
         await OnUiAsync(() =>
         {
             SortAnswers();
             if (!ok)
                 Answers.Clear();
-            Status = status;
+            Status = allTypesStatus;
         }).ConfigureAwait(false);
         return ok;
     }
