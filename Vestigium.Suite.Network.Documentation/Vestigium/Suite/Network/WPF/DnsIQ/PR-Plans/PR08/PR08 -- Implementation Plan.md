@@ -3,15 +3,15 @@
 **Document ID:** VEST-SUITE-NETWORK-DNSIQ-PR08-PLAN
 **Host:** `Vestigium.Suite.Network.DnsIQ`
 **APPID:** `DnsIQ`
-**Status:** Written. Blocked on `Vestigium.Helpers.DnsWatch` PR01.
+**Status:** Written. Blocked on `Vestigium.Helpers.Watch.Dns` PR01.
 **Date:** 8 October 2026
-**Binding:** [PR08 -- Requirements.md](PR08%20--%20Requirements.md) wins on this cut. DnsWatch PR01 wins on the sensor. This file wins on order inside DnsIQ.
+**Binding:** [PR08 -- Requirements.md](PR08%20--%20Requirements.md) wins on this cut. Watch.Dns PR01 wins on the sensor. This file wins on order inside DnsIQ.
 
 **Goal:** Monitoring tab starts DnsWatch and renders the pipe.
 
 **Not:** The sensor. The elevation manifest. A parser for `.etl`. A change to Lookup.
 
-**Order:** Do not open PR08-01 until DnsWatch PR01-06 is closed. PR07-07, the owner gate, is a different push and is not closed by this file.
+**Order:** Do not open PR08-01 until Watch.Dns PR01-06 is closed. PR07-07, the owner gate, is a different push and is not closed by this file.
 
 ---
 
@@ -76,4 +76,4 @@ Do not add an ETW package to DnsIQ. Do not add a port-53 socket to DnsIQ.
 
 ## Next action
 
-None in this repo. Next build turn is DnsWatch PR01-01 in `Vestigium.Helpers`.
+None in this repo. Next build turn is Watch.Dns PR01-01 in `Vestigium.Helpers`.
