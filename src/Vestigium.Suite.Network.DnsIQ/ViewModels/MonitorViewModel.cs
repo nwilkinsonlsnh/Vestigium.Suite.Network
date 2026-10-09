@@ -14,7 +14,7 @@ namespace Vestigium.Suite.Network.DnsIQ.ViewModels;
 
 public sealed partial class MonitorViewModel : ObservableObject
 {
-    public const int DefaultSeconds = 5;
+    public const int DefaultSeconds = 10;
     public const int StepSeconds = 5;
     public const int MaxSeconds = 180;
     public const int UacDeclined = 1223;

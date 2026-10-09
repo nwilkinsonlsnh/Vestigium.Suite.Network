@@ -8,7 +8,7 @@
       <ComboBox Width="120" Style="{StaticResource ComboBox.Standard}" ItemsSource="{Binding Sources}" SelectedItem="{Binding Source}" Margin="0,0,16,0" />
       <Label Style="{StaticResource Label.Standard}" Content="Seconds" VerticalAlignment="Center" Margin="0,0,8,0" />
       <ComboBox Width="80" Style="{StaticResource ComboBox.Standard}" ItemsSource="{Binding Durations}" SelectedItem="{Binding Seconds}" Margin="0,0,16,0" />
-      <Button Content="Start" Style="{StaticResource Button.Primary}" Command="{Binding StartAsyncCommand}" Padding="16,4" Margin="0,0,8,0" />
+      <Button Content="Start" Style="{StaticResource Button.Primary}" Command="{Binding StartCommand}" Padding="16,4" Margin="0,0,8,0" />
       <Button Content="Stop" Style="{StaticResource Button.Secondary}" Command="{Binding StopCommand}" Padding="16,4" Margin="0,0,16,0" />
       <TextBlock Style="{StaticResource TextBlock.Caption}" Text="{Binding MonitorStatus}" VerticalAlignment="Center" />
     </StackPanel>
