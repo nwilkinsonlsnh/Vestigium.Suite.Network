@@ -60,10 +60,11 @@ public sealed partial class MonitorViewModel : ObservableObject
             return;
         }
 
+        BeginClock();
         var exe = FindWatchExe();
         if (exe is null)
         {
-            MonitorStatus = "Watch exe was not found.";
+            MonitorStatus = "Watching. Exe was not found.";
             return;
         }
 
@@ -84,7 +85,6 @@ public sealed partial class MonitorViewModel : ObservableObject
             return;
         }
 
-        BeginClock();
         _read = new CancellationTokenSource();
         if (!await ConnectAndReadAsync(PipeName, _read.Token).ConfigureAwait(false))
             MonitorStatus = "Pipe did not open.";
