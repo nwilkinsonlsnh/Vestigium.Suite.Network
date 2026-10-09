@@ -64,7 +64,7 @@ public sealed partial class MonitorViewModel : ObservableObject
         var exe = FindWatchExe();
         if (exe is null)
         {
-            MonitorStatus = "Watching. Exe was not found.";
+            MonitorStatus = "Watching. Exe was not found beside DnsIQ.";
             return;
         }
 
@@ -239,8 +239,11 @@ public sealed partial class MonitorViewModel : ObservableObject
     public static string? FindWatchExe()
     {
         var name = "Vestigium.Helpers.Watch.Dns.exe";
-        var beside = Path.Combine(AppContext.BaseDirectory, name);
-        return File.Exists(beside) ? beside : null;
+        var root = AppContext.BaseDirectory;
+        var beside = Path.Combine(root, name);
+        if (File.Exists(beside))
+            return beside;
+        return Directory.EnumerateFiles(root, name, SearchOption.AllDirectories).FirstOrDefault();
     }
 }
 
