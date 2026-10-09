@@ -26,5 +26,6 @@
     <PackageReference Include="Vestigium.Helpers.LogParser" Version="$(VestigiumLogParserVersion)" />
     <PackageReference Include="Vestigium.Helpers.LogParser.Har" Version="$(VestigiumLogParserHarVersion)" />
     <PackageReference Include="Vestigium.Helpers.LogParser.Url" Version="$(VestigiumLogParserUrlVersion)" />
+    <PackageReference Include="Vestigium.Helpers.Watch.Dns" Version="$(VestigiumWatchDnsVersion)" />
   </ItemGroup>
 </Project>
