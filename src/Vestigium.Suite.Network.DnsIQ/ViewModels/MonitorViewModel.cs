@@ -1,4 +1,6 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -9,6 +11,7 @@ public sealed partial class MonitorViewModel : ObservableObject
     public const int DefaultSeconds = 5;
     public const int StepSeconds = 5;
     public const int MaxSeconds = 180;
+    public const int UacDeclined = 1223;
 
     public IReadOnlyList<string> Sources { get; } = ["Event", "Port", "Both"];
 
@@ -25,6 +28,8 @@ public sealed partial class MonitorViewModel : ObservableObject
     [ObservableProperty]
     private string _monitorStatus = "Idle";
 
+    public string? PipeName { get; private set; }
+
     [RelayCommand]
     private void Start()
     {
@@ -34,12 +39,41 @@ public sealed partial class MonitorViewModel : ObservableObject
             return;
         }
 
-        MonitorStatus = "Ready";
+        var exe = FindWatchExe();
+        if (exe is null)
+        {
+            MonitorStatus = "Watch exe was not found.";
+            return;
+        }
+
+        PipeName = "Vestigium.Watch.Dns." + Guid.NewGuid().ToString("N");
+        try
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = exe,
+                UseShellExecute = true,
+                Verb = "runas",
+                Arguments = Source + " " + Seconds + " pipe:" + PipeName
+            });
+            MonitorStatus = "Started";
+        }
+        catch (Win32Exception ex) when (ex.NativeErrorCode == UacDeclined)
+        {
+            MonitorStatus = "Watch was not started.";
+        }
     }
 
     [RelayCommand]
     private void Stop()
         => MonitorStatus = "Stopped";
+
+    public static string? FindWatchExe()
+    {
+        var name = "Vestigium.Helpers.Watch.Dns.exe";
+        var beside = Path.Combine(AppContext.BaseDirectory, name);
+        return File.Exists(beside) ? beside : null;
+    }
 }
 
 public sealed class MonitorRow
