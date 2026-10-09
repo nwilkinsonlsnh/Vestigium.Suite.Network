@@ -30,7 +30,7 @@
     <VestigiumLogParserVersion>1.0.0</VestigiumLogParserVersion>
     <VestigiumLogParserHarVersion>1.0.0</VestigiumLogParserHarVersion>
     <VestigiumLogParserUrlVersion>1.0.0</VestigiumLogParserUrlVersion>
-    <VestigiumWatchDnsVersion>1.0.8</VestigiumWatchDnsVersion>
+    <VestigiumWatchDnsVersion>1.0.10</VestigiumWatchDnsVersion>
     <MicrosoftExtensionsDiVersion>10.0.12</MicrosoftExtensionsDiVersion>
   </PropertyGroup>
 
