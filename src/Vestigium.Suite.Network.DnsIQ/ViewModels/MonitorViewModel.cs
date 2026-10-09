@@ -40,6 +40,9 @@ public sealed partial class MonitorViewModel : ObservableObject
 
     public string? PipeName { get; private set; }
 
+    private CancellationTokenSource? _read;
+    private NamedPipeClientStream? _client;
+
     [RelayCommand]
     private async Task StartAsync()
     {
@@ -73,13 +76,18 @@ public sealed partial class MonitorViewModel : ObservableObject
             return;
         }
 
-        if (!await ConnectAndReadAsync(PipeName).ConfigureAwait(false))
+        _read = new CancellationTokenSource();
+        if (!await ConnectAndReadAsync(PipeName, _read.Token).ConfigureAwait(false))
             MonitorStatus = "Pipe did not open.";
     }
 
     [RelayCommand]
     private void Stop()
-        => MonitorStatus = "Stopped";
+    {
+        _read?.Cancel();
+        _client?.Dispose();
+        MonitorStatus = "Stopped";
+    }
 
     public void Apply(string line)
     {
@@ -118,9 +126,24 @@ public sealed partial class MonitorViewModel : ObservableObject
         Rows[index] = ToRow(parsed);
     }
 
-    private async Task<bool> ConnectAndReadAsync(string name)
+    private async Task<bool> ConnectAndReadAsync(string name, CancellationToken token)
     {
-        using var client = new NamedPipeClientStream(".", name, PipeDirection.In, PipeOptions.Asynchronous);
+        var client = new NamedPipeClientStream(".", name, PipeDirection.In, PipeOptions.Asynchronous);
+        _client = client;
+        try
+        {
+        return await ReadAsync(client, name, token).ConfigureAwait(false);
+        }
+        finally
+        {
+            client.Dispose();
+            if (ReferenceEquals(_client, client))
+                _client = null;
+        }
+    }
+
+    private async Task<bool> ReadAsync(NamedPipeClientStream client, string name, CancellationToken token)
+    {
         var deadline = DateTime.UtcNow.AddSeconds(5);
         while (DateTime.UtcNow < deadline)
         {
@@ -139,10 +162,22 @@ public sealed partial class MonitorViewModel : ObservableObject
 
         MonitorStatus = "Reading";
         using var reader = new StreamReader(client, Encoding.UTF8);
-        while (await reader.ReadLineAsync().ConfigureAwait(false) is string line)
-            OnUi(() => Apply(line));
+        try
+        {
+            while (!token.IsCancellationRequested && await reader.ReadLineAsync(token).ConfigureAwait(false) is string line)
+                OnUi(() => Apply(line));
+        }
+        catch (OperationCanceledException)
+        {
+            return true;
+        }
+        catch (IOException)
+        {
+            return true;
+        }
 
-        MonitorStatus = "Ended";
+        if (!token.IsCancellationRequested)
+            MonitorStatus = "Ended";
         return true;
     }
 
