@@ -7,6 +7,8 @@
 **Done:** PR07-01 through PR07-06. PR06 paper is Closed. Host tests are off the wire.
 **Not this push:** KQL bar. Packages are pinned. DnsIQ does not reference them.
 
+**PR08 papers:** [PR08 -- Requirements.md](PR08/PR08%20--%20Requirements.md). Not startable. `Vestigium.Helpers.DnsWatch` PR01 ships first. This tab only starts that exe.
+
 This file is the queue keeper. It is not the plan.
 
 ## Layout
@@ -17,6 +19,9 @@ PR-Plans/
   PR07/
     PR07 -- Requirements.md
     PR07 -- Implementation Plan.md
+  PR08/
+    PR08 -- Requirements.md
+    PR08 -- Implementation Plan.md
   Completed/
     PR01/
     PR02/
