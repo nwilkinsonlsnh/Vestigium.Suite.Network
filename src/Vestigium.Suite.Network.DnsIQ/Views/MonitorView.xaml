@@ -8,10 +8,11 @@
       <ComboBox Width="120" ItemsSource="{Binding Sources}" SelectedItem="{Binding Source}" Margin="0,0,16,0" />
       <TextBlock Text="Seconds" VerticalAlignment="Center" Margin="0,0,8,0" />
       <ComboBox Width="80" ItemsSource="{Binding Durations}" SelectedItem="{Binding Seconds}" Margin="0,0,16,0" />
-      <Button Content="Start" Command="{Binding StartCommand}" Padding="16,4" Margin="0,0,8,0" />
+      <Button Content="Start" Command="{Binding StartAsyncCommand}" Padding="16,4" Margin="0,0,8,0" />
       <Button Content="Stop" Command="{Binding StopCommand}" Padding="16,4" Margin="0,0,16,0" />
       <TextBlock Text="{Binding MonitorStatus}" VerticalAlignment="Center" />
     </StackPanel>
+    <TextBlock DockPanel.Dock="Top" Text="{Binding Unseen}" TextWrapping="Wrap" Margin="0,0,0,12" />
     <DataGrid ItemsSource="{Binding Rows}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False">
       <DataGrid.Columns>
         <DataGridTextColumn Header="Time" Binding="{Binding Time}" Width="180" />

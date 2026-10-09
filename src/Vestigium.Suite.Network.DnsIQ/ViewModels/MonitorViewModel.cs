@@ -1,6 +1,11 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO.Pipes;
+using System.Text;
+using System.Text.Json;
+using System.Windows;
+using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -12,6 +17,8 @@ public sealed partial class MonitorViewModel : ObservableObject
     public const int StepSeconds = 5;
     public const int MaxSeconds = 180;
     public const int UacDeclined = 1223;
+
+    private static readonly JsonSerializerOptions Json = new() { PropertyNameCaseInsensitive = true };
 
     public IReadOnlyList<string> Sources { get; } = ["Event", "Port", "Both"];
 
@@ -28,10 +35,13 @@ public sealed partial class MonitorViewModel : ObservableObject
     [ObservableProperty]
     private string _monitorStatus = "Idle";
 
+    [ObservableProperty]
+    private string _unseen = "";
+
     public string? PipeName { get; private set; }
 
     [RelayCommand]
-    private void Start()
+    private async Task StartAsync()
     {
         if (!Sources.Contains(Source) || Seconds < StepSeconds || Seconds > MaxSeconds || Seconds % StepSeconds != 0)
         {
@@ -56,17 +66,109 @@ public sealed partial class MonitorViewModel : ObservableObject
                 Verb = "runas",
                 Arguments = Source + " " + Seconds + " pipe:" + PipeName
             });
-            MonitorStatus = "Started";
         }
         catch (Win32Exception ex) when (ex.NativeErrorCode == UacDeclined)
         {
             MonitorStatus = "Watch was not started.";
+            return;
         }
+
+        if (!await ConnectAndReadAsync(PipeName).ConfigureAwait(false))
+            MonitorStatus = "Pipe did not open.";
     }
 
     [RelayCommand]
     private void Stop()
         => MonitorStatus = "Stopped";
+
+    public void Apply(string line)
+    {
+        MonitorLine? parsed;
+        try
+        {
+            parsed = JsonSerializer.Deserialize<MonitorLine>(line, Json);
+        }
+        catch (JsonException)
+        {
+            MonitorStatus = "Bad row";
+            return;
+        }
+
+        if (parsed is null)
+            return;
+
+        if (string.Equals(parsed.Status, "Unseen", StringComparison.OrdinalIgnoreCase))
+        {
+            Unseen = parsed.Answers;
+            return;
+        }
+
+        var keyName = parsed.Name;
+        var keyType = parsed.Type;
+        var existing = Rows.FirstOrDefault(row =>
+            string.Equals(row.Name, keyName, StringComparison.OrdinalIgnoreCase)
+            && string.Equals(row.Type, keyType, StringComparison.Ordinal));
+        if (existing is null)
+        {
+            Rows.Add(ToRow(parsed));
+            return;
+        }
+
+        var index = Rows.IndexOf(existing);
+        Rows[index] = ToRow(parsed);
+    }
+
+    private async Task<bool> ConnectAndReadAsync(string name)
+    {
+        using var client = new NamedPipeClientStream(".", name, PipeDirection.In, PipeOptions.Asynchronous);
+        var deadline = DateTime.UtcNow.AddSeconds(5);
+        while (DateTime.UtcNow < deadline)
+        {
+            try
+            {
+                await client.ConnectAsync(500).ConfigureAwait(false);
+                break;
+            }
+            catch (TimeoutException)
+            {
+            }
+        }
+
+        if (!client.IsConnected)
+            return false;
+
+        MonitorStatus = "Reading";
+        using var reader = new StreamReader(client, Encoding.UTF8);
+        while (await reader.ReadLineAsync().ConfigureAwait(false) is string line)
+            OnUi(() => Apply(line));
+
+        MonitorStatus = "Ended";
+        return true;
+    }
+
+    private static MonitorRow ToRow(MonitorLine line)
+        => new()
+        {
+            Time = line.Time,
+            Pid = line.Pid,
+            Name = line.Name,
+            Type = line.Type,
+            ResolverCount = line.ResolverCount,
+            PacketCount = line.PacketCount,
+            Total = line.Total
+        };
+
+    private static void OnUi(Action action)
+    {
+        var dispatcher = Application.Current?.Dispatcher;
+        if (dispatcher is null || dispatcher.CheckAccess())
+        {
+            action();
+            return;
+        }
+
+        dispatcher.BeginInvoke(action, DispatcherPriority.Background);
+    }
 
     public static string? FindWatchExe()
     {
@@ -85,4 +187,17 @@ public sealed class MonitorRow
     public int ResolverCount { get; init; }
     public int PacketCount { get; init; }
     public int Total { get; init; }
+}
+
+public sealed class MonitorLine
+{
+    public DateTimeOffset Time { get; set; }
+    public int Pid { get; set; }
+    public string Name { get; set; } = "";
+    public string Type { get; set; } = "";
+    public string Status { get; set; } = "";
+    public string Answers { get; set; } = "";
+    public int ResolverCount { get; set; }
+    public int PacketCount { get; set; }
+    public int Total { get; set; }
 }

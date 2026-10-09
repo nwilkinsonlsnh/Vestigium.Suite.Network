@@ -3,7 +3,7 @@
 **Document ID:** VEST-SUITE-NETWORK-DNSIQ-PR08-PLAN
 **Host:** `Vestigium.Suite.Network.DnsIQ`
 **APPID:** `DnsIQ`
-**Status:** Live. PR08-02 done. The read is next.
+**Status:** Live. PR08-03 done. Stop is next.
 **Date:** 9 October 2026
 **Binding:** [PR08 -- Requirements.md](PR08%20--%20Requirements.md) wins on this cut. Watch.Dns PR02 wins on the sensor and the row. This file wins on order inside DnsIQ.
 
@@ -38,7 +38,7 @@ The exe exists. It rolls Event and Port into one row. It generates its own pipe 
 |---|---|---|---|
 | 1 | PR08-01 | Monitoring tab. Source `Event` / `Port` / `Both`. Duration 5/5/180. Start and Stop. No process yet. | Done. No process. Lookup idle. |
 | 2 | PR08-02 | Launch the exe with `runas`, the source, the duration, and the pipe name. Declined UAC is a status. | Done. Missing exe is a status. |
-| 3 | PR08-03 | Connect and start the read before the first write. Replace on name and type. Keep the unseen line. | Blocked |
+| 3 | PR08-03 | Connect and start the read before the first write. Replace on name and type. Keep the unseen line. | Done. |
 | 4 | PR08-04 | Stop closes the client. Lookup `IsBusy` stays false. | Blocked |
 
 ---
@@ -77,4 +77,4 @@ Do not add an ETW package to DnsIQ. Do not add a port-53 socket to DnsIQ.
 
 ## Next action
 
-PR08-03. Connect and start the read before the first write. Replace on name and type.
+PR08-04. Stop closes the client. Lookup IsBusy stays false.
