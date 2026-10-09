@@ -39,6 +39,13 @@ public sealed partial class MonitorViewModel : ObservableObject
     [ObservableProperty]
     private string _unseen = "";
 
+    [ObservableProperty]
+    private double _elapsed;
+
+    public string ElapsedText => $"{Elapsed:0} / {Seconds}";
+
+    private DispatcherTimer? _clock;
+
     public string? PipeName { get; private set; }
 
     private CancellationTokenSource? _read;
@@ -77,14 +84,37 @@ public sealed partial class MonitorViewModel : ObservableObject
             return;
         }
 
+        BeginClock();
         _read = new CancellationTokenSource();
         if (!await ConnectAndReadAsync(PipeName, _read.Token).ConfigureAwait(false))
             MonitorStatus = "Pipe did not open.";
     }
 
+    private void BeginClock()
+    {
+        _clock?.Stop();
+        Elapsed = 0;
+        OnPropertyChanged(nameof(ElapsedText));
+        _clock = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+        _clock.Tick += (_, _) =>
+        {
+            if (Elapsed >= Seconds)
+            {
+                _clock?.Stop();
+                return;
+            }
+
+            Elapsed += 1;
+            OnPropertyChanged(nameof(ElapsedText));
+        };
+        _clock.Start();
+        MonitorStatus = "Watching";
+    }
+
     [RelayCommand]
     private void Stop()
     {
+        _clock?.Stop();
         _read?.Cancel();
         _client?.Dispose();
         MonitorStatus = "Stopped";
