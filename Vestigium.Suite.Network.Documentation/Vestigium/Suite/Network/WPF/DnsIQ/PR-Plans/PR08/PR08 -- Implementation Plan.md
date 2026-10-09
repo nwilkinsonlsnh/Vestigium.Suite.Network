@@ -3,21 +3,21 @@
 **Document ID:** VEST-SUITE-NETWORK-DNSIQ-PR08-PLAN
 **Host:** `Vestigium.Suite.Network.DnsIQ`
 **APPID:** `DnsIQ`
-**Status:** Written. Blocked on `Vestigium.Helpers.Watch.Dns` PR01.
-**Date:** 8 October 2026
-**Binding:** [PR08 -- Requirements.md](PR08%20--%20Requirements.md) wins on this cut. Watch.Dns PR01 wins on the sensor. This file wins on order inside DnsIQ.
+**Status:** Written. PR08-01 can start. PR08-02 waits on the exe accepting the pipe name.
+**Date:** 9 October 2026
+**Binding:** [PR08 -- Requirements.md](PR08%20--%20Requirements.md) wins on this cut. Watch.Dns PR02 wins on the sensor and the row. This file wins on order inside DnsIQ.
 
-**Goal:** Monitoring tab starts DnsWatch and renders the pipe.
+**Goal:** Monitoring tab starts `Vestigium.Helpers.Watch.Dns.exe` and replaces rows as counts change.
 
 **Not:** The sensor. The elevation manifest. A parser for `.etl`. A change to Lookup.
 
-**Order:** Do not open PR08-01 until Watch.Dns PR01-06 is closed. PR07-07, the owner gate, is a different push and is not closed by this file.
+**Order:** PR07-07, the owner gate, is a different push and is not closed by this file. PR08-02 does not launch until the helper accepts `source`, `seconds`, and the pipe name.
 
 ---
 
 ## Starting point
 
-DnsWatch does not exist yet. This tab has no exe to start. Papers only.
+The exe exists. It rolls Event and Port into one row. It generates its own pipe name. The tab cannot connect to a name it never heard.
 
 ---
 
@@ -26,8 +26,9 @@ DnsWatch does not exist yet. This tab has no exe to start. Papers only.
 | Call | Why |
 |---|---|
 | Client only | The tab is a process start and a pipe read. |
+| Replace, do not append | The exe emits on change. Stacking those lines is the hundred-row bug. |
+| Read first | A write waits for a reader. The tab starts the read before the exe writes. |
 | Own token | Not `_cts` from the pulse. |
-| Status on this tab | A miss does not write the Lookup status bar. |
 
 ---
 
@@ -35,9 +36,9 @@ DnsWatch does not exist yet. This tab has no exe to start. Papers only.
 
 | Slice | Id | Work | Status |
 |---|---|---|---|
-| 1 | PR08-01 | Monitoring tab. Duration 5/5/180. Start and Stop. No process yet. | Blocked |
-| 2 | PR08-02 | Launch DnsWatch with `runas`. Declined UAC is a status, not a throw. | Blocked |
-| 3 | PR08-03 | Read the pipe. Append rows. Keep the unseen line. | Blocked |
+| 1 | PR08-01 | Monitoring tab. Source `Event` / `Port` / `Both`. Duration 5/5/180. Start and Stop. No process yet. | |
+| 2 | PR08-02 | Launch the exe with `runas`, the source, the duration, and the pipe name. Declined UAC is a status. | Blocked on the exe accepting the pipe name. |
+| 3 | PR08-03 | Connect and start the read before the first write. Replace on name and type. Keep the unseen line. | Blocked |
 | 4 | PR08-04 | Stop closes the client. Lookup `IsBusy` stays false. | Blocked |
 
 ---
@@ -46,15 +47,15 @@ DnsWatch does not exist yet. This tab has no exe to start. Papers only.
 
 ### PR08-01
 
-Add the Monitoring tab. Picker is 5, 10, … 180. Default 5. Start and Stop commands. Grid bound to a row collection. This slice does not launch a process. It proves the tab does not take the Lookup busy flag.
+Add the Monitoring tab. Source picker defaults to `Both`. Duration picker is 5, 10, … 180. Default 5. Start and Stop commands. Grid columns are time, pid, name, type, resolver count, port count, total. This slice does not launch a process. It proves the tab does not take the Lookup busy flag.
 
 ### PR08-02
 
-Start builds the pipe name, then `ProcessStartInfo` with `UseShellExecute` and verb `runas`. Arguments are duration, mode, pipe name. If the user declines, catch and set the tab status. Do not set `MainViewModel.IsBusy`.
+Start builds the pipe name, then `ProcessStartInfo` with `UseShellExecute` and verb `runas`. Arguments are source, duration, and pipe name. If the user declines, catch and set the tab status. Do not set `MainViewModel.IsBusy`. If the exe does not accept the pipe name, stop and say so. Do not invent a second channel.
 
 ### PR08-03
 
-Connect to the pipe. Read UTF-8 lines. Map each line onto the grid row. The first line stays. A line that is not a row is status, not a crash.
+Connect to the pipe and start the read before the exe's first write. A missed connect fails in this tab. Map each JSON line onto the grid. Same name and type replaces. The unseen line stays. A line that is not a row is status, not a crash.
 
 ### PR08-04
 
@@ -76,4 +77,4 @@ Do not add an ETW package to DnsIQ. Do not add a port-53 socket to DnsIQ.
 
 ## Next action
 
-None in this repo. Next build turn is Watch.Dns PR01-01 in `Vestigium.Helpers`.
+PR08-01. The tab with no process. The pipe-name argument on the exe is the gate for PR08-02.
