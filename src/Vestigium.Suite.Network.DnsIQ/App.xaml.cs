@@ -105,6 +105,12 @@ public partial class App : Application
                     Subject = "Hosts from a file",
                     Description = "Hosts from a HAR or a text dump. Opening the file probes DNS."
                 },
+                new VestigiumNavItemSpec("Monitoring")
+                {
+                    Title = "Monitoring",
+                    Subject = "Watch",
+                    Description = "Starts the elevated watch. This slice does not launch it."
+                },
                 new VestigiumNavItemSpec("Dashboard"),
                 new VestigiumNavItemSpec("Exports")
                 {
@@ -145,6 +151,10 @@ public partial class App : Application
             dns.SelectHar = () => window.HostShell.SelectedItem = harItem;
             dns.SelectDns = () => window.HostShell.SelectedItem = dnsItem;
         }
+
+        var monitorItem = window.HostShell["Monitoring"];
+        if (monitorItem is not null)
+            monitorItem.Content = new Views.MonitorView { DataContext = new ViewModels.MonitorViewModel() };
 
         var dashItem = window.HostShell["Dashboard"];
         if (dashItem is not null)

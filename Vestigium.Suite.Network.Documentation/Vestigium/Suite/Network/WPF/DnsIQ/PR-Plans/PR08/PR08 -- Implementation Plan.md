@@ -3,7 +3,7 @@
 **Document ID:** VEST-SUITE-NETWORK-DNSIQ-PR08-PLAN
 **Host:** `Vestigium.Suite.Network.DnsIQ`
 **APPID:** `DnsIQ`
-**Status:** Written. PR08-01 can start. PR08-02 waits on the exe accepting the pipe name.
+**Status:** Live. PR08-01 done. PR08-02 waits on the exe accepting the pipe name.
 **Date:** 9 October 2026
 **Binding:** [PR08 -- Requirements.md](PR08%20--%20Requirements.md) wins on this cut. Watch.Dns PR02 wins on the sensor and the row. This file wins on order inside DnsIQ.
 
@@ -36,7 +36,7 @@ The exe exists. It rolls Event and Port into one row. It generates its own pipe 
 
 | Slice | Id | Work | Status |
 |---|---|---|---|
-| 1 | PR08-01 | Monitoring tab. Source `Event` / `Port` / `Both`. Duration 5/5/180. Start and Stop. No process yet. | |
+| 1 | PR08-01 | Monitoring tab. Source `Event` / `Port` / `Both`. Duration 5/5/180. Start and Stop. No process yet. | Done. No process. Lookup idle. |
 | 2 | PR08-02 | Launch the exe with `runas`, the source, the duration, and the pipe name. Declined UAC is a status. | Blocked on the exe accepting the pipe name. |
 | 3 | PR08-03 | Connect and start the read before the first write. Replace on name and type. Keep the unseen line. | Blocked |
 | 4 | PR08-04 | Stop closes the client. Lookup `IsBusy` stays false. | Blocked |
@@ -77,4 +77,4 @@ Do not add an ETW package to DnsIQ. Do not add a port-53 socket to DnsIQ.
 
 ## Next action
 
-PR08-01. The tab with no process. The pipe-name argument on the exe is the gate for PR08-02.
+PR08-02 is blocked. The exe must accept the pipe name. Do not launch from the tab until it does.
