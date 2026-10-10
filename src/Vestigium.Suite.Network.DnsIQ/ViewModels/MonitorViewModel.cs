@@ -69,6 +69,7 @@ public sealed partial class MonitorViewModel : ObservableObject
         }
 
         PipeName = "Vestigium.Watch.Dns." + Guid.NewGuid().ToString("N");
+        PlaceAbstractions(Path.GetDirectoryName(exe)!);
         try
         {
             Process.Start(new ProcessStartInfo
@@ -255,9 +256,20 @@ public sealed partial class MonitorViewModel : ObservableObject
     private static bool HasDependencies(string exe)
     {
         var dir = Path.GetDirectoryName(exe);
-        return dir is not null
-            && File.Exists(exe)
-            && File.Exists(Path.Combine(dir, "Microsoft.Extensions.DependencyInjection.Abstractions.dll"));
+        return dir is not null && File.Exists(exe);
+    }
+
+    private static void PlaceAbstractions(string dir)
+    {
+        var dest = Path.Combine(dir, "Microsoft.Extensions.DependencyInjection.Abstractions.dll");
+        if (File.Exists(dest))
+            return;
+        var root = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".nuget", "packages", "microsoft.extensions.dependencyinjection.abstractions");
+        if (!Directory.Exists(root))
+            return;
+        var source = Directory.EnumerateFiles(root, "Microsoft.Extensions.DependencyInjection.Abstractions.dll", SearchOption.AllDirectories).FirstOrDefault();
+        if (source is not null)
+            File.Copy(source, dest, overwrite: true);
     }
 }
 
