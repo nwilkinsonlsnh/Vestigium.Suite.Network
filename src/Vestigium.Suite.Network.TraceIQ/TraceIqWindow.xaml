@@ -1,0 +1,38 @@
+<Window x:Class="Vestigium.Suite.Network.TraceIQ.TraceIqWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:shell="clr-namespace:Vestigium.Controls.Shell;assembly=Vestigium.Controls"
+        Title="TraceIQ"
+        Height="720" Width="1100"
+        MinHeight="520" MinWidth="800"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource Vestigium.Brushes.Surface.Window}">
+  <DockPanel Style="{StaticResource DockPanel.Standard}">
+    <Grid DockPanel.Dock="Top" Margin="12,8,12,0">
+      <ItemsControl HorizontalAlignment="Left"
+                    ItemsSource="{Binding NavItems, ElementName=RootShell}">
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" />
+          </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <RadioButton Style="{StaticResource RadioButton.HorizontalTab}"
+                         Content="{Binding Header}"
+                         IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                         IsEnabled="{Binding IsEnabled}"
+                         GroupName="TraceIqMainNav"
+                         Checked="MainNav_Checked"
+                         Margin="0,0,8,0" />
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </Grid>
+    <shell:VestigiumShell x:Name="RootShell"
+                          ShowNav="False"
+                          Status="{Binding Status}"
+                          StatusBarPosition="{Binding Status.Position, Mode=TwoWay}"
+                          ShowStatusBar="{Binding ShowStatusBar}" />
+  </DockPanel>
+</Window>
