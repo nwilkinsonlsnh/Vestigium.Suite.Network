@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using System.Windows.Data;
 using Vestigium.Suite.Network.TraceIQ.ViewModels;
 
@@ -12,7 +13,11 @@ public partial class TraceView : UserControl
     {
         InitializeComponent();
         DataContextChanged += OnDataContextChanged;
-        Loaded += (_, _) => Rebuild();
+        Loaded += (_, _) =>
+        {
+            HoldTheForm();
+            Rebuild();
+        };
     }
 
     private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -28,6 +33,28 @@ public partial class TraceView : UserControl
     {
         if (e.PropertyName is nameof(MainViewModel.ProbeColumns))
             Rebuild();
+    }
+
+    private void HoldTheForm()
+    {
+        var scroller = FindAncestor<ScrollViewer>(this);
+        if (scroller is null)
+            return;
+        scroller.VerticalScrollBarVisibility = ScrollBarVisibility.Disabled;
+        scroller.HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled;
+    }
+
+    private static T? FindAncestor<T>(DependencyObject start) where T : DependencyObject
+    {
+        var current = start;
+        while (current is not null)
+        {
+            if (current is T found)
+                return found;
+            current = VisualTreeHelper.GetParent(current);
+        }
+
+        return null;
     }
 
     private void Rebuild()
