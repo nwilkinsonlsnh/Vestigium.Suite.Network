@@ -152,14 +152,13 @@ public sealed partial class MainViewModel : ObservableObject
             Fill(result.Hops.Select(HopRow.From));
             TrimPastTarget(result.ResolvedAddress);
             SettleGaps();
-            await FillHolesAsync(token).ConfigureAwait(true);
-            SetStatus("Pinging hops");
-            await PingDiscoveredAsync(token).ConfigureAwait(true);
             ProgressMax = Math.Max(ProgressMax, Hops.Count);
             Progress = ProgressMax;
             Reached = result.Reached ? "Yes" : "No";
             Protocol = result.ProbeProtocol.ToString();
             SetStatus(result.Status.ToString());
+            IsBusy = false;
+            _ = PingAfterAsync(token);
         }
         catch (OperationCanceledException)
         {
@@ -246,6 +245,20 @@ public sealed partial class MainViewModel : ObservableObject
            && !address.Equals("*", StringComparison.Ordinal)
            && (address.Equals(Target.Trim(), StringComparison.OrdinalIgnoreCase)
                || Same(address, _resolved));
+
+    private async Task PingAfterAsync(CancellationToken token)
+    {
+        try
+        {
+            await PingDiscoveredAsync(token).ConfigureAwait(true);
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (Exception)
+        {
+        }
+    }
 
     private async Task FillHolesAsync(CancellationToken token)
     {
