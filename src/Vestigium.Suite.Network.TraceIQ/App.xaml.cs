@@ -46,22 +46,34 @@ public partial class App : Application
         {
             Items =
             {
-                new VestigiumNavItemSpec("Trace")
+                new VestigiumNavItemSpec("TraceIQ")
                 {
                     Title = "TraceIQ",
                     Subject = "One walk",
                     Description = "One target. One walk. Hop list."
+                },
+                new VestigiumNavItemSpec("Settings")
+                {
+                    Title = "Settings",
+                    Subject = "TraceIQ",
+                    Description = "Knobs, MRU, theme."
                 }
             }
         });
 
-        var trace = new MainViewModel { StatusBar = chrome.Status };
-        var item = window.HostShell["Trace"];
+        var settings = new SettingsViewModel(Themes, chrome);
+        settings.Load(TraceIqSettingsStore.Load());
+        var trace = new MainViewModel(settings) { StatusBar = chrome.Status };
+        var item = window.HostShell["TraceIQ"];
         if (item is not null)
         {
             item.Content = new TraceView { DataContext = trace };
             window.HostShell.SelectedItem = item;
         }
+
+        var settingsItem = window.HostShell["Settings"];
+        if (settingsItem is not null)
+            settingsItem.Content = new SettingsView { DataContext = settings };
 
         chrome.Status.Message = "Idle";
         return window;
