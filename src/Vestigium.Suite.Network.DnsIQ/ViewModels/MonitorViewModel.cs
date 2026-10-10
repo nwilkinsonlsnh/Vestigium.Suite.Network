@@ -240,6 +240,9 @@ public sealed partial class MonitorViewModel : ObservableObject
     {
         var name = "Vestigium.Helpers.Watch.Dns.exe";
         var root = AppContext.BaseDirectory;
+        var folder = Path.Combine(root, "watch", name);
+        if (File.Exists(folder))
+            return folder;
         var beside = Path.Combine(root, name);
         if (File.Exists(beside))
             return beside;
