@@ -231,7 +231,8 @@ public sealed partial class MainViewModel : ObservableObject
             _reachedTtl = _reachedTtl == 0 ? progress.Sequence : Math.Min(_reachedTtl, progress.Sequence);
         if (_reachedTtl > 0 && progress.Sequence > _reachedTtl)
             return;
-        if (_estimate > 0 && progress.Sequence > _estimate)
+        var isTarget = SameHost(address);
+        if (!isTarget && _estimate > 0 && progress.Sequence > _estimate)
             return;
         if (address != "*")
             _seen[address] = progress.Sequence;
@@ -347,9 +348,10 @@ public sealed partial class MainViewModel : ObservableObject
     {
         if (_reachedTtl > 0 && row.Ttl > _reachedTtl)
             return;
-        if (_estimate > 0 && row.Ttl > _estimate)
+        var isTarget = SameHost(row.Address);
+        if (!isTarget && _estimate > 0 && row.Ttl > _estimate)
             return;
-        if (row.Ttl > Hops.Count + 1)
+        if (!isTarget && row.Ttl > Hops.Count + 1)
             return;
         while (Hops.Count < row.Ttl)
             Hops.Add(Gap(Hops.Count + 1));
