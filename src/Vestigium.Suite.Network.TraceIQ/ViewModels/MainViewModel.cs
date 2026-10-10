@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Windows;
 using System.Net;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -151,7 +152,7 @@ public sealed partial class MainViewModel : ObservableObject
             SetStatus("Running");
 
             var job = NetworkHelper.IcmpTrace(Target.Trim(), options);
-            job.ProgressChanged += (_, p) => OnHop(p);
+            job.ProgressChanged += (_, p) => Post(p);
             var result = await job.RunAsync(token).ConfigureAwait(true);
             _resolved = result.ResolvedAddress ?? _resolved;
             FillFinal(result.Hops.Select(HopRow.From));
@@ -212,6 +213,18 @@ public sealed partial class MainViewModel : ObservableObject
         {
             return (int)MaxHops;
         }
+    }
+
+    private void Post(NetworkProgress progress)
+    {
+        var dispatcher = Application.Current?.Dispatcher;
+        if (dispatcher is null || dispatcher.CheckAccess())
+        {
+            OnHop(progress);
+            return;
+        }
+
+        dispatcher.BeginInvoke(() => OnHop(progress));
     }
 
     private void OnHop(NetworkProgress progress)
