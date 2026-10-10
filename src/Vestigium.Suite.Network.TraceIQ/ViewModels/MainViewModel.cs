@@ -52,10 +52,21 @@ public sealed partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private MruEntry? _selectedMru;
 
-    partial void OnSelectedMruChanged(MruEntry? value)
+    partial void OnTargetChanged(string value) => PinCommand.NotifyCanExecuteChanged();
+
+    public bool IsPinned => Settings.IsSticky(Target);
+
+    public string PinGlyph => IsPinned ? "Unpin" : "Pin";
+
+    private bool CanPin() => Settings.CanPin(Target);
+
+    [RelayCommand(CanExecute = nameof(CanPin))]
+    private void Pin()
     {
-        if (!string.IsNullOrWhiteSpace(value?.Target))
-            Target = value.Target;
+        Settings.Pin(Target);
+        OnPropertyChanged(nameof(IsPinned));
+        OnPropertyChanged(nameof(PinGlyph));
+        PinCommand.NotifyCanExecuteChanged();
     }
 
     [ObservableProperty]
