@@ -69,6 +69,18 @@ public sealed partial class DashboardViewModel : ObservableObject
         DashboardAvailabilityChanged?.Invoke(true);
     }
 
+    public void Clear()
+    {
+        HasLookupData = false;
+        HasProbeData = false;
+        LookupChart = null;
+        ProbeCurve = null;
+        ProbeShape = null;
+        ProbeControl = null;
+        ProbeSamples = [];
+        OnPropertyChanged(nameof(ShowProbeControl));
+    }
+
     public void ShowLookup(IReadOnlyList<AnswerRow> rows)
     {
         try
@@ -86,6 +98,7 @@ public sealed partial class DashboardViewModel : ObservableObject
                 return;
             }
 
+            Unlock();
             LookupChart = ChartTheme.Paint(
                 ChartView.Pie(slices, ChartTheme.Options(ChartSlot.Lookup, "Lookup type mix", "Record type", "Answers")),
                 ChartSlot.Lookup);

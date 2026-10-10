@@ -241,6 +241,7 @@ public sealed partial class MainViewModel : ObservableObject
         IsBusy = true;
         Status = "Running";
         Answers.Clear();
+        Dashboard?.Clear();
         ResetStatusBar();
 
         try
