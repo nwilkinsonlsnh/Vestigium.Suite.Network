@@ -43,7 +43,7 @@ public partial class TraceView : UserControl
         {
             HopGrid.Columns.Add(new DataGridTextColumn
             {
-                Header = $"P{i} (ms)",
+                Header = $"RTT {i} (ms)",
                 Binding = new Binding($"P{i}"),
                 Width = 90
             });
