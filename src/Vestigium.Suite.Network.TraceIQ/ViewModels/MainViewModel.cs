@@ -17,7 +17,7 @@ public sealed partial class MainViewModel : ObservableObject
     public const int MaxHopsLimit = 64;
     public const int MinProbes = 1;
     public const int MaxParallel = 30;
-    public const int MaxProbes = 30;
+    public const int MaxProbes = 10;
 
     public BindFields Bind { get; } = new();
 
@@ -56,6 +56,9 @@ public sealed partial class MainViewModel : ObservableObject
 
     [ObservableProperty]
     private decimal _probes = DefaultProbes;
+
+    [ObservableProperty]
+    private int _probeColumns = DefaultProbes;
 
     [ObservableProperty]
     private string _family = "All";
@@ -100,6 +103,7 @@ public sealed partial class MainViewModel : ObservableObject
         IsBusy = true;
         Hops.Clear();
         _reachedTtl = 0;
+        ProbeColumns = (int)Probes;
         Reached = "";
         Protocol = "";
         Progress = 0;
@@ -245,7 +249,7 @@ public sealed partial class MainViewModel : ObservableObject
     }
 
     private static HopRow Gap(int ttl, string probes = "Waiting")
-        => new() { Ttl = ttl, Address = "*", Name = "", Probes = probes };
+        => HopRow.Gap(ttl, probes);
 
     private bool TryBuild(out IcmpTraceOptions options, out string? reject)
     {
@@ -274,7 +278,7 @@ public sealed partial class MainViewModel : ObservableObject
         var probes = (int)Probes;
         if (probes < MinProbes || probes > MaxProbes)
         {
-            reject = "Probes is 1–30";
+            reject = "Probes is 1–10";
             return false;
         }
 
