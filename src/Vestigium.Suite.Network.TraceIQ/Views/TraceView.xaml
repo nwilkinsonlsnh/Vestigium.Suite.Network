@@ -31,9 +31,9 @@
       <TextBlock Grid.Column="2" Text="Max hops" VerticalAlignment="Center" Margin="0,0,8,8" />
       <nud:VestigiumNumericUpDown Grid.Column="3" Value="{Binding MaxHops}" Minimum="1" Maximum="64" Margin="0,0,16,8" />
       <TextBlock Grid.Column="4" Text="Parallel" VerticalAlignment="Center" Margin="0,0,8,8" />
-      <nud:VestigiumNumericUpDown Grid.Column="5" Value="{Binding ProbesPerHop}" Minimum="1" Maximum="10" Margin="0,0,16,8" />
-      <TextBlock Grid.Column="6" Text="Family" VerticalAlignment="Center" Margin="0,0,8,8" />
-      <ComboBox Grid.Column="7" ItemsSource="{Binding Families}" SelectedItem="{Binding Family}" Margin="0,0,0,8" />
+      <nud:VestigiumNumericUpDown Grid.Column="5" Value="{Binding Parallel}" Minimum="1" Maximum="30" Margin="0,0,16,8" />
+      <TextBlock Grid.Column="6" Text="Probes" VerticalAlignment="Center" Margin="0,0,8,8" />
+      <nud:VestigiumNumericUpDown Grid.Column="7" Value="{Binding Probes}" Minimum="1" Maximum="30" Margin="0,0,0,8" />
       <TextBlock Grid.Row="1" Text="Interface" VerticalAlignment="Center" Margin="0,0,8,8" />
       <ComboBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3"
                 ItemsSource="{Binding Interfaces}"
@@ -42,7 +42,9 @@
                 SelectedValue="{Binding SelectedInterfaceIndex}"
                 Margin="0,0,16,8" />
       <TextBlock Grid.Row="1" Grid.Column="4" Text="Source" VerticalAlignment="Center" Margin="0,0,8,8" />
-      <TextBox Grid.Row="1" Grid.Column="5" Grid.ColumnSpan="3" Text="{Binding Source, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8" />
+      <TextBox Grid.Row="1" Grid.Column="5" Text="{Binding Source, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,16,8" />
+      <TextBlock Grid.Row="1" Grid.Column="6" Text="Family" VerticalAlignment="Center" Margin="0,0,8,8" />
+      <ComboBox Grid.Row="1" Grid.Column="7" ItemsSource="{Binding Families}" SelectedItem="{Binding Family}" Margin="0,0,0,8" />
       <StackPanel Grid.Row="2" Grid.ColumnSpan="8" Orientation="Horizontal" Margin="0,4,0,8">
         <Button Content="Trace" Command="{Binding RunTraceCommand}" Padding="16,4" Margin="0,0,8,0" />
         <Button Content="Cancel" Command="{Binding CancelCommand}" Padding="16,4" />
