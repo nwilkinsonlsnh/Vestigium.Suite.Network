@@ -146,6 +146,36 @@ public sealed partial class SettingsViewModel : ObservableObject
         Persist();
     }
 
+    public bool IsSticky(string target)
+        => Mru.Any(m => m.Sticky && m.Target.Equals(target.Trim(), StringComparison.OrdinalIgnoreCase));
+
+    public bool CanPin(string target)
+    {
+        var name = target.Trim();
+        if (string.IsNullOrWhiteSpace(name))
+            return false;
+        if (IsSticky(name))
+            return true;
+        return Mru.Count(m => m.Sticky) < (int)StickyMax;
+    }
+
+    public void Pin(string target)
+    {
+        var name = target.Trim();
+        if (!CanPin(name))
+            return;
+        Remember(name);
+        var entry = Mru.First(m => m.Target.Equals(name, StringComparison.OrdinalIgnoreCase));
+        if (!entry.Sticky && Mru.Count(m => m.Sticky) >= (int)StickyMax)
+            return;
+        entry.Sticky = !entry.Sticky;
+        var ordered = Mru.OrderByDescending(m => m.Sticky).ThenBy(m => Mru.IndexOf(m)).ToList();
+        Mru.Clear();
+        foreach (var row in ordered)
+            Mru.Add(row);
+        Persist();
+    }
+
     [RelayCommand]
     private void ToggleSticky(MruEntry? entry)
     {
