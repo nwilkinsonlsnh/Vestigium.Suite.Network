@@ -24,7 +24,7 @@
                  Text="The adapter the walk leaves on. Any lets Windows pick." />
       <Label Style="{StaticResource Label.Standard}" Content="Interface" />
       <ComboBox ItemsSource="{Binding Interfaces}" DisplayMemberPath="Label" SelectedValuePath="Index"
-                SelectedValue="{Binding SelectedInterfaceIndex}" />
+                SelectedValue="{Binding SelectedInterfaceIndex}" Margin="0,0,0,12" />
     </StackPanel>
 
     <StackPanel HorizontalAlignment="Left" Width="520" Margin="20,0,0,0"
@@ -35,13 +35,6 @@
       <nud:VestigiumNumericUpDown Value="{Binding Parallel}" Minimum="1" Maximum="30" Margin="0,0,0,12" />
       <Label Style="{StaticResource Label.Standard}" Content="Probes" />
       <nud:VestigiumNumericUpDown Value="{Binding Probes}" Minimum="1" Maximum="5" Margin="0,0,0,12" />
-      <Label Style="{StaticResource Label.Standard}" Content="Source" />
-      <ComboBox ItemsSource="{Binding Sources}" DisplayMemberPath="Label" SelectedValuePath="Address"
-                SelectedValue="{Binding Source}" Margin="0,0,0,12" />
-      <TextBlock Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap" Margin="0,0,0,12"
-                 Text="The local address this PC sends from. Any lets Windows pick. This is not spoofing." />
-      <Label Style="{StaticResource Label.Standard}" Content="Family" />
-      <ComboBox ItemsSource="{Binding Families}" SelectedItem="{Binding Family}" />
     </StackPanel>
 
     <StackPanel HorizontalAlignment="Left" Width="520" Margin="20,0,0,0"
