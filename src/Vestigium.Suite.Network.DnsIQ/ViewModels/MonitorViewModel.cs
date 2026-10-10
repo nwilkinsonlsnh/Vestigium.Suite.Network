@@ -74,6 +74,7 @@ public sealed partial class MonitorViewModel : ObservableObject
             Process.Start(new ProcessStartInfo
             {
                 FileName = exe,
+                WorkingDirectory = Path.GetDirectoryName(exe)!,
                 UseShellExecute = true,
                 Verb = "runas",
                 Arguments = Source + " " + Seconds + " pipe:" + PipeName
@@ -239,23 +240,24 @@ public sealed partial class MonitorViewModel : ObservableObject
     public static string? FindWatchExe()
     {
         var name = "Vestigium.Helpers.Watch.Dns.exe";
+        var candidates = new List<string>();
         var root = AppContext.BaseDirectory;
-        var folder = Path.Combine(root, "watch", name);
-        if (File.Exists(folder))
-            return folder;
-        var beside = Path.Combine(root, name);
-        if (File.Exists(beside))
-            return beside;
-        var under = Directory.EnumerateFiles(root, name, SearchOption.AllDirectories).FirstOrDefault();
-        if (under is not null)
-            return under;
-
+        candidates.Add(Path.Combine(root, "watch", name));
+        candidates.Add(Path.Combine(root, name));
+        if (Directory.Exists(root))
+            candidates.AddRange(Directory.EnumerateFiles(root, name, SearchOption.AllDirectories));
         var cache = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".nuget", "packages", "vestigium.helpers.watch.dns");
-        if (!Directory.Exists(cache))
-            return null;
-        return Directory.EnumerateFiles(cache, name, SearchOption.AllDirectories)
-            .OrderByDescending(path => path)
-            .FirstOrDefault();
+        if (Directory.Exists(cache))
+            candidates.AddRange(Directory.EnumerateFiles(cache, name, SearchOption.AllDirectories).OrderByDescending(path => path));
+        return candidates.FirstOrDefault(HasDependencies);
+    }
+
+    private static bool HasDependencies(string exe)
+    {
+        var dir = Path.GetDirectoryName(exe);
+        return dir is not null
+            && File.Exists(exe)
+            && File.Exists(Path.Combine(dir, "Microsoft.Extensions.DependencyInjection.Abstractions.dll"));
     }
 }
 
