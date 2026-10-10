@@ -15,15 +15,17 @@
         <ColumnDefinition Width="Auto" />
         <ColumnDefinition Width="*" />
         <ColumnDefinition Width="Auto" />
-        <ColumnDefinition Width="220" />
-        <ColumnDefinition Width="Auto" />
       </Grid.ColumnDefinitions>
       <TextBlock Text="Target" VerticalAlignment="Center" Margin="0,0,8,8" />
-      <TextBox Grid.Column="1" Text="{Binding Target, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,16,8" />
-      <TextBlock Grid.Column="2" Text="Recent" VerticalAlignment="Center" Margin="0,0,8,8" />
-      <ComboBox Grid.Column="3" ItemsSource="{Binding Settings.Mru}" DisplayMemberPath="Target"
-                SelectedItem="{Binding SelectedMru}" Margin="0,0,16,8" />
-      <StackPanel Grid.Column="4" Orientation="Horizontal" Margin="0,0,0,8">
+      <ComboBox Grid.Column="1"
+                IsEditable="True"
+                IsTextSearchEnabled="True"
+                ItemsSource="{Binding Settings.Mru}"
+                DisplayMemberPath="Target"
+                Text="{Binding Target, UpdateSourceTrigger=PropertyChanged}"
+                SelectedItem="{Binding SelectedMru}"
+                Margin="0,0,16,8" />
+      <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="0,0,0,8">
         <Button Content="Trace" Command="{Binding RunTraceCommand}" Padding="16,4" Margin="0,0,8,0" />
         <Button Content="Cancel" Command="{Binding CancelCommand}" Padding="16,4" />
       </StackPanel>
