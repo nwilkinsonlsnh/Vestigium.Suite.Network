@@ -6,6 +6,7 @@ public sealed class HopRow
     public string Address { get; init; } = "*";
     public string Name { get; init; } = "";
     public string Probes { get; init; } = "";
+    public bool Reached { get; init; }
 
     public static HopRow From(Vestigium.Helpers.Network.IcmpTraceHop hop)
         => new()
@@ -13,19 +14,19 @@ public sealed class HopRow
             Ttl = hop.Ttl,
             Address = string.IsNullOrWhiteSpace(hop.Address) ? "*" : hop.Address,
             Name = hop.Name ?? "",
-            Probes = string.Join("  ", hop.Probes.Select(Probe))
+            Probes = string.Join("  ", hop.Probes.Select(Probe)),
+            Reached = hop.Probes.Any(p => p.Status == Vestigium.Helpers.Network.IcmpEchoStatus.Success)
         };
 
     private static string Probe(Vestigium.Helpers.Network.IcmpTraceProbe probe)
     {
-        if (probe.Status is Vestigium.Helpers.Network.IcmpEchoStatus.TimedOut
-            or Vestigium.Helpers.Network.IcmpEchoStatus.Failed
-            && probe.Address is null)
+        if (probe.Address is null && probe.Status is Vestigium.Helpers.Network.IcmpEchoStatus.TimedOut
+            or Vestigium.Helpers.Network.IcmpEchoStatus.Failed)
             return "*";
 
         if (probe.RoundtripTimeMs > 0)
             return $"{probe.RoundtripTimeMs} ms";
 
-        return probe.Status == Vestigium.Helpers.Network.IcmpEchoStatus.Success ? "<1 ms" : "reply";
+        return "<1 ms";
     }
 }
