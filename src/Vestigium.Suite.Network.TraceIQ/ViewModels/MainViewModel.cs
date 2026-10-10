@@ -31,6 +31,7 @@ public sealed partial class MainViewModel : ObservableObject
 
     private CancellationTokenSource? _cts;
     private int _reachedTtl;
+    private string? _resolved;
 
     public MainViewModel()
     {
@@ -103,6 +104,7 @@ public sealed partial class MainViewModel : ObservableObject
         IsBusy = true;
         Hops.Clear();
         _reachedTtl = 0;
+        _resolved = null;
         ProbeColumns = (int)Probes;
         Reached = "";
         Protocol = "";
@@ -161,8 +163,9 @@ public sealed partial class MainViewModel : ObservableObject
                 SourceAddress = Bind.SourceAddress
             });
             var result = await echo.RunAsync(token).ConfigureAwait(true);
-            var ttl = result.Replies.FirstOrDefault(r => r.Status == IcmpEchoStatus.Success)?.Ttl ?? 0;
-            return HopEstimate.FromReplyTtl(ttl);
+            var reply = result.Replies.FirstOrDefault(r => r.Status == IcmpEchoStatus.Success);
+            _resolved = result.ResolvedAddress ?? reply?.Address;
+            return HopEstimate.FromReplyTtl(reply?.Ttl ?? 0);
         }
         catch (OperationCanceledException)
         {
@@ -202,7 +205,8 @@ public sealed partial class MainViewModel : ObservableObject
     private bool SameHost(string address)
         => !string.IsNullOrWhiteSpace(address)
            && !address.Equals("*", StringComparison.Ordinal)
-           && address.Equals(Target.Trim(), StringComparison.OrdinalIgnoreCase);
+           && (address.Equals(Target.Trim(), StringComparison.OrdinalIgnoreCase)
+               || Same(address, _resolved));
 
     private void Fill(IEnumerable<HopRow> rows)
     {
