@@ -13,7 +13,7 @@ public sealed class DnsIqHelpExportTests
     {
         var titles = HelpCopy.Topics("1.0.0", ["MIT"]).Select(topic => topic.Title).ToArray();
         Assert.Equal(
-            ["Overview", "Lookup", "Probe", "Capture", "Dashboard", "Exports", "Settings", "Glossary", "About", "License"],
+            ["Overview", "Lookup", "Probe", "Hosts Viewer", "Dashboard", "Exports", "Settings", "Glossary", "About", "License"],
             titles);
     }
 
@@ -28,7 +28,7 @@ public sealed class DnsIqHelpExportTests
     [Fact]
     public void Capture_says_resolved_is_not_reachable()
     {
-        Assert.Contains("Resolved is not Reachable", Text("Capture"), StringComparison.Ordinal);
+        Assert.Contains("Resolved is not Reachable", Text("Hosts Viewer"), StringComparison.Ordinal);
     }
 
     [Fact]
@@ -60,6 +60,7 @@ public sealed class DnsIqHelpExportTests
             [new AnswerRow("A", "lab.example", "10.0.0.8", 60)],
             [],
             [],
+            [],
             [("Name", "lab.example")],
             out var saved,
             out var sheets,
@@ -87,7 +88,7 @@ public sealed class DnsIqHelpExportTests
             new CaptureLine("edge.example", "443", 2, "Request", "Resolved", "", "IPv6", "2600:9000:27d1:4000:7:951d:7a80:93a1"),
             new CaptureLine("edge.example", "443", 2, "Request", "Resolved", "", "IPv4", "8.8.8.8")
         };
-        var wrote = DnsIqWorkbook.TryWrite(path, [], lines, [], [("Capture", lines.Length)], out var saved, out var sheets, out var reject);
+        var wrote = DnsIqWorkbook.TryWrite(path, [], lines, [], [], [("Capture", lines.Length)], out var saved, out var sheets, out var reject);
         Assert.True(wrote, reject);
         Assert.Equal(["Cover", "Capture"], sheets);
         Assert.True(File.Exists(saved));
@@ -98,7 +99,7 @@ public sealed class DnsIqHelpExportTests
     public void No_rows_does_not_write_a_file()
     {
         var path = TempFile();
-        var wrote = DnsIqWorkbook.TryWrite(path, [], [], [], [], out var saved, out _, out var reject);
+        var wrote = DnsIqWorkbook.TryWrite(path, [], [], [], [], [], out var saved, out _, out var reject);
         Assert.False(wrote);
         Assert.Null(saved);
         Assert.Equal("Nothing loaded to export.", reject);
