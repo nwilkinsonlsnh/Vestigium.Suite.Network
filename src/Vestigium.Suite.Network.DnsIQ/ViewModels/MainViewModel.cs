@@ -693,8 +693,8 @@ public sealed partial class MainViewModel : ObservableObject
     {
         var dialog = new OpenFileDialog
         {
-            Filter = "Capture or text (*.har;*.txt)|*.har;*.txt|HAR (*.har)|*.har|Text (*.txt)|*.txt",
-            Title = "Open capture"
+            Filter = "HAR or text (*.har;*.txt)|*.har;*.txt|HAR (*.har)|*.har|Text (*.txt)|*.txt",
+            Title = "Open hosts"
         };
         if (dialog.ShowDialog() != true)
             return;
