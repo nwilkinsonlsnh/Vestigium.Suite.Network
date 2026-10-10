@@ -27,7 +27,7 @@ The library door is already there: `NetworkHelper.IcmpTrace(target, IcmpTraceOpt
 
 | Call | Why |
 |---|---|
-| Reuse the suite shell | DnsIQ already has the chrome. TraceIQ should look like the suite, not a one-off form. |
+| Reuse the suite shell | DnsIQ already has the chrome. TraceIQ takes `Vestigium.Controls` and `Vestigium.Themes`. It does not invent a window. |
 | Replace the text log with a grid | The operator reads hops, not a dump. |
 | Keep the stub's walk | The call is right. The form and the grid around it are what is missing. |
 | Fill at completion is acceptable | Live append is better if `IProgress` is easy. Both match Requirements. |
@@ -48,7 +48,7 @@ The library door is already there: `NetworkHelper.IcmpTrace(target, IcmpTraceOpt
 
 ### PR01-01
 
-Stand the suite shell the way DnsIQ does. `HostLog.Initialize(HostIds.TraceIQ)` stays before the window. The Trace page is the selected item. Drop the bare title text block. The window title is TraceIQ.
+Stand the suite shell the way DnsIQ does. Add `Vestigium.Controls` and `Vestigium.Themes` on the host, versioned from `Directory.Build.props`. `HostLog.Initialize(HostIds.TraceIQ)` stays before the window. The Trace page is the selected item. Drop the bare title text block. The window title is TraceIQ. Do not paste protocol into the exe. The walk stays `NetworkHelper.IcmpTrace`.
 
 ### PR01-02
 
@@ -74,7 +74,7 @@ src/Vestigium.Suite.Network.TraceIQ/Views/TraceView.xaml         [NEW]
 src/Vestigium.Suite.Network.TraceIQ/Views/TraceView.xaml.cs      [NEW]
 ```
 
-Do not add a Pathping page. Do not add a chart. Do not shell to tracert. Do not change Helpers.Network.
+Do not add a Pathping page. Do not add a chart. Do not shell to tracert. Do not change Helpers.Network from this host. If the walk needs a door it does not have, that is a Helpers change and a pin bump, not a class in the exe. Do not copy a package version out of the overview README. Props win.
 
 ---
 
