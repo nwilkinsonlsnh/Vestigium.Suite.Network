@@ -95,7 +95,7 @@ public static class DnsIqWorkbook
                 continue;
             }
 
-            if (answers.Length == 0)
+            if (answers.Count == 0)
             {
                 rows.Add([line.Time.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss.fff"), line.Name, line.Type, "Received", line.Status, "", line.Pid]);
                 continue;
