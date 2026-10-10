@@ -1,8 +1,8 @@
 # TraceIQ — PR-Plans
 
-**Host:** `Vestigium.Suite.Network.TraceIQ`  
-**APPID:** `TraceIQ`  
-**Status:** No current implementation plan.
+**Host:** `Vestigium.Suite.Network.TraceIQ`
+**APPID:** `TraceIQ`
+**Status:** Live — [PR01 -- Implementation Plan.md](PR01%20--%20Implementation%20Plan.md)
 
 This file is the queue keeper. It is not the plan. Do not delete it when the plan is idle.
 
@@ -19,8 +19,8 @@ PR-Plans/
 
 | Location | Holds |
 |---|---|
-| Queue keeper | `WPF/TraceIQ/PR-Plans/README.md` (this file) |
-| Live plan | `WPF/TraceIQ/PR-Plans/PRnn/PRnn -- Implementation Plan.md` |
+| Queue keeper | `WPF/TraceIQ/PR-Plans/PR01/README.md` (this file) |
+| Live plan | `WPF/TraceIQ/PR-Plans/PR01/PR01 -- Implementation Plan.md` |
 | Finished plan | `WPF/TraceIQ/PR-Plans/Completed/PRnn/` |
 
 **Do not** place `PRnn -- Implementation Plan.md` next to this README. Solution Explorer already has a `PRnn` folder. The plan file lives inside it.
@@ -44,15 +44,15 @@ When the slice finishes, move the whole `PRnn/` folder under `Completed/`. Then 
 
 | Paper | Wins on |
 |---|---|
-| [Requirements_v1.0.md](../Requirements_v1.0.md) | The window |
-| [Design_v1.0.md](../Design_v1.0.md) | Class and window map |
+| [Requirements_v1.0.md](../../Requirements_v1.0.md) | The window |
+| [Design_v1.0.md](../../Design_v1.0.md) | Class and window map |
+| [PR01 -- Requirements.md](PR01%20--%20Requirements.md) | This slice |
 | Helpers.Network Requirements v1.6 | Protocol facts |
-| A live `PRnn` plan under `PR-Plans/PRnn/` | The slice we are building now |
 
-If a plan and Requirements disagree on the window, Requirements win.  
+If a plan and Requirements disagree on the window, Requirements win.
 If a plan invents a protocol the library does not own, the plan is wrong.
 
 ## This host (first and ten)
 
-One target. One walk. Hop list. Cancel. Pathping waits.  
+One target. One walk. Hop list. Cancel. Pathping waits.
 Source: `src/Vestigium.Suite.Network.TraceIQ`
