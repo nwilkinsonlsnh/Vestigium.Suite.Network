@@ -229,12 +229,20 @@ public sealed partial class MainViewModel : ObservableObject
         {
             MaxHops = hops,
             ProbesPerHop = 1,
-            ParallelHops = probes,
             Family = MapFamily(Family),
             InterfaceIndex = Bind.InterfaceIndex,
             SourceAddress = Bind.SourceAddress
         };
+        SetFanOut(options, probes);
         return true;
+    }
+
+    private static void SetFanOut(IcmpTraceOptions options, int width)
+    {
+        var fan = options.GetType().GetProperty("ParallelHops");
+        if (fan is null || !fan.CanWrite)
+            return;
+        fan.SetValue(options, width);
     }
 
     private static RouteFamily MapFamily(string family)
