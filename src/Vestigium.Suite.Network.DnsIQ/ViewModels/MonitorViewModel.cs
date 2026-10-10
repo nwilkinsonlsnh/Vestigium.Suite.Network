@@ -41,6 +41,9 @@ public sealed partial class MonitorViewModel : ObservableObject
     public ObservableCollection<MonitorAggregate> Rows { get; } = [];
 
     private readonly List<MonitorLine> _lines = [];
+    private bool _dirty;
+    private DispatcherTimer? _flush;
+    private bool _timed;
 
     public IReadOnlyList<MonitorLine> LinesFor(string name)
         => _lines.Where(l => string.Equals(l.Name, name, StringComparison.OrdinalIgnoreCase)).ToList();
@@ -60,7 +63,7 @@ public sealed partial class MonitorViewModel : ObservableObject
     [ObservableProperty]
     private double _elapsed;
 
-    public string ElapsedText => $"{Elapsed:0} / {Seconds}";
+    public string ElapsedText => _timed ? $"{Elapsed:0} / {Seconds}" : $"{Elapsed:0}";
 
     private DispatcherTimer? _clock;
 
@@ -70,18 +73,25 @@ public sealed partial class MonitorViewModel : ObservableObject
     private NamedPipeClientStream? _client;
 
     [RelayCommand]
-    private async Task StartAsync()
+    private Task StartAsync() => LaunchAsync(timed: false);
+
+    [RelayCommand]
+    private Task WatchAsync() => LaunchAsync(timed: true);
+
+    private async Task LaunchAsync(bool timed)
     {
-        if (Seconds < StepSeconds || Seconds > MaxSeconds || Seconds % StepSeconds != 0)
+        if (timed && (Seconds < StepSeconds || Seconds > MaxSeconds || Seconds % StepSeconds != 0))
         {
             MonitorStatus = "Rejected";
             return;
         }
 
+        Stop();
+        _timed = timed;
         _lines.Clear();
         Rows.Clear();
         OnPropertyChanged(nameof(ResolvedText));
-        BeginClock();
+        BeginClock(timed);
         var exe = FindWatchExe();
         if (exe is null)
         {
@@ -91,6 +101,7 @@ public sealed partial class MonitorViewModel : ObservableObject
 
         PipeName = "Vestigium.Watch.Dns." + Guid.NewGuid().ToString("N");
         PlaceAbstractions(Path.GetDirectoryName(exe)!);
+        var duration = timed ? Seconds : MaxSeconds;
         try
         {
             Process.Start(new ProcessStartInfo
@@ -99,7 +110,7 @@ public sealed partial class MonitorViewModel : ObservableObject
                 WorkingDirectory = Path.GetDirectoryName(exe)!,
                 UseShellExecute = true,
                 Verb = "runas",
-                Arguments = Source + " " + Seconds + " pipe:" + PipeName
+                Arguments = Source + " " + duration + " pipe:" + PipeName
             });
         }
         catch (Win32Exception ex) when (ex.NativeErrorCode == UacDeclined)
@@ -113,7 +124,7 @@ public sealed partial class MonitorViewModel : ObservableObject
             MonitorStatus = "Pipe did not open.";
     }
 
-    private void BeginClock()
+    private void BeginClock(bool timed)
     {
         _clock?.Stop();
         Elapsed = 0;
@@ -121,28 +132,32 @@ public sealed partial class MonitorViewModel : ObservableObject
         _clock = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
         _clock.Tick += (_, _) =>
         {
-            if (Elapsed >= Seconds)
-            {
-                _clock?.Stop();
-                return;
-            }
-
             Elapsed += 1;
             OnPropertyChanged(nameof(ElapsedText));
             PostElapsed();
+            if (timed && Elapsed >= Seconds)
+            {
+                _clock?.Stop();
+                Stop();
+            }
         };
         _clock.Start();
-        MonitorStatus = "Watching";
+        MonitorStatus = timed ? "Watching" : "Running";
         PostElapsed();
+        EnsureFlush();
     }
 
     [RelayCommand]
     private void Stop()
     {
         _clock?.Stop();
+        _flush?.Stop();
         _read?.Cancel();
         _client?.Dispose();
+        if (_dirty)
+            RebuildAggregates();
         MonitorStatus = "Stopped";
+        PostElapsed(done: true);
     }
 
     public void Apply(string line)
@@ -178,12 +193,26 @@ public sealed partial class MonitorViewModel : ObservableObject
 
         parsed.Type = TypeName(parsed.Type);
         _lines.Add(parsed);
-        RebuildAggregates();
-        OnPropertyChanged(nameof(ResolvedText));
+        _dirty = true;
+    }
+
+    private void EnsureFlush()
+    {
+        if (_flush is not null)
+            return;
+        _flush = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
+        _flush.Tick += (_, _) =>
+        {
+            if (!_dirty)
+                return;
+            RebuildAggregates();
+        };
+        _flush.Start();
     }
 
     private void RebuildAggregates()
     {
+        _dirty = false;
         var groups = _lines
             .GroupBy(l => l.Name, StringComparer.OrdinalIgnoreCase)
             .Select(g =>
@@ -208,6 +237,7 @@ public sealed partial class MonitorViewModel : ObservableObject
         Rows.Clear();
         foreach (var agg in groups)
             Rows.Add(agg);
+        OnPropertyChanged(nameof(ResolvedText));
     }
 
     private async Task<bool> ConnectAndReadAsync(string name, CancellationToken token)
@@ -244,7 +274,7 @@ public sealed partial class MonitorViewModel : ObservableObject
         if (!client.IsConnected)
             return false;
 
-        MonitorStatus = "Reading";
+        MonitorStatus = _timed ? "Reading" : "Running";
         using var reader = new StreamReader(client, Encoding.UTF8);
         try
         {
@@ -272,12 +302,13 @@ public sealed partial class MonitorViewModel : ObservableObject
     {
         if (StatusBar is null)
             return;
-        StatusBar.Engine.PostImmediate("message", new StatusBarUpdate { Text = Elapsed + " of " + Seconds + " seconds" });
+        var text = _timed ? Elapsed + " of " + Seconds + " seconds" : Elapsed + " seconds";
+        StatusBar.Engine.PostImmediate("message", new StatusBarUpdate { Text = text });
         StatusBar.Engine.PostImmediate("progress", new StatusBarUpdate
         {
-            Progress = Seconds == 0 ? 0 : Math.Clamp(100.0 * Elapsed / Seconds, 0, 100),
-            IsProgressVisible = !done,
-            IsIndeterminate = false
+            Progress = !_timed || Seconds == 0 ? 0 : Math.Clamp(100.0 * Elapsed / Seconds, 0, 100),
+            IsProgressVisible = _timed && !done,
+            IsIndeterminate = !_timed && !done
         });
     }
 

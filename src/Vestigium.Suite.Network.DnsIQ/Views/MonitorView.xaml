@@ -18,6 +18,7 @@
       <Button Content="Stop" Style="{StaticResource Button.Secondary}" Command="{Binding StopCommand}" Padding="16,4" Margin="0,0,32,0" />
       <Label Style="{StaticResource Label.Standard}" Content="Seconds" VerticalAlignment="Center" Margin="0,0,8,0" />
       <ComboBox Width="80" Style="{StaticResource ComboBox.Standard}" ItemsSource="{Binding Durations}" SelectedItem="{Binding Seconds}" />
+      <Button Content="Watch" Style="{StaticResource Button.Primary}" Command="{Binding WatchCommand}" Padding="16,4" Margin="16,0,0,0" />
     </StackPanel>
     <TextBlock Grid.Row="1" Style="{StaticResource TextBlock.Caption}" Text="{Binding ResolvedText}" TextWrapping="Wrap" Margin="0,0,0,12" />
     <Border Grid.Row="3" BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
