@@ -154,6 +154,7 @@ public partial class App : Application
 
         var monitorItem = window.HostShell["Monitoring"];
         if (monitorItem is not null)
+        {
             var monitor = new ViewModels.MonitorViewModel
             {
                 StatusBar = chrome.Status,
@@ -161,6 +162,7 @@ public partial class App : Application
                 LookupAndProbe = dns.LookupNameAndProbeAsync
             };
             monitorItem.Content = new Views.MonitorView { DataContext = monitor };
+        }
 
         var dashItem = window.HostShell["Dashboard"];
         if (dashItem is not null)
