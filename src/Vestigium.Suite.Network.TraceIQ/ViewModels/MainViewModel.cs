@@ -17,7 +17,7 @@ public sealed partial class MainViewModel : ObservableObject
     public const int MaxHopsLimit = 64;
     public const int MinProbes = 1;
     public const int MaxParallel = 30;
-    public const int MaxProbes = 10;
+    public const int MaxProbes = 5;
 
     public BindFields Bind { get; } = new();
 
@@ -32,6 +32,7 @@ public sealed partial class MainViewModel : ObservableObject
     private CancellationTokenSource? _cts;
     private int _reachedTtl;
     private string? _resolved;
+    private readonly Dictionary<string, int> _seen = new(StringComparer.OrdinalIgnoreCase);
 
     public MainViewModel()
     {
@@ -105,6 +106,7 @@ public sealed partial class MainViewModel : ObservableObject
         Hops.Clear();
         _reachedTtl = 0;
         _resolved = null;
+        _seen.Clear();
         ProbeColumns = (int)Probes;
         Reached = "";
         Protocol = "";
@@ -186,12 +188,19 @@ public sealed partial class MainViewModel : ObservableObject
         var address = string.IsNullOrWhiteSpace(progress.LastStatus) || progress.LastStatus == "Reached"
             ? "*"
             : progress.LastStatus;
-        if (SameHost(address))
+        if (address != "*" && _seen.TryGetValue(address, out var first) && progress.Sequence != first)
         {
-            _reachedTtl = _reachedTtl == 0 ? progress.Sequence : Math.Min(_reachedTtl, progress.Sequence);
-            if (progress.Sequence > _reachedTtl)
-                return;
+            _reachedTtl = Math.Min(first, progress.Sequence);
+            TrimPastTarget();
+            return;
         }
+
+        if (SameHost(address))
+            _reachedTtl = _reachedTtl == 0 ? progress.Sequence : Math.Min(_reachedTtl, progress.Sequence);
+        if (_reachedTtl > 0 && progress.Sequence > _reachedTtl)
+            return;
+        if (address != "*")
+            _seen[address] = progress.Sequence;
 
         var probes = address == "*" ? "No reply" : "";
         Place(new HopRow { Ttl = progress.Sequence, Address = address, Name = "", Probes = probes });
@@ -282,7 +291,7 @@ public sealed partial class MainViewModel : ObservableObject
         var probes = (int)Probes;
         if (probes < MinProbes || probes > MaxProbes)
         {
-            reject = "Probes is 1–10";
+            reject = "Probes is 1–5";
             return false;
         }
 
