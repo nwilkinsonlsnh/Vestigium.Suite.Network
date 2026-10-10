@@ -125,6 +125,8 @@ public sealed partial class MainViewModel : ObservableObject
             Fill(result.Hops.Select(HopRow.From));
             TrimPastTarget(result.ResolvedAddress);
             SettleGaps();
+            SetStatus("Pinging hops");
+            await PingDiscoveredAsync(token).ConfigureAwait(true);
             ProgressMax = Math.Max(ProgressMax, Hops.Count);
             Progress = ProgressMax;
             Reached = result.Reached ? "Yes" : "No";
@@ -216,6 +218,51 @@ public sealed partial class MainViewModel : ObservableObject
            && !address.Equals("*", StringComparison.Ordinal)
            && (address.Equals(Target.Trim(), StringComparison.OrdinalIgnoreCase)
                || Same(address, _resolved));
+
+    private async Task PingDiscoveredAsync(CancellationToken token)
+    {
+        var count = Math.Clamp((int)Probes, MinProbes, MaxProbes);
+        var jobs = Hops
+            .Select((row, index) => (row, index))
+            .Where(x => x.row.Address != "*")
+            .Select(async x =>
+            {
+                var times = await PingAsync(x.row.Address, count, token).ConfigureAwait(true);
+                Hops[x.index] = x.row.WithTimes(times);
+            });
+        await Task.WhenAll(jobs).ConfigureAwait(true);
+    }
+
+    private async Task<IReadOnlyList<string>> PingAsync(string address, int count, CancellationToken token)
+    {
+        try
+        {
+            var echo = NetworkHelper.IcmpEcho(address, new IcmpEchoOptions
+            {
+                Count = count,
+                Timeout = TimeSpan.FromSeconds(2),
+                InterfaceIndex = Bind.InterfaceIndex,
+                SourceAddress = Bind.SourceAddress
+            });
+            var result = await echo.RunAsync(token).ConfigureAwait(true);
+            return result.Replies.Take(count).Select(Time).ToArray();
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception)
+        {
+            return Enumerable.Repeat("*", count).ToArray();
+        }
+    }
+
+    private static string Time(IcmpEchoReply reply)
+    {
+        if (reply.Status != IcmpEchoStatus.Success)
+            return "*";
+        return reply.RoundtripTimeMs > 0 ? reply.RoundtripTimeMs.ToString() : "<1 ms";
+    }
 
     private void Fill(IEnumerable<HopRow> rows)
     {
