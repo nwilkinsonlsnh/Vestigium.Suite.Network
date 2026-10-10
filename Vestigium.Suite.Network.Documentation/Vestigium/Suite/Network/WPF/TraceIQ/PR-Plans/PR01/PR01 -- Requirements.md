@@ -68,7 +68,7 @@ A WPF exe that opens, logs, takes one target, walks the path, and prints the hop
 
 ### R01-01 Host starts and logs
 
-`App.OnStartup` calls `HostLog.Initialize(HostIds.TraceIQ)` before the window shows. Logs land under `%ProgramData%\Vestigium\Logs\TraceIQ\`. The APPID is `TraceIQ`, never `Network`.
+`App.OnStartup` calls `HostLog.Initialize(HostIds.TraceIQ)` before the window shows. Logs land at `C:\ProgramData\Vestigium\Logs\TraceIQ\` (`%ProgramData%\Vestigium\Logs\TraceIQ\`). The APPID is `TraceIQ`, never `Network`. Not under the exe. Not under the user profile.
 
 ### R01-02 The shell is the window
 
