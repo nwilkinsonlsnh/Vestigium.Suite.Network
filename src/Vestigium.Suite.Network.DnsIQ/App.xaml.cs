@@ -163,6 +163,7 @@ public partial class App : Application
                 LookupAndProbe = dns.LookupNameAndProbeAsync
             };
             monitorItem.Content = new Views.MonitorView { DataContext = monitor };
+            dns.MonitoringLines = monitor.ExportLines;
         }
 
         var dashItem = window.HostShell["Dashboard"];
