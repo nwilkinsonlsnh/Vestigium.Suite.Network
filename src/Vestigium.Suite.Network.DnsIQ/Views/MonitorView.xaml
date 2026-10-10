@@ -21,7 +21,8 @@
     </StackPanel>
     <TextBlock Grid.Row="1" Style="{StaticResource TextBlock.Caption}" Text="{Binding ResolvedText}" TextWrapping="Wrap" Margin="0,0,0,12" />
     <Border Grid.Row="3" BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
-      <DataGrid ItemsSource="{Binding Rows}"
+      <DataGrid x:Name="Grid"
+                ItemsSource="{Binding Rows}"
                 Style="{StaticResource DataGrid.Compact}"
                 AutoGenerateColumns="False"
                 IsReadOnly="True"
@@ -29,7 +30,8 @@
                 HeadersVisibility="Column"
                 VerticalAlignment="Stretch"
                 VerticalScrollBarVisibility="Visible"
-                HorizontalScrollBarVisibility="Auto">
+                HorizontalScrollBarVisibility="Auto"
+                MouseDoubleClick="OnDoubleClick">
         <DataGrid.ContextMenu>
           <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
             <MenuItem Header="Lookup" Command="{Binding LookupSelectedCommand}" CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}">

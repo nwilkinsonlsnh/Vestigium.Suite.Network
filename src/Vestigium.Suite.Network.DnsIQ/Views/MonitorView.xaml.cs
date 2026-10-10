@@ -1,6 +1,8 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
+using Vestigium.Suite.Network.DnsIQ.ViewModels;
 
 namespace Vestigium.Suite.Network.DnsIQ.Views;
 
@@ -29,6 +31,16 @@ public partial class MonitorView
             return;
         _host.VerticalScrollBarVisibility = _hostScroll;
         _host = null;
+    }
+
+    private void OnDoubleClick(object sender, MouseButtonEventArgs e)
+    {
+        if (Grid.SelectedItem is not MonitorAggregate row || string.IsNullOrWhiteSpace(row.Name))
+            return;
+        if (DataContext is not MonitorViewModel vm)
+            return;
+        var owner = Window.GetWindow(this);
+        MonitorDetailsWindow.Open(owner, vm, row.Name);
     }
 
     private static ScrollViewer? FindScrollViewer(DependencyObject start)
