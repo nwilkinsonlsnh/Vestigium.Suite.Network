@@ -154,7 +154,7 @@ public partial class App : Application
 
         var monitorItem = window.HostShell["Monitoring"];
         if (monitorItem is not null)
-            monitorItem.Content = new Views.MonitorView { DataContext = new ViewModels.MonitorViewModel() };
+            monitorItem.Content = new Views.MonitorView { DataContext = new ViewModels.MonitorViewModel { StatusBar = chrome.Status } };
 
         var dashItem = window.HostShell["Dashboard"];
         if (dashItem is not null)

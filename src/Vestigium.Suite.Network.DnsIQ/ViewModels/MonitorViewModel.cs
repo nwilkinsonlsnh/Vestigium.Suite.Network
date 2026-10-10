@@ -8,6 +8,7 @@ using System.Text.Json;
 using System.Windows;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Vestigium.Controls.StatusBar;
 using CommunityToolkit.Mvvm.Input;
 
 namespace Vestigium.Suite.Network.DnsIQ.ViewModels;
@@ -21,7 +22,9 @@ public sealed partial class MonitorViewModel : ObservableObject
 
     private static readonly JsonSerializerOptions Json = new() { PropertyNameCaseInsensitive = true };
 
-    public IReadOnlyList<string> Sources { get; } = ["Event", "Port", "Both"];
+    public VestigiumStatusBarViewModel? StatusBar { get; set; }
+
+    public string Source { get; } = "Both";
 
     public IReadOnlyList<int> Durations { get; } = Enumerable.Range(1, MaxSeconds / StepSeconds).Select(i => i * StepSeconds).ToList();
 
@@ -54,7 +57,7 @@ public sealed partial class MonitorViewModel : ObservableObject
     [RelayCommand]
     private async Task StartAsync()
     {
-        if (!Sources.Contains(Source) || Seconds < StepSeconds || Seconds > MaxSeconds || Seconds % StepSeconds != 0)
+        if (Seconds < StepSeconds || Seconds > MaxSeconds || Seconds % StepSeconds != 0)
         {
             MonitorStatus = "Rejected";
             return;
@@ -108,9 +111,11 @@ public sealed partial class MonitorViewModel : ObservableObject
 
             Elapsed += 1;
             OnPropertyChanged(nameof(ElapsedText));
+            PostElapsed();
         };
         _clock.Start();
         MonitorStatus = "Watching";
+        PostElapsed();
     }
 
     [RelayCommand]
@@ -161,11 +166,13 @@ public sealed partial class MonitorViewModel : ObservableObject
         if (existing is null)
         {
             Rows.Add(ToRow(parsed));
+            OnPropertyChanged(nameof(ResolvedText));
             return;
         }
 
         var index = Rows.IndexOf(existing);
         Rows[index] = ToRow(parsed);
+        OnPropertyChanged(nameof(ResolvedText));
     }
 
     private async Task<bool> ConnectAndReadAsync(string name, CancellationToken token)
@@ -220,7 +227,23 @@ public sealed partial class MonitorViewModel : ObservableObject
 
         if (!token.IsCancellationRequested)
             MonitorStatus = "Ended";
+        PostElapsed(done: true);
         return true;
+    }
+
+    public string ResolvedText => Rows.Count == 1 ? "1 name resolved" : Rows.Count + " names resolved";
+
+    private void PostElapsed(bool done = false)
+    {
+        if (StatusBar is null)
+            return;
+        StatusBar.Engine.PostImmediate("message", new StatusBarUpdate { Text = Elapsed + " of " + Seconds + " seconds" });
+        StatusBar.Engine.PostImmediate("progress", new StatusBarUpdate
+        {
+            Progress = Seconds == 0 ? 0 : Math.Clamp(100.0 * Elapsed / Seconds, 0, 100),
+            IsProgressVisible = !done,
+            IsIndeterminate = false
+        });
     }
 
     private static MonitorRow ToRow(MonitorLine line)
