@@ -64,7 +64,7 @@ public sealed partial class MonitorViewModel : ObservableObject
         var exe = FindWatchExe();
         if (exe is null)
         {
-            MonitorStatus = "Watching. Exe was not found beside DnsIQ.";
+            MonitorStatus = "Watching. Exe was not in the output or the NuGet cache.";
             return;
         }
 
@@ -243,7 +243,16 @@ public sealed partial class MonitorViewModel : ObservableObject
         var beside = Path.Combine(root, name);
         if (File.Exists(beside))
             return beside;
-        return Directory.EnumerateFiles(root, name, SearchOption.AllDirectories).FirstOrDefault();
+        var under = Directory.EnumerateFiles(root, name, SearchOption.AllDirectories).FirstOrDefault();
+        if (under is not null)
+            return under;
+
+        var cache = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".nuget", "packages", "vestigium.helpers.watch.dns");
+        if (!Directory.Exists(cache))
+            return null;
+        return Directory.EnumerateFiles(cache, name, SearchOption.AllDirectories)
+            .OrderByDescending(path => path)
+            .FirstOrDefault();
     }
 }
 
