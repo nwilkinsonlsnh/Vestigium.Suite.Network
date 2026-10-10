@@ -228,7 +228,8 @@ public sealed partial class MainViewModel : ObservableObject
         options = new IcmpTraceOptions
         {
             MaxHops = hops,
-            ProbesPerHop = probes,
+            ProbesPerHop = 1,
+            ParallelHops = probes,
             Family = MapFamily(Family),
             InterfaceIndex = Bind.InterfaceIndex,
             SourceAddress = Bind.SourceAddress
