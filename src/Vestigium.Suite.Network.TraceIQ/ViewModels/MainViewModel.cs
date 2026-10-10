@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Net;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -23,6 +24,8 @@ public sealed partial class MainViewModel : ObservableObject
     public IReadOnlyList<string> Families { get; } = ["All", "IPv4", "IPv6"];
 
     public IReadOnlyList<AdapterChoice> Interfaces { get; }
+
+    public ObservableCollection<HopRow> Hops { get; } = [];
 
     private CancellationTokenSource? _cts;
 
@@ -61,7 +64,10 @@ public sealed partial class MainViewModel : ObservableObject
     private string _status = "Idle";
 
     [ObservableProperty]
-    private string _log = string.Empty;
+    private string _reached = "";
+
+    [ObservableProperty]
+    private string _protocol = "";
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(RunTraceCommand))]
@@ -83,13 +89,19 @@ public sealed partial class MainViewModel : ObservableObject
         _cts = new CancellationTokenSource();
         var token = _cts.Token;
         IsBusy = true;
+        Hops.Clear();
+        Reached = "";
+        Protocol = "";
         SetStatus("Running");
         try
         {
             var job = NetworkHelper.IcmpTrace(Target.Trim(), options);
             var result = await job.RunAsync(token).ConfigureAwait(true);
+            foreach (var hop in result.Hops)
+                Hops.Add(HopRow.From(hop));
+            Reached = result.Reached ? "Yes" : "No";
+            Protocol = result.ProbeProtocol.ToString();
             SetStatus(result.Status.ToString());
-            Log = string.Join(Environment.NewLine, result.Hops.Select(h => $"{h.Ttl,2}  {h.Address ?? "*"}"));
         }
         catch (OperationCanceledException)
         {
@@ -97,8 +109,7 @@ public sealed partial class MainViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            SetStatus("Failed");
-            Log = ex.Message;
+            SetStatus(string.IsNullOrWhiteSpace(ex.Message) ? "Failed" : ex.Message);
         }
         finally
         {
