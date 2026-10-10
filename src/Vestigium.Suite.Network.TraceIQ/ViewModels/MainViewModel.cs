@@ -151,7 +151,8 @@ public sealed partial class MainViewModel : ObservableObject
             var job = NetworkHelper.IcmpTrace(Target.Trim(), options);
             job.ProgressChanged += (_, p) => OnHop(p);
             var result = await job.RunAsync(token).ConfigureAwait(true);
-            Fill(result.Hops.Select(HopRow.From));
+            _resolved = result.ResolvedAddress ?? _resolved;
+            FillFinal(result.Hops.Select(HopRow.From));
             TrimPastTarget(result.ResolvedAddress);
             SettleGaps();
             ProgressMax = Math.Max(ProgressMax, Hops.Count);
@@ -335,6 +336,28 @@ public sealed partial class MainViewModel : ObservableObject
         if (reply.Status != IcmpEchoStatus.Success)
             return "*";
         return reply.RoundtripTimeMs > 0 ? reply.RoundtripTimeMs.ToString() : "<1 ms";
+    }
+
+    private void FillFinal(IEnumerable<HopRow> rows)
+    {
+        foreach (var row in rows.OrderBy(r => r.Ttl))
+            PlaceFinal(row);
+        SettleGaps();
+    }
+
+    private void PlaceFinal(HopRow row)
+    {
+        if (_reachedTtl > 0 && row.Ttl > _reachedTtl && !row.Reached && !SameHost(row.Address))
+            return;
+        while (Hops.Count < row.Ttl)
+            Hops.Add(Gap(Hops.Count + 1));
+        var index = row.Ttl - 1;
+        if (index < Hops.Count && Hops[index].Ttl == row.Ttl)
+            Hops[index] = row;
+        else
+            Hops.Add(row);
+        if (row.Reached || SameHost(row.Address))
+            _reachedTtl = _reachedTtl == 0 ? row.Ttl : Math.Min(_reachedTtl, row.Ttl);
     }
 
     private void Fill(IEnumerable<HopRow> rows)
