@@ -15,6 +15,7 @@
         <ColumnDefinition Width="Auto" />
         <ColumnDefinition Width="*" />
         <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="Auto" />
       </Grid.ColumnDefinitions>
       <TextBlock Text="Target" VerticalAlignment="Center" Margin="0,0,8,8" />
       <ComboBox Grid.Column="1"
@@ -23,8 +24,27 @@
                 ItemsSource="{Binding Settings.Mru}"
                 DisplayMemberPath="Target"
                 Text="{Binding Target, UpdateSourceTrigger=PropertyChanged}"
-                Margin="0,0,16,8" />
-      <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="0,0,0,8">
+                Margin="0,0,8,8" />
+      <Button Grid.Column="2"
+              Command="{Binding PinCommand}"
+              ToolTip="Pin this target"
+              Width="32" Height="26"
+              Margin="0,0,16,8"
+              VerticalAlignment="Center">
+        <TextBlock FontFamily="Segoe MDL2 Assets" FontSize="14" VerticalAlignment="Center">
+          <TextBlock.Style>
+            <Style TargetType="TextBlock">
+              <Setter Property="Text" Value="&#xE718;" />
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding IsPinned}" Value="True">
+                  <Setter Property="Text" Value="&#xE841;" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </TextBlock.Style>
+        </TextBlock>
+      </Button>
+      <StackPanel Grid.Column="3" Orientation="Horizontal" Margin="0,0,0,8">
         <Button Content="Trace" Command="{Binding RunTraceCommand}" Padding="16,4" Margin="0,0,8,0" />
         <Button Content="Cancel" Command="{Binding CancelCommand}" Padding="16,4" />
       </StackPanel>
