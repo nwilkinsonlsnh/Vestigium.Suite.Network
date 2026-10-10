@@ -32,6 +32,7 @@ public sealed partial class MainViewModel : ObservableObject
     private CancellationTokenSource? _cts;
     private int _reachedTtl;
     private string? _resolved;
+    private int _estimate;
     private readonly Dictionary<string, int> _seen = new(StringComparer.OrdinalIgnoreCase);
 
     public SettingsViewModel Settings { get; }
@@ -130,6 +131,7 @@ public sealed partial class MainViewModel : ObservableObject
         Hops.Clear();
         _reachedTtl = 0;
         _resolved = null;
+        _estimate = 0;
         _seen.Clear();
         ProbeColumns = (int)Settings.Probes;
         Settings.Remember(remembered);
@@ -196,7 +198,8 @@ public sealed partial class MainViewModel : ObservableObject
             var result = await echo.RunAsync(token).ConfigureAwait(true);
             var reply = result.Replies.FirstOrDefault(r => r.Status == IcmpEchoStatus.Success);
             _resolved = result.ResolvedAddress ?? reply?.Address;
-            return HopEstimate.FromReplyTtl(reply?.Ttl ?? 0);
+            _estimate = HopEstimate.FromReplyTtl(reply?.Ttl ?? 0);
+            return _estimate;
         }
         catch (OperationCanceledException)
         {
@@ -227,6 +230,8 @@ public sealed partial class MainViewModel : ObservableObject
         if (SameHost(address))
             _reachedTtl = _reachedTtl == 0 ? progress.Sequence : Math.Min(_reachedTtl, progress.Sequence);
         if (_reachedTtl > 0 && progress.Sequence > _reachedTtl)
+            return;
+        if (_estimate > 0 && progress.Sequence > _estimate)
             return;
         if (address != "*")
             _seen[address] = progress.Sequence;
@@ -341,6 +346,10 @@ public sealed partial class MainViewModel : ObservableObject
     private void Place(HopRow row)
     {
         if (_reachedTtl > 0 && row.Ttl > _reachedTtl)
+            return;
+        if (_estimate > 0 && row.Ttl > _estimate)
+            return;
+        if (row.Ttl > Hops.Count + 1)
             return;
         while (Hops.Count < row.Ttl)
             Hops.Add(Gap(Hops.Count + 1));
