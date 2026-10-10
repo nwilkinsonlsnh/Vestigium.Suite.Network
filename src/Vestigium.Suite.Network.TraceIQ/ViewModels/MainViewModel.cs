@@ -241,7 +241,10 @@ public sealed partial class MainViewModel : ObservableObject
             _seen[address] = progress.Sequence;
 
         var probes = address == "*" ? "No reply" : "";
-        Place(new HopRow { Ttl = progress.Sequence, Address = address, Name = "", Probes = probes });
+        var row = new HopRow { Ttl = progress.Sequence, Address = address, Name = "", Probes = probes };
+        if (progress.LastRoundtripMs is > 0)
+            row = row.WithTimes([progress.LastRoundtripMs.Value.ToString()]);
+        Place(row);
         if (address != "*" && _pinging.Add(progress.Sequence))
             _ = PingOneAsync(progress.Sequence, address);
         if (_reachedTtl > 0)
