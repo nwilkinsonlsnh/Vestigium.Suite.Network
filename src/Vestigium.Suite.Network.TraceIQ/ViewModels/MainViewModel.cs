@@ -113,6 +113,7 @@ public sealed partial class MainViewModel : ObservableObject
             job.ProgressChanged += (_, p) => OnHop(p);
             var result = await job.RunAsync(token).ConfigureAwait(true);
             Fill(result.Hops.Select(HopRow.From));
+            TrimPastTarget();
             SettleGaps();
             ProgressMax = Math.Max(ProgressMax, Hops.Count);
             Progress = ProgressMax;
@@ -198,6 +199,15 @@ public sealed partial class MainViewModel : ObservableObject
             Hops[index] = row;
         else
             Hops.Add(row);
+    }
+
+    private void TrimPastTarget()
+    {
+        var end = Hops.FirstOrDefault(h => h.Address == Target.Trim() || h.Probes.Contains("Success"));
+        if (end is null)
+            return;
+        while (Hops.Count > end.Ttl)
+            Hops.RemoveAt(Hops.Count - 1);
     }
 
     private void SettleGaps()
