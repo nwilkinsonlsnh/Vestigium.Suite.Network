@@ -24,8 +24,6 @@ public sealed partial class MonitorViewModel : ObservableObject
 
     public VestigiumStatusBarViewModel? StatusBar { get; set; }
 
-    public string Source { get; } = "Both";
-
     public IReadOnlyList<int> Durations { get; } = Enumerable.Range(1, MaxSeconds / StepSeconds).Select(i => i * StepSeconds).ToList();
 
     public ObservableCollection<MonitorRow> Rows { get; } = [];

@@ -14,10 +14,10 @@
       <RowDefinition Height="*" />
     </Grid.RowDefinitions>
     <StackPanel Grid.Row="0" Style="{StaticResource StackPanel.Toolbar}" Orientation="Horizontal" Margin="0,0,0,12">
-      <Label Style="{StaticResource Label.Standard}" Content="Seconds" VerticalAlignment="Center" Margin="0,0,8,0" />
-      <ComboBox Width="80" Style="{StaticResource ComboBox.Standard}" ItemsSource="{Binding Durations}" SelectedItem="{Binding Seconds}" Margin="0,0,16,0" />
       <Button Content="Start" Style="{StaticResource Button.Primary}" Command="{Binding StartCommand}" Padding="16,4" Margin="0,0,8,0" />
-      <Button Content="Stop" Style="{StaticResource Button.Secondary}" Command="{Binding StopCommand}" Padding="16,4" />
+      <Button Content="Stop" Style="{StaticResource Button.Secondary}" Command="{Binding StopCommand}" Padding="16,4" Margin="0,0,32,0" />
+      <Label Style="{StaticResource Label.Standard}" Content="Seconds" VerticalAlignment="Center" Margin="0,0,8,0" />
+      <ComboBox Width="80" Style="{StaticResource ComboBox.Standard}" ItemsSource="{Binding Durations}" SelectedItem="{Binding Seconds}" />
     </StackPanel>
     <TextBlock Grid.Row="1" Style="{StaticResource TextBlock.Caption}" Text="{Binding ResolvedText}" TextWrapping="Wrap" Margin="0,0,0,12" />
     <Border Grid.Row="2"
