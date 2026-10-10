@@ -1,6 +1,8 @@
+using System.Text.RegularExpressions;
+
 namespace Vestigium.Suite.Network.DnsIQ.ViewModels;
 
-public static class MonitorAnswers
+public static partial class MonitorAnswers
 {
     public static IReadOnlyList<string> Values(string? answers)
     {
@@ -8,27 +10,41 @@ public static class MonitorAnswers
             return [];
 
         var list = new List<string>();
-        foreach (var part in answers.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        foreach (var part in answers.Split([';', ','], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
         {
-            var value = StripType(part);
-            if (value.Length > 0)
-                list.Add(value);
+            foreach (var value in Expand(part))
+            {
+                if (value.Length > 0)
+                    list.Add(value);
+            }
         }
 
         return list;
     }
 
-    private static string StripType(string part)
+    private static IEnumerable<string> Expand(string part)
     {
-        var text = part.Trim();
-        if (!text.StartsWith("type:", StringComparison.OrdinalIgnoreCase))
-            return text;
+        var text = part.Trim().TrimEnd(';').Trim();
+        if (text.Length == 0)
+            yield break;
 
-        var rest = text[5..].TrimStart();
-        var space = rest.IndexOf(' ');
-        if (space < 0 || !int.TryParse(rest[..space], out _))
-            return text;
+        var matches = TypePrefix().Matches(text);
+        if (matches.Count == 0)
+        {
+            yield return text;
+            yield break;
+        }
 
-        return rest[(space + 1)..].Trim();
+        for (var i = 0; i < matches.Count; i++)
+        {
+            var start = matches[i].Index + matches[i].Length;
+            var end = i + 1 < matches.Count ? matches[i + 1].Index : text.Length;
+            var value = text[start..end].Trim().TrimEnd(';').Trim();
+            if (value.Length > 0)
+                yield return value;
+        }
     }
+
+    [GeneratedRegex(@"type:\s*\d+\s+", RegexOptions.IgnoreCase)]
+    private static partial Regex TypePrefix();
 }
