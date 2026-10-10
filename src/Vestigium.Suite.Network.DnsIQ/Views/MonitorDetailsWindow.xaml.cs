@@ -200,9 +200,7 @@ public partial class MonitorDetailsWindow : Window
     }
 
     private static IEnumerable<string> Answers(MonitorLine line)
-        => string.IsNullOrWhiteSpace(line.Answers)
-            ? []
-            : line.Answers.Split("; ", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        => MonitorAnswers.Values(line.Answers);
 
     private void OnClose(object sender, RoutedEventArgs e) => Close();
 }
