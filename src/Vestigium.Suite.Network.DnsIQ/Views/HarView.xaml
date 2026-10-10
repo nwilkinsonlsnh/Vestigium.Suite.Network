@@ -8,10 +8,7 @@
       <RowDefinition Height="*" />
     </Grid.RowDefinitions>
     <StackPanel Grid.Row="0" Orientation="Horizontal" Style="{StaticResource StackPanel.Toolbar}" Margin="0,0,0,12">
-      <Button Content="Open…" Style="{StaticResource Button.Primary}" Command="{Binding OpenCaptureCommand}" Padding="16,4" Margin="0,0,8,0" />
-      <Button Content="Cancel" Style="{StaticResource Button.Secondary}" Command="{Binding CancelCommand}" Padding="16,4" Margin="0,0,8,0" />
-      <Button Content="Lookup" Style="{StaticResource Button.Primary}" Command="{Binding LookupLineCommand}" CommandParameter="{Binding SelectedItem, ElementName=CaptureGrid}" Padding="16,4" Margin="0,0,8,0" />
-      <Button Content="Lookup + Probe" Style="{StaticResource Button.Secondary}" Command="{Binding LookupLineAndProbeCommand}" CommandParameter="{Binding SelectedItem, ElementName=CaptureGrid}" Padding="16,4" />
+      <Button Content="Open…" Style="{StaticResource Button.Primary}" Command="{Binding OpenCaptureCommand}" Padding="16,4" />
     </StackPanel>
     <DataGrid x:Name="CaptureGrid" Grid.Row="1"
               ItemsSource="{Binding Lines}"
