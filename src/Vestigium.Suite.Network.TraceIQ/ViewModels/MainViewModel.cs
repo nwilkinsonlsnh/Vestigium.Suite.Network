@@ -11,11 +11,13 @@ namespace Vestigium.Suite.Network.TraceIQ.ViewModels;
 public sealed partial class MainViewModel : ObservableObject
 {
     public const int DefaultMaxHops = 30;
-    public const int DefaultProbes = 1;
+    public const int DefaultParallel = 10;
+    public const int DefaultProbes = 5;
     public const int MinHops = 1;
     public const int MaxHopsLimit = 64;
     public const int MinProbes = 1;
-    public const int MaxProbes = 10;
+    public const int MaxParallel = 30;
+    public const int MaxProbes = 30;
 
     public BindFields Bind { get; } = new();
 
@@ -49,7 +51,10 @@ public sealed partial class MainViewModel : ObservableObject
     private decimal _maxHops = DefaultMaxHops;
 
     [ObservableProperty]
-    private decimal _probesPerHop = DefaultProbes;
+    private decimal _parallel = DefaultParallel;
+
+    [ObservableProperty]
+    private decimal _probes = DefaultProbes;
 
     [ObservableProperty]
     private string _family = "All";
@@ -224,10 +229,17 @@ public sealed partial class MainViewModel : ObservableObject
             return false;
         }
 
-        var probes = (int)ProbesPerHop;
+        var parallel = (int)Parallel;
+        if (parallel < 1 || parallel > MaxParallel)
+        {
+            reject = "Parallel is 1–30";
+            return false;
+        }
+
+        var probes = (int)Probes;
         if (probes < MinProbes || probes > MaxProbes)
         {
-            reject = "Probes per hop is 1–10";
+            reject = "Probes is 1–30";
             return false;
         }
 
@@ -249,12 +261,12 @@ public sealed partial class MainViewModel : ObservableObject
         options = new IcmpTraceOptions
         {
             MaxHops = hops,
-            ProbesPerHop = 1,
+            ProbesPerHop = probes,
             Family = MapFamily(Family),
             InterfaceIndex = Bind.InterfaceIndex,
             SourceAddress = Bind.SourceAddress
         };
-        SetFanOut(options, probes);
+        SetFanOut(options, parallel);
         return true;
     }
 
