@@ -129,19 +129,17 @@ public sealed partial class SettingsViewModel : ObservableObject
         if (string.IsNullOrWhiteSpace(name))
             return;
         var existing = Mru.FirstOrDefault(m => m.Target.Equals(name, StringComparison.OrdinalIgnoreCase));
-        if (existing is not null)
-        {
-            if (!existing.Sticky)
-            {
-                Mru.Remove(existing);
-                var index = Mru.Count(m => m.Sticky);
-                Mru.Insert(index, existing);
-            }
-        }
-        else
+        if (existing is null)
         {
             var index = Mru.Count(m => m.Sticky);
             Mru.Insert(index, new MruEntry { Target = name });
+        }
+        else if (!existing.Sticky)
+        {
+            var index = Mru.Count(m => m.Sticky);
+            var current = Mru.IndexOf(existing);
+            if (current != index)
+                Mru.Move(current, index);
         }
 
         Trim();
