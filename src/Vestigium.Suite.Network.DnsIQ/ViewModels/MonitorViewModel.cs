@@ -220,7 +220,7 @@ public sealed partial class MonitorViewModel : ObservableObject
             Time = line.Time,
             Pid = line.Pid,
             Name = line.Name,
-            Type = line.Type,
+            Type = TypeName(line.Type),
             ResolverCount = line.ResolverCount,
             PacketCount = line.PacketCount,
             Total = line.Total
@@ -272,6 +272,29 @@ public sealed partial class MonitorViewModel : ObservableObject
             File.Copy(source, dest, overwrite: true);
     }
 }
+
+    private static string TypeName(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw))
+            return "";
+        return raw.Trim() switch
+        {
+            "1" => "A",
+            "2" => "NS",
+            "5" => "CNAME",
+            "6" => "SOA",
+            "12" => "PTR",
+            "15" => "MX",
+            "16" => "TXT",
+            "28" => "AAAA",
+            "33" => "SRV",
+            "64" => "SVCB",
+            "65" => "HTTPS",
+            "255" => "ANY",
+            "257" => "CAA",
+            _ => raw.Trim().ToUpperInvariant()
+        };
+    }
 
 public sealed class MonitorRow
 {
