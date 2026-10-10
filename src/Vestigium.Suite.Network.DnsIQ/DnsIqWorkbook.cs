@@ -88,9 +88,7 @@ public static class DnsIqWorkbook
         foreach (var line in lines.OrderBy(l => l.Time))
         {
             var receive = !string.IsNullOrWhiteSpace(line.Status) || !string.IsNullOrWhiteSpace(line.Answers);
-            var answers = string.IsNullOrWhiteSpace(line.Answers)
-                ? []
-                : line.Answers.Split("; ", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            var answers = MonitorAnswers.Values(line.Answers);
             if (!receive)
             {
                 rows.Add([line.Time.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss.fff"), line.Name, line.Type, "Sent", "", "", line.Pid]);
