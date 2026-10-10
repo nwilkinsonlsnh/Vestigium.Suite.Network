@@ -20,6 +20,11 @@ public sealed partial class MainViewModel
     private bool _exportProbe = true;
 
     [ObservableProperty]
+    private bool _exportMonitoring = true;
+
+    public Func<IReadOnlyList<MonitorLine>>? MonitoringLines { get; set; }
+
+    [ObservableProperty]
     private bool _exportOpenAfter;
 
     [ObservableProperty]
@@ -27,12 +32,13 @@ public sealed partial class MainViewModel
 
     public string CapturePath { get; private set; } = string.Empty;
 
-    public void RememberExportChecks(bool lookup, bool capture, bool probe, bool openAfter, bool openFolder)
+    public void RememberExportChecks(bool lookup, bool capture, bool probe, bool monitoring, bool openAfter, bool openFolder)
     {
         _exportQuiet = true;
         ExportLookup = lookup;
         ExportCapture = capture;
         ExportProbe = probe;
+        ExportMonitoring = monitoring;
         ExportOpenAfter = openAfter;
         ExportOpenFolder = openFolder;
         _exportQuiet = false;
@@ -47,30 +53,31 @@ public sealed partial class MainViewModel
     }
 
     private bool CanExport()
-        => Answers.Count > 0 || Hosts.Count > 0 || Dashboard?.ProbeSamples.Count > 0;
+        => Answers.Count > 0 || Hosts.Count > 0 || Dashboard?.ProbeSamples.Count > 0 || (MonitoringLines?.Invoke().Count ?? 0) > 0;
 
     [RelayCommand(CanExecute = nameof(CanExport))]
     private void ExportSelected()
     {
-        if (!ExportLookup && !ExportCapture && !ExportProbe)
+        if (!ExportLookup && !ExportCapture && !ExportProbe && !ExportMonitoring)
         {
             Status = "Select a print to export.";
             return;
         }
 
-        WriteExport(ExportLookup, ExportCapture, ExportProbe);
+        WriteExport(ExportLookup, ExportCapture, ExportProbe, ExportMonitoring);
     }
 
     [RelayCommand(CanExecute = nameof(CanExport))]
     private void ExportAll()
-        => WriteExport(lookup: true, capture: true, probe: true);
+        => WriteExport(lookup: true, capture: true, probe: true, monitoring: true);
 
-    private void WriteExport(bool lookup, bool capture, bool probe)
+    private void WriteExport(bool lookup, bool capture, bool probe, bool monitoring)
     {
         var lookupRows = lookup ? Answers.ToList() : [];
         var captureRows = capture ? Lines.ToList() : [];
         var probeRows = probe ? Dashboard?.ProbeSamples ?? [] : [];
-        if (lookupRows.Count == 0 && captureRows.Count == 0 && probeRows.Count == 0)
+        var monitoringRows = monitoring ? MonitoringLines?.Invoke() ?? [] : [];
+        if (lookupRows.Count == 0 && captureRows.Count == 0 && probeRows.Count == 0 && monitoringRows.Count == 0)
         {
             Status = "Nothing loaded to export.";
             return;
@@ -93,8 +100,8 @@ public sealed partial class MainViewModel
             if (dialog.ShowDialog() != true)
                 return;
             var path = string.IsNullOrWhiteSpace(dialog.FileName) ? Path.Combine(folder, name) : dialog.FileName;
-            var cover = CoverRows(lookupRows.Count, captureRows.Count, probeRows.Count);
-            if (!DnsIqWorkbook.TryWrite(path, lookupRows, captureRows, probeRows, cover, out var saved, out _, out var reject) || saved is null)
+            var cover = CoverRows(lookupRows.Count, captureRows.Count, probeRows.Count, monitoringRows.Count);
+            if (!DnsIqWorkbook.TryWrite(path, lookupRows, captureRows, probeRows, monitoringRows, cover, out var saved, out _, out var reject) || saved is null)
             {
                 Status = reject ?? "Nothing loaded to export.";
                 return;
@@ -121,7 +128,7 @@ public sealed partial class MainViewModel
         }
     }
 
-    private List<(string Key, object? Value)> CoverRows(int lookup, int capture, int probe)
+    private List<(string Key, object? Value)> CoverRows(int lookup, int capture, int probe, int monitoring)
     {
         var cover = new List<(string Key, object? Value)>
         {
@@ -144,6 +151,8 @@ public sealed partial class MainViewModel
             cover.Add(("Capture", capture.ToString(CultureInfo.InvariantCulture)));
         if (probe > 0)
             cover.Add(("Probe", probe.ToString(CultureInfo.InvariantCulture)));
+        if (monitoring > 0)
+            cover.Add(("Monitoring", monitoring.ToString(CultureInfo.InvariantCulture)));
         return cover;
     }
 
