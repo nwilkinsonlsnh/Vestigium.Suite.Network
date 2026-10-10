@@ -7,6 +7,7 @@
     <ApplicationIcon>Assets\DnsIQ.ico</ApplicationIcon>
     <NoWarn>$(NoWarn);NU1701</NoWarn>
     <IsPackable>false</IsPackable>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Vestigium.Suite.Network.Shell\Vestigium.Suite.Network.Shell.csproj" />
@@ -34,14 +35,12 @@
   </ItemGroup>
 
   <Target Name="CopyDiAbstractions" AfterTargets="Build">
-    <PropertyGroup>
-      <_DiRoot>$(NuGetPackageRoot)microsoft.extensions.dependencyinjection.abstractions\10.0.12\</_DiRoot>
-      <_DiRoot Condition="!Exists('$(_DiRoot)')">$(UserProfile)\.nuget\packages\microsoft.extensions.dependencyinjection.abstractions\10.0.12\</_DiRoot>
-    </PropertyGroup>
     <ItemGroup>
-      <_DiAbstractions Include="$(_DiRoot)lib\**\Microsoft.Extensions.DependencyInjection.Abstractions.dll" />
+      <_DiAbstractions Include="$(UserProfile)\.nuget\packages\microsoft.extensions.dependencyinjection.abstractions\*\lib\**\Microsoft.Extensions.DependencyInjection.Abstractions.dll" />
     </ItemGroup>
-    <Copy SourceFiles="@(_DiAbstractions)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" Condition="'@(_DiAbstractions)' != ''" />
-    <Copy SourceFiles="@(_DiAbstractions)" DestinationFolder="$(OutputPath)watch\" SkipUnchangedFiles="true" Condition="'@(_DiAbstractions)' != ''" />
+    <Copy SourceFiles="@(_DiAbstractions)" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="'@(_DiAbstractions)' != ''" />
+    <Copy SourceFiles="@(_DiAbstractions)" DestinationFolder="$(TargetDir)watch\" SkipUnchangedFiles="true" Condition="'@(_DiAbstractions)' != ''" />
+    <Warning Text="DependencyInjection.Abstractions was not found in the NuGet cache." Condition="'@(_DiAbstractions)' == ''" />
+    <Message Importance="high" Text="Copied DependencyInjection.Abstractions to $(TargetDir)" Condition="'@(_DiAbstractions)' != ''" />
   </Target>
 </Project>
