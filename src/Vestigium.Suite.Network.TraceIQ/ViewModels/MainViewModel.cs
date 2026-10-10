@@ -215,6 +215,21 @@ public sealed partial class MainViewModel : ObservableObject
         }
     }
 
+    private static (string Address, List<string> Times) Split(string? status)
+    {
+        if (string.IsNullOrWhiteSpace(status) || status == "Reached")
+            return ("*", []);
+        var parts = status.Split('|', 2);
+        var address = string.IsNullOrWhiteSpace(parts[0]) ? "*" : parts[0];
+        if (parts.Length < 2 || address == "*")
+            return (address, []);
+        var times = parts[1]
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(t => long.TryParse(t, out var ms) && ms > 0 ? ms.ToString() : "<1 ms")
+            .ToList();
+        return (address, times);
+    }
+
     private void Post(NetworkProgress progress)
     {
         var dispatcher = Application.Current?.Dispatcher;
@@ -233,9 +248,9 @@ public sealed partial class MainViewModel : ObservableObject
             return;
         if (_reachedTtl > 0 && progress.Sequence > _reachedTtl)
             return;
-        var address = string.IsNullOrWhiteSpace(progress.LastStatus) || progress.LastStatus == "Reached"
-            ? "*"
-            : progress.LastStatus;
+        var (address, times) = Split(progress.LastStatus);
+        if (times.Count == 0 && progress.LastRoundtripMs is > 0)
+            times = [progress.LastRoundtripMs.Value.ToString()];
         if (address != "*" && _seen.TryGetValue(address, out var first) && progress.Sequence != first)
         {
             _reachedTtl = Math.Min(first, progress.Sequence);
@@ -255,8 +270,8 @@ public sealed partial class MainViewModel : ObservableObject
 
         var probes = address == "*" ? "No reply" : "";
         var row = new HopRow { Ttl = progress.Sequence, Address = address, Name = "", Probes = probes };
-        if (progress.LastRoundtripMs is > 0)
-            row = row.WithTimes([progress.LastRoundtripMs.Value.ToString()]);
+        if (times.Count > 0)
+            row = row.WithTimes(times);
         Place(row);
         if (address != "*" && _pinging.Add(progress.Sequence))
             _ = PingOneAsync(progress.Sequence, address);
