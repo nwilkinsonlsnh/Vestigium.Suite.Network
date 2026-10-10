@@ -241,6 +241,7 @@ public sealed partial class MainViewModel : ObservableObject
         IsBusy = true;
         Status = "Running";
         Answers.Clear();
+        ResetStatusBar();
 
         try
         {
@@ -537,6 +538,21 @@ public sealed partial class MainViewModel : ObservableObject
         return hours > 0
             ? $"{hours}:{minutes:00}:{seconds:00}"
             : $"{minutes:00}:{seconds:00}";
+    }
+
+    private void ResetStatusBar()
+    {
+        if (StatusBar is null)
+            return;
+        StatusBar.Engine.SetIdlePolicy(0);
+        StatusBar.Engine.PostImmediate("message", new StatusBarUpdate { Text = "Running" });
+        StatusBar.Engine.PostImmediate("detail", new StatusBarUpdate { Text = "" });
+        StatusBar.Engine.PostImmediate("progress", new StatusBarUpdate
+        {
+            Progress = 0,
+            IsProgressVisible = false,
+            IsIndeterminate = false
+        });
     }
 
     private void ShowProgress(double percent, bool visible)
