@@ -10,44 +10,59 @@
     <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Left" Margin="20,0,0,12">
       <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="TraceIQ"
                    IsChecked="{Binding TracePageOpen}" GroupName="SettingsPage" Margin="0,0,8,0" />
+      <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="Advanced"
+                   IsChecked="{Binding AdvancedPageOpen}" GroupName="SettingsPage" Margin="0,0,8,0" />
+      <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="MRU"
+                   IsChecked="{Binding MruPageOpen}" GroupName="SettingsPage" Margin="0,0,8,0" />
       <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="Theme"
                    IsChecked="{Binding ThemePageOpen}" GroupName="SettingsPage" />
     </StackPanel>
 
-    <ScrollViewer Visibility="{Binding TracePageOpen, Converter={StaticResource BoolToVis}}">
-      <StackPanel HorizontalAlignment="Left" Width="520" Margin="20,0,0,0">
-        <Label Style="{StaticResource Label.Standard}" Content="Max hops" />
-        <nud:VestigiumNumericUpDown Value="{Binding MaxHops}" Minimum="1" Maximum="64" Margin="0,0,0,12" />
-        <Label Style="{StaticResource Label.Standard}" Content="Parallel" />
-        <nud:VestigiumNumericUpDown Value="{Binding Parallel}" Minimum="1" Maximum="30" Margin="0,0,0,12" />
-        <Label Style="{StaticResource Label.Standard}" Content="Probes" />
-        <nud:VestigiumNumericUpDown Value="{Binding Probes}" Minimum="1" Maximum="5" Margin="0,0,0,12" />
-        <Label Style="{StaticResource Label.Standard}" Content="Interface" />
-        <ComboBox ItemsSource="{Binding Interfaces}" DisplayMemberPath="Label" SelectedValuePath="Index"
-                  SelectedValue="{Binding SelectedInterfaceIndex}" Margin="0,0,0,12" />
-        <Label Style="{StaticResource Label.Standard}" Content="Source" />
-        <TextBox Text="{Binding Source, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,12" />
-        <Label Style="{StaticResource Label.Standard}" Content="Family" />
-        <ComboBox ItemsSource="{Binding Families}" SelectedItem="{Binding Family}" Margin="0,0,0,16" />
+    <StackPanel HorizontalAlignment="Left" Width="520" Margin="20,0,0,0"
+                Visibility="{Binding TracePageOpen, Converter={StaticResource BoolToVis}}">
+      <TextBlock Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap" Margin="0,0,0,16"
+                 Text="The adapter the walk leaves on. Any lets Windows pick." />
+      <Label Style="{StaticResource Label.Standard}" Content="Interface" />
+      <ComboBox ItemsSource="{Binding Interfaces}" DisplayMemberPath="Label" SelectedValuePath="Index"
+                SelectedValue="{Binding SelectedInterfaceIndex}" />
+    </StackPanel>
 
-        <Label Style="{StaticResource Label.Standard}" Content="MRU max" />
-        <nud:VestigiumNumericUpDown Value="{Binding MruMax}" Minimum="1" Maximum="30" Margin="0,0,0,12" />
-        <Label Style="{StaticResource Label.Standard}" Content="Sticky max" />
-        <nud:VestigiumNumericUpDown Value="{Binding StickyMax}" Minimum="0" Maximum="10" Margin="0,0,0,12" />
-        <TextBlock Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap" Margin="0,0,0,8"
-                   Text="Stickies stay. They do not count against the MRU max." />
-        <ItemsControl ItemsSource="{Binding Mru}">
-          <ItemsControl.ItemTemplate>
-            <DataTemplate>
-              <DockPanel Margin="0,0,0,4">
-                <CheckBox DockPanel.Dock="Right" Content="Sticky" IsChecked="{Binding Sticky, Mode=TwoWay}" Margin="8,0,0,0" />
-                <TextBlock Text="{Binding Target}" VerticalAlignment="Center" />
-              </DockPanel>
-            </DataTemplate>
-          </ItemsControl.ItemTemplate>
-        </ItemsControl>
-      </StackPanel>
-    </ScrollViewer>
+    <StackPanel HorizontalAlignment="Left" Width="520" Margin="20,0,0,0"
+                Visibility="{Binding AdvancedPageOpen, Converter={StaticResource BoolToVis}}">
+      <Label Style="{StaticResource Label.Standard}" Content="Max hops" />
+      <nud:VestigiumNumericUpDown Value="{Binding MaxHops}" Minimum="1" Maximum="64" Margin="0,0,0,12" />
+      <Label Style="{StaticResource Label.Standard}" Content="Parallel" />
+      <nud:VestigiumNumericUpDown Value="{Binding Parallel}" Minimum="1" Maximum="30" Margin="0,0,0,12" />
+      <Label Style="{StaticResource Label.Standard}" Content="Probes" />
+      <nud:VestigiumNumericUpDown Value="{Binding Probes}" Minimum="1" Maximum="5" Margin="0,0,0,12" />
+      <Label Style="{StaticResource Label.Standard}" Content="Source" />
+      <ComboBox ItemsSource="{Binding Sources}" DisplayMemberPath="Label" SelectedValuePath="Address"
+                SelectedValue="{Binding Source}" Margin="0,0,0,12" />
+      <TextBlock Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap" Margin="0,0,0,12"
+                 Text="The local address this PC sends from. Any lets Windows pick. This is not spoofing." />
+      <Label Style="{StaticResource Label.Standard}" Content="Family" />
+      <ComboBox ItemsSource="{Binding Families}" SelectedItem="{Binding Family}" />
+    </StackPanel>
+
+    <StackPanel HorizontalAlignment="Left" Width="520" Margin="20,0,0,0"
+                Visibility="{Binding MruPageOpen, Converter={StaticResource BoolToVis}}">
+      <Label Style="{StaticResource Label.Standard}" Content="MRU max" />
+      <nud:VestigiumNumericUpDown Value="{Binding MruMax}" Minimum="1" Maximum="30" Margin="0,0,0,12" />
+      <Label Style="{StaticResource Label.Standard}" Content="Sticky max" />
+      <nud:VestigiumNumericUpDown Value="{Binding StickyMax}" Minimum="0" Maximum="10" Margin="0,0,0,12" />
+      <TextBlock Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap" Margin="0,0,0,8"
+                 Text="Stickies stay. They do not count against the MRU max." />
+      <ItemsControl ItemsSource="{Binding Mru}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <DockPanel Margin="0,0,0,4">
+              <CheckBox DockPanel.Dock="Right" Content="Sticky" IsChecked="{Binding Sticky, Mode=TwoWay}" Margin="8,0,0,0" />
+              <TextBlock Text="{Binding Target}" VerticalAlignment="Center" />
+            </DockPanel>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </StackPanel>
 
     <StackPanel HorizontalAlignment="Left" Width="420" Margin="20,0,0,0"
                 Visibility="{Binding ThemePageOpen, Converter={StaticResource BoolToVis}}">
