@@ -101,7 +101,7 @@ public partial class App : Application
                 },
                 new VestigiumNavItemSpec("Capture")
                 {
-                    Title = "Capture",
+                    Title = "Hosts Viewer",
                     Subject = "Hosts from a file",
                     Description = "Hosts from a HAR or a text dump. Opening the file probes DNS."
                 },

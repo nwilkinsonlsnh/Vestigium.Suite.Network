@@ -7,7 +7,7 @@
     <TextBlock Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap" Margin="0,0,0,16"
                Text="One workbook. Cover is always written. Export writes the checked prints. Export All writes every print. The dialog opens in Desktop\Vestigium\Exports\DnsIQ." />
     <CheckBox x:Name="LookupBox" Style="{StaticResource CheckBox.Standard}" Content="Lookup" Margin="0,0,0,8" Checked="OnCheck" Unchecked="OnCheck" />
-    <CheckBox x:Name="CaptureBox" Style="{StaticResource CheckBox.Standard}" Content="Capture" Margin="0,0,0,8" Checked="OnCheck" Unchecked="OnCheck" />
+    <CheckBox x:Name="CaptureBox" Style="{StaticResource CheckBox.Standard}" Content="Hosts Viewer" Margin="0,0,0,8" Checked="OnCheck" Unchecked="OnCheck" />
     <CheckBox x:Name="ProbeBox" Style="{StaticResource CheckBox.Standard}" Content="Probe" Margin="0,0,0,8" Checked="OnCheck" Unchecked="OnCheck" />
     <CheckBox x:Name="OpenBox" Style="{StaticResource CheckBox.Standard}" Content="Open File after saving" Margin="0,0,0,8" Checked="OnCheck" Unchecked="OnCheck" />
     <CheckBox x:Name="OpenFolderBox" Style="{StaticResource CheckBox.Standard}" Content="Open Folder after saving" Margin="0,0,0,16" Checked="OnCheck" Unchecked="OnCheck" />
