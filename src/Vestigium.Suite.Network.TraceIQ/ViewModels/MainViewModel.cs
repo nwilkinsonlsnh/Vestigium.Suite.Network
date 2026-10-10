@@ -138,6 +138,7 @@ public sealed partial class MainViewModel : ObservableObject
             Fill(result.Hops.Select(HopRow.From));
             TrimPastTarget(result.ResolvedAddress);
             SettleGaps();
+            await FillHolesAsync(token).ConfigureAwait(true);
             SetStatus("Pinging hops");
             await PingDiscoveredAsync(token).ConfigureAwait(true);
             ProgressMax = Math.Max(ProgressMax, Hops.Count);
@@ -231,6 +232,32 @@ public sealed partial class MainViewModel : ObservableObject
            && !address.Equals("*", StringComparison.Ordinal)
            && (address.Equals(Target.Trim(), StringComparison.OrdinalIgnoreCase)
                || Same(address, _resolved));
+
+    private async Task FillHolesAsync(CancellationToken token)
+    {
+        if (!Hops.Any(h => h.Address == "*"))
+            return;
+
+        SetStatus("Filling hops");
+        if (!TryBuild(out var options, out _))
+            return;
+        options.ParallelHops = 1;
+        options.ProbesPerHop = 1;
+        SetFanOut(options, 1);
+        var job = NetworkHelper.IcmpTrace(Target.Trim(), options);
+        var result = await job.RunAsync(token).ConfigureAwait(true);
+        foreach (var hop in result.Hops)
+        {
+            if (string.IsNullOrWhiteSpace(hop.Address))
+                continue;
+            var index = hop.Ttl - 1;
+            if (index < 0 || index >= Hops.Count || Hops[index].Address != "*")
+                continue;
+            Hops[index] = HopRow.From(hop);
+        }
+
+        TrimPastTarget(result.ResolvedAddress);
+    }
 
     private async Task PingDiscoveredAsync(CancellationToken token)
     {
