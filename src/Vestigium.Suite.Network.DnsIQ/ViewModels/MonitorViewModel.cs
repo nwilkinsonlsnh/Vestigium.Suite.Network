@@ -271,7 +271,6 @@ public sealed partial class MonitorViewModel : ObservableObject
         if (source is not null)
             File.Copy(source, dest, overwrite: true);
     }
-}
 
     private static string TypeName(string? raw)
     {
@@ -296,6 +295,7 @@ public sealed partial class MonitorViewModel : ObservableObject
         };
     }
 
+}
 public sealed class MonitorRow
 {
     public DateTimeOffset Time { get; init; }
