@@ -9,6 +9,7 @@
     <CheckBox x:Name="LookupBox" Style="{StaticResource CheckBox.Standard}" Content="Lookup" Margin="0,0,0,8" Checked="OnCheck" Unchecked="OnCheck" />
     <CheckBox x:Name="CaptureBox" Style="{StaticResource CheckBox.Standard}" Content="Hosts Viewer" Margin="0,0,0,8" Checked="OnCheck" Unchecked="OnCheck" />
     <CheckBox x:Name="ProbeBox" Style="{StaticResource CheckBox.Standard}" Content="Probe" Margin="0,0,0,8" Checked="OnCheck" Unchecked="OnCheck" />
+    <CheckBox x:Name="MonitoringBox" Style="{StaticResource CheckBox.Standard}" Content="Monitoring" Margin="0,0,0,8" Checked="OnCheck" Unchecked="OnCheck" />
     <CheckBox x:Name="OpenBox" Style="{StaticResource CheckBox.Standard}" Content="Open File after saving" Margin="0,0,0,8" Checked="OnCheck" Unchecked="OnCheck" />
     <CheckBox x:Name="OpenFolderBox" Style="{StaticResource CheckBox.Standard}" Content="Open Folder after saving" Margin="0,0,0,16" Checked="OnCheck" Unchecked="OnCheck" />
     <StackPanel Orientation="Horizontal">
