@@ -15,6 +15,7 @@ public sealed partial class SettingsViewModel : ObservableObject
 
     private readonly ThemeManager _themes;
     private readonly VestigiumDefaultWindowViewModel _chrome;
+    private readonly IReadOnlyList<NetworkAdapter> _adapters;
     private bool _loading;
 
     public SettingsViewModel(ThemeManager themes, VestigiumDefaultWindowViewModel chrome)
@@ -23,14 +24,16 @@ public sealed partial class SettingsViewModel : ObservableObject
         _chrome = chrome;
         try
         {
-            Interfaces = AdapterChoices.From(NetworkHelper.GetAdapters());
+            _adapters = NetworkHelper.GetAdapters();
         }
         catch (Exception)
         {
-            Interfaces = AdapterChoices.From([]);
+            _adapters = [];
         }
 
+        Interfaces = AdapterChoices.From(_adapters);
         Families = ["All", "IPv4", "IPv6"];
+        Sources = SourceChoices.From(_adapters);
         _selectedThemeId = themes.Current?.Id ?? themes.AvailableThemes.FirstOrDefault()?.Id;
         _barPosition = chrome.Status.Position;
         _barVisible = chrome.ShowStatusBar;
@@ -38,6 +41,7 @@ public sealed partial class SettingsViewModel : ObservableObject
 
     public IReadOnlyList<ThemeDefinition> Themes => _themes.AvailableThemes;
     public IReadOnlyList<AdapterChoice> Interfaces { get; }
+    public IReadOnlyList<SourceChoice> Sources { get; private set; }
     public IReadOnlyList<string> Families { get; }
     public IReadOnlyList<VestigiumStatusBarPosition> BarPositions { get; } =
     [
@@ -49,6 +53,8 @@ public sealed partial class SettingsViewModel : ObservableObject
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(TracePageOpen))]
+    [NotifyPropertyChangedFor(nameof(AdvancedPageOpen))]
+    [NotifyPropertyChangedFor(nameof(MruPageOpen))]
     [NotifyPropertyChangedFor(nameof(ThemePageOpen))]
     private string _settingsPage = "TraceIQ";
 
@@ -56,6 +62,18 @@ public sealed partial class SettingsViewModel : ObservableObject
     {
         get => SettingsPage == "TraceIQ";
         set { if (value) SettingsPage = "TraceIQ"; }
+    }
+
+    public bool AdvancedPageOpen
+    {
+        get => SettingsPage == "Advanced";
+        set { if (value) SettingsPage = "Advanced"; }
+    }
+
+    public bool MruPageOpen
+    {
+        get => SettingsPage == "MRU";
+        set { if (value) SettingsPage = "MRU"; }
     }
 
     public bool ThemePageOpen
@@ -233,7 +251,15 @@ public sealed partial class SettingsViewModel : ObservableObject
     partial void OnMaxHopsChanged(decimal value) => Persist();
     partial void OnParallelChanged(decimal value) => Persist();
     partial void OnProbesChanged(decimal value) => Persist();
-    partial void OnSelectedInterfaceIndexChanged(int value) => Persist();
+    partial void OnSelectedInterfaceIndexChanged(int value)
+    {
+        var keep = Source;
+        Sources = SourceChoices.From(_adapters, value);
+        OnPropertyChanged(nameof(Sources));
+        if (Sources.All(s => s.Address != keep))
+            Source = "";
+        Persist();
+    }
     partial void OnSourceChanged(string value) => Persist();
     partial void OnFamilyChanged(string value) => Persist();
     partial void OnMruMaxChanged(decimal value) { Trim(); Persist(); }
