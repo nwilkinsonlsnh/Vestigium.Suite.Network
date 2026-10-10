@@ -18,7 +18,14 @@ public sealed class HopRow
 
     private static string Probe(Vestigium.Helpers.Network.IcmpTraceProbe probe)
     {
-        var ms = probe.RoundtripTimeMs > 0 ? $" {probe.RoundtripTimeMs} ms" : "";
-        return $"{probe.Status}{ms}";
+        if (probe.Status is Vestigium.Helpers.Network.IcmpEchoStatus.TimedOut
+            or Vestigium.Helpers.Network.IcmpEchoStatus.Failed
+            && probe.Address is null)
+            return "*";
+
+        if (probe.RoundtripTimeMs > 0)
+            return $"{probe.RoundtripTimeMs} ms";
+
+        return probe.Status == Vestigium.Helpers.Network.IcmpEchoStatus.Success ? "<1 ms" : "reply";
     }
 }
