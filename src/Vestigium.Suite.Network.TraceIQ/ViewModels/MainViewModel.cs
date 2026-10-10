@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Vestigium.Controls.StatusBar;
 using Vestigium.Helpers.Network;
 using Vestigium.Suite.Network.Shell;
 
@@ -8,6 +9,8 @@ namespace Vestigium.Suite.Network.TraceIQ.ViewModels;
 public sealed partial class MainViewModel : ObservableObject
 {
     public BindFields Bind { get; } = new();
+
+    public VestigiumStatusBarViewModel? StatusBar { get; set; }
 
     [ObservableProperty]
     private string _target = "127.0.0.1";
@@ -22,6 +25,8 @@ public sealed partial class MainViewModel : ObservableObject
     private async Task RunTraceAsync()
     {
         Status = "Running";
+        if (StatusBar is not null)
+            StatusBar.Message = Status;
         try
         {
             var job = NetworkHelper.IcmpTrace(Target, new IcmpTraceOptions
@@ -33,11 +38,15 @@ public sealed partial class MainViewModel : ObservableObject
             });
             var result = await job.RunAsync().ConfigureAwait(true);
             Status = result.Status.ToString();
+            if (StatusBar is not null)
+                StatusBar.Message = Status;
             Log = string.Join(Environment.NewLine, result.Hops.Select(h => $"{h.Ttl,2}  {h.Address ?? "*"}"));
         }
         catch (Exception ex)
         {
             Status = "Failed";
+            if (StatusBar is not null)
+                StatusBar.Message = Status;
             Log = ex.Message;
         }
     }
