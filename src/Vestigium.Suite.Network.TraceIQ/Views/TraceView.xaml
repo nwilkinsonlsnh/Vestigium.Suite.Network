@@ -15,37 +15,15 @@
         <ColumnDefinition Width="Auto" />
         <ColumnDefinition Width="*" />
         <ColumnDefinition Width="Auto" />
-        <ColumnDefinition Width="120" />
+        <ColumnDefinition Width="220" />
         <ColumnDefinition Width="Auto" />
-        <ColumnDefinition Width="120" />
-        <ColumnDefinition Width="Auto" />
-        <ColumnDefinition Width="120" />
       </Grid.ColumnDefinitions>
-      <Grid.RowDefinitions>
-        <RowDefinition Height="Auto" />
-        <RowDefinition Height="Auto" />
-        <RowDefinition Height="Auto" />
-      </Grid.RowDefinitions>
       <TextBlock Text="Target" VerticalAlignment="Center" Margin="0,0,8,8" />
       <TextBox Grid.Column="1" Text="{Binding Target, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,16,8" />
-      <TextBlock Grid.Column="2" Text="Max hops" VerticalAlignment="Center" Margin="0,0,8,8" />
-      <nud:VestigiumNumericUpDown Grid.Column="3" Value="{Binding MaxHops}" Minimum="1" Maximum="64" Margin="0,0,16,8" />
-      <TextBlock Grid.Column="4" Text="Parallel" VerticalAlignment="Center" Margin="0,0,8,8" />
-      <nud:VestigiumNumericUpDown Grid.Column="5" Value="{Binding Parallel}" Minimum="1" Maximum="30" Margin="0,0,16,8" />
-      <TextBlock Grid.Column="6" Text="Probes" VerticalAlignment="Center" Margin="0,0,8,8" />
-      <nud:VestigiumNumericUpDown Grid.Column="7" Value="{Binding Probes}" Minimum="1" Maximum="5" Margin="0,0,0,8" />
-      <TextBlock Grid.Row="1" Text="Interface" VerticalAlignment="Center" Margin="0,0,8,8" />
-      <ComboBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3"
-                ItemsSource="{Binding Interfaces}"
-                DisplayMemberPath="Label"
-                SelectedValuePath="Index"
-                SelectedValue="{Binding SelectedInterfaceIndex}"
-                Margin="0,0,16,8" />
-      <TextBlock Grid.Row="1" Grid.Column="4" Text="Source" VerticalAlignment="Center" Margin="0,0,8,8" />
-      <TextBox Grid.Row="1" Grid.Column="5" Text="{Binding Source, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,16,8" />
-      <TextBlock Grid.Row="1" Grid.Column="6" Text="Family" VerticalAlignment="Center" Margin="0,0,8,8" />
-      <ComboBox Grid.Row="1" Grid.Column="7" ItemsSource="{Binding Families}" SelectedItem="{Binding Family}" Margin="0,0,0,8" />
-      <StackPanel Grid.Row="2" Grid.ColumnSpan="8" Orientation="Horizontal" Margin="0,4,0,8">
+      <TextBlock Grid.Column="2" Text="Recent" VerticalAlignment="Center" Margin="0,0,8,8" />
+      <ComboBox Grid.Column="3" ItemsSource="{Binding Settings.Mru}" DisplayMemberPath="Target"
+                SelectedItem="{Binding SelectedMru}" Margin="0,0,16,8" />
+      <StackPanel Grid.Column="4" Orientation="Horizontal" Margin="0,0,0,8">
         <Button Content="Trace" Command="{Binding RunTraceCommand}" Padding="16,4" Margin="0,0,8,0" />
         <Button Content="Cancel" Command="{Binding CancelCommand}" Padding="16,4" />
       </StackPanel>
@@ -60,6 +38,8 @@
     </StackPanel>
     <Border Grid.Row="3" BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
       <DataGrid x:Name="HopGrid" ItemsSource="{Binding Hops}"
+                SelectionMode="Single"
+                SelectionUnit="FullRow"
                 Style="{StaticResource DataGrid.Compact}"
                 IsReadOnly="True"
                 AutoGenerateColumns="False"
@@ -67,6 +47,17 @@
                 HeadersVisibility="Column"
                 VerticalScrollBarVisibility="Auto"
                 HorizontalScrollBarVisibility="Auto">
+        <DataGrid.Resources>
+          <Style TargetType="DataGridCell" BasedOn="{StaticResource {x:Type DataGridCell}}">
+            <Style.Triggers>
+              <Trigger Property="IsSelected" Value="True">
+                <Setter Property="Background" Value="#1B4F72" />
+                <Setter Property="Foreground" Value="White" />
+                <Setter Property="BorderBrush" Value="Transparent" />
+              </Trigger>
+            </Style.Triggers>
+          </Style>
+        </DataGrid.Resources>
         <DataGrid.Columns>
           <DataGridTextColumn Header="Ttl" Binding="{Binding Ttl}" Width="60" />
           <DataGridTextColumn Header="Address" Binding="{Binding Address}" Width="180" />
