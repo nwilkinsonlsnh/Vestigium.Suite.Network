@@ -49,14 +49,23 @@ public sealed class HopRow
     private static string At(string[] values, int index)
         => index < values.Length ? values[index] : "";
 
+    private static double Fraction(Vestigium.Helpers.Network.IcmpTraceProbe probe)
+    {
+        var extra = probe.GetType().GetProperty("RoundtripMs");
+        if (extra?.GetValue(probe) is double ms && ms > 0)
+            return ms;
+        return probe.RoundtripTimeMs;
+    }
+
     private static string Probe(Vestigium.Helpers.Network.IcmpTraceProbe probe)
     {
         if (probe.Address is null && probe.Status is Vestigium.Helpers.Network.IcmpEchoStatus.TimedOut
             or Vestigium.Helpers.Network.IcmpEchoStatus.Failed)
             return "*";
 
-        if (probe.RoundtripTimeMs > 0)
-            return probe.RoundtripTimeMs.ToString("0.###");
+        var ms = Fraction(probe);
+        if (ms > 0)
+            return ms.ToString("0.###");
 
         return "";
     }
