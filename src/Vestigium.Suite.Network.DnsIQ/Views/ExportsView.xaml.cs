@@ -21,6 +21,7 @@ public partial class ExportsView : UserControl
         LookupBox.IsChecked = host.ExportLookup;
         CaptureBox.IsChecked = host.ExportCapture;
         ProbeBox.IsChecked = host.ExportProbe;
+        MonitoringBox.IsChecked = host.ExportMonitoring;
         OpenBox.IsChecked = host.ExportOpenAfter;
         OpenFolderBox.IsChecked = host.ExportOpenFolder;
         _loading = false;
@@ -35,6 +36,7 @@ public partial class ExportsView : UserControl
             LookupBox.IsChecked == true,
             CaptureBox.IsChecked == true,
             ProbeBox.IsChecked == true,
+            MonitoringBox.IsChecked == true,
             OpenBox.IsChecked == true,
             OpenFolderBox.IsChecked == true);
     }
