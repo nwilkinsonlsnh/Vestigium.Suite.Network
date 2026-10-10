@@ -16,7 +16,6 @@
     </Grid.RowDefinitions>
     <StackPanel Grid.Row="0" Orientation="Horizontal" Style="{StaticResource StackPanel.Toolbar}" Margin="0,0,0,8">
       <Button Content="Close" Style="{StaticResource Button.Secondary}" Click="OnClose" Padding="16,4" Margin="0,0,8,0" />
-      <Button Content="Lookup" Style="{StaticResource Button.Primary}" Click="OnLookup" Padding="16,4" Margin="0,0,8,0" />
     </StackPanel>
     <TextBlock x:Name="Caption" Grid.Row="1" Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap" Margin="0,0,0,12" />
     <Border Grid.Row="2" BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
@@ -28,20 +27,32 @@
                 HeadersVisibility="Column"
                 VerticalScrollBarVisibility="Visible"
                 HorizontalScrollBarVisibility="Auto"
-                RowHeight="NaN">
+                ContextMenuOpening="OnMenuOpening">
+        <DataGrid.ContextMenu>
+          <ContextMenu />
+        </DataGrid.ContextMenu>
         <DataGrid.Columns>
+          <DataGridTemplateColumn Header="" Width="36">
+            <DataGridTemplateColumn.CellTemplate>
+              <DataTemplate>
+                <ToggleButton Content="{Binding Glyph}"
+                              IsChecked="{Binding IsExpanded, Mode=TwoWay}"
+                              Visibility="{Binding ExpanderVisibility}"
+                              Click="OnExpand"
+                              Padding="4,0"
+                              Background="Transparent"
+                              BorderThickness="0" />
+              </DataTemplate>
+            </DataGridTemplateColumn.CellTemplate>
+          </DataGridTemplateColumn>
+          <DataGridTextColumn Header="Sequence" Binding="{Binding SequenceText}" Width="90" />
           <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="70" />
           <DataGridTextColumn Header="Time" Binding="{Binding TimeText}" Width="200" />
-          <DataGridTextColumn Header="Pid" Binding="{Binding Pid}" Width="70" />
-          <DataGridTextColumn Header="Sent" Binding="{Binding Sent}" Width="70" />
-          <DataGridTextColumn Header="Received" Binding="{Binding Received}" Width="90" />
-          <DataGridTextColumn Header="Total" Binding="{Binding Total}" Width="70" />
           <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="100" />
-          <DataGridTextColumn Header="Answers" Binding="{Binding Answers}" Width="*">
+          <DataGridTextColumn Header="Detail" Binding="{Binding Detail}" Width="*">
             <DataGridTextColumn.ElementStyle>
               <Style TargetType="TextBlock">
-                <Setter Property="TextWrapping" Value="Wrap" />
-                <Setter Property="Padding" Value="0,4" />
+                <Setter Property="Margin" Value="{Binding Indent}" />
               </Style>
             </DataGridTextColumn.ElementStyle>
           </DataGridTextColumn>
