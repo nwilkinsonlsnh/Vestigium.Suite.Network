@@ -5,6 +5,7 @@ public sealed class HopRow
     public const int MaxColumns = 10;
 
     public int Ttl { get; init; }
+    public int TraceTtl { get; init; }
     public string Address { get; init; } = "*";
     public string Name { get; init; } = "";
     public string Probes { get; init; } = "";
@@ -26,10 +27,16 @@ public sealed class HopRow
         return new HopRow
         {
             Ttl = hop.Ttl,
+            TraceTtl = hop.Ttl,
             Address = string.IsNullOrWhiteSpace(hop.Address) ? "*" : hop.Address,
             Name = hop.Name ?? "",
-            Probes = "",
-            Reached = hop.Probes.Any(p => p.Status == Vestigium.Helpers.Network.IcmpEchoStatus.Success)
+            Probes = string.Join("  ", values),
+            Reached = hop.Probes.Any(p => p.Status == Vestigium.Helpers.Network.IcmpEchoStatus.Success),
+            P1 = At(values, 0),
+            P2 = At(values, 1),
+            P3 = At(values, 2),
+            P4 = At(values, 3),
+            P5 = At(values, 4)
         };
     }
 
@@ -39,6 +46,7 @@ public sealed class HopRow
         return new HopRow
         {
             Ttl = Ttl,
+            TraceTtl = TraceTtl,
             Address = Address,
             Name = Name,
             Probes = string.Join("  ", times),
