@@ -25,6 +25,13 @@
       <Label Style="{StaticResource Label.Standard}" Content="Interface" />
       <ComboBox ItemsSource="{Binding Interfaces}" DisplayMemberPath="Label" SelectedValuePath="Index"
                 SelectedValue="{Binding SelectedInterfaceIndex}" Margin="0,0,0,12" />
+      <Label Style="{StaticResource Label.Standard}" Content="Source" />
+      <ComboBox ItemsSource="{Binding Sources}" DisplayMemberPath="Label" SelectedValuePath="Address"
+                SelectedValue="{Binding Source}" Margin="0,0,0,12" />
+      <TextBlock Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap" Margin="0,0,0,12"
+                 Text="The local address this PC sends from. Any lets Windows pick. This is not spoofing." />
+      <Label Style="{StaticResource Label.Standard}" Content="Family" />
+      <ComboBox ItemsSource="{Binding Families}" SelectedItem="{Binding Family}" />
     </StackPanel>
 
     <StackPanel HorizontalAlignment="Left" Width="520" Margin="20,0,0,0"
