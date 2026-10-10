@@ -99,6 +99,7 @@ public sealed partial class MonitorViewModel : ObservableObject
             return;
         }
 
+        MonitorStatus = "Launching " + exe;
         PipeName = "Vestigium.Watch.Dns." + Guid.NewGuid().ToString("N");
         PlaceAbstractions(Path.GetDirectoryName(exe)!);
         var duration = timed ? Seconds : MaxSeconds;
@@ -121,7 +122,7 @@ public sealed partial class MonitorViewModel : ObservableObject
 
         _read = new CancellationTokenSource();
         if (!await ConnectAndReadAsync(PipeName, _read.Token).ConfigureAwait(false))
-            MonitorStatus = "Pipe did not open.";
+            MonitorStatus = "Pipe did not open. " + exe;
     }
 
     private void BeginClock(bool timed)
@@ -327,16 +328,28 @@ public sealed partial class MonitorViewModel : ObservableObject
     public static string? FindWatchExe()
     {
         var name = "Vestigium.Helpers.Watch.Dns.exe";
-        var candidates = new List<string>();
-        var root = AppContext.BaseDirectory;
-        candidates.Add(Path.Combine(root, "watch", name));
-        candidates.Add(Path.Combine(root, name));
-        if (Directory.Exists(root))
-            candidates.AddRange(Directory.EnumerateFiles(root, name, SearchOption.AllDirectories));
         var cache = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".nuget", "packages", "vestigium.helpers.watch.dns");
         if (Directory.Exists(cache))
-            candidates.AddRange(Directory.EnumerateFiles(cache, name, SearchOption.AllDirectories).OrderByDescending(path => path));
-        return candidates.FirstOrDefault(HasDependencies);
+        {
+            var pinned = Directory.EnumerateFiles(cache, name, SearchOption.AllDirectories)
+                .Where(path => path.Contains("1.0.15", StringComparison.OrdinalIgnoreCase))
+                .OrderByDescending(path => path)
+                .FirstOrDefault();
+            if (pinned is not null && HasDependencies(pinned))
+                return pinned;
+
+            var any = Directory.EnumerateFiles(cache, name, SearchOption.AllDirectories)
+                .OrderByDescending(path => path)
+                .FirstOrDefault();
+            if (any is not null && HasDependencies(any))
+                return any;
+        }
+
+        var root = AppContext.BaseDirectory;
+        var local = new[] { Path.Combine(root, "watch", name), Path.Combine(root, name) }
+            .Concat(Directory.Exists(root) ? Directory.EnumerateFiles(root, name, SearchOption.AllDirectories) : [])
+            .FirstOrDefault(HasDependencies);
+        return local;
     }
 
     private static bool HasDependencies(string exe)
