@@ -36,7 +36,7 @@ public partial class TraceView : UserControl
             return;
 
         var count = Math.Clamp(vm.ProbeColumns, 5 > 0 ? 1 : 1, 5);
-        while (HopGrid.Columns.Count > 3)
+        while (HopGrid.Columns.Count > 4)
             HopGrid.Columns.RemoveAt(HopGrid.Columns.Count - 1);
 
         for (var i = 1; i <= count; i++)
