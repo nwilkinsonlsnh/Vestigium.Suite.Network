@@ -14,20 +14,14 @@
       <RowDefinition Height="*" />
     </Grid.RowDefinitions>
     <StackPanel Grid.Row="0" Style="{StaticResource StackPanel.Toolbar}" Orientation="Horizontal" Margin="0,0,0,12">
-      <Label Style="{StaticResource Label.Standard}" Content="Source" VerticalAlignment="Center" Margin="0,0,8,0" />
-      <ComboBox Width="120" Style="{StaticResource ComboBox.Standard}" ItemsSource="{Binding Sources}" SelectedItem="{Binding Source}" Margin="0,0,16,0" />
       <Label Style="{StaticResource Label.Standard}" Content="Seconds" VerticalAlignment="Center" Margin="0,0,8,0" />
       <ComboBox Width="80" Style="{StaticResource ComboBox.Standard}" ItemsSource="{Binding Durations}" SelectedItem="{Binding Seconds}" Margin="0,0,16,0" />
       <Button Content="Start" Style="{StaticResource Button.Primary}" Command="{Binding StartCommand}" Padding="16,4" Margin="0,0,8,0" />
-      <Button Content="Stop" Style="{StaticResource Button.Secondary}" Command="{Binding StopCommand}" Padding="16,4" Margin="0,0,16,0" />
-      <TextBlock Style="{StaticResource TextBlock.Caption}" Text="{Binding MonitorStatus}" VerticalAlignment="Center" />
+      <Button Content="Stop" Style="{StaticResource Button.Secondary}" Command="{Binding StopCommand}" Padding="16,4" />
     </StackPanel>
-    <DockPanel Grid.Row="1" Margin="0,0,0,12">
-      <TextBlock DockPanel.Dock="Right" Style="{StaticResource TextBlock.Caption}" Text="{Binding ElapsedText}" VerticalAlignment="Center" Margin="12,0,0,0" />
-      <ProgressBar Height="8" Minimum="0" Maximum="{Binding Seconds}" Value="{Binding Elapsed}" />
-    </DockPanel>
-    <TextBlock Grid.Row="2" Style="{StaticResource TextBlock.Caption}" Text="{Binding Unseen}" TextWrapping="Wrap" Margin="0,0,0,12" />
-    <Border Grid.Row="3" BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
+    <TextBlock Grid.Row="1" Style="{StaticResource TextBlock.Caption}" Text="{Binding ResolvedText}" TextWrapping="Wrap" Margin="0,0,0,12" />
+    <Border Grid.Row="2"
+ BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
       <DataGrid ItemsSource="{Binding Rows}"
                 Style="{StaticResource DataGrid.Compact}"
                 AutoGenerateColumns="False"
