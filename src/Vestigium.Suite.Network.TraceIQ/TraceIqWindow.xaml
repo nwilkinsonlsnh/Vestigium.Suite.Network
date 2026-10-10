@@ -9,8 +9,7 @@
         Background="{DynamicResource Vestigium.Brushes.Surface.Window}">
   <DockPanel Style="{StaticResource DockPanel.Standard}">
     <Grid DockPanel.Dock="Top" Margin="12,8,12,0">
-      <ItemsControl HorizontalAlignment="Left"
-                    ItemsSource="{Binding NavItems, ElementName=RootShell}">
+      <ItemsControl HorizontalAlignment="Left" ItemsSource="{Binding NavItems, ElementName=RootShell}">
         <ItemsControl.ItemsPanel>
           <ItemsPanelTemplate>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" />
@@ -24,10 +23,20 @@
                          IsEnabled="{Binding IsEnabled}"
                          GroupName="TraceIqMainNav"
                          Checked="MainNav_Checked"
+                         Click="MainNav_Click"
                          Margin="0,0,8,0" />
           </DataTemplate>
         </ItemsControl.ItemTemplate>
       </ItemsControl>
+      <RadioButton x:Name="HelpTab"
+                   HorizontalAlignment="Right"
+                   VerticalAlignment="Center"
+                   Content="Help"
+                   Style="{StaticResource RadioButton.HorizontalTab}"
+                   GroupName="TraceIqMainNav"
+                   Checked="HelpTab_Checked"
+                   Unchecked="HelpTab_Unchecked"
+                   Margin="8,0,0,0" />
     </Grid>
     <shell:VestigiumShell x:Name="RootShell"
                           ShowNav="False"
