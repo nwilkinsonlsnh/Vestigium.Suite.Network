@@ -30,6 +30,7 @@ public sealed partial class MainViewModel : ObservableObject
     public ObservableCollection<HopRow> Hops { get; } = [];
 
     private CancellationTokenSource? _cts;
+    private int _reachedTtl;
 
     public MainViewModel()
     {
@@ -98,6 +99,7 @@ public sealed partial class MainViewModel : ObservableObject
         var token = _cts.Token;
         IsBusy = true;
         Hops.Clear();
+        _reachedTtl = 0;
         Reached = "";
         Protocol = "";
         Progress = 0;
@@ -172,15 +174,31 @@ public sealed partial class MainViewModel : ObservableObject
     {
         if (progress.Sequence < 1)
             return;
+        if (_reachedTtl > 0 && progress.Sequence > _reachedTtl)
+            return;
         var address = string.IsNullOrWhiteSpace(progress.LastStatus) || progress.LastStatus == "Reached"
             ? "*"
             : progress.LastStatus;
+        if (SameHost(address))
+        {
+            _reachedTtl = _reachedTtl == 0 ? progress.Sequence : Math.Min(_reachedTtl, progress.Sequence);
+            if (progress.Sequence > _reachedTtl)
+                return;
+        }
+
         var probes = address == "*" ? "No reply" : "";
         Place(new HopRow { Ttl = progress.Sequence, Address = address, Name = "", Probes = probes });
+        if (_reachedTtl > 0)
+            TrimPastTarget();
         Progress = Hops.Count(h => h.Probes != "Waiting");
         if (Hops.Count > ProgressMax)
             ProgressMax = Hops.Count;
     }
+
+    private bool SameHost(string address)
+        => !string.IsNullOrWhiteSpace(address)
+           && !address.Equals("*", StringComparison.Ordinal)
+           && address.Equals(Target.Trim(), StringComparison.OrdinalIgnoreCase);
 
     private void Fill(IEnumerable<HopRow> rows)
     {
@@ -191,6 +209,8 @@ public sealed partial class MainViewModel : ObservableObject
 
     private void Place(HopRow row)
     {
+        if (_reachedTtl > 0 && row.Ttl > _reachedTtl)
+            return;
         while (Hops.Count < row.Ttl)
             Hops.Add(Gap(Hops.Count + 1));
 
