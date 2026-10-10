@@ -144,6 +144,15 @@ public sealed partial class MonitorViewModel : ObservableObject
             return;
         }
 
+        if (string.Equals(parsed.Status, "Failed", StringComparison.OrdinalIgnoreCase))
+        {
+            MonitorStatus = string.IsNullOrWhiteSpace(parsed.Answers) ? "Failed" : parsed.Answers;
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(parsed.Name))
+            return;
+
         var keyName = parsed.Name;
         var keyType = parsed.Type;
         var existing = Rows.FirstOrDefault(row =>
