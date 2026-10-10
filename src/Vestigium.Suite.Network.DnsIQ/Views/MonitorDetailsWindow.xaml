@@ -27,16 +27,24 @@
                 CanUserAddRows="False"
                 HeadersVisibility="Column"
                 VerticalScrollBarVisibility="Visible"
-                HorizontalScrollBarVisibility="Auto">
+                HorizontalScrollBarVisibility="Auto"
+                RowHeight="NaN">
         <DataGrid.Columns>
           <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="70" />
-          <DataGridTextColumn Header="Time" Binding="{Binding Time}" Width="180" />
+          <DataGridTextColumn Header="Time" Binding="{Binding TimeText}" Width="200" />
           <DataGridTextColumn Header="Pid" Binding="{Binding Pid}" Width="70" />
-          <DataGridTextColumn Header="Sent" Binding="{Binding ResolverCount}" Width="70" />
-          <DataGridTextColumn Header="Received" Binding="{Binding PacketCount}" Width="90" />
+          <DataGridTextColumn Header="Sent" Binding="{Binding Sent}" Width="70" />
+          <DataGridTextColumn Header="Received" Binding="{Binding Received}" Width="90" />
           <DataGridTextColumn Header="Total" Binding="{Binding Total}" Width="70" />
           <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="100" />
-          <DataGridTextColumn Header="Answers" Binding="{Binding Answers}" Width="*" />
+          <DataGridTextColumn Header="Answers" Binding="{Binding Answers}" Width="*">
+            <DataGridTextColumn.ElementStyle>
+              <Style TargetType="TextBlock">
+                <Setter Property="TextWrapping" Value="Wrap" />
+                <Setter Property="Padding" Value="0,4" />
+              </Style>
+            </DataGridTextColumn.ElementStyle>
+          </DataGridTextColumn>
         </DataGrid.Columns>
       </DataGrid>
     </Border>
