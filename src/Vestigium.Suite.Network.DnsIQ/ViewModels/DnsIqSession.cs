@@ -64,6 +64,7 @@ public sealed class DnsIqSession
             ExportLookup = _main.ExportLookup,
             ExportCapture = _main.ExportCapture,
             ExportProbe = _main.ExportProbe,
+            ExportMonitoring = _main.ExportMonitoring,
             ExportOpenAfter = _main.ExportOpenAfter,
             ExportOpenFolder = _main.ExportOpenFolder
         };
@@ -105,6 +106,7 @@ public sealed class DnsIqSession
         _main.ExportLookup = Current.ExportLookup;
         _main.ExportCapture = Current.ExportCapture;
         _main.ExportProbe = Current.ExportProbe;
+        _main.ExportMonitoring = Current.ExportMonitoring;
         _main.ExportOpenAfter = Current.ExportOpenAfter;
         _main.ExportOpenFolder = Current.ExportOpenFolder;
         _settings.NarrowSources(_main.SelectedInterfaceIndex);
