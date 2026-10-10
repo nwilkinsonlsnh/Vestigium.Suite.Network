@@ -43,6 +43,29 @@ public sealed class HopRow
         };
     }
 
+    public HopRow WithTimes(IReadOnlyList<string> times)
+    {
+        string At(int i) => i < times.Count ? times[i] : "";
+        return new HopRow
+        {
+            Ttl = Ttl,
+            Address = Address,
+            Name = Name,
+            Probes = string.Join("  ", times),
+            Reached = Reached,
+            P1 = At(0),
+            P2 = At(1),
+            P3 = At(2),
+            P4 = At(3),
+            P5 = At(4),
+            P6 = At(5),
+            P7 = At(6),
+            P8 = At(7),
+            P9 = At(8),
+            P10 = At(9)
+        };
+    }
+
     public static HopRow Gap(int ttl, string probes = "Waiting")
         => new() { Ttl = ttl, Address = "*", Name = "", Probes = probes, P1 = probes };
 
