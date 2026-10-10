@@ -107,12 +107,10 @@ public sealed partial class MainViewModel : ObservableObject
             var job = NetworkHelper.IcmpTrace(Target.Trim(), options);
             job.ProgressChanged += (_, p) => OnHop(p);
             var result = await job.RunAsync(token).ConfigureAwait(true);
-            Hops.Clear();
-            foreach (var hop in result.Hops)
-                Hops.Add(HopRow.From(hop));
-            Progress = Hops.Count;
-            if (Hops.Count > ProgressMax)
-                ProgressMax = Hops.Count;
+            Fill(result.Hops.Select(HopRow.From));
+            SettleGaps();
+            ProgressMax = Math.Max(ProgressMax, Hops.Count);
+            Progress = ProgressMax;
             Reached = result.Reached ? "Yes" : "No";
             Protocol = result.ProbeProtocol.ToString();
             SetStatus(result.Status.ToString());
@@ -171,20 +169,43 @@ public sealed partial class MainViewModel : ObservableObject
         var address = string.IsNullOrWhiteSpace(progress.LastStatus) || progress.LastStatus == "Reached"
             ? "*"
             : progress.LastStatus;
-        var row = new HopRow { Ttl = progress.Sequence, Address = address, Name = "", Probes = "" };
-        var existing = Hops.FirstOrDefault(h => h.Ttl == progress.Sequence);
-        if (existing is null)
-            Hops.Add(row);
-        else
-        {
-            var index = Hops.IndexOf(existing);
-            Hops[index] = row;
-        }
-
-        Progress = Hops.Count;
+        var probes = address == "*" ? "No reply" : "";
+        Place(new HopRow { Ttl = progress.Sequence, Address = address, Name = "", Probes = probes });
+        Progress = Hops.Count(h => h.Probes != "Waiting");
         if (Hops.Count > ProgressMax)
             ProgressMax = Hops.Count;
     }
+
+    private void Fill(IEnumerable<HopRow> rows)
+    {
+        foreach (var row in rows)
+            Place(row);
+        SettleGaps();
+    }
+
+    private void Place(HopRow row)
+    {
+        while (Hops.Count < row.Ttl)
+            Hops.Add(Gap(Hops.Count + 1));
+
+        var index = row.Ttl - 1;
+        if (index < Hops.Count && Hops[index].Ttl == row.Ttl)
+            Hops[index] = row;
+        else
+            Hops.Add(row);
+    }
+
+    private void SettleGaps()
+    {
+        for (var i = 0; i < Hops.Count; i++)
+        {
+            if (Hops[i].Probes == "Waiting")
+                Hops[i] = Gap(Hops[i].Ttl, "No reply");
+        }
+    }
+
+    private static HopRow Gap(int ttl, string probes = "Waiting")
+        => new() { Ttl = ttl, Address = "*", Name = "", Probes = probes };
 
     private bool TryBuild(out IcmpTraceOptions options, out string? reject)
     {
