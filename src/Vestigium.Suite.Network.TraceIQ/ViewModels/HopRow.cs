@@ -56,8 +56,8 @@ public sealed class HopRow
             return "*";
 
         if (probe.RoundtripTimeMs > 0)
-            return $"{probe.RoundtripTimeMs} ms";
+            return probe.RoundtripTimeMs.ToString("0.###");
 
-        return "<1 ms";
+        return "";
     }
 }
