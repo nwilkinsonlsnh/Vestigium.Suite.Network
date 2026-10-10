@@ -34,8 +34,11 @@ public sealed partial class MainViewModel : ObservableObject
     private string? _resolved;
     private readonly Dictionary<string, int> _seen = new(StringComparer.OrdinalIgnoreCase);
 
-    public MainViewModel()
+    public SettingsViewModel Settings { get; }
+
+    public MainViewModel(SettingsViewModel settings)
     {
+        Settings = settings;
         try
         {
             Interfaces = AdapterChoices.From(NetworkHelper.GetAdapters());
@@ -44,6 +47,15 @@ public sealed partial class MainViewModel : ObservableObject
         {
             Interfaces = AdapterChoices.From([]);
         }
+    }
+
+    [ObservableProperty]
+    private MruEntry? _selectedMru;
+
+    partial void OnSelectedMruChanged(MruEntry? value)
+    {
+        if (!string.IsNullOrWhiteSpace(value?.Target))
+            Target = value.Target;
     }
 
     [ObservableProperty]
@@ -107,7 +119,8 @@ public sealed partial class MainViewModel : ObservableObject
         _reachedTtl = 0;
         _resolved = null;
         _seen.Clear();
-        ProbeColumns = (int)Probes;
+        ProbeColumns = (int)Settings.Probes;
+        Settings.Remember(Target);
         Reached = "";
         Protocol = "";
         Progress = 0;
@@ -221,7 +234,7 @@ public sealed partial class MainViewModel : ObservableObject
 
     private async Task PingDiscoveredAsync(CancellationToken token)
     {
-        var count = Math.Clamp((int)Probes, MinProbes, MaxProbes);
+        var count = Math.Clamp((int)Settings.Probes, MinProbes, MaxProbes);
         var jobs = Hops
             .Select((row, index) => (row, index))
             .Where(x => x.row.Address != "*")
@@ -321,47 +334,47 @@ public sealed partial class MainViewModel : ObservableObject
             return false;
         }
 
-        var hops = (int)MaxHops;
+        var hops = (int)Settings.MaxHops;
         if (hops < MinHops || hops > MaxHopsLimit)
         {
             reject = "Max hops is 1–64";
             return false;
         }
 
-        var parallel = (int)Parallel;
+        var parallel = (int)Settings.Parallel;
         if (parallel < 1 || parallel > MaxParallel)
         {
             reject = "Parallel is 1–30";
             return false;
         }
 
-        var probes = (int)Probes;
+        var probes = (int)Settings.Probes;
         if (probes < MinProbes || probes > MaxProbes)
         {
             reject = "Probes is 1–5";
             return false;
         }
 
-        if (SelectedInterfaceIndex < 0)
+        if (Settings.SelectedInterfaceIndex < 0)
         {
             reject = "Interface index cannot be negative";
             return false;
         }
 
-        var source = Source?.Trim();
+        var source = Settings.Source?.Trim();
         if (!string.IsNullOrWhiteSpace(source) && !IPAddress.TryParse(source, out _))
         {
             reject = "Source must be an IP address";
             return false;
         }
 
-        Bind.InterfaceIndex = SelectedInterfaceIndex;
+        Bind.InterfaceIndex = Settings.SelectedInterfaceIndex;
         Bind.SourceAddress = string.IsNullOrWhiteSpace(source) ? null : source;
         options = new IcmpTraceOptions
         {
             MaxHops = hops,
             ProbesPerHop = probes,
-            Family = MapFamily(Family),
+            Family = MapFamily(Settings.Family),
             InterfaceIndex = Bind.InterfaceIndex,
             SourceAddress = Bind.SourceAddress
         };
