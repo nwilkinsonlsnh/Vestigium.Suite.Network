@@ -48,7 +48,7 @@ The library door is already there: `NetworkHelper.IcmpTrace(target, IcmpTraceOpt
 
 ### PR01-01
 
-Stand the suite shell the way DnsIQ does. Add `Vestigium.Controls` and `Vestigium.Themes` on the host, versioned from `Directory.Build.props`. `HostLog.Initialize(HostIds.TraceIQ)` stays before the window. The Trace page is the selected item. Drop the bare title text block. The window title is TraceIQ. Do not paste protocol into the exe. The walk stays `NetworkHelper.IcmpTrace`.
+Stand the suite shell the way DnsIQ does. Add `Vestigium.Controls` and `Vestigium.Themes` on the host, versioned from `Directory.Build.props`. `HostLog.Initialize(HostIds.TraceIQ)` stays before the window. Logs land at `C:\ProgramData\Vestigium\Logs\TraceIQ\`. The Trace page is the selected item. Drop the bare title text block. The window title is TraceIQ. Do not paste protocol into the exe. The walk stays `NetworkHelper.IcmpTrace`.
 
 ### PR01-02
 
