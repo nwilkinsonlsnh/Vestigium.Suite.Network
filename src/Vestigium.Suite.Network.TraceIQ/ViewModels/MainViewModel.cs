@@ -115,12 +115,15 @@ public sealed partial class MainViewModel : ObservableObject
         _cts = new CancellationTokenSource();
         var token = _cts.Token;
         IsBusy = true;
+        var remembered = Target.Trim();
         Hops.Clear();
         _reachedTtl = 0;
         _resolved = null;
         _seen.Clear();
         ProbeColumns = (int)Settings.Probes;
-        Settings.Remember(Target);
+        Settings.Remember(remembered);
+        if (!string.Equals(Target, remembered, StringComparison.Ordinal))
+            Target = remembered;
         Reached = "";
         Protocol = "";
         Progress = 0;
