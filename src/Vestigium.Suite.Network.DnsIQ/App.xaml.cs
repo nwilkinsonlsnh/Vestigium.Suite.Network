@@ -99,8 +99,9 @@ public partial class App : Application
                     Subject = "Lookup and pulse",
                     Description = "One name. Lookup writes records. Probe is the resolver pulse."
                 },
-                new VestigiumNavItemSpec("Capture")
+                new VestigiumNavItemSpec("Hosts Viewer")
                 {
+                    Key = "Capture",
                     Title = "Hosts Viewer",
                     Subject = "Hosts from a file",
                     Description = "Hosts from a HAR or a text dump. Opening the file probes DNS."
