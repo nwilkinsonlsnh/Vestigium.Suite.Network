@@ -147,7 +147,6 @@ public sealed partial class MainViewModel : ObservableObject
             var echo = NetworkHelper.IcmpEcho(Target.Trim(), new IcmpEchoOptions
             {
                 Count = 1,
-                Family = MapFamily(Family) is RouteFamily.Pv6 ? default : default,
                 InterfaceIndex = Bind.InterfaceIndex,
                 SourceAddress = Bind.SourceAddress
             });
