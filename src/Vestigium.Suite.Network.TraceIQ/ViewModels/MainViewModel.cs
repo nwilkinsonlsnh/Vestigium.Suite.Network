@@ -34,6 +34,7 @@ public sealed partial class MainViewModel : ObservableObject
     private string? _resolved;
     private int _estimate;
     private readonly Dictionary<string, int> _seen = new(StringComparer.OrdinalIgnoreCase);
+    private readonly HashSet<int> _pinging = [];
 
     public SettingsViewModel Settings { get; }
 
@@ -133,6 +134,7 @@ public sealed partial class MainViewModel : ObservableObject
         _resolved = null;
         _estimate = 0;
         _seen.Clear();
+        _pinging.Clear();
         ProbeColumns = (int)Settings.Probes;
         Settings.Remember(remembered);
         if (!string.Equals(Target, remembered, StringComparison.Ordinal))
@@ -240,6 +242,8 @@ public sealed partial class MainViewModel : ObservableObject
 
         var probes = address == "*" ? "No reply" : "";
         Place(new HopRow { Ttl = progress.Sequence, Address = address, Name = "", Probes = probes });
+        if (address != "*" && _pinging.Add(progress.Sequence))
+            _ = PingOneAsync(progress.Sequence, address);
         if (_reachedTtl > 0)
             TrimPastTarget();
         Progress = Hops.Count(h => h.Probes != "Waiting");
@@ -298,13 +302,29 @@ public sealed partial class MainViewModel : ObservableObject
         var count = Math.Clamp((int)Settings.Probes, MinProbes, MaxProbes);
         var jobs = Hops
             .Select((row, index) => (row, index))
-            .Where(x => x.row.Address != "*")
+            .Where(x => x.row.Address != "*" && !_pinging.Contains(x.row.Ttl))
             .Select(async x =>
             {
                 var times = await PingAsync(x.row.Address, count, token).ConfigureAwait(true);
                 Hops[x.index] = x.row.WithTimes(times);
             });
         await Task.WhenAll(jobs).ConfigureAwait(true);
+    }
+
+    private async Task PingOneAsync(int ttl, string address)
+    {
+        try
+        {
+            var count = Math.Clamp((int)Settings.Probes, MinProbes, MaxProbes);
+            var times = await PingAsync(address, count, CancellationToken.None).ConfigureAwait(true);
+            var index = ttl - 1;
+            if (index < 0 || index >= Hops.Count || Hops[index].Ttl != ttl)
+                return;
+            Hops[index] = Hops[index].WithTimes(times);
+        }
+        catch (Exception)
+        {
+        }
     }
 
     private async Task<IReadOnlyList<string>> PingAsync(string address, int count, CancellationToken token)
