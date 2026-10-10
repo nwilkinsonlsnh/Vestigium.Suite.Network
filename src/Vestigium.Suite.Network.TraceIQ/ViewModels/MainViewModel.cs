@@ -61,13 +61,16 @@ public sealed partial class MainViewModel : ObservableObject
     private string _source = string.Empty;
 
     [ObservableProperty]
-    private string _status = "Idle";
-
-    [ObservableProperty]
     private string _reached = "";
 
     [ObservableProperty]
     private string _protocol = "";
+
+    [ObservableProperty]
+    private double _progress;
+
+    [ObservableProperty]
+    private double _progressMax = 1;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(RunTraceCommand))]
@@ -92,13 +95,24 @@ public sealed partial class MainViewModel : ObservableObject
         Hops.Clear();
         Reached = "";
         Protocol = "";
-        SetStatus("Running");
+        Progress = 0;
+        ProgressMax = 1;
+        SetStatus("Estimating");
         try
         {
+            var estimate = await EstimateAsync(token).ConfigureAwait(true);
+            ProgressMax = estimate;
+            SetStatus("Running");
+
             var job = NetworkHelper.IcmpTrace(Target.Trim(), options);
+            job.ProgressChanged += (_, p) => OnHop(p);
             var result = await job.RunAsync(token).ConfigureAwait(true);
+            Hops.Clear();
             foreach (var hop in result.Hops)
                 Hops.Add(HopRow.From(hop));
+            Progress = Hops.Count;
+            if (Hops.Count > ProgressMax)
+                ProgressMax = Hops.Count;
             Reached = result.Reached ? "Yes" : "No";
             Protocol = result.ProbeProtocol.ToString();
             SetStatus(result.Status.ToString());
@@ -124,6 +138,53 @@ public sealed partial class MainViewModel : ObservableObject
     {
         try { _cts?.Cancel(); }
         catch (ObjectDisposedException) { }
+    }
+
+    private async Task<int> EstimateAsync(CancellationToken token)
+    {
+        try
+        {
+            var echo = NetworkHelper.IcmpEcho(Target.Trim(), new IcmpEchoOptions
+            {
+                Count = 1,
+                Family = MapFamily(Family) is RouteFamily.Pv6 ? default : default,
+                InterfaceIndex = Bind.InterfaceIndex,
+                SourceAddress = Bind.SourceAddress
+            });
+            var result = await echo.RunAsync(token).ConfigureAwait(true);
+            var ttl = result.Replies.FirstOrDefault(r => r.Status == IcmpEchoStatus.Success)?.Ttl ?? 0;
+            return HopEstimate.FromReplyTtl(ttl);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception)
+        {
+            return (int)MaxHops;
+        }
+    }
+
+    private void OnHop(NetworkProgress progress)
+    {
+        if (progress.Sequence < 1)
+            return;
+        var address = string.IsNullOrWhiteSpace(progress.LastStatus) || progress.LastStatus == "Reached"
+            ? "*"
+            : progress.LastStatus;
+        var row = new HopRow { Ttl = progress.Sequence, Address = address, Name = "", Probes = "" };
+        var existing = Hops.FirstOrDefault(h => h.Ttl == progress.Sequence);
+        if (existing is null)
+            Hops.Add(row);
+        else
+        {
+            var index = Hops.IndexOf(existing);
+            Hops[index] = row;
+        }
+
+        Progress = Hops.Count;
+        if (Hops.Count > ProgressMax)
+            ProgressMax = Hops.Count;
     }
 
     private bool TryBuild(out IcmpTraceOptions options, out string? reject)
@@ -186,9 +247,20 @@ public sealed partial class MainViewModel : ObservableObject
 
     private void SetStatus(string value)
     {
-        Status = value;
         if (StatusBar is not null)
             StatusBar.Message = value;
+    }
+}
+
+public static class HopEstimate
+{
+    public static int FromReplyTtl(int replyTtl)
+    {
+        if (replyTtl <= 0)
+            return 8;
+        var initial = replyTtl <= 64 ? 64 : replyTtl <= 128 ? 128 : 255;
+        var hops = initial - replyTtl;
+        return Math.Clamp(hops < 1 ? 1 : hops, 1, 64);
     }
 }
 
@@ -204,12 +276,13 @@ public static class AdapterChoices
         if (adapters is null)
             return list;
 
-        var index = 1;
         foreach (var adapter in adapters)
         {
+            var index = adapter.InterfaceIndex ?? 0;
+            if (index < 1)
+                continue;
             var name = string.IsNullOrWhiteSpace(adapter.Name) ? adapter.Id : adapter.Name;
             list.Add(new AdapterChoice(index, $"{name}  ({index})"));
-            index++;
         }
 
         return list;
