@@ -35,7 +35,7 @@ public partial class TraceView : UserControl
         if (DataContext is not MainViewModel vm)
             return;
 
-        var count = Math.Clamp(vm.ProbeColumns, HopRow.MaxColumns > 0 ? 1 : 1, HopRow.MaxColumns);
+        var count = Math.Clamp(vm.ProbeColumns, 5 > 0 ? 1 : 1, 5);
         while (HopGrid.Columns.Count > 3)
             HopGrid.Columns.RemoveAt(HopGrid.Columns.Count - 1);
 
