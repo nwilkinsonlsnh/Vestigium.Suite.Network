@@ -67,7 +67,9 @@
                 CanUserAddRows="False"
                 HeadersVisibility="Column"
                 VerticalScrollBarVisibility="Auto"
-                HorizontalScrollBarVisibility="Auto">
+                HorizontalScrollBarVisibility="Auto"
+                ScrollViewer.CanContentScroll="True"
+                VerticalAlignment="Stretch">
         <DataGrid.Resources>
           <Style TargetType="DataGridCell" BasedOn="{StaticResource {x:Type DataGridCell}}">
             <Style.Triggers>
