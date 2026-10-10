@@ -29,16 +29,18 @@ public sealed partial class MonitorViewModel : ObservableObject
     public Func<string, Task>? LookupAndProbe { get; set; }
 
     [RelayCommand]
-    private Task LookupSelected(MonitorRow? row)
+    private Task LookupSelected(MonitorAggregate? row)
         => row is null || string.IsNullOrWhiteSpace(row.Name) || Lookup is null ? Task.CompletedTask : Lookup(row.Name);
 
     [RelayCommand]
-    private Task LookupAndProbeSelected(MonitorRow? row)
+    private Task LookupAndProbeSelected(MonitorAggregate? row)
         => row is null || string.IsNullOrWhiteSpace(row.Name) || LookupAndProbe is null ? Task.CompletedTask : LookupAndProbe(row.Name);
 
     public IReadOnlyList<int> Durations { get; } = Enumerable.Range(1, MaxSeconds / StepSeconds).Select(i => i * StepSeconds).ToList();
 
-    public ObservableCollection<MonitorRow> Rows { get; } = [];
+    public ObservableCollection<MonitorAggregate> Rows { get; } = [];
+
+    private readonly List<MonitorLine> _lines = [];
 
     [ObservableProperty]
     private string _source = "Both";
@@ -73,6 +75,9 @@ public sealed partial class MonitorViewModel : ObservableObject
             return;
         }
 
+        _lines.Clear();
+        Rows.Clear();
+        OnPropertyChanged(nameof(ResolvedText));
         BeginClock();
         var exe = FindWatchExe();
         if (exe is null)
@@ -168,21 +173,38 @@ public sealed partial class MonitorViewModel : ObservableObject
         if (string.IsNullOrWhiteSpace(parsed.Name))
             return;
 
-        var keyName = parsed.Name;
-        var keyType = parsed.Type;
-        var existing = Rows.FirstOrDefault(row =>
-            string.Equals(row.Name, keyName, StringComparison.OrdinalIgnoreCase)
-            && string.Equals(row.Type, keyType, StringComparison.Ordinal));
-        if (existing is null)
-        {
-            Rows.Add(ToRow(parsed));
-            OnPropertyChanged(nameof(ResolvedText));
-            return;
-        }
-
-        var index = Rows.IndexOf(existing);
-        Rows[index] = ToRow(parsed);
+        parsed.Type = TypeName(parsed.Type);
+        _lines.Add(parsed);
+        RebuildAggregates();
         OnPropertyChanged(nameof(ResolvedText));
+    }
+
+    private void RebuildAggregates()
+    {
+        var groups = _lines
+            .GroupBy(l => l.Name, StringComparer.OrdinalIgnoreCase)
+            .Select(g =>
+            {
+                var latestByType = g
+                    .GroupBy(l => l.Type, StringComparer.Ordinal)
+                    .Select(tg => tg.OrderByDescending(l => l.Time).First())
+                    .ToList();
+                return new MonitorAggregate
+                {
+                    Time = g.Max(l => l.Time),
+                    Name = g.Key,
+                    TypeCount = latestByType.Count,
+                    ResolverCount = latestByType.Sum(l => l.ResolverCount),
+                    PacketCount = latestByType.Sum(l => l.PacketCount),
+                    Total = latestByType.Sum(l => l.Total)
+                };
+            })
+            .OrderByDescending(a => a.Time)
+            .ToList();
+
+        Rows.Clear();
+        foreach (var agg in groups)
+            Rows.Add(agg);
     }
 
     private async Task<bool> ConnectAndReadAsync(string name, CancellationToken token)
@@ -191,7 +213,7 @@ public sealed partial class MonitorViewModel : ObservableObject
         _client = client;
         try
         {
-        return await ReadAsync(client, name, token).ConfigureAwait(false);
+            return await ReadAsync(client, name, token).ConfigureAwait(false);
         }
         finally
         {
@@ -255,18 +277,6 @@ public sealed partial class MonitorViewModel : ObservableObject
             IsIndeterminate = false
         });
     }
-
-    private static MonitorRow ToRow(MonitorLine line)
-        => new()
-        {
-            Time = line.Time,
-            Pid = line.Pid,
-            Name = line.Name,
-            Type = TypeName(line.Type),
-            ResolverCount = line.ResolverCount,
-            PacketCount = line.PacketCount,
-            Total = line.Total
-        };
 
     private static void OnUi(Action action)
     {
@@ -338,12 +348,12 @@ public sealed partial class MonitorViewModel : ObservableObject
     }
 
 }
-public sealed class MonitorRow
+
+public sealed class MonitorAggregate
 {
     public DateTimeOffset Time { get; init; }
-    public int Pid { get; init; }
     public string Name { get; init; } = "";
-    public string Type { get; init; } = "";
+    public int TypeCount { get; init; }
     public int ResolverCount { get; init; }
     public int PacketCount { get; init; }
     public int Total { get; init; }
