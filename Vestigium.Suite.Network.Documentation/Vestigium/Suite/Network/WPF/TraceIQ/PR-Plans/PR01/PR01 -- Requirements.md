@@ -15,12 +15,30 @@
 
 ---
 
+
+## 0a. The window is a shell. The work is a helper.
+
+The overview README pins are stale. `Directory.Build.props` wins on versions. Do not copy a number out of that briefing.
+
+| Need | Lives in | TraceIQ does |
+|---|---|---|
+| Chrome, nav, shell | `Vestigium.Controls` | Host the Trace page. |
+| Theme | `Vestigium.Themes` | Register and apply. |
+| Status bar, numeric boxes | `Vestigium.Controls.StatusBar`, `Vestigium.Controls.NumericUpDown` | Use them. Do not invent a second control. |
+| JSONL + EVENTID | `Vestigium.Logging` through `HostLog` | Initialize before the window. |
+| The walk | `Vestigium.Helpers.Network` | Call `IcmpTrace`. Map the rows. |
+| APPID, bind fields | `Vestigium.Suite.Network.Shell` | `HostIds.TraceIQ`, `BindFields`. |
+
+A ViewModel may call a library door, map a hop, reject a blank field, and cancel a token. That is the ceiling. If the walk needs behavior the library does not have, update `Vestigium.Helpers.Network`, ship it, bump the pin. Do not paste protocol into the exe.
+
+Versions move in `Directory.Build.props`. A host that wants chrome adds the package on the host, still versioned from props. DnsIQ is the pattern.
+
 ## 0. Decision
 
 | Call | Why |
 |---|---|
 | One form, one grid | Requirements v1.0 is first and ten. Show the path. |
-| Shell matches the suite | DnsIQ already stands a Vestigium shell. TraceIQ uses the same chrome, not a bare window. |
+| Shell matches the suite | DnsIQ already stands a Vestigium shell. TraceIQ uses `Vestigium.Controls` and `Vestigium.Themes`, not a bare window. |
 | HostLog before the window | T1. APPID folder is the proof the host started. |
 | Hop grid, not a text log | The stub dumps hops into a text box. The form reads a grid: Ttl, Address, Name, probes. |
 | Library owns the fallback | ICMP may fall to UDP or TCP. The host shows the settled protocol. It does not pick it. |
@@ -54,7 +72,7 @@ A WPF exe that opens, logs, takes one target, walks the path, and prints the hop
 
 ### R01-02 The shell is the window
 
-TraceIQ uses the suite shell. The first page is Trace. Settings can wait. There is no File menu on the page. The window title is TraceIQ.
+TraceIQ is a shell host. It references `Vestigium.Controls` and `Vestigium.Themes`, versioned from `Directory.Build.props`. The first page is Trace. Settings can wait. There is no File menu on the page. The window title is TraceIQ. Numeric fields use `Vestigium.Controls.NumericUpDown`. Status uses the suite status bar. Do not draw a second chrome.
 
 ### R01-03 The form is the walk
 
@@ -91,9 +109,10 @@ No Pathping button. No sample-loss columns. No RTT chart. No `tracert`, no `trac
 
 ## 3. Must not change
 
-- Helpers.Network protocol. The host does not invent a fallback.
+- Helpers.Network protocol. The host does not invent a fallback. Missing walk behavior is a Helpers change, not a class in the exe.
 - DnsIQ, NicIQ, PingIQ, ProbeHost, RouteIQ, ShareIQ.
 - The APPID. It stays `TraceIQ`.
+- Package versions. Props win. The overview README does not.
 
 ---
 
