@@ -24,6 +24,18 @@ public sealed partial class MonitorViewModel : ObservableObject
 
     public VestigiumStatusBarViewModel? StatusBar { get; set; }
 
+    public Func<string, Task>? Lookup { get; set; }
+
+    public Func<string, Task>? LookupAndProbe { get; set; }
+
+    [RelayCommand]
+    private Task LookupSelected(MonitorRow? row)
+        => row is null || string.IsNullOrWhiteSpace(row.Name) || Lookup is null ? Task.CompletedTask : Lookup(row.Name);
+
+    [RelayCommand]
+    private Task LookupAndProbeSelected(MonitorRow? row)
+        => row is null || string.IsNullOrWhiteSpace(row.Name) || LookupAndProbe is null ? Task.CompletedTask : LookupAndProbe(row.Name);
+
     public IReadOnlyList<int> Durations { get; } = Enumerable.Range(1, MaxSeconds / StepSeconds).Select(i => i * StepSeconds).ToList();
 
     public ObservableCollection<MonitorRow> Rows { get; } = [];

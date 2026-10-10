@@ -633,6 +633,24 @@ public sealed partial class MainViewModel : ObservableObject
 
     public Action? SelectDns { get; set; }
 
+    public Task LookupNameAsync(string? name)
+    {
+        if (string.IsNullOrWhiteSpace(name) || IsBusy)
+            return Task.CompletedTask;
+        Name = name;
+        SelectDns?.Invoke();
+        return LookupAsync();
+    }
+
+    public Task LookupNameAndProbeAsync(string? name)
+    {
+        if (string.IsNullOrWhiteSpace(name) || IsBusy)
+            return Task.CompletedTask;
+        Name = name;
+        SelectDns?.Invoke();
+        return ProbeAsync();
+    }
+
     [RelayCommand]
     private Task LookupHost(HarHostRow? row)
     {
