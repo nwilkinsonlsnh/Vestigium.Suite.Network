@@ -28,18 +28,8 @@ public sealed class HopRow
             Ttl = hop.Ttl,
             Address = string.IsNullOrWhiteSpace(hop.Address) ? "*" : hop.Address,
             Name = hop.Name ?? "",
-            Probes = string.Join("  ", values),
-            Reached = hop.Probes.Any(p => p.Status == Vestigium.Helpers.Network.IcmpEchoStatus.Success),
-            P1 = At(values, 0),
-            P2 = At(values, 1),
-            P3 = At(values, 2),
-            P4 = At(values, 3),
-            P5 = At(values, 4),
-            P6 = At(values, 5),
-            P7 = At(values, 6),
-            P8 = At(values, 7),
-            P9 = At(values, 8),
-            P10 = At(values, 9)
+            Probes = "",
+            Reached = hop.Probes.Any(p => p.Status == Vestigium.Helpers.Network.IcmpEchoStatus.Success)
         };
     }
 
