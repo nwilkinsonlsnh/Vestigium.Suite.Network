@@ -48,6 +48,9 @@ public sealed partial class MonitorViewModel : ObservableObject
     public IReadOnlyList<MonitorLine> LinesFor(string name)
         => _lines.Where(l => string.Equals(l.Name, name, StringComparison.OrdinalIgnoreCase)).ToList();
 
+    public IReadOnlyList<MonitorLine> ExportLines()
+        => _lines.ToList();
+
     [ObservableProperty]
     private string _source = "Both";
 
