@@ -24,6 +24,7 @@ public sealed class DnsIqSettings
     public bool ExportLookup { get; set; } = true;
     public bool ExportCapture { get; set; } = true;
     public bool ExportProbe { get; set; } = true;
+    public bool ExportMonitoring { get; set; } = true;
     public bool ExportOpenAfter { get; set; }
     public bool ExportOpenFolder { get; set; }
 }
