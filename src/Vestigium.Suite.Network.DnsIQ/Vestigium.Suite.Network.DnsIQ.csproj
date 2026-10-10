@@ -7,7 +7,6 @@
     <ApplicationIcon>Assets\DnsIQ.ico</ApplicationIcon>
     <NoWarn>$(NoWarn);NU1701</NoWarn>
     <IsPackable>false</IsPackable>
-    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Vestigium.Suite.Network.Shell\Vestigium.Suite.Network.Shell.csproj" />
@@ -15,10 +14,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.12" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.12">
-      <PrivateAssets>none</PrivateAssets>
-      <IncludeAssets>all</IncludeAssets>
-    </PackageReference>
     <PackageReference Include="Vestigium.Themes" Version="$(VestigiumThemesVersion)" />
     <PackageReference Include="Vestigium.Controls" Version="$(VestigiumControlsVersion)" />
     <PackageReference Include="Vestigium.Controls.StatusBar" Version="$(VestigiumStatusBarVersion)" />
@@ -31,16 +26,5 @@
     <PackageReference Include="Vestigium.Helpers.LogParser" Version="$(VestigiumLogParserVersion)" />
     <PackageReference Include="Vestigium.Helpers.LogParser.Har" Version="$(VestigiumLogParserHarVersion)" />
     <PackageReference Include="Vestigium.Helpers.LogParser.Url" Version="$(VestigiumLogParserUrlVersion)" />
-    <PackageReference Include="Vestigium.Helpers.Watch.Dns" Version="$(VestigiumWatchDnsVersion)" />
   </ItemGroup>
-
-  <Target Name="CopyDiAbstractions" AfterTargets="Build">
-    <ItemGroup>
-      <_DiAbstractions Include="$(UserProfile)\.nuget\packages\microsoft.extensions.dependencyinjection.abstractions\*\lib\**\Microsoft.Extensions.DependencyInjection.Abstractions.dll" />
-    </ItemGroup>
-    <Copy SourceFiles="@(_DiAbstractions)" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="'@(_DiAbstractions)' != ''" />
-    <Copy SourceFiles="@(_DiAbstractions)" DestinationFolder="$(TargetDir)watch\" SkipUnchangedFiles="true" Condition="'@(_DiAbstractions)' != ''" />
-    <Warning Text="DependencyInjection.Abstractions was not found in the NuGet cache." Condition="'@(_DiAbstractions)' == ''" />
-    <Message Importance="high" Text="Copied DependencyInjection.Abstractions to $(TargetDir)" Condition="'@(_DiAbstractions)' != ''" />
-  </Target>
 </Project>
