@@ -11,7 +11,7 @@ public sealed class TraceIqSettings
     public int MaxHops { get; set; } = 30;
     public int Parallel { get; set; } = 10;
     public int Probes { get; set; } = 5;
-    public int InterfaceIndex { get; set; }
+    public string InterfaceId { get; set; } = "";
     public string Source { get; set; } = "";
     public string Family { get; set; } = "All";
     public int MruMax { get; set; } = 10;
