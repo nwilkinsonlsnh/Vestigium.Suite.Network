@@ -104,7 +104,7 @@ public sealed partial class MainViewModel : ObservableObject
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(RunTraceCommand))]
-    private string _target = "127.0.0.1";
+    private string _target = "";
 
     [ObservableProperty]
     private decimal _maxHops = DefaultMaxHops;
@@ -170,6 +170,7 @@ public sealed partial class MainViewModel : ObservableObject
         _pinging.Clear();
         ProbeColumns = (int)Settings.Probes;
         Settings.Remember(remembered);
+        Settings.RememberTarget(remembered);
         if (!string.Equals(Target, remembered, StringComparison.Ordinal))
             Target = remembered;
         Reached = "";
