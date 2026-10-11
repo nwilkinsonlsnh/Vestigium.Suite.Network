@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Windows;
+using System.Windows.Threading;
 using System.Net;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -52,12 +53,16 @@ public sealed partial class MainViewModel : ObservableObject
     private int _estimate;
     private readonly Dictionary<string, int> _seen = new(StringComparer.OrdinalIgnoreCase);
     private readonly HashSet<int> _pinging = [];
+    private readonly Stopwatch _elapsed = new();
+    private readonly DispatcherTimer _ticker;
 
     public SettingsViewModel Settings { get; }
 
     public MainViewModel(SettingsViewModel settings)
     {
         Settings = settings;
+        _ticker = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(100) };
+        _ticker.Tick += (_, _) => SetElapsed(FormatElapsed(_elapsed.Elapsed));
         try
         {
             Interfaces = AdapterChoices.From(NetworkHelper.GetAdapters());
@@ -142,8 +147,9 @@ public sealed partial class MainViewModel : ObservableObject
         _cts = new CancellationTokenSource();
         var token = _cts.Token;
         IsBusy = true;
-        var started = Stopwatch.StartNew();
-        SetElapsed("");
+        _elapsed.Restart();
+        _ticker.Start();
+        SetElapsed(FormatElapsed(_elapsed.Elapsed));
         var remembered = Target.Trim();
         Hops.Clear();
         _reachedTtl = 0;
@@ -178,14 +184,14 @@ public sealed partial class MainViewModel : ObservableObject
             Reached = result.Reached ? "Yes" : "No";
             Protocol = result.ProbeProtocol.ToString();
             SetStatus(result.Status.ToString());
-            SetElapsed(FormatElapsed(started.Elapsed));
+            StopTicker();
             IsBusy = false;
             _ = PingAfterAsync(token);
         }
         catch (OperationCanceledException)
         {
             SetStatus("Cancelled");
-            SetElapsed(FormatElapsed(started.Elapsed));
+            StopTicker();
         }
         catch (Exception ex)
         {
@@ -193,6 +199,7 @@ public sealed partial class MainViewModel : ObservableObject
         }
         finally
         {
+            StopTicker();
             IsBusy = false;
             _cts.Dispose();
             _cts = null;
@@ -557,6 +564,12 @@ public sealed partial class MainViewModel : ObservableObject
     {
         if (StatusBar is not null)
             StatusBar.Message = value;
+    }
+
+    private void StopTicker()
+    {
+        _ticker.Stop();
+        SetElapsed(FormatElapsed(_elapsed.Elapsed));
     }
 
     private void SetElapsed(string value)
