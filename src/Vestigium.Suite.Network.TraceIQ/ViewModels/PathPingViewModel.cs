@@ -61,7 +61,7 @@ public partial class PathPingViewModel : ObservableObject
         Notify();
         var level = SaturationLevel.Find(_settings.PathSaturation);
         var interval = level.Level == "Custom"
-            ? Math.Clamp((int)_settings.PathIntervalMs, 10, 5000)
+            ? Math.Clamp((int)_settings.PathCustomPerMs / Math.Max(1, (int)_settings.PathCustomPings), 10, 60000)
             : level.IntervalMs;
         var width = Math.Clamp((int)_settings.PathWidth, 1, 20);
         var seconds = Math.Clamp((int)_settings.PathSeconds, 1, 180);
