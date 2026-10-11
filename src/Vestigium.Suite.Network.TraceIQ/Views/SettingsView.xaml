@@ -14,6 +14,8 @@
                    IsChecked="{Binding AdvancedPageOpen}" GroupName="SettingsPage" Margin="0,0,8,0" />
       <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="MRU"
                    IsChecked="{Binding MruPageOpen}" GroupName="SettingsPage" Margin="0,0,8,0" />
+      <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="Path Ping"
+                   IsChecked="{Binding PathPageOpen}" GroupName="SettingsPage" Margin="0,0,8,0" />
       <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="Theme"
                    IsChecked="{Binding ThemePageOpen}" GroupName="SettingsPage" />
     </StackPanel>
@@ -64,6 +66,29 @@
           </DataTemplate>
         </ItemsControl.ItemTemplate>
       </ItemsControl>
+    </StackPanel>
+
+    <StackPanel HorizontalAlignment="Left" Width="640" Margin="20,0,0,0"
+                Visibility="{Binding PathPageOpen, Converter={StaticResource BoolToVis}}">
+      <Label Style="{StaticResource Label.Standard}" Content="Saturation" />
+      <ComboBox ItemsSource="{Binding Saturations}" SelectedValuePath="Level"
+                SelectedValue="{Binding PathSaturation}" Margin="0,0,0,12">
+        <ComboBox.ItemTemplate>
+          <DataTemplate>
+            <TextBlock>
+              <Run Text="{Binding Level}" FontWeight="SemiBold" />
+              <Run Text="  " />
+              <Run Text="{Binding Intent}" />
+              <Run Text="  ·  " />
+              <Run Text="{Binding Feel}" />
+            </TextBlock>
+          </DataTemplate>
+        </ComboBox.ItemTemplate>
+      </ComboBox>
+      <Label Style="{StaticResource Label.Standard}" Content="Hops at a time" />
+      <nud:VestigiumNumericUpDown Value="{Binding PathWidth}" Minimum="1" Maximum="20" Margin="0,0,0,12" />
+      <Label Style="{StaticResource Label.Standard}" Content="Duration (seconds)" />
+      <nud:VestigiumNumericUpDown Value="{Binding PathSeconds}" Minimum="1" Maximum="180" Margin="0,0,0,12" />
     </StackPanel>
 
     <StackPanel HorizontalAlignment="Left" Width="420" Margin="20,0,0,0"
