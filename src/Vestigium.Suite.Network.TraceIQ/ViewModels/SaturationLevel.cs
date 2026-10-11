@@ -7,7 +7,7 @@ public sealed record SaturationLevel(string Level, string Intent, string Feel, i
     public static SaturationLevel Medium { get; } = new("Medium", "Enough samples to trust the loss", "Half a second between pings", 500);
     public static SaturationLevel High { get; } = new("High", "More samples in the same window", "Quarter second between pings, still capped", 250);
     public static SaturationLevel Flood { get; } = new("Flood", "As many samples as the window allows", "100 pings a second", 10);
-    public static SaturationLevel Custom { get; } = new("Custom", "You set the gap", "The gap you choose", 0);
+    public static SaturationLevel Custom { get; } = new("Custom", "You set the rate", "Pings per milliseconds", 0);
 
     public static IReadOnlyList<SaturationLevel> All { get; } = [Low, Standard, Medium, High, Flood, Custom];
 
