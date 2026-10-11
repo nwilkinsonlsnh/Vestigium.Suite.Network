@@ -102,7 +102,8 @@
       <Label Style="{StaticResource Label.Standard}" Content="Palette" />
       <ComboBox ItemsSource="{Binding Themes}" DisplayMemberPath="DisplayName" SelectedValuePath="Id"
                 SelectedValue="{Binding SelectedThemeId}" Margin="0,0,0,16" />
-      <CheckBox Content="Status bar visible" IsChecked="{Binding BarVisible}" Margin="0,0,0,16" />
+      <CheckBox Content="Status bar visible" Style="{DynamicResource CheckBox.Standard}"
+                IsChecked="{Binding BarVisible}" Margin="0,0,0,16" />
       <Label Style="{StaticResource Label.Standard}" Content="Status bar dock" />
       <ComboBox ItemsSource="{Binding BarPositions}" SelectedItem="{Binding BarPosition}" />
     </StackPanel>
