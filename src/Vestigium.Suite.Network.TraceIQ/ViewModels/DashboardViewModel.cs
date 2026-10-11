@@ -67,22 +67,14 @@ public sealed class DashboardPage
             Kind = ChartKind.Histogram,
             Title = "Histogram",
             Source = series,
-            Options = new ChartOptions { YLabel = "Count", XLabel = "RTT ms", ShowLegend = false, Height = 360 }
-        });
-        var ecdf = ChartView.From(new ChartSpec
-        {
-            Kind = ChartKind.Ecdf,
-            Title = "ECDF",
-            Source = series,
-            Options = new ChartOptions { YLabel = "Share", XLabel = "RTT ms", ShowLegend = false, Height = 360 }
+            Options = new ChartOptions { YLabel = "Count", XLabel = "RTT ms", ShowLegend = true, ShowEcdf = true, Height = 360 }
         });
         var five = Five(row.Samples);
         return new DashboardPage
         {
             Header = $"TTL {row.Ttl}",
             Summary = $"{row.Address}   {row.Name}   Sent {row.Sent}   Received {row.Received}   Loss {row.Loss}   min {five.min}   Q1 {five.q1}   median {five.median}   Q3 {five.q3}   max {five.max}",
-            Chart = chart,
-            Ecdf = ecdf
+            Chart = chart
         };
     }
 
