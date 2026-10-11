@@ -19,6 +19,7 @@
       </Grid.ColumnDefinitions>
       <TextBlock Text="Target" VerticalAlignment="Center" Margin="0,0,8,8" />
       <ComboBox Grid.Column="1"
+                Style="{DynamicResource ComboBox.Editable}"
                 IsEditable="True"
                 IsTextSearchEnabled="True"
                 ItemsSource="{Binding Settings.Mru}"
