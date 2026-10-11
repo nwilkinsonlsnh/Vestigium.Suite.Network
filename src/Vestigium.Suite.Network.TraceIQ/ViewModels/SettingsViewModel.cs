@@ -109,7 +109,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CustomOpen))]
     private string _pathSaturation = "Standard";
-    [ObservableProperty] private decimal _pathPingsPerMs = 0.001m;
+    [ObservableProperty] private decimal _pathPingsPerSecond = 1;
     public bool CustomOpen => PathSaturation == "Custom";
     [ObservableProperty] private decimal _pathWidth = 4;
     [ObservableProperty] private decimal _pathSeconds = 30;
@@ -139,7 +139,7 @@ public sealed partial class SettingsViewModel : ObservableObject
             ProtocolChoice = string.IsNullOrWhiteSpace(data.Protocol) ? "Hybrid" : data.Protocol;
             SecondPass = data.SecondPass;
             PathSaturation = string.IsNullOrWhiteSpace(data.PathSaturation) ? "Standard" : data.PathSaturation;
-            PathPingsPerMs = data.PathPingsPerMs <= 0 ? 0.001m : Math.Clamp(data.PathPingsPerMs, 0.001m, 1m);
+            PathPingsPerSecond = Math.Clamp(data.PathPingsPerSecond == 0 ? 1 : data.PathPingsPerSecond, 1, 100);
             PathWidth = Math.Clamp(data.PathWidth, 1, 20);
             PathSeconds = Math.Clamp(data.PathSeconds, 1, 180);
             PathDeadAfter = Math.Clamp(data.PathDeadAfter, 3, 30);
@@ -175,7 +175,7 @@ public sealed partial class SettingsViewModel : ObservableObject
             Protocol = ProtocolChoice,
             SecondPass = SecondPass,
             PathSaturation = PathSaturation,
-            PathPingsPerMs = PathPingsPerMs,
+            PathPingsPerSecond = (int)PathPingsPerSecond,
             PathWidth = (int)PathWidth,
             PathSeconds = (int)PathSeconds,
             PathDeadAfter = (int)PathDeadAfter,
@@ -259,7 +259,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         ProtocolChoice = "Hybrid";
         SecondPass = false;
         PathSaturation = "Standard";
-        PathPingsPerMs = 0.001m;
+        PathPingsPerSecond = 1;
         PathWidth = 4;
         PathSeconds = 30;
         PathDeadAfter = 10;
@@ -395,7 +395,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     public bool SecondPassEnabled => ProtocolChoice == "Hybrid";
     partial void OnSecondPassChanged(bool value) => Persist();
     partial void OnPathSaturationChanged(string value) => Persist();
-    partial void OnPathPingsPerMsChanged(decimal value) => Persist();
+    partial void OnPathPingsPerSecondChanged(decimal value) => Persist();
     partial void OnPathWidthChanged(decimal value) => Persist();
     partial void OnPathSecondsChanged(decimal value) => Persist();
     partial void OnPathDeadAfterChanged(decimal value) => Persist();
