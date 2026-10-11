@@ -53,6 +53,8 @@ public sealed partial class SettingsViewModel : ObservableObject
     ];
 
     public ObservableCollection<MruEntry> Mru { get; } = [];
+    [ObservableProperty] private MruEntry? _selectedEntry;
+    [ObservableProperty] private string _newTarget = "";
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(TracePageOpen))]
@@ -259,6 +261,55 @@ public sealed partial class SettingsViewModel : ObservableObject
         BarVisible = true;
         BarPosition = VestigiumStatusBarPosition.Bottom;
     }
+
+    [RelayCommand]
+    private void AddTarget()
+    {
+        var name = NewTarget.Trim();
+        if (name.Length == 0)
+            return;
+        if (Mru.Any(m => m.Target.Equals(name, StringComparison.OrdinalIgnoreCase)))
+            return;
+        Mru.Add(new MruEntry { Target = name });
+        NewTarget = "";
+        Trim();
+        Persist();
+    }
+
+    [RelayCommand]
+    private void RemoveTarget()
+    {
+        if (SelectedEntry is null)
+            return;
+        Mru.Remove(SelectedEntry);
+        Persist();
+    }
+
+    [RelayCommand]
+    private void MoveUp()
+    {
+        if (SelectedEntry is null)
+            return;
+        var index = Mru.IndexOf(SelectedEntry);
+        if (index <= 0)
+            return;
+        Mru.Move(index, index - 1);
+        Persist();
+    }
+
+    [RelayCommand]
+    private void MoveDown()
+    {
+        if (SelectedEntry is null)
+            return;
+        var index = Mru.IndexOf(SelectedEntry);
+        if (index < 0 || index >= Mru.Count - 1)
+            return;
+        Mru.Move(index, index + 1);
+        Persist();
+    }
+
+    public void CommitList() => Persist();
 
     [RelayCommand]
     private void ToggleSticky(MruEntry? entry)
