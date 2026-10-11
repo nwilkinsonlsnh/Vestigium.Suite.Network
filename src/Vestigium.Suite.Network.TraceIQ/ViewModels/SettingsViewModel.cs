@@ -16,6 +16,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     private readonly ThemeManager _themes;
     private readonly VestigiumDefaultWindowViewModel _chrome;
     private readonly IReadOnlyList<NetworkAdapter> _adapters;
+    public IReadOnlyList<NetworkAdapter> Adapters => _adapters;
     private bool _loading;
 
     public SettingsViewModel(ThemeManager themes, VestigiumDefaultWindowViewModel chrome)
