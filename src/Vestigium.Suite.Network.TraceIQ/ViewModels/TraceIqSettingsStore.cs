@@ -6,6 +6,7 @@ namespace Vestigium.Suite.Network.TraceIQ.ViewModels;
 public sealed class TraceIqSettings
 {
     public string? ThemeId { get; set; }
+    public string LastTarget { get; set; } = "";
     public bool StatusBarVisible { get; set; } = true;
     public string StatusBarDock { get; set; } = "Bottom";
     public int MaxHops { get; set; } = 30;
