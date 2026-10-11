@@ -5,6 +5,8 @@ using Vestigium.Controls.Shell;
 using Vestigium.Controls.StatusBar;
 using Vestigium.Converters;
 using Vestigium.Converters.DependencyInjection;
+using Vestigium.Helpers.Analytics;
+using Vestigium.Helpers.Charts;
 using Vestigium.Suite.Network.Shell;
 using Vestigium.Suite.Network.TraceIQ.ViewModels;
 using Vestigium.Suite.Network.TraceIQ.Views;
@@ -20,7 +22,11 @@ public partial class App : Application
 
     protected override void OnStartup(StartupEventArgs e)
     {
-        HostLog.Initialize(HostIds.TraceIQ);
+        HostLog.Initialize(HostIds.TraceIQ, cfg =>
+        {
+            AnalyticsCatalog.Register(cfg);
+            ChartsCatalog.Register(cfg);
+        });
 
         Themes.RegisterSuiteV1();
         Themes.Initialize(this, "LightBlue");
