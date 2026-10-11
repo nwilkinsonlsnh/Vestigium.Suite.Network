@@ -35,11 +35,13 @@ public static class HelpCopy
     private static Draft TraceIq()
         => new("TraceIQ",
         [
-            "TraceIQ sends a walk to the target and writes one line per hop. The line is the hop number, the address, the name, and a time for each probe.",
-            "The target box remembers recent names. A pin keeps a name at the top. Trace starts the walk. Cancel stops it. The bar under the target fills as hops come back.",
-            "Reached says whether the walk got to the target. Protocol says what the walk used. The grid fills as answers arrive. A hop that is still out shows as waiting. A hop that never answers stays a star.",
-            "The times are round trip, in milliseconds. RTT 1 is the first probe. RTT 2 is the second. The number of columns is the Probes setting. A time under one millisecond prints as less than one. A star is no answer.",
-            "The walk stops at the target, or at Max hops, whichever comes first. Parallel is how many hops are asked at once. It is not how many probes. Probes are the times on one hop."
+            "TraceIQ is the walk. You give it a target and it finds the path from this machine to that target, one step at a time, and writes what it finds.",
+            "You type a name or an address, or you pick one you have used. Recent targets stay in the box. A pin keeps one at the top so it is always there. Trace starts the walk. Cancel stops it. While it runs, the bar under the target fills and the center of the status bar counts the time.",
+            "Each line is one step. The number is how far out that step is. One is the first step off this machine. The address is who answered. The name is what that address is called, when a name comes back. Then there is a time for each ask. RTT 1 is the first. RTT 2 is the second. The number of those columns is the Probes setting, so the grid shows exactly the asks you chose.",
+            "The list builds as answers come in. A step that is still out shows as waiting. A step that answers fills in its address and its times. A step that never answers stays a star, and it stays on the list, so you can see where the path went quiet. The walk does not skip a quiet step and pretend it was not there.",
+            "Reached tells you whether the walk got to the target. Protocol tells you how it asked. The walk stops when it reaches the target, or when it has gone as far as Max hops. Parallel is how many steps are asked at once, which is how a long path finishes sooner. It is separate from Probes. Probes are the times on a single step.",
+            "A time is how long that ask took to come back, in milliseconds. A very fast one prints as less than one. A star in a time column is an ask that did not come back. Reading across a line tells you how that step behaved. Reading down the list tells you the path.",
+            "When the walk finishes, the target is remembered and the elapsed time stays in the center of the bar. If the walk reached the target, Path Ping can grade the steps that answered. If it did not, the list is still the record of how far it got."
         ], []);
 
     private static Draft PathPing()
