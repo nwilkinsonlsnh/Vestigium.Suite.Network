@@ -47,20 +47,23 @@ public static class HelpCopy
     private static Draft PathPing()
         => new("Path Ping",
         [
-            "Path Ping grades the hops the walk found. It does not find a new path. It pings the hops that already answered, for the duration you set.",
-            "The target is the one from the walk. It is shown and it is not editable. Path Ping starts the grade. Cancel stops it. The tab is off until a walk has reached the target.",
-            "Each row is a hop. Sent is how many pings went out. Received is how many came back. Loss is the difference. Min, Q1, Median, Q3, and Max are the times of the ones that came back. A hop with no replies has no times.",
-            "A hop that never answers is not graded for the whole window. After Dead after failed pings, that hop is marked and left. The rest keep going.",
-            "Duration is the window. New pings stop when it ends. A ping already out is given only the time that is left, so the run does not walk past the mark."
+            "Path Ping grades the path the walk already found. The walk told you who is on the way. The grade tells you whether those steps hold.",
+            "The page opens once a walk has reached the target. The target is the one from that walk. It is shown so you know what you are grading, and it is not a box you type in. A grade is of a path you have. It is not a search for a new one.",
+            "Path Ping starts the grade. Cancel stops it. While it runs, the bar on the left fills and the center of the status bar counts the time. When it finishes, that time stays, so you can see how long the window took.",
+            "Each row is one step from the walk. Sent is how many asks went out. Received is how many came back. Loss is the difference, as a count. Min is the fastest reply. Q1, Median, and Q3 split the replies into quarters. Max is the slowest. A step with no replies has counts and no times, because there is nothing to summarize.",
+            "The grade asks several steps at once. How many is Hops at a time. The gap between asks is Saturation. Low leaves a long gap. Flood asks a hundred times a second. The two knobs are separate. One is how many steps. One is how fast each step is asked.",
+            "Duration is the window. New asks stop when it ends, and an ask already out is given only the time that is left, so the run finishes at the mark you set. A step that never answers is not asked for the whole window. After Dead after failed asks, that step is marked and left, and the rest of the window is spent on the steps that speak.",
+            "When the grade finishes you have a row for every step, with its counts and its spread. A step with loss, or a step whose max is far from its median, is the one to open on the dashboard. The rows are also what Exports writes, and what Dashboard reads."
         ], []);
 
     private static Draft Exports()
         => new("Exports",
         [
-            "Exports writes the rows you already have. It does not run a walk and it does not run a grade.",
-            "TraceIQ writes one row per hop, with the probe columns that were set. Three probes is RTT 1, RTT 2, RTT 3. Five is five. There are no empty columns past that.",
-            "Path Ping writes the hop summary. Path Ping Samples writes one row per reply, the raw times. That is the population the summary came from.",
-            "Open File after Save opens the workbook. Open Folder after Save opens the folder with the file selected. The folder is Desktop, then Vestigium, then Exports, then TraceIQ. The file stays on this machine."
+            "Exports writes the rows you already have to a workbook, so the numbers can leave the window and go to another desk. It writes what is loaded. It does not start a walk and it does not start a grade.",
+            "You choose what goes in. TraceIQ writes the walk. Path Ping writes the grade. You can write one, or both. Open File after Save opens the workbook when it is written. Open Folder after Save opens the folder with the new file selected, so you can see it among the others.",
+            "The TraceIQ sheet is one row per step. The columns are the step number, the address, the name, whether it was reached, and a time for each probe you asked for. Three probes is RTT 1, RTT 2, and RTT 3. Five is five. The sheet matches the grid. It does not add empty columns past the probes you set.",
+            "The Path Ping sheet is the summary you see on the grade. One row per step, with sent, received, loss, and the five times. Path Ping Samples is the raw grade. One row per reply, with the step, the address, the sample number, and the time. That sheet is the population the summary came from, so a question about one slow reply can be answered from the file.",
+            "The workbook is written to the desktop, under Vestigium, then Exports, then TraceIQ. The name carries the time, so a second export does not overwrite the first. The file stays on this machine. You open it, or you hand it on."
         ], []);
 
     private static Draft Dashboard()
