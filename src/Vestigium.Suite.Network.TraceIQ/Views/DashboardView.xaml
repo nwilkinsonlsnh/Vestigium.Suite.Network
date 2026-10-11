@@ -4,7 +4,7 @@
              Background="{DynamicResource Vestigium.Brushes.Surface.Window}">
   <DockPanel Margin="12">
     <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
-      <Button DockPanel.Dock="Right" Content="Legend" Style="{StaticResource Button.Utility}"
+      <Button DockPanel.Dock="Right" Content="Legend" Style="{DynamicResource Button.Secondary}"
               Command="{Binding ToggleLegendCommand}" Padding="12,2" />
       <TextBlock VerticalAlignment="Center">
         <Run Text="{Binding Target, Mode=OneWay}" FontWeight="SemiBold" />
@@ -21,7 +21,7 @@
       <ItemsControl.ItemTemplate>
         <DataTemplate>
           <RadioButton Content="{Binding Header}"
-                       Style="{StaticResource RadioButton.HorizontalTab}"
+                       Style="{DynamicResource RadioButton.HorizontalTab}"
                        GroupName="DashHops"
                        IsChecked="{Binding IsSelected, Mode=TwoWay}"
                        Command="{Binding DataContext.SelectCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
