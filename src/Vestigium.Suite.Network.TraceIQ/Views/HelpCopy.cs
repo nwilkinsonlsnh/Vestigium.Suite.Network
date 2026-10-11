@@ -137,11 +137,11 @@ public static class HelpCopy
             [
                 "MRU max is how many recent targets are kept. The oldest drops off when the list is full.",
                 "Sticky max is how many can be pinned. A sticky stays at the top and does not count against the MRU max.",
-                "The list is the targets. The box on the right pins or unpins one. A pin on a full sticky list does nothing until one is unpinned."
+                "The list is the targets. Sticky is a column. Add puts a name on the list. Remove takes the selected row off. Up and Down change the order. A sticky stays and does not count against the MRU Max."
             ]),
             new("Path Ping",
             [
-                "Saturation is the gap between pings. Low is gentle. Flood is 100 a second. The gap is the only thing it sets. How many hops are graded at once is the knob below.",
+                "Saturation is the rate. Low is a ping every 2 seconds. Standard is 1 a second. Flood is 100 a second. Custom is a rate you set, in Ping(s) per Second, from 1 to 1,000. Duration is still the window. The rate is not how many hops are graded at once. That is the knob below.",
                 "Hops at a time is how many hops are graded together. It is not the ping rate.",
                 "Duration is the window, in seconds. New pings stop when it ends.",
                 "Dead after is how many failed pings mark a hop as silent. That hop is then left, so the window is spent on the hops that answer."
@@ -193,7 +193,7 @@ public static class HelpCopy
                 Term("Median", "The middle time. Half the replies were faster and half were slower. It is a better read of a hop than the fastest or the slowest, because one odd reply does not move it."),
                 Term("Path Ping", "A grade of a path you already have. It pings the hops the walk found, for a window you set, and writes what came back. Compare it with a trace. A trace finds the path and takes a few times at each step. Path Ping stays on those steps and asks them many times, so you can see loss, the spread, and whether a step slows as it is asked. A trace answers who is on the way. Path Ping answers whether they hold."),
                 Term("Received", "How many of those asks came back. Sent minus received is the loss."),
-                Term("Saturation", "How hard the grade asks. It sets the gap between pings. It does not set how many hops are graded at once. That is Hops at a time. Low waits 2 seconds, for a fragile or production path. Standard waits 1 second, a normal diagnostic. Medium waits half a second, enough replies to trust the loss. High waits a quarter second, more replies in the same window. Flood waits 10 milliseconds, 100 pings a second, as many replies as the window allows. A higher level fills the charts. It is also what can push a step into a tail."),
+                Term("Saturation", "How hard the grade asks. It sets the rate, not how many hops are graded at once. That is Hops at a time. Low is a ping every 2 seconds, for a fragile or production path. Standard is 1 a second, a normal diagnostic. Medium is 2 a second. High is 4 a second. Flood is 100 a second. Custom is a rate you set, in pings per second, from 1 to 1,000. One a second is the ordinary rate. The program turns that number into the gap. Duration is still the window. A higher rate fills the charts. It is also what can push a step into a tail."),
                 Term("Sent", "How many asks went out to that hop during the grade."),
                 Term("Steady", "The replies inside the band. The band is the center line with the upper and lower lines around it. On the chart below, the teal points sit between those lines. That stretch is Steady. The red points that climb past the top line are left out. They are the tail. Steady is the hop as it behaves when it is not being pushed. Flat and close to the center is the result you want. A line that steps up and stays up, even inside the band, is a hop that got slower and did not come back. Use Steady after All shows a hook, to see what the hop looks like without that hook."),
                 "img:steady-band.jpg",
