@@ -152,8 +152,10 @@ public sealed partial class MainViewModel : ObservableObject
             return;
         }
 
+        _cts?.Cancel();
         _cts = new CancellationTokenSource();
         var token = _cts.Token;
+        var mine = _cts;
         IsBusy = true;
         _elapsed.Restart();
         _ticker.Start();
@@ -195,6 +197,7 @@ public sealed partial class MainViewModel : ObservableObject
             Protocol = result.ProbeProtocol.ToString();
             SetStatus(result.Status.ToString());
             StopTicker();
+            IsBusy = false;
             await PingAfterAsync(token).ConfigureAwait(true);
         }
         catch (OperationCanceledException)
@@ -210,8 +213,11 @@ public sealed partial class MainViewModel : ObservableObject
         {
             StopTicker();
             IsBusy = false;
-            _cts.Dispose();
-            _cts = null;
+            if (ReferenceEquals(_cts, mine))
+            {
+                _cts.Dispose();
+                _cts = null;
+            }
         }
     }
 
