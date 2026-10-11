@@ -15,6 +15,7 @@ public sealed class TraceIqSettings
     public string Source { get; set; } = "";
     public string Family { get; set; } = "All";
     public string Protocol { get; set; } = "Hybrid";
+    public bool SecondPass { get; set; }
     public int MruMax { get; set; } = 10;
     public int StickyMax { get; set; } = 3;
     public List<MruEntry> Mru { get; set; } = [];
