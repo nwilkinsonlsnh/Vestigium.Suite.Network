@@ -92,8 +92,6 @@ public sealed partial class MainViewModel : ObservableObject
     private string _family = "All";
 
     [ObservableProperty]
-    
-    [ObservableProperty]
     private string _source = string.Empty;
 
     [ObservableProperty]
