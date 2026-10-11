@@ -69,12 +69,44 @@ public static class HelpCopy
     private static Draft Dashboard()
         => new("Dashboard",
         [
-            "Dashboard reads the last Path Ping. It does not ping again. The tab is off until a grade finishes.",
-            "Overview compares the hops. It is the median time of each hop, in order. It is not the whole grade as one pile.",
-            "A hop tab is that hop only. The top chart is the shape of its times, with a line for the running share. The bottom chart is the times in the order they came back, with a center line and a band.",
-            "All is every reply. IQR is the middle half. Steady is the replies inside the band. Tail is the replies that left the band. These cut the picture. They do not delete the samples. Overview has no cut. It is a comparison.",
-            "Legend shows or hides the key on every chart. The choice is remembered."
-        ], []);
+            "Dashboard reads the grade you just finished. It does not ping again. The tab opens when Path Ping completes, and it draws what that grade collected.",
+            "Overview compares the steps. It is the middle time of each step, in order, so you can see where the path gets slower. It is a comparison, not a pile of every reply.",
+            "A step tab is that step alone. The top chart is the shape of its times, with a line for the running share. The bottom chart is the times in the order they came back, with a center line and a band. The pills under the step tabs change which replies those charts are drawn from. Each one is below."
+        ],
+        [
+            new("All",
+            [
+                "All is every reply that came back. It is the place to start, because it is the grade with nothing hidden.",
+                "On the top chart, look at where the tall bars sit. That cluster is how the step usually answers. A bar standing alone, far to the right, is a reply that was much slower than the rest. The rising line is the running share. It climbs fast through the cluster and flattens once most replies are counted. A flat line with a small bar far out means a few slow replies, not a step that is slow all the time.",
+                "On the bottom chart, read left to right. A line that stays near the center is a step that held. A hook at the right edge is the step getting slower as the grade went on. That hook is the thing Flood can draw, when the asks come faster than the step will answer. Points above the upper band left the band. They are marked so you can see them.",
+                "Use All when you want the whole story, including the slow ones. If the cluster is tight and the hook is small, the step is fine and the tail is noise. If the cluster is wide, or the hook climbs and stays up, the step was under pressure.",
+                "\x1call.jpg"
+            ]),
+            new("IQR",
+            [
+                "IQR is the middle half of the replies, from the first quarter to the third. The fastest quarter and the slowest quarter are left out of the picture. The replies are still there. This view just does not draw them.",
+                "Use it when All is hard to read because a few slow replies stretch the chart. The middle half is how the step behaves most of the time. A tight group here means the step is consistent. A wide group here means the step varies even without the extremes.",
+                "What to look for is the width. A middle half that spans a millisecond or two is a steady step. A middle half that spans ten is a step whose ordinary replies already wander. That is a different finding from a tail. A tail is a few bad replies. A wide middle half is the step itself.",
+                "IQR only redraws the top chart. The run chart underneath stays the full set, so you can still see the order. Read the top for the body. Read the bottom if you still want the sequence.",
+                "\x1ciqr.jpg"
+            ]),
+            new("Steady",
+            [
+                "Steady is the replies inside the band. The band is the center line plus and minus the spread the grade computed. Replies past the top of the band are left out of this picture. What remains is the step as it behaves when it is not being pushed.",
+                "Use it after you have seen a hook on All and you want to know what the step looks like without that hook. If Steady is a flat line near the center, the step is fine and the hook was the cost of asking too fast. If Steady is still wandering, the step is uneven on its own.",
+                "What to look for is the line on the bottom chart. Flat and close to the center is the result you want. A line that steps up and stays up, even inside the band, is a step that got slower and did not come back. That is worth a note even though it never left the band.",
+                "A step whose replies are all the same has no spread, so there is no band to cut. Steady shows that step as it is.",
+                "\x1csteady.jpg"
+            ]),
+            new("Tail",
+            [
+                "Tail is the opposite of Steady. It draws only the replies that left the band, above the top or below the bottom. These are the slow ones, and the rare fast ones, on their own.",
+                "Use it when All shows a hook and you want to see only that hook. How many points are there. Do they climb, or are they scattered. A climb at the end of the run is the step falling behind as the asks kept coming. Scattered points are single slow replies, which is ordinary on a long grade.",
+                "What to look for is the shape. A rising curve is pressure. The step, or the path in front of it, could not keep up. A handful of points with no pattern is noise. A tail with no points means every reply stayed in the band, which is the best result on this page.",
+                "Tail does not mean the data was bad. It means these replies were unlike the rest. Read them as the cost of the grade, or as a step that stumbled, depending on the shape.",
+                "\x1ctail.jpg"
+            ])
+        ]);
 
     private static Draft Settings()
         => new("Settings",
