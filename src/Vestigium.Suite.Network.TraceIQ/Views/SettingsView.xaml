@@ -25,20 +25,20 @@
       <TextBlock Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap" Margin="0,0,0,16"
                  Text="The adapter the walk leaves on. Any lets Windows pick." />
       <Label Style="{StaticResource Label.Standard}" Content="Interface" />
-      <ComboBox ItemsSource="{Binding Interfaces}" DisplayMemberPath="Label" SelectedValuePath="Id"
+      <ComboBox Style="{DynamicResource ComboBox.Standard}" ItemsSource="{Binding Interfaces}" DisplayMemberPath="Label" SelectedValuePath="Id"
                 SelectedValue="{Binding SelectedInterfaceId}" Margin="0,0,0,12" />
       <Label Style="{StaticResource Label.Standard}" Content="Source" />
-      <ComboBox ItemsSource="{Binding Sources}" DisplayMemberPath="Label" SelectedValuePath="Address"
+      <ComboBox Style="{DynamicResource ComboBox.Standard}" ItemsSource="{Binding Sources}" DisplayMemberPath="Label" SelectedValuePath="Address"
                 SelectedValue="{Binding Source}" Margin="0,0,0,12" />
       <Label Style="{StaticResource Label.Standard}" Content="Family" />
-      <ComboBox ItemsSource="{Binding Families}" SelectedItem="{Binding Family}" />
+      <ComboBox Style="{DynamicResource ComboBox.Standard}" ItemsSource="{Binding Families}" SelectedItem="{Binding Family}" />
     </StackPanel>
 
     <StackPanel HorizontalAlignment="Left" Width="520" Margin="20,0,0,0"
                 Visibility="{Binding AdvancedPageOpen, Converter={StaticResource BoolToVis}}">
       <Label Style="{StaticResource Label.Standard}" Content="Protocol" />
-      <ComboBox ItemsSource="{Binding Protocols}" SelectedItem="{Binding ProtocolChoice}" Margin="0,0,0,8" />
-      <CheckBox Content="Second pass on silent hops" IsChecked="{Binding SecondPass}"
+      <ComboBox Style="{DynamicResource ComboBox.Standard}" ItemsSource="{Binding Protocols}" SelectedItem="{Binding ProtocolChoice}" Margin="0,0,0,8" />
+      <CheckBox Content="Second pass on silent hops" Style="{DynamicResource CheckBox.Standard}" IsChecked="{Binding SecondPass}"
                 IsEnabled="{Binding SecondPassEnabled}" Margin="0,0,0,12" />
       <Label Style="{StaticResource Label.Standard}" Content="Max hops" />
       <nud:VestigiumNumericUpDown Value="{Binding MaxHops}" Minimum="1" Maximum="64" Margin="0,0,0,12" />
@@ -72,7 +72,7 @@
     <StackPanel HorizontalAlignment="Left" Width="640" Margin="20,0,0,0"
                 Visibility="{Binding PathPageOpen, Converter={StaticResource BoolToVis}}">
       <Label Style="{StaticResource Label.Standard}" Content="Saturation" />
-      <ComboBox ItemsSource="{Binding Saturations}" SelectedValuePath="Level"
+      <ComboBox Style="{DynamicResource ComboBox.Standard}" ItemsSource="{Binding Saturations}" SelectedValuePath="Level"
                 SelectedValue="{Binding PathSaturation}" Margin="0,0,0,12">
         <ComboBox.ItemTemplate>
           <DataTemplate>
@@ -100,12 +100,12 @@
     <StackPanel HorizontalAlignment="Left" Width="420" Margin="20,0,0,0"
                 Visibility="{Binding ThemePageOpen, Converter={StaticResource BoolToVis}}">
       <Label Style="{StaticResource Label.Standard}" Content="Palette" />
-      <ComboBox ItemsSource="{Binding Themes}" DisplayMemberPath="DisplayName" SelectedValuePath="Id"
+      <ComboBox Style="{DynamicResource ComboBox.Standard}" ItemsSource="{Binding Themes}" DisplayMemberPath="DisplayName" SelectedValuePath="Id"
                 SelectedValue="{Binding SelectedThemeId}" Margin="0,0,0,16" />
       <CheckBox Content="Status bar visible" Style="{DynamicResource CheckBox.Standard}"
                 IsChecked="{Binding BarVisible}" Margin="0,0,0,16" />
       <Label Style="{StaticResource Label.Standard}" Content="Status bar dock" />
-      <ComboBox ItemsSource="{Binding BarPositions}" SelectedItem="{Binding BarPosition}" />
+      <ComboBox Style="{DynamicResource ComboBox.Standard}" ItemsSource="{Binding BarPositions}" SelectedItem="{Binding BarPosition}" />
     </StackPanel>
   </DockPanel>
 </UserControl>
