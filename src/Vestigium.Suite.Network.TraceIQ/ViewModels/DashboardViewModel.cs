@@ -8,11 +8,12 @@ namespace Vestigium.Suite.Network.TraceIQ.ViewModels;
 
 public partial class DashboardViewModel : ObservableObject
 {
-    public ObservableCollection<DashboardHop> Hops { get; } = [];
+    public ObservableCollection<DashboardPage> Pages { get; } = [];
 
     [ObservableProperty] private string _target = "";
     [ObservableProperty] private bool _ready;
     [ObservableProperty] private string _status = "Finish a Path Ping to open the dashboard.";
+    [ObservableProperty] private DashboardPage? _selected;
 
     public void Offer(string target, IReadOnlyList<PathPingRow> rows)
     {
@@ -20,49 +21,71 @@ public partial class DashboardViewModel : ObservableObject
         if (graded.Count == 0 || string.IsNullOrWhiteSpace(target))
             return;
         Target = target;
-        Hops.Clear();
+        Pages.Clear();
+        Pages.Add(DashboardPage.Overview(graded));
         foreach (var row in graded)
-            Hops.Add(DashboardHop.From(row));
+            Pages.Add(DashboardPage.Hop(row));
+        Selected = Pages[0];
         Ready = true;
-        Status = $"{Hops.Count} hops. One box per hop, in TTL order.";
+        Status = $"{graded.Count} hops. Overview compares them. A tab per hop shows that hop only.";
     }
 }
 
-public sealed class DashboardHop
+public sealed class DashboardPage
 {
-    public int Ttl { get; init; }
-    public string Address { get; init; } = "";
-    public string Name { get; init; } = "";
-    public string Loss { get; init; } = "";
-    public string Sent { get; init; } = "";
-    public string Received { get; init; } = "";
+    public string Header { get; init; } = "";
+    public string Summary { get; init; } = "";
     public FrameworkElement Chart { get; init; } = null!;
+    public bool IsOverview { get; init; }
 
-    public static DashboardHop From(PathPingRow row)
+    public static DashboardPage Overview(IReadOnlyList<PathPingRow> rows)
+    {
+        var labels = rows.Select(r => $"TTL {r.Ttl}").ToArray();
+        var medians = rows.Select(Median).ToArray();
+        var chart = ChartView.From(new ChartSpec
+        {
+            Kind = ChartKind.Column,
+            Title = "Median RTT by hop",
+            Series = [new ChartSeries { Name = "Median", Y = medians, Labels = labels }],
+            Options = new ChartOptions { YLabel = "RTT ms", ShowLegend = false, Height = 360 }
+        });
+        return new DashboardPage
+        {
+            Header = "Overview",
+            Summary = "Median of each hop. Not the whole Path Ping as one population.",
+            Chart = chart,
+            IsOverview = true
+        };
+    }
+
+    public static DashboardPage Hop(PathPingRow row)
     {
         var series = NumericSeries.From(row.Samples.Select(s => (decimal)s), $"ttl-{row.Ttl}");
         var chart = ChartView.From(new ChartSpec
         {
-            Kind = ChartKind.Box,
-            Title = $"TTL {row.Ttl}",
+            Kind = ChartKind.Histogram,
+            Title = $"{row.Address}   {row.Name}",
             Source = series,
-            Options = new ChartOptions
-            {
-                YLabel = "RTT ms",
-                BoxWhisker = BoxWhiskerKind.FiveNumber,
-                ShowLegend = false,
-                Height = 180
-            }
+            Options = new ChartOptions { YLabel = "Count", XLabel = "RTT ms", ShowLegend = false, Height = 360 }
         });
-        return new DashboardHop
+        var five = Five(row.Samples);
+        return new DashboardPage
         {
-            Ttl = row.Ttl,
-            Address = row.Address,
-            Name = row.Name,
-            Loss = row.Loss,
-            Sent = row.Sent.ToString(),
-            Received = row.Received.ToString(),
+            Header = $"TTL {row.Ttl}",
+            Summary = $"Sent {row.Sent}   Received {row.Received}   Loss {row.Loss}   min {five.min}   Q1 {five.q1}   median {five.median}   Q3 {five.q3}   max {five.max}",
             Chart = chart
         };
+    }
+
+    private static double Median(PathPingRow row)
+    {
+        var s = row.Samples;
+        return s.Count == 0 ? 0 : s[s.Count / 2];
+    }
+
+    private static (long min, long q1, long median, long q3, long max) Five(IReadOnlyList<long> samples)
+    {
+        long At(double p) => samples[(int)Math.Round((samples.Count - 1) * p)];
+        return (At(0), At(0.25), At(0.5), At(0.75), At(1));
     }
 }
