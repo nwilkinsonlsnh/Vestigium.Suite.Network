@@ -18,7 +18,7 @@ public sealed class TraceIqSettings
     public string Protocol { get; set; } = "Hybrid";
     public bool SecondPass { get; set; }
     public string PathSaturation { get; set; } = "Standard";
-    public decimal PathPingsPerMs { get; set; } = 0.001m;
+    public int PathPingsPerSecond { get; set; } = 1;
     public int PathWidth { get; set; } = 4;
     public int PathSeconds { get; set; } = 30;
     public int PathDeadAfter { get; set; } = 10;
