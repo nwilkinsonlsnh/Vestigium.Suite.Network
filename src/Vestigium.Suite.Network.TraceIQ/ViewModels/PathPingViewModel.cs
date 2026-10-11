@@ -24,6 +24,7 @@ public partial class PathPingViewModel : ObservableObject
         _ticker.Tick += (_, _) => SetElapsed(Format(_elapsed.Elapsed));
     }
 
+    public event EventHandler? Completed;
     public VestigiumStatusBarViewModel? StatusBar { get; set; }
     public ObservableCollection<PathPingRow> Rows { get; } = [];
 
@@ -75,7 +76,13 @@ public partial class PathPingViewModel : ObservableObject
         {
             var tasks = Rows.Select(row => GradeAsync(row, count, level.IntervalMs, dead, gate, token)).ToArray();
             await Task.WhenAll(tasks).ConfigureAwait(true);
-            Status = token.IsCancellationRequested ? "Cancelled" : "Done";
+            if (token.IsCancellationRequested)
+                Status = "Cancelled";
+            else
+            {
+                Status = "Done";
+                Completed?.Invoke(this, EventArgs.Empty);
+            }
         }
         catch (OperationCanceledException)
         {
