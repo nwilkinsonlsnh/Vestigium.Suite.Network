@@ -487,7 +487,11 @@ public sealed partial class MainViewModel : ObservableObject
 
     private bool TryBuild(out IcmpTraceOptions options, out string? reject)
     {
-        options = new IcmpTraceOptions { Protocol = Locked(Settings.ProtocolChoice) };
+        options = new IcmpTraceOptions
+        {
+            Protocol = Locked(Settings.ProtocolChoice),
+            SecondPass = Settings.ProtocolChoice == "Hybrid" && Settings.SecondPass
+        };
         reject = null;
         if (string.IsNullOrWhiteSpace(Target))
         {
