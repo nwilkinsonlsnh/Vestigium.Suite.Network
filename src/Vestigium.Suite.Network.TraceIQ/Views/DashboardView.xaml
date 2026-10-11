@@ -5,6 +5,8 @@
   <DockPanel Margin="12">
     <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
       <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+        <Button Content="All" Style="{DynamicResource Button.Secondary}"
+                Command="{Binding AllCommand}" Padding="12,2" Margin="0,0,8,0" />
         <Button Content="Steady" Style="{DynamicResource Button.Secondary}"
                 Command="{Binding ToggleSteadyCommand}" Padding="12,2" Margin="0,0,8,0" />
         <Button Content="IQR" Style="{DynamicResource Button.Secondary}"
