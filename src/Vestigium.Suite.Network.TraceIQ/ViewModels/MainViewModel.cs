@@ -23,6 +23,14 @@ public sealed partial class MainViewModel : ObservableObject
 
     public BindFields Bind { get; } = new();
 
+    private static ProbeProtocol? Locked(string choice) => choice switch
+    {
+        "ICMP" => ProbeProtocol.Icmp,
+        "UDP" => ProbeProtocol.Udp,
+        "TCP" => ProbeProtocol.Tcp,
+        _ => null
+    };
+
     private int? InterfaceIndexOf(string id)
     {
         if (string.IsNullOrWhiteSpace(id))
@@ -472,7 +480,7 @@ public sealed partial class MainViewModel : ObservableObject
 
     private bool TryBuild(out IcmpTraceOptions options, out string? reject)
     {
-        options = new IcmpTraceOptions();
+        options = new IcmpTraceOptions { Protocol = Locked(Settings.ProtocolChoice) };
         reject = null;
         if (string.IsNullOrWhiteSpace(Target))
         {
