@@ -16,5 +16,7 @@
     <PackageReference Include="Vestigium.Controls.StatusBar" Version="$(VestigiumStatusBarVersion)" />
     <PackageReference Include="Vestigium.Controls.NumericUpDown" Version="$(VestigiumNumericUpDownVersion)" />
     <PackageReference Include="Vestigium.Converters" Version="$(VestigiumConvertersVersion)" />
+    <PackageReference Include="Vestigium.Helpers.Analytics" Version="$(VestigiumAnalyticsVersion)" />
+    <PackageReference Include="Vestigium.Helpers.Charts" Version="$(VestigiumChartsVersion)" />
   </ItemGroup>
 </Project>
