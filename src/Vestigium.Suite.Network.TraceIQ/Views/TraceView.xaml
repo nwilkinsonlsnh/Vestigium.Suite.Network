@@ -17,7 +17,7 @@
         <ColumnDefinition Width="Auto" />
         <ColumnDefinition Width="Auto" />
       </Grid.ColumnDefinitions>
-      <TextBlock Text="Target" VerticalAlignment="Center" Margin="0,0,8,8" />
+      <TextBlock Text="Target" Style="{DynamicResource TextBlock.Standard}" VerticalAlignment="Center" Margin="0,0,8,8" />
       <ComboBox Grid.Column="1"
                 Style="{DynamicResource ComboBox.Editable}"
                 IsEditable="True"
@@ -44,10 +44,10 @@
     <ProgressBar Grid.Row="1" Height="8" Margin="0,0,0,8"
                  Minimum="0" Maximum="{Binding ProgressMax}" Value="{Binding Progress}" />
     <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,8">
-      <TextBlock Text="Reached" Margin="0,0,8,0" />
-      <TextBlock Text="{Binding Reached}" Margin="0,0,16,0" />
-      <TextBlock Text="Protocol" Margin="0,0,8,0" />
-      <TextBlock Text="{Binding Protocol}" />
+      <TextBlock Text="Reached" Style="{DynamicResource TextBlock.Caption}" Margin="0,0,8,0" />
+      <TextBlock Text="{Binding Reached}" Style="{DynamicResource TextBlock.Standard}" Margin="0,0,16,0" />
+      <TextBlock Text="Protocol" Style="{DynamicResource TextBlock.Caption}" Margin="0,0,8,0" />
+      <TextBlock Text="{Binding Protocol}" Style="{DynamicResource TextBlock.Standard}" />
     </StackPanel>
     <Border Grid.Row="3" BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
       <DataGrid x:Name="HopGrid" ItemsSource="{Binding Hops}"
