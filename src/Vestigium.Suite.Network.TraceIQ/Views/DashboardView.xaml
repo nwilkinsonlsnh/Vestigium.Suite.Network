@@ -3,41 +3,39 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              Background="{DynamicResource Vestigium.Brushes.Surface.Window}">
   <DockPanel Margin="12,4,12,12">
-    <TextBlock DockPanel.Dock="Top" Margin="0,0,0,2">
+    <ItemsControl DockPanel.Dock="Top" ItemsSource="{Binding Pages}" Margin="20,0,0,0">
+      <ItemsControl.ItemsPanel>
+        <ItemsPanelTemplate>
+          <StackPanel Orientation="Horizontal" />
+        </ItemsPanelTemplate>
+      </ItemsControl.ItemsPanel>
+      <ItemsControl.ItemTemplate>
+        <DataTemplate>
+          <RadioButton Content="{Binding Header}"
+                       Style="{DynamicResource RadioButton.HorizontalTab}"
+                       GroupName="DashHops"
+                       IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                       Command="{Binding DataContext.SelectCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                       CommandParameter="{Binding}"
+                       Margin="0,0,8,0" />
+        </DataTemplate>
+      </ItemsControl.ItemTemplate>
+    </ItemsControl>
+    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="20,4,0,4">
+      <Button Content="All" Style="{DynamicResource Button.Secondary}"
+              Command="{Binding AllCommand}" Padding="12,2" Margin="0,0,8,0" />
+      <Button Content="Steady" Style="{DynamicResource Button.Secondary}"
+              Command="{Binding ToggleSteadyCommand}" Padding="12,2" Margin="0,0,8,0" />
+      <Button Content="IQR" Style="{DynamicResource Button.Secondary}"
+              Command="{Binding ToggleIqrCommand}" Padding="12,2" Margin="0,0,8,0" />
+      <Button Content="Legend" Style="{DynamicResource Button.Secondary}"
+              Command="{Binding ToggleLegendCommand}" Padding="12,2" />
+    </StackPanel>
+    <TextBlock DockPanel.Dock="Top" Margin="0,0,0,6">
       <Run Text="{Binding Target, Mode=OneWay}" FontWeight="SemiBold" />
       <Run Text="   " />
       <Run Text="{Binding Status, Mode=OneWay}" />
     </TextBlock>
-    <Grid DockPanel.Dock="Top" Margin="20,0,0,4">
-      <ItemsControl HorizontalAlignment="Left" ItemsSource="{Binding Pages}" VerticalAlignment="Center">
-        <ItemsControl.ItemsPanel>
-          <ItemsPanelTemplate>
-            <StackPanel Orientation="Horizontal" />
-          </ItemsPanelTemplate>
-        </ItemsControl.ItemsPanel>
-        <ItemsControl.ItemTemplate>
-          <DataTemplate>
-            <RadioButton Content="{Binding Header}"
-                         Style="{DynamicResource RadioButton.HorizontalTab}"
-                         GroupName="DashHops"
-                         IsChecked="{Binding IsSelected, Mode=TwoWay}"
-                         Command="{Binding DataContext.SelectCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                         CommandParameter="{Binding}"
-                         Margin="0,0,8,0" />
-          </DataTemplate>
-        </ItemsControl.ItemTemplate>
-      </ItemsControl>
-      <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,6,0,0">
-        <Button Content="All" Style="{DynamicResource Button.Secondary}"
-                Command="{Binding AllCommand}" Padding="12,2" Margin="0,0,8,0" />
-        <Button Content="Steady" Style="{DynamicResource Button.Secondary}"
-                Command="{Binding ToggleSteadyCommand}" Padding="12,2" Margin="0,0,8,0" />
-        <Button Content="IQR" Style="{DynamicResource Button.Secondary}"
-                Command="{Binding ToggleIqrCommand}" Padding="12,2" Margin="0,0,8,0" />
-        <Button Content="Legend" Style="{DynamicResource Button.Secondary}"
-                Command="{Binding ToggleLegendCommand}" Padding="12,2" />
-      </StackPanel>
-    </Grid>
     <DockPanel DataContext="{Binding Selected}">
       <Grid>
         <Grid.RowDefinitions>
