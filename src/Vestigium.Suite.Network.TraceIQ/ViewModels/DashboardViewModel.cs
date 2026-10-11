@@ -34,24 +34,20 @@ public partial class DashboardViewModel : ObservableObject
     private void ToggleLegend() => Legend = !Legend;
 
     [RelayCommand]
-    private void All()
-    {
-        Steady = false;
-        Iqr = false;
-        Rebuild();
-    }
+    private void All() => SetView(false, false);
 
     [RelayCommand]
-    private void ToggleSteady()
-    {
-        Steady = !Steady;
-        Rebuild();
-    }
+    private void ToggleSteady() => SetView(true, false);
 
     [RelayCommand]
-    private void ToggleIqr()
+    private void ToggleIqr() => SetView(false, true);
+
+    private void SetView(bool steady, bool iqr)
     {
-        Iqr = !Iqr;
+        if (Steady == steady && Iqr == iqr)
+            return;
+        Steady = steady;
+        Iqr = iqr;
         Rebuild();
     }
 
