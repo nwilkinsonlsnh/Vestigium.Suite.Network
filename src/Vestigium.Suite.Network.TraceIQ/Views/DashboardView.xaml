@@ -8,27 +8,23 @@
       <Run Text="   " />
       <Run Text="{Binding Status, Mode=OneWay}" />
     </TextBlock>
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-      <ItemsControl ItemsSource="{Binding Hops}">
-        <ItemsControl.ItemTemplate>
-          <DataTemplate>
-            <Border Margin="0,0,0,12" Padding="8" BorderThickness="1"
-                    BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}">
-              <DockPanel>
-                <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,6">
-                  <TextBlock Text="{Binding Ttl, StringFormat=TTL {0}}" FontWeight="SemiBold" Margin="0,0,16,0" />
-                  <TextBlock Text="{Binding Address}" Margin="0,0,16,0" />
-                  <TextBlock Text="{Binding Name}" Margin="0,0,16,0" />
-                  <TextBlock Text="{Binding Sent, StringFormat=Sent {0}}" Margin="0,0,12,0" />
-                  <TextBlock Text="{Binding Received, StringFormat=Received {0}}" Margin="0,0,12,0" />
-                  <TextBlock Text="{Binding Loss, StringFormat=Loss {0}}" />
-                </StackPanel>
-                <ContentControl Content="{Binding Chart}" Height="180" />
-              </DockPanel>
-            </Border>
-          </DataTemplate>
-        </ItemsControl.ItemTemplate>
-      </ItemsControl>
-    </ScrollViewer>
+    <ListBox DockPanel.Dock="Top" ItemsSource="{Binding Pages}"
+             SelectedItem="{Binding Selected}"
+             Background="Transparent" BorderThickness="0" Margin="0,0,0,8">
+      <ListBox.ItemsPanel>
+        <ItemsPanelTemplate>
+          <StackPanel Orientation="Horizontal" />
+        </ItemsPanelTemplate>
+      </ListBox.ItemsPanel>
+      <ListBox.ItemTemplate>
+        <DataTemplate>
+          <TextBlock Text="{Binding Header}" Margin="10,4" />
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
+    <DockPanel DataContext="{Binding Selected}">
+      <TextBlock DockPanel.Dock="Top" Text="{Binding Summary}" Margin="0,0,0,8" TextWrapping="Wrap" />
+      <ContentControl Content="{Binding Chart}" />
+    </DockPanel>
   </DockPanel>
 </UserControl>
