@@ -79,7 +79,6 @@ public static class HelpCopy
                 "What you are looking for is a step you can name. The one that is slower than the steps around it. The one whose ordinary replies already wander. The one that holds until the asks come fast, and then climbs. Name that step, and you have answered where the connection slowed. The rest of the path is context."
             ]),
             new("All",
-            new("All",
             [
                 "All is every reply that came back. It is the place to start, because it is the grade with nothing hidden.",
                 "On the top chart, look at where the tall bars sit. That cluster is how the step usually answers. A bar standing alone, far to the right, is a reply that was much slower than the rest. The rising line is the running share. It climbs fast through the cluster and flattens once most replies are counted. A flat line with a small bar far out means a few slow replies, not a step that is slow all the time.",
