@@ -24,7 +24,10 @@
     </ListBox>
     <DockPanel DataContext="{Binding Selected}">
       <TextBlock DockPanel.Dock="Top" Text="{Binding Summary}" Margin="0,0,0,8" TextWrapping="Wrap" />
-      <ContentControl Content="{Binding Chart}" />
+      <DockPanel>
+        <ContentControl DockPanel.Dock="Top" Content="{Binding Chart}" Height="280" Margin="0,0,0,8" />
+        <ContentControl Content="{Binding Control}" Height="280" />
+      </DockPanel>
     </DockPanel>
   </DockPanel>
 </UserControl>
