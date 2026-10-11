@@ -138,6 +138,7 @@ public sealed partial class SettingsViewModel : ObservableObject
             ProtocolChoice = string.IsNullOrWhiteSpace(data.Protocol) ? "Hybrid" : data.Protocol;
             SecondPass = data.SecondPass;
             PathSaturation = string.IsNullOrWhiteSpace(data.PathSaturation) ? "Standard" : data.PathSaturation;
+            PathIntervalMs = Math.Clamp(data.PathIntervalMs == 0 ? 1000 : data.PathIntervalMs, 10, 5000);
             PathWidth = Math.Clamp(data.PathWidth, 1, 20);
             PathSeconds = Math.Clamp(data.PathSeconds, 1, 180);
             PathDeadAfter = Math.Clamp(data.PathDeadAfter, 3, 30);
