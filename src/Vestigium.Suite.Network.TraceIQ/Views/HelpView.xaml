@@ -26,6 +26,16 @@
     <Border Grid.Column="2" Style="{DynamicResource Border.Card}" Padding="24,16,24,16" Margin="0,0,8,0"
             VerticalAlignment="Top" HorizontalAlignment="Stretch">
       <DockPanel>
+        <FlowDocumentScrollViewer x:Name="Intro"
+                                  DockPanel.Dock="Top"
+                                  Visibility="Collapsed"
+                                  VerticalScrollBarVisibility="Disabled"
+                                  IsToolBarVisible="False"
+                                  MaxWidth="760"
+                                  HorizontalAlignment="Left"
+                                  Margin="0,0,0,12"
+                                  Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}"
+                                  Background="Transparent" />
         <ItemsControl x:Name="PageSections"
                       DockPanel.Dock="Top"
                       Visibility="Collapsed"
