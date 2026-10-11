@@ -4,8 +4,14 @@
              Background="{DynamicResource Vestigium.Brushes.Surface.Window}">
   <DockPanel Margin="12">
     <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
-      <Button DockPanel.Dock="Right" Content="Legend" Style="{DynamicResource Button.Secondary}"
-              Command="{Binding ToggleLegendCommand}" Padding="12,2" />
+      <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+        <Button Content="Steady" Style="{DynamicResource Button.Secondary}"
+                Command="{Binding ToggleSteadyCommand}" Padding="12,2" Margin="0,0,8,0" />
+        <Button Content="IQR" Style="{DynamicResource Button.Secondary}"
+                Command="{Binding ToggleIqrCommand}" Padding="12,2" Margin="0,0,8,0" />
+        <Button Content="Legend" Style="{DynamicResource Button.Secondary}"
+                Command="{Binding ToggleLegendCommand}" Padding="12,2" />
+      </StackPanel>
       <TextBlock VerticalAlignment="Center">
         <Run Text="{Binding Target, Mode=OneWay}" FontWeight="SemiBold" />
         <Run Text="   " />
@@ -31,7 +37,6 @@
       </ItemsControl.ItemTemplate>
     </ItemsControl>
     <DockPanel DataContext="{Binding Selected}">
-      <TextBlock DockPanel.Dock="Top" Text="{Binding Summary}" Margin="0,0,0,8" TextWrapping="Wrap" />
       <Grid>
         <Grid.RowDefinitions>
           <RowDefinition Height="*" />
