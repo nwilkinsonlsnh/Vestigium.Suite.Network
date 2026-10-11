@@ -20,6 +20,9 @@
                    IsChecked="{Binding ThemePageOpen}" GroupName="SettingsPage" />
     </StackPanel>
 
+    <Button Content="Defaults" Style="{DynamicResource Button.Secondary}"
+            Command="{Binding RestoreDefaultsCommand}" Padding="12,2" Margin="20,0,0,12"
+            HorizontalAlignment="Left" />
     <StackPanel HorizontalAlignment="Left" Width="520" Margin="20,0,0,0"
                 Visibility="{Binding TracePageOpen, Converter={StaticResource BoolToVis}}">
       <TextBlock Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap" Margin="0,0,0,16"
