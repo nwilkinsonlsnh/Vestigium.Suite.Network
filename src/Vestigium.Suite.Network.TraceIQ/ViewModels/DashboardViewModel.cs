@@ -93,11 +93,12 @@ public partial class DashboardViewModel : ObservableObject
             return;
         _rows = graded;
         Target = target;
+        var keep = Selected?.Header;
         Pages.Clear();
         Pages.Add(DashboardPage.Overview(graded));
         foreach (var row in graded)
             Pages.Add(DashboardPage.Hop(row, Steady, Iqr));
-        Selected = Pages[0];
+        Selected = Pages.FirstOrDefault(p => p.Header == keep) ?? Pages[0];
         OnSelectedChanged(Selected);
         ApplyLegend();
         Publish();
@@ -139,25 +140,25 @@ public sealed partial class DashboardPage : ObservableObject
     public static DashboardPage Hop(PathPingRow row, bool steady, bool iqr)
     {
         var samples = row.Samples;
+        var run = samples;
         if (steady && samples.Count > 1 && samples.Distinct().Count() > 1)
         {
             var series0 = NumericSeries.From(samples.Select(s => (decimal)s), "band");
             var band = series0.ControlLimits();
-            samples = samples.Where(s => (double)s >= band.Lower && (double)s <= band.Upper).ToArray();
-            if (samples.Count == 0)
-                samples = row.Samples;
+            var kept = samples.Where(s => (double)s >= band.Lower && (double)s <= band.Upper).ToArray();
+            if (kept.Length > 0)
+                run = kept;
         }
-        if (iqr && samples.Count > 3)
+        var pile = run;
+        if (iqr && run.Count > 3)
         {
-            var sorted = samples.OrderBy(s => s).ToArray();
+            var sorted = run.OrderBy(s => s).ToArray();
             long At(double p) => sorted[(int)Math.Round((sorted.Length - 1) * p)];
-            var lo = At(0.25);
-            var hi = At(0.75);
-            var body = sorted.Where(s => s >= lo && s <= hi).ToArray();
+            var body = sorted.Where(s => s >= At(0.25) && s <= At(0.75)).ToArray();
             if (body.Length > 0)
-                samples = body;
+                pile = body;
         }
-        var series = NumericSeries.From(samples.Select(s => (decimal)s), $"ttl-{row.Ttl}");
+        var series = NumericSeries.From(pile.Select(s => (decimal)s), $"ttl-{row.Ttl}");
         var chart = ChartView.From(new ChartSpec
         {
             Kind = ChartKind.Histogram,
@@ -165,10 +166,10 @@ public sealed partial class DashboardPage : ObservableObject
             Source = series,
             Options = ChartTheme.Apply(new ChartOptions { YLabel = "Count", XLabel = "RTT ms", ShowLegend = true, ShowEcdf = true, Height = 280 })
         });
-        var ys = row.Samples.Select(s => (double)s).ToArray();
+        var ys = run.Select(s => (double)s).ToArray();
         var xs = Enumerable.Range(1, ys.Length).Select(i => (double)i).ToArray();
-        var center = samples.Count == 0 ? 0 : samples.Average();
-        var limits = samples.Distinct().Count() > 1
+        var center = run.Count == 0 ? 0 : run.Average();
+        var limits = run.Distinct().Count() > 1
             ? series.ControlLimits()
             : ControlLimits.FromCaller(center, center + 1, Math.Max(0, center - 1));
         var control = ChartView.From(new ChartSpec
