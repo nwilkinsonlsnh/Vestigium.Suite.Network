@@ -22,6 +22,8 @@ public sealed class TraceIqSettings
     public int PathWidth { get; set; } = 4;
     public int PathSeconds { get; set; } = 30;
     public int PathDeadAfter { get; set; } = 10;
+    public string LossFill { get; set; } = "#33C47A00";
+    public string LossInk { get; set; } = "#C47A00";
     public bool ShowLegend { get; set; } = true;
     public int MruMax { get; set; } = 10;
     public int StickyMax { get; set; } = 3;
