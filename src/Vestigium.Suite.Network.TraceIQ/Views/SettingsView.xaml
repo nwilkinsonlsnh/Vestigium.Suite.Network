@@ -23,8 +23,8 @@
       <TextBlock Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap" Margin="0,0,0,16"
                  Text="The adapter the walk leaves on. Any lets Windows pick." />
       <Label Style="{StaticResource Label.Standard}" Content="Interface" />
-      <ComboBox ItemsSource="{Binding Interfaces}" DisplayMemberPath="Label" SelectedValuePath="Index"
-                SelectedValue="{Binding SelectedInterfaceIndex}" Margin="0,0,0,12" />
+      <ComboBox ItemsSource="{Binding Interfaces}" DisplayMemberPath="Label" SelectedValuePath="Id"
+                SelectedValue="{Binding SelectedInterfaceId}" Margin="0,0,0,12" />
       <Label Style="{StaticResource Label.Standard}" Content="Source" />
       <ComboBox ItemsSource="{Binding Sources}" DisplayMemberPath="Label" SelectedValuePath="Address"
                 SelectedValue="{Binding Source}" Margin="0,0,0,12" />
