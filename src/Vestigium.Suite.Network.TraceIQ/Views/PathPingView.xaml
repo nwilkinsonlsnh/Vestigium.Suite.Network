@@ -12,12 +12,12 @@
       <TextBlock Grid.Column="0" Text="Target" VerticalAlignment="Center" Margin="0,0,8,0" />
       <TextBox Grid.Column="1" Text="{Binding Target}" IsReadOnly="True" Margin="0,0,12,0" />
       <StackPanel Grid.Column="2" Orientation="Horizontal">
-        <Button Content="Path Ping" Command="{Binding RunCommand}" Style="{StaticResource Button.Primary}" Padding="16,4" Margin="0,0,8,0" />
-        <Button Content="Cancel" Command="{Binding CancelCommand}" Style="{StaticResource Button.Secondary}" Padding="16,4" />
+        <Button Content="Path Ping" Command="{Binding RunCommand}" Style="{DynamicResource Button.Primary}" Padding="16,4" Margin="0,0,8,0" />
+        <Button Content="Cancel" Command="{Binding CancelCommand}" Style="{DynamicResource Button.Secondary}" Padding="16,4" />
       </StackPanel>
     </Grid>
     <TextBlock DockPanel.Dock="Top" Text="{Binding Status}" Margin="0,0,0,8" />
-    <DataGrid ItemsSource="{Binding Rows}" Style="{StaticResource DataGrid.Standard}" AutoGenerateColumns="False" IsReadOnly="True"
+    <DataGrid ItemsSource="{Binding Rows}" Style="{DynamicResource DataGrid.Standard}" AutoGenerateColumns="False" IsReadOnly="True"
               HeadersVisibility="Column" CanUserAddRows="False">
       <DataGrid.Columns>
         <DataGridTextColumn Header="TTL" Binding="{Binding Ttl}" Width="60" />
