@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Vestigium.Helpers.Analytics;
 using Vestigium.Helpers.Charts;
 
@@ -24,6 +25,15 @@ public partial class DashboardViewModel : ObservableObject
         set => _settings.ShowLegend = value;
     }
 
+    [RelayCommand]
+    private void ToggleLegend() => Legend = !Legend;
+
+    partial void OnSelectedChanged(DashboardPage? value)
+    {
+        foreach (var page in Pages)
+            page.IsSelected = ReferenceEquals(page, value);
+    }
+
     public void ApplyLegend()
     {
         foreach (var page in Pages)
@@ -45,19 +55,22 @@ public partial class DashboardViewModel : ObservableObject
         foreach (var row in graded)
             Pages.Add(DashboardPage.Hop(row));
         Selected = Pages[0];
+        OnSelectedChanged(Selected);
         ApplyLegend();
         Ready = true;
         Status = $"{graded.Count} hops. Overview compares them. A tab per hop shows that hop only.";
     }
 }
 
-public sealed class DashboardPage
+public sealed partial class DashboardPage : ObservableObject
 {
     public string Header { get; init; } = "";
     public string Summary { get; init; } = "";
     public FrameworkElement Chart { get; init; } = null!;
     public FrameworkElement? Control { get; init; }
     public bool IsOverview { get; init; }
+
+    [ObservableProperty] private bool _isSelected;
 
     public static DashboardPage Overview(IReadOnlyList<PathPingRow> rows)
     {
