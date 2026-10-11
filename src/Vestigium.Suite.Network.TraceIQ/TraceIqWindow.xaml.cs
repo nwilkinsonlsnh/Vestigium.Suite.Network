@@ -29,7 +29,10 @@ public partial class TraceIqWindow : Window
             return;
         CloseHelp();
         RootShell.SelectedItem = item;
+        TabShown?.Invoke(item.Key);
     }
+
+    public Action<string>? TabShown { get; set; }
 
     private void MainNav_Click(object sender, RoutedEventArgs e)
     {
