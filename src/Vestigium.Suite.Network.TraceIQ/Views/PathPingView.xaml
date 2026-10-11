@@ -19,7 +19,17 @@
     </Grid>
     <TextBlock DockPanel.Dock="Top" Text="{Binding Status}" Style="{DynamicResource TextBlock.Standard}" Margin="0,0,0,8" />
     <DataGrid ItemsSource="{Binding Rows}" Style="{DynamicResource DataGrid.Standard}" AutoGenerateColumns="False" IsReadOnly="True"
-              HeadersVisibility="Column" CanUserAddRows="False" LoadingRow="MarkRow">
+              HeadersVisibility="Column" CanUserAddRows="False">
+      <DataGrid.RowStyle>
+        <Style TargetType="DataGridRow" BasedOn="{StaticResource DataGridRow.Standard}">
+          <Style.Triggers>
+            <DataTrigger Binding="{Binding Lossy}" Value="True">
+              <Setter Property="Background" Value="{Binding DataContext.LossFillBrush, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+              <Setter Property="Foreground" Value="{Binding DataContext.LossInkBrush, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+            </DataTrigger>
+          </Style.Triggers>
+        </Style>
+      </DataGrid.RowStyle>
       <DataGrid.Columns>
         <DataGridTextColumn Header="TTL" Binding="{Binding Ttl}" Width="60" />
         <DataGridTextColumn Header="Address" Binding="{Binding Address}" Width="160" />
