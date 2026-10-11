@@ -36,6 +36,7 @@ public sealed class DashboardPage
     public string Header { get; init; } = "";
     public string Summary { get; init; } = "";
     public FrameworkElement Chart { get; init; } = null!;
+    public FrameworkElement? Ecdf { get; init; }
     public bool IsOverview { get; init; }
 
     public static DashboardPage Overview(IReadOnlyList<PathPingRow> rows)
@@ -64,16 +65,24 @@ public sealed class DashboardPage
         var chart = ChartView.From(new ChartSpec
         {
             Kind = ChartKind.Histogram,
-            Title = $"{row.Address}   {row.Name}",
+            Title = "Histogram",
             Source = series,
             Options = new ChartOptions { YLabel = "Count", XLabel = "RTT ms", ShowLegend = false, Height = 360 }
+        });
+        var ecdf = ChartView.From(new ChartSpec
+        {
+            Kind = ChartKind.Ecdf,
+            Title = "ECDF",
+            Source = series,
+            Options = new ChartOptions { YLabel = "Share", XLabel = "RTT ms", ShowLegend = false, Height = 360 }
         });
         var five = Five(row.Samples);
         return new DashboardPage
         {
             Header = $"TTL {row.Ttl}",
-            Summary = $"Sent {row.Sent}   Received {row.Received}   Loss {row.Loss}   min {five.min}   Q1 {five.q1}   median {five.median}   Q3 {five.q3}   max {five.max}",
-            Chart = chart
+            Summary = $"{row.Address}   {row.Name}   Sent {row.Sent}   Received {row.Received}   Loss {row.Loss}   min {five.min}   Q1 {five.q1}   median {five.median}   Q3 {five.q3}   max {five.max}",
+            Chart = chart,
+            Ecdf = ecdf
         };
     }
 
