@@ -122,7 +122,8 @@ public partial class PathPingViewModel : ObservableObject
                 Count = count,
                 Interval = TimeSpan.FromMilliseconds(intervalMs),
                 Timeout = TimeSpan.FromSeconds(2),
-                MaxDuration = TimeSpan.FromSeconds(Math.Clamp((int)_settings.PathSeconds, 1, 180))
+                MaxDuration = TimeSpan.FromSeconds(Math.Clamp((int)_settings.PathSeconds, 1, 180)),
+                AllowBurst = intervalMs < 200
             });
             job.ProgressChanged += (_, p) =>
             {
