@@ -56,12 +56,16 @@ public partial class ExportsViewModel : ObservableObject
 
     private void WriteTrace(WorkbookSession book)
     {
+        var count = Math.Clamp((int)_trace.Settings.Probes, 1, HopRow.MaxColumns);
         var headers = new List<string> { "TTL", "Address", "Name", "Reached" };
-        headers.AddRange(Enumerable.Range(1, HopRow.MaxColumns).Select(i => $"P{i}"));
-        var rows = _trace.Hops.Select(h => (IReadOnlyList<object?>)new object?[]
+        headers.AddRange(Enumerable.Range(1, count).Select(i => $"RTT {i} (ms)"));
+        var probes = new[] { "P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10" };
+        var rows = _trace.Hops.Select(h =>
         {
-            h.Ttl, h.Address, h.Name, h.Reached ? "Yes" : "No",
-            h.P1, h.P2, h.P3, h.P4, h.P5, h.P6, h.P7, h.P8, h.P9, h.P10
+            var cells = new List<object?> { h.Ttl, h.Address, h.Name, h.Reached ? "Yes" : "No" };
+            var values = new[] { h.P1, h.P2, h.P3, h.P4, h.P5, h.P6, h.P7, h.P8, h.P9, h.P10 };
+            cells.AddRange(values.Take(count));
+            return (IReadOnlyList<object?>)cells;
         }).ToList();
         book.Sheet("TraceIQ").WriteTable(SheetTable.Create(headers, rows, "TraceIQ"));
     }
