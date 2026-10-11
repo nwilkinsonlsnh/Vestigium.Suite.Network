@@ -86,7 +86,12 @@ public partial class App : Application
         if (!string.IsNullOrWhiteSpace(settings.LastTarget))
             trace.Target = settings.LastTarget;
         var path = new PathPingViewModel(settings) { StatusBar = chrome.Status };
-        var dash = new DashboardViewModel();
+        var dash = new DashboardViewModel(settings);
+        settings.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(SettingsViewModel.ShowLegend))
+                dash.ApplyLegend();
+        };
         var dashItem = window.HostShell["Dashboard"];
         if (dashItem is not null)
         {
