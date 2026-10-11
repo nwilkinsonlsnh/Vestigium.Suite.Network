@@ -240,6 +240,27 @@ public sealed partial class SettingsViewModel : ObservableObject
     }
 
     [RelayCommand]
+    private void RestoreDefaults()
+    {
+        MaxHops = 30;
+        Parallel = 20;
+        Probes = 5;
+        SelectedInterfaceId = "";
+        Source = "";
+        Family = "All";
+        ProtocolChoice = "Hybrid";
+        SecondPass = false;
+        PathSaturation = "Standard";
+        PathWidth = 4;
+        PathSeconds = 30;
+        PathDeadAfter = 10;
+        MruMax = 10;
+        StickyMax = 3;
+        BarVisible = true;
+        BarPosition = VestigiumStatusBarPosition.Bottom;
+    }
+
+    [RelayCommand]
     private void ToggleSticky(MruEntry? entry)
     {
         if (entry is null)
