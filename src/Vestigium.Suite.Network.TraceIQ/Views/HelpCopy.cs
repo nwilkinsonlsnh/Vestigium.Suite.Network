@@ -160,45 +160,45 @@ public static class HelpCopy
         [
             new("Tabs",
             [
-                Term("TraceIQ", "The walk. You give it a target and it finds the path from this machine, one step at a time, and writes a line for each step. This is where you learn who is on the way and whether the walk reached the target."),
-                Term("Path Ping", "The grade. It takes the steps the walk found and asks them again for a window you set, then counts what came back. It does not find a new path. It tells you whether the path you found holds."),
-                Term("Exports", "The record. It writes the rows already on screen to a workbook on the desktop. The walk is one sheet. The grade is a summary and a sheet of every reply. It does not run anything."),
                 Term("Dashboard", "The reading. It draws the finished grade so you can see which step is steady, which is slow, and which only looks slow because a few replies were. It does not ping again."),
-                Term("Settings", "The knobs. Which adapter the walk leaves on, how it asks, how far it goes, how the grade presses, which targets are kept, and the look of the window.")
+                Term("Exports", "The record. It writes the rows already on screen to a workbook on the desktop. The walk is one sheet. The grade is a summary and a sheet of every reply. It does not run anything."),
+                Term("Path Ping", "The grade. It takes the steps the walk found and asks them again for a window you set, then counts what came back. It does not find a new path. It tells you whether the path you found holds."),
+                Term("Settings", "The knobs. Which adapter the walk leaves on, how it asks, how far it goes, how the grade presses, which targets are kept, and the look of the window."),
+                Term("TraceIQ", "The walk. You give it a target and it finds the path from this machine, one step at a time, and writes a line for each step. This is where you learn who is on the way and whether the walk reached the target.")
             ]),
             new("The Walk",
             [
-                Term("Trace", "A trace finds the path. It asks the first step, then the next, and writes who answered at each one. When it finishes you have a list: the order of the steps, the address of each, and a time for each ask. A trace answers where the packets go. It does not answer whether that path is steady. That is the grade."),
                 Term("Hop", "One step on the path. It has a number, an address or a star, a name when one comes back, and a time for each ask. The first hop is the first step off this machine. The last is the target, when the walk reaches it."),
-                Term("TTL", "The hop number. It counts up as the walk goes out. One is the first step. Two is the next. It is how you read the list from near to far."),
-                Term("Probe", "One ask of a hop. Probes, in settings, is how many times each hop is asked. That number is how many time columns the grid and the export show."),
-                Term("RTT", "Round trip time. How long one ask took to go out and come back, in milliseconds. RTT 1 is the first ask. RTT 2 is the second. A very fast one prints as less than one. A star is an ask that did not come back."),
-                Term("Reached", "The walk got to the target. Reached is yes or no for the whole walk. A walk that is not reached still has a list. It is the record of how far it got."),
-                Term("Star", "No answer from that hop. The hop is still on the path. It is listed so you can see where the path went quiet. It is not skipped."),
+                Term("MRU", "Most recently used. The targets you have traced, kept in the box so you can pick one again. MRU max is how many are kept. A sticky is pinned to the top and does not count against that max. Sticky max is how many can be pinned."),
                 Term("Parallel", "How many hops are asked at once during the walk. A higher number finishes a long path sooner. It is not how many times one hop is asked. That is Probes."),
-                Term("MRU", "Most recently used. The targets you have traced, kept in the box so you can pick one again. MRU max is how many are kept. A sticky is pinned to the top and does not count against that max. Sticky max is how many can be pinned.")
+                Term("Probe", "One ask of a hop. Probes, in settings, is how many times each hop is asked. That number is how many time columns the grid and the export show."),
+                Term("Reached", "The walk got to the target. Reached is yes or no for the whole walk. A walk that is not reached still has a list. It is the record of how far it got."),
+                Term("RTT", "Round trip time. How long one ask took to go out and come back, in milliseconds. RTT 1 is the first ask. RTT 2 is the second. A very fast one prints as less than one. A star is an ask that did not come back."),
+                Term("Star", "No answer from that hop. The hop is still on the path. It is listed so you can see where the path went quiet. It is not skipped."),
+                Term("Trace", "A trace finds the path. It asks the first step, then the next, and writes who answered at each one. When it finishes you have a list: the order of the steps, the address of each, and a time for each ask. A trace answers where the packets go. It does not answer whether that path is steady. That is the grade."),
+                Term("TTL", "The hop number. It counts up as the walk goes out. One is the first step. Two is the next. It is how you read the list from near to far.")
             ]),
             new("The Grade",
             [
-                Term("Path Ping", "A grade of a path you already have. It pings the hops the walk found, for a window you set, and writes what came back. Compare it with a trace. A trace finds the path and takes a few times at each step. Path Ping stays on those steps and asks them many times, so you can see loss, the spread, and whether a step slows as it is asked. A trace answers who is on the way. Path Ping answers whether they hold."),
-                Term("Sent", "How many asks went out to that hop during the grade."),
-                Term("Received", "How many of those asks came back. Sent minus received is the loss."),
+                Term("Duration", "The window, in seconds. New asks stop when it ends. An ask already out is given only the time that is left, so the run finishes at the mark you set."),
+                Term("IQR", "The middle half of the replies, from the first quarter to the third. The fastest quarter and the slowest quarter are left out. A tight middle half is a consistent hop. A wide one is a hop whose ordinary replies already wander."),
                 Term("Loss", "The asks that did not come back, as a count. A hop with loss is dropping replies. A hop with no loss answered every ask."),
                 Term("Median", "The middle time. Half the replies were faster and half were slower. It is a better read of a hop than the fastest or the slowest, because one odd reply does not move it."),
-                Term("IQR", "The middle half of the replies, from the first quarter to the third. The fastest quarter and the slowest quarter are left out. A tight middle half is a consistent hop. A wide one is a hop whose ordinary replies already wander."),
+                Term("Path Ping", "A grade of a path you already have. It pings the hops the walk found, for a window you set, and writes what came back. Compare it with a trace. A trace finds the path and takes a few times at each step. Path Ping stays on those steps and asks them many times, so you can see loss, the spread, and whether a step slows as it is asked. A trace answers who is on the way. Path Ping answers whether they hold."),
+                Term("Received", "How many of those asks came back. Sent minus received is the loss."),
+                Term("Saturation", "How hard the grade asks. It sets the gap between pings. It does not set how many hops are graded at once. That is Hops at a time. Low waits 2 seconds, for a fragile or production path. Standard waits 1 second, a normal diagnostic. Medium waits half a second, enough replies to trust the loss. High waits a quarter second, more replies in the same window. Flood waits 10 milliseconds, 100 pings a second, as many replies as the window allows. A higher level fills the charts. It is also what can push a step into a tail."),
+                Term("Sent", "How many asks went out to that hop during the grade."),
                 Term("Steady", "The replies inside the band. The band is the center plus and minus the spread. Steady is the hop as it behaves when it is not being pushed. Flat and near the center is the result you want."),
                 Term("Tail", "The replies that left the band. A climb at the end of the run is the hop falling behind as the asks kept coming. Scattered points are single slow replies. No points means every reply stayed in the band."),
-                Term("UCL", "The top of the band. A reply above it left the band and is part of the tail. It is how the charts mark a reply that was unlike the rest."),
-                Term("Saturation", "How hard the grade asks. It sets the gap between pings. It does not set how many hops are graded at once. That is Hops at a time. Low waits 2 seconds, for a fragile or production path. Standard waits 1 second, a normal diagnostic. Medium waits half a second, enough replies to trust the loss. High waits a quarter second, more replies in the same window. Flood waits 10 milliseconds, 100 pings a second, as many replies as the window allows. A higher level fills the charts. It is also what can push a step into a tail."),
-                Term("Duration", "The window, in seconds. New asks stop when it ends. An ask already out is given only the time that is left, so the run finishes at the mark you set."),
+                Term("UCL", "The top of the band. A reply above it left the band and is part of the tail. It is how the charts mark a reply that was unlike the rest.")
             ]),
             new("The Ask",
             [
-                Term("Ping", "One ask and one answer. A small packet goes out. If the step is willing, a small packet comes back, and the time between them is the round trip. A ping that does not come back is a loss. Path Ping is many pings, to the steps the walk found."),
+                Term("Hybrid", "The walk tries ICMP first. A step that answers is done. A step that is silent gets a second pass, if you allow it, using the other asks. Hybrid is for a path where some steps speak ICMP and some do not. ICMP, UDP, and TCP alone each use one ask. Hybrid uses the first that works, so a quiet step is not written off after a single no."),
                 Term("ICMP", "The usual way to ping. It is a short message that asks a step to answer. Most traces and most pings use it. A step that answers ICMP will show an address and a time. A step that blocks it shows as a star."),
-                Term("UDP", "An ask sent as a datagram instead of an ICMP echo. Some paths answer this when they do not answer ICMP. The walk can use it on its own, or as the second try in Hybrid."),
+                Term("Ping", "One ask and one answer. A small packet goes out. If the step is willing, a small packet comes back, and the time between them is the round trip. A ping that does not come back is a loss. Path Ping is many pings, to the steps the walk found."),
                 Term("TCP", "An ask sent as a connection attempt. Some paths answer this when they answer neither ICMP nor UDP. It is the third way the walk can ask."),
-                Term("Hybrid", "The walk tries ICMP first. A step that answers is done. A step that is silent gets a second pass, if you allow it, using the other asks. Hybrid is for a path where some steps speak ICMP and some do not. ICMP, UDP, and TCP alone each use one ask. Hybrid uses the first that works, so a quiet step is not written off after a single no.")
+                Term("UDP", "An ask sent as a datagram instead of an ICMP echo. Some paths answer this when they do not answer ICMP. The walk can use it on its own, or as the second try in Hybrid.")
             ]),
             new("The Address",
             [
