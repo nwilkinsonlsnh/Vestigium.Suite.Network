@@ -56,7 +56,9 @@ public partial class DashboardViewModel : ObservableObject
         if (StatusBar is null)
             return;
         StatusBar.Message = "Dashboard";
-        StatusBar.Engine.PostImmediate("elapsed", new StatusBarUpdate { Text = Selected?.Summary ?? Status });
+        var rest = Selected?.Summary ?? Status;
+        var host = string.IsNullOrWhiteSpace(Target) ? "" : Target;
+        StatusBar.Engine.PostImmediate("elapsed", new StatusBarUpdate { Text = string.IsNullOrWhiteSpace(host) ? rest : $"{host}: {rest}" });
     }
 
     [RelayCommand]
