@@ -108,6 +108,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private decimal _pathWidth = 4;
     [ObservableProperty] private decimal _pathSeconds = 30;
     [ObservableProperty] private decimal _pathDeadAfter = 10;
+    [ObservableProperty] private bool _showLegend = true;
     [ObservableProperty] private decimal _mruMax = 10;
     [ObservableProperty] private decimal _stickyMax = 3;
 
@@ -135,6 +136,7 @@ public sealed partial class SettingsViewModel : ObservableObject
             PathWidth = Math.Clamp(data.PathWidth, 1, 20);
             PathSeconds = Math.Clamp(data.PathSeconds, 1, 180);
             PathDeadAfter = Math.Clamp(data.PathDeadAfter, 3, 30);
+            ShowLegend = data.ShowLegend;
             MruMax = Math.Clamp(data.MruMax, 1, MruMaxLimit);
             StickyMax = Math.Clamp(data.StickyMax, 0, StickyMaxLimit);
             Mru.Clear();
@@ -167,6 +169,7 @@ public sealed partial class SettingsViewModel : ObservableObject
             PathWidth = (int)PathWidth,
             PathSeconds = (int)PathSeconds,
             PathDeadAfter = (int)PathDeadAfter,
+            ShowLegend = ShowLegend,
             MruMax = (int)MruMax,
             StickyMax = (int)StickyMax,
             Mru = Mru.ToList()
@@ -314,6 +317,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     partial void OnPathWidthChanged(decimal value) => Persist();
     partial void OnPathSecondsChanged(decimal value) => Persist();
     partial void OnPathDeadAfterChanged(decimal value) => Persist();
+    partial void OnShowLegendChanged(bool value) => Persist();
     partial void OnMruMaxChanged(decimal value) { Trim(); Persist(); }
     partial void OnStickyMaxChanged(decimal value) { Trim(); Persist(); }
 
