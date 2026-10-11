@@ -91,6 +91,8 @@ public partial class App : Application
         {
             if (e.PropertyName == nameof(SettingsViewModel.ShowLegend))
                 dash.ApplyLegend();
+            if (e.PropertyName == nameof(SettingsViewModel.SelectedThemeId))
+                dash.Rebuild();
         };
         var dashItem = window.HostShell["Dashboard"];
         if (dashItem is not null)
