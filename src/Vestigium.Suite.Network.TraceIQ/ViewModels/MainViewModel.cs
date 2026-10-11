@@ -86,6 +86,7 @@ public sealed partial class MainViewModel : ObservableObject
     public bool IsPinned => Settings.IsSticky(Target);
 
     public string PinGlyph => IsPinned ? "Unpin" : "Pin";
+    public string PinIcon => IsPinned ? "\uE735" : "\uE734";
 
     private bool CanPin() => Settings.CanPin(Target);
 
