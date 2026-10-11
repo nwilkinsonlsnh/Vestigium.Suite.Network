@@ -22,6 +22,13 @@ public sealed partial class MainViewModel : ObservableObject
 
     public BindFields Bind { get; } = new();
 
+    private int? InterfaceIndexOf(string id)
+    {
+        if (string.IsNullOrWhiteSpace(id))
+            return null;
+        return Settings.Adapters.FirstOrDefault(a => a.Id.Equals(id, StringComparison.OrdinalIgnoreCase))?.InterfaceIndex;
+    }
+
     public VestigiumStatusBarViewModel? StatusBar { get; set; }
 
     public IReadOnlyList<string> Families { get; } = ["All", "IPv4", "IPv6"];
