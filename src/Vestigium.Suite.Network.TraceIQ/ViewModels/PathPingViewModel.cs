@@ -105,7 +105,7 @@ public partial class PathPingViewModel : ObservableObject
         {
             if (row.WalkMisses >= dead)
             {
-                await Dispatch(() => row.Skip("100%  from the walk")).ConfigureAwait(true);
+                await Dispatch(() => row.Skip(row.WalkMisses)).ConfigureAwait(true);
                 Tick(count);
                 return;
             }
@@ -131,7 +131,7 @@ public partial class PathPingViewModel : ObservableObject
         }
         catch (OperationCanceledException) when (!token.IsCancellationRequested)
         {
-            await Dispatch(() => row.Skip("100%  dead")).ConfigureAwait(true);
+            await Dispatch(() => row.Skip(Math.Max(row.WalkMisses, dead))).ConfigureAwait(true);
         }
         finally
         {
@@ -232,7 +232,7 @@ public partial class PathPingRow : ObservableObject
     {
         Sent = result.Sent;
         Received = result.Received;
-        Loss = dead ? "100%  dead" : $"{result.LossPercent:0.#}%";
+        Loss = result.Lost.ToString();
         Samples = result.Replies
             .Where(r => r.Status == IcmpEchoStatus.Success)
             .Select(r => r.RoundtripTimeMs)
@@ -246,11 +246,11 @@ public partial class PathPingRow : ObservableObject
         Max = five.Max;
     }
 
-    public void Skip(string reason)
+    public void Skip(int lost)
     {
-        Loss = reason;
-        Sent = 0;
+        Sent = lost;
         Received = 0;
+        Loss = lost.ToString();
     }
 
     private static (string Min, string Q1, string Median, string Q3, string Max) Five(IReadOnlyList<long> samples)
