@@ -22,12 +22,7 @@
               HeadersVisibility="Column" CanUserAddRows="False">
       <DataGrid.RowStyle>
         <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
-          <Style.Triggers>
-            <DataTrigger Binding="{Binding Lossy}" Value="True">
-              <Setter Property="Background" Value="{Binding DataContext.LossFillBrush, RelativeSource={RelativeSource AncestorType=UserControl}}" />
-              <Setter Property="Foreground" Value="{Binding DataContext.LossInkBrush, RelativeSource={RelativeSource AncestorType=UserControl}}" />
-            </DataTrigger>
-          </Style.Triggers>
+          <EventSetter Event="Loaded" Handler="MarkRow" />
         </Style>
       </DataGrid.RowStyle>
       <DataGrid.Columns>
