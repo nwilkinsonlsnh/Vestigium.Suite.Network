@@ -53,6 +53,12 @@ public partial class App : Application
                     Subject = "One walk",
                     Description = "One target. One walk. Hop list."
                 },
+                new VestigiumNavItemSpec("Path Ping")
+                {
+                    Title = "Path Ping",
+                    Subject = "Grade the path",
+                    Description = "Enabled when a walk reaches the target."
+                },
                 new VestigiumNavItemSpec("Settings")
                 {
                     Title = "Settings",
@@ -65,6 +71,19 @@ public partial class App : Application
         var settings = new SettingsViewModel(Themes, chrome);
         settings.Load(TraceIqSettingsStore.Load());
         var trace = new MainViewModel(settings) { StatusBar = chrome.Status };
+        var path = new PathPingViewModel(settings);
+        var pathItem = window.HostShell["Path Ping"];
+        if (pathItem is not null)
+        {
+            pathItem.IsEnabled = false;
+            pathItem.Content = new PathPingView { DataContext = path };
+        }
+        trace.RouteReady += (_, _) =>
+        {
+            path.Offer(trace.Target, trace.Hops.ToList());
+            if (pathItem is not null)
+                pathItem.IsEnabled = path.Ready;
+        };
         var item = window.HostShell["TraceIQ"];
         if (item is not null)
         {
