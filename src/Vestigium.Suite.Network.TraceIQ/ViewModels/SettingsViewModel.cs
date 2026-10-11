@@ -114,6 +114,8 @@ public sealed partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private decimal _pathWidth = 4;
     [ObservableProperty] private decimal _pathSeconds = 30;
     [ObservableProperty] private decimal _pathDeadAfter = 10;
+    [ObservableProperty] private string _lossFill = "#33C47A00";
+    [ObservableProperty] private string _lossInk = "#C47A00";
     [ObservableProperty] private bool _showLegend = true;
     [ObservableProperty] private decimal _mruMax = 10;
     [ObservableProperty] private decimal _stickyMax = 3;
@@ -143,6 +145,8 @@ public sealed partial class SettingsViewModel : ObservableObject
             PathWidth = Math.Clamp(data.PathWidth, 1, 20);
             PathSeconds = Math.Clamp(data.PathSeconds, 1, 180);
             PathDeadAfter = Math.Clamp(data.PathDeadAfter, 3, 30);
+            LossFill = string.IsNullOrWhiteSpace(data.LossFill) ? "#33C47A00" : data.LossFill;
+            LossInk = string.IsNullOrWhiteSpace(data.LossInk) ? "#C47A00" : data.LossInk;
             ShowLegend = data.ShowLegend;
             MruMax = Math.Clamp(data.MruMax, 1, MruMaxLimit);
             StickyMax = Math.Clamp(data.StickyMax, 0, StickyMaxLimit);
@@ -179,6 +183,8 @@ public sealed partial class SettingsViewModel : ObservableObject
             PathWidth = (int)PathWidth,
             PathSeconds = (int)PathSeconds,
             PathDeadAfter = (int)PathDeadAfter,
+            LossFill = LossFill,
+            LossInk = LossInk,
             ShowLegend = ShowLegend,
             MruMax = (int)MruMax,
             StickyMax = (int)StickyMax,
@@ -263,6 +269,8 @@ public sealed partial class SettingsViewModel : ObservableObject
         PathWidth = 4;
         PathSeconds = 30;
         PathDeadAfter = 10;
+        LossFill = "#33C47A00";
+        LossInk = "#C47A00";
         MruMax = 10;
         StickyMax = 3;
         BarVisible = true;
@@ -399,6 +407,8 @@ public sealed partial class SettingsViewModel : ObservableObject
     partial void OnPathWidthChanged(decimal value) => Persist();
     partial void OnPathSecondsChanged(decimal value) => Persist();
     partial void OnPathDeadAfterChanged(decimal value) => Persist();
+    partial void OnLossFillChanged(string value) => Persist();
+    partial void OnLossInkChanged(string value) => Persist();
     partial void OnShowLegendChanged(bool value) => Persist();
     partial void OnMruMaxChanged(decimal value) { Trim(); Persist(); }
     partial void OnStickyMaxChanged(decimal value) { Trim(); Persist(); }
