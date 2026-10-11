@@ -58,17 +58,25 @@
       <nud:VestigiumNumericUpDown Value="{Binding StickyMax}" Minimum="0" Maximum="10" Margin="0,0,0,12" />
       <TextBlock Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap" Margin="0,0,0,8"
                  Text="Stickies stay. They do not count against the MRU max." />
-      <ItemsControl ItemsSource="{Binding Mru}">
-        <ItemsControl.ItemTemplate>
-          <DataTemplate>
-            <DockPanel Margin="0,0,0,4">
-              <CheckBox DockPanel.Dock="Right" Content="Sticky" Style="{DynamicResource CheckBox.Standard}"
-                        IsChecked="{Binding Sticky, Mode=TwoWay}" Margin="8,0,0,0" />
-              <TextBlock Text="{Binding Target}" Style="{DynamicResource TextBlock.Standard}" VerticalAlignment="Center" />
-            </DockPanel>
-          </DataTemplate>
-        </ItemsControl.ItemTemplate>
-      </ItemsControl>
+      <DockPanel Margin="0,0,0,8">
+        <Button DockPanel.Dock="Right" Content="Add" Style="{DynamicResource Button.Secondary}"
+                Command="{Binding AddTargetCommand}" Padding="12,2" Margin="8,0,0,0" />
+        <TextBox Style="{DynamicResource TextBox.Standard}" Text="{Binding NewTarget, UpdateSourceTrigger=PropertyChanged}" />
+      </DockPanel>
+      <DataGrid Style="{DynamicResource DataGrid.Standard}" ItemsSource="{Binding Mru}"
+                SelectedItem="{Binding SelectedEntry}" AutoGenerateColumns="False"
+                CanUserAddRows="False" HeadersVisibility="Column" MinHeight="160"
+                CellEditEnding="ListEdited">
+        <DataGrid.Columns>
+          <DataGridTextColumn Header="Target" Binding="{Binding Target}" Width="*" IsReadOnly="True" />
+          <DataGridCheckBoxColumn Header="Sticky" Binding="{Binding Sticky, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="80" />
+        </DataGrid.Columns>
+      </DataGrid>
+      <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+        <Button Content="Up" Style="{DynamicResource Button.Secondary}" Command="{Binding MoveUpCommand}" Padding="12,2" Margin="0,0,8,0" />
+        <Button Content="Down" Style="{DynamicResource Button.Secondary}" Command="{Binding MoveDownCommand}" Padding="12,2" Margin="0,0,8,0" />
+        <Button Content="Remove" Style="{DynamicResource Button.Secondary}" Command="{Binding RemoveTargetCommand}" Padding="12,2" />
+      </StackPanel>
     </StackPanel>
 
     <StackPanel HorizontalAlignment="Left" Width="640" Margin="0"
