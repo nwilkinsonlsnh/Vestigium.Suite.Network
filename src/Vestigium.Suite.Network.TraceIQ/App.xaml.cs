@@ -71,6 +71,8 @@ public partial class App : Application
         var settings = new SettingsViewModel(Themes, chrome);
         settings.Load(TraceIqSettingsStore.Load());
         var trace = new MainViewModel(settings) { StatusBar = chrome.Status };
+        if (!string.IsNullOrWhiteSpace(settings.LastTarget))
+            trace.Target = settings.LastTarget;
         var path = new PathPingViewModel(settings) { StatusBar = chrome.Status };
         var pathItem = window.HostShell["Path Ping"];
         if (pathItem is not null)
