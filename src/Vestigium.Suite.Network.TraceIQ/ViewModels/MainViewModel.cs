@@ -14,7 +14,7 @@ namespace Vestigium.Suite.Network.TraceIQ.ViewModels;
 public sealed partial class MainViewModel : ObservableObject
 {
     public const int DefaultMaxHops = 30;
-    public const int DefaultParallel = 10;
+    public const int DefaultParallel = 20;
     public const int DefaultProbes = 5;
     public const int MinHops = 1;
     public const int MaxHopsLimit = 64;
@@ -76,7 +76,12 @@ public sealed partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private MruEntry? _selectedMru;
 
-    partial void OnTargetChanged(string value) => PinCommand.NotifyCanExecuteChanged();
+    partial void OnTargetChanged(string value)
+    {
+        OnPropertyChanged(nameof(IsPinned));
+        OnPropertyChanged(nameof(PinGlyph));
+        PinCommand.NotifyCanExecuteChanged();
+    }
 
     public bool IsPinned => Settings.IsSticky(Target);
 
