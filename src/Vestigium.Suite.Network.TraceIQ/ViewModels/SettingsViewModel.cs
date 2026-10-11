@@ -93,6 +93,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     }
 
     [ObservableProperty] private string? _selectedThemeId;
+    public string LastTarget { get; set; } = "";
     [ObservableProperty] private bool _barVisible;
     [ObservableProperty] private VestigiumStatusBarPosition _barPosition;
     [ObservableProperty] private decimal _maxHops = 30;
@@ -117,6 +118,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         {
             if (!string.IsNullOrWhiteSpace(data.ThemeId))
                 SelectedThemeId = data.ThemeId;
+            LastTarget = data.LastTarget ?? "";
             BarVisible = data.StatusBarVisible;
             BarPosition = string.Equals(data.StatusBarDock, "Top", StringComparison.OrdinalIgnoreCase)
                 ? VestigiumStatusBarPosition.Top
@@ -150,6 +152,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         => new()
         {
             ThemeId = SelectedThemeId,
+            LastTarget = LastTarget,
             StatusBarVisible = BarVisible,
             StatusBarDock = BarPosition == VestigiumStatusBarPosition.Top ? "Top" : "Bottom",
             MaxHops = (int)MaxHops,
@@ -168,6 +171,15 @@ public sealed partial class SettingsViewModel : ObservableObject
             StickyMax = (int)StickyMax,
             Mru = Mru.ToList()
         };
+
+    public void RememberTarget(string target)
+    {
+        var name = target.Trim();
+        if (string.IsNullOrWhiteSpace(name) || name == LastTarget)
+            return;
+        LastTarget = name;
+        Persist();
+    }
 
     public void Remember(string target)
     {
