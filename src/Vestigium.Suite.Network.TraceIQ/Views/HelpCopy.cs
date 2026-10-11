@@ -22,10 +22,14 @@ public static class HelpCopy
     private static Draft Overview()
         => new("Overview",
         [
-            "TraceIQ walks the path to a target and then grades the hops it found. It is a reading of the route from this machine. It does not change a route, edit a firewall, or log into a router.",
-            "The pages are TraceIQ, Path Ping, Exports, Dashboard, and Settings. Help is this page. TraceIQ is the walk. Path Ping grades the hops that answered. Exports writes those rows to a workbook. Dashboard is a reading of the last Path Ping, not a second measurement.",
-            "Read a hop for what it is. A line with an address answered. A star did not. Reached means the walk got to the target. A hop that did not answer is still a hop. It is on the path. It just did not speak.",
-            "Use TraceIQ when the question is how this machine gets there. Use Path Ping when the question is whether the hops that answered are steady. Use Exports when another desk needs the rows. The workbook stays on this machine. It is not uploaded."
+            "TraceIQ shows how this machine reaches a target, and then how steady that path is. You give it a name or an address. It walks the path, writes one line for each step, and lets you grade the steps that answered.",
+            "The walk is the first job. TraceIQ asks each step in turn and records who answered, what they are called, and how long the ask took. The result is a list you can read from the top. The first line is the first step out. The last line is the target, when the walk reaches it. A step that does not answer is still listed, so you can see where the path went quiet.",
+            "The grade is the second job. Path Ping takes the steps the walk found and asks them again, for a window you set. Each step gets a count of what was sent, what came back, and the spread of the times. That is how you tell a step that is steady from a step that is dropping replies or getting slow.",
+            "The reading is the third job. Dashboard takes the finished grade and draws it. Overview compares the steps by their middle time. Each step has its own page, with the shape of its times and the times in the order they came back. You can look at every reply, the middle half, the steady body, or the slow tail. The pictures are a reading of the grade you already ran.",
+            "The record is the fourth job. Exports writes the rows to a workbook on the desktop. The walk is one sheet, with a column for each probe you asked for. The grade is a summary sheet and a sheet of every reply. You can open the file, open the folder, or hand the workbook to another desk.",
+            "Settings holds the choices that shape those jobs. Which adapter the walk leaves on. How the walk asks. How far it will go, how many steps it asks at once, and how many times it asks each one. How hard the grade presses, how long it runs, and when a silent step is left behind. Which recent targets are kept, and which are pinned. The look of the window.",
+            "A normal use is short. Type the target, run the walk, read the list. If the path looks right and you want to know whether it holds, run the grade. If the grade shows a step that is slow or lossy, open its page on the dashboard. If someone else needs the numbers, export them.",
+            "The pages are TraceIQ, Path Ping, Exports, Dashboard, and Settings. Help is this page. Start on TraceIQ. Everything else reads what that walk found."
         ], []);
 
     private static Draft TraceIq()
