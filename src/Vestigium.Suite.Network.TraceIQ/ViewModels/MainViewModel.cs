@@ -80,6 +80,7 @@ public sealed partial class MainViewModel : ObservableObject
     {
         OnPropertyChanged(nameof(IsPinned));
         OnPropertyChanged(nameof(PinGlyph));
+        OnPropertyChanged(nameof(PinIcon));
         PinCommand.NotifyCanExecuteChanged();
     }
 
@@ -96,6 +97,7 @@ public sealed partial class MainViewModel : ObservableObject
         Settings.Pin(Target);
         OnPropertyChanged(nameof(IsPinned));
         OnPropertyChanged(nameof(PinGlyph));
+        OnPropertyChanged(nameof(PinIcon));
         PinCommand.NotifyCanExecuteChanged();
     }
 
