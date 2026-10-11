@@ -28,7 +28,7 @@
       <Button Grid.Column="2"
               Command="{Binding PinCommand}"
               ToolTip="{Binding PinGlyph}"
-              Style="{StaticResource Button.Utility}"
+              Style="{DynamicResource Button.Utility}"
               Width="32" Height="26"
               Margin="0,0,16,8"
               VerticalAlignment="Center">
@@ -36,8 +36,8 @@
                    Text="{Binding PinIcon}" />
       </Button>
       <StackPanel Grid.Column="3" Orientation="Horizontal" Margin="0,0,0,8">
-        <Button Content="Trace" Command="{Binding RunTraceCommand}" Style="{StaticResource Button.Primary}" Padding="16,4" Margin="0,0,8,0" />
-        <Button Content="Cancel" Command="{Binding CancelCommand}" Style="{StaticResource Button.Secondary}" Padding="16,4" />
+        <Button Content="Trace" Command="{Binding RunTraceCommand}" Style="{DynamicResource Button.Primary}" Padding="16,4" Margin="0,0,8,0" />
+        <Button Content="Cancel" Command="{Binding CancelCommand}" Style="{DynamicResource Button.Secondary}" Padding="16,4" />
       </StackPanel>
     </Grid>
     <ProgressBar Grid.Row="1" Height="8" Margin="0,0,0,8"
