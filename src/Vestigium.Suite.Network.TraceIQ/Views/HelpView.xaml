@@ -23,7 +23,8 @@
         </ItemsControl.ItemTemplate>
       </ItemsControl>
     </ScrollViewer>
-    <Border Grid.Column="2" Style="{DynamicResource Border.Card}" Padding="24,16,24,16" Margin="0,0,8,0">
+    <Border Grid.Column="2" Style="{DynamicResource Border.Card}" Padding="24,16,24,16" Margin="0,0,8,0"
+            VerticalAlignment="Top" HorizontalAlignment="Stretch">
       <DockPanel>
         <ItemsControl x:Name="PageSections"
                       DockPanel.Dock="Top"
