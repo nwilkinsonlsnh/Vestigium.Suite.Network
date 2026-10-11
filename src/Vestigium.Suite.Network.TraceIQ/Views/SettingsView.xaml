@@ -100,7 +100,7 @@
         </ComboBox.ItemTemplate>
       </ComboBox>
       <StackPanel Orientation="Horizontal" Visibility="{Binding CustomOpen, Converter={StaticResource BoolToVis}}" Margin="0,0,0,12">
-        <nud:VestigiumNumericUpDown Value="{Binding PathPingsPerSecond}" Minimum="1" Maximum="100" Width="90" />
+        <nud:VestigiumNumericUpDown Value="{Binding PathPingsPerSecond}" Minimum="1" Maximum="1000" Width="90" />
         <TextBlock Style="{DynamicResource TextBlock.Standard}" Text="Ping(s) per Second" VerticalAlignment="Center" Margin="8,0,0,0" />
       </StackPanel>
       <Label Style="{StaticResource Label.Standard}" Content="Hops at a Time" />
