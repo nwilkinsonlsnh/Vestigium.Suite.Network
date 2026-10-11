@@ -27,6 +27,13 @@ public partial class PathPingViewModel : ObservableObject
     public event EventHandler? Completed;
     public VestigiumStatusBarViewModel? StatusBar { get; set; }
     public ObservableCollection<PathPingRow> Rows { get; } = [];
+    public System.Windows.Media.Brush LossFillBrush => Brush(_settings.LossFill, "#33C47A00");
+    public System.Windows.Media.Brush LossInkBrush => Brush(_settings.LossInk, "#C47A00");
+    private static System.Windows.Media.Brush Brush(string hex, string fallback)
+    {
+        try { return (System.Windows.Media.Brush)new System.Windows.Media.BrushConverter().ConvertFromString(hex)!; }
+        catch { return (System.Windows.Media.Brush)new System.Windows.Media.BrushConverter().ConvertFromString(fallback)!; }
+    }
 
     [ObservableProperty] private string _target = "";
     [ObservableProperty] private bool _ready;
