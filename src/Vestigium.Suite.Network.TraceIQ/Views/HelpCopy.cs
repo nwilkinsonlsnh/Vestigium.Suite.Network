@@ -68,12 +68,17 @@ public static class HelpCopy
 
     private static Draft Dashboard()
         => new("Dashboard",
+        [],
         [
-            "Dashboard is where a grade becomes an answer. The walk told you the path. The grade counted what came back. Dashboard draws that count so you can see which step is steady, which step is slow, and which step only looks slow because a few replies were.",
-            "Use it when the question is about the connection. Is this target far, or is one step on the way the problem. Is a step slow all the time, or only when it is asked hard. Did the grade push a step past what it can answer. The pictures are how you tell those apart.",
-            "Overview is the comparison. It is the middle time of each step, in order, so a step that is slower than its neighbors stands out. A step tab is that step alone. The top chart is the shape of its times. The bottom chart is the times in the order they came back. The pills change which replies those charts are drawn from, so you can look at the whole grade, the ordinary replies, the steady body, or the slow tail."
-        ],
-        [
+            new("Overview",
+            [
+                "Dashboard is where a grade becomes an answer. The walk told you who is on the path. The grade counted what came back from each step. Dashboard draws that count, so you can see the path instead of reading a table.",
+                "The question it answers is about the connection. Is the target far, or is one step on the way the problem. Is a step slow all the time, or only when it is asked hard. Did the grade push a step past what it can answer. Those are different findings, and they point at different things. A far target is distance. A slow step is a place on the path. A step that only slows under pressure is a step that cannot keep up with the rate you asked.",
+                "Start here. Overview is the comparison. It draws the middle time of each step, in the order of the path. A step that stands above its neighbors is the one to open. A path that climbs steadily is distance, not a fault. A path that is flat and then jumps is a step.",
+                "When a step stands out, open its tab. That page is the step alone. The top chart is the shape of its times. The bottom chart is the times in the order they came back. The pills change which replies those charts are drawn from. All is every reply. IQR is the middle half. Steady is the replies inside the band. Tail is the replies that left it. Read All first. Use the others when All is hard to read, or when you want one part of the story on its own.",
+                "What you are looking for is a step you can name. The one that is slower than the steps around it. The one whose ordinary replies already wander. The one that holds until the asks come fast, and then climbs. Name that step, and you have answered where the connection slowed. The rest of the path is context."
+            ]),
+            new("All",
             new("All",
             [
                 "All is every reply that came back. It is the place to start, because it is the grade with nothing hidden.",
