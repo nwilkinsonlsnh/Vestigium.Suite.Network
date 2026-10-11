@@ -31,12 +31,22 @@ public partial class HelpView : UserControl
         Selected = topic;
         if (topic.Sections.Count == 0)
         {
+            Intro.Visibility = Visibility.Collapsed;
             PageSections.Visibility = Visibility.Collapsed;
             PageSections.ItemsSource = null;
             Bind(topic.Document);
             return;
         }
 
+        if (topic.Lines.Count > 0)
+        {
+            Bind(topic.Document, Intro);
+            Intro.Visibility = Visibility.Visible;
+        }
+        else
+        {
+            Intro.Visibility = Visibility.Collapsed;
+        }
         PageSections.ItemsSource = topic.Sections;
         PageSections.Visibility = Visibility.Visible;
         var section = topic.Sections.FirstOrDefault(s => s.IsSelected) ?? topic.Sections[0];
@@ -44,11 +54,11 @@ public partial class HelpView : UserControl
         Bind(section.Document);
     }
 
-    private void Bind(FlowDocument document)
+    private void Bind(FlowDocument document, FlowDocumentScrollViewer? reader = null)
     {
         document.SetResourceReference(FlowDocument.ForegroundProperty, "Vestigium.Brushes.Text.Primary");
         document.SetResourceReference(FlowDocument.BackgroundProperty, "Vestigium.Brushes.Surface.Window");
-        Reader.Document = document;
+        (reader ?? Reader).Document = document;
     }
 
     private IEnumerable<HelpTopic> Build()
