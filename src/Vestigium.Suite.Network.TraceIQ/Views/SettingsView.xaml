@@ -8,15 +8,15 @@
   </UserControl.Resources>
   <DockPanel Margin="12">
     <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Left" Margin="20,0,0,12">
-      <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="TraceIQ"
+      <RadioButton Style="{DynamicResource RadioButton.HorizontalTab}" Content="TraceIQ"
                    IsChecked="{Binding TracePageOpen}" GroupName="SettingsPage" Margin="0,0,8,0" />
-      <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="Advanced"
+      <RadioButton Style="{DynamicResource RadioButton.HorizontalTab}" Content="Advanced"
                    IsChecked="{Binding AdvancedPageOpen}" GroupName="SettingsPage" Margin="0,0,8,0" />
-      <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="MRU"
+      <RadioButton Style="{DynamicResource RadioButton.HorizontalTab}" Content="MRU"
                    IsChecked="{Binding MruPageOpen}" GroupName="SettingsPage" Margin="0,0,8,0" />
-      <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="Path Ping"
+      <RadioButton Style="{DynamicResource RadioButton.HorizontalTab}" Content="Path Ping"
                    IsChecked="{Binding PathPageOpen}" GroupName="SettingsPage" Margin="0,0,8,0" />
-      <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="Theme"
+      <RadioButton Style="{DynamicResource RadioButton.HorizontalTab}" Content="Theme"
                    IsChecked="{Binding ThemePageOpen}" GroupName="SettingsPage" />
     </StackPanel>
 
@@ -60,8 +60,9 @@
         <ItemsControl.ItemTemplate>
           <DataTemplate>
             <DockPanel Margin="0,0,0,4">
-              <CheckBox DockPanel.Dock="Right" Content="Sticky" IsChecked="{Binding Sticky, Mode=TwoWay}" Margin="8,0,0,0" />
-              <TextBlock Text="{Binding Target}" VerticalAlignment="Center" />
+              <CheckBox DockPanel.Dock="Right" Content="Sticky" Style="{DynamicResource CheckBox.Standard}"
+                        IsChecked="{Binding Sticky, Mode=TwoWay}" Margin="8,0,0,0" />
+              <TextBlock Text="{Binding Target}" Style="{DynamicResource TextBlock.Standard}" VerticalAlignment="Center" />
             </DockPanel>
           </DataTemplate>
         </ItemsControl.ItemTemplate>
