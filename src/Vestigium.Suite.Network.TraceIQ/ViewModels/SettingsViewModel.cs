@@ -109,7 +109,6 @@ public sealed partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private string _pathSaturation = "Standard";
     [ObservableProperty] private decimal _pathIntervalMs = 1000;
     public bool CustomOpen => PathSaturation == "Custom";
-    partial void OnPathSaturationChanged(string value) => OnPropertyChanged(nameof(CustomOpen));
     [ObservableProperty] private decimal _pathWidth = 4;
     [ObservableProperty] private decimal _pathSeconds = 30;
     [ObservableProperty] private decimal _pathDeadAfter = 10;
@@ -393,7 +392,11 @@ public sealed partial class SettingsViewModel : ObservableObject
 
     public bool SecondPassEnabled => ProtocolChoice == "Hybrid";
     partial void OnSecondPassChanged(bool value) => Persist();
-    partial void OnPathSaturationChanged(string value) => Persist();
+    partial void OnPathSaturationChanged(string value)
+    {
+        OnPropertyChanged(nameof(CustomOpen));
+        Persist();
+    }
     partial void OnPathWidthChanged(decimal value) => Persist();
     partial void OnPathSecondsChanged(decimal value) => Persist();
     partial void OnPathDeadAfterChanged(decimal value) => Persist();
