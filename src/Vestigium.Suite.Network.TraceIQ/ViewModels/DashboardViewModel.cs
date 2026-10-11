@@ -8,21 +8,29 @@ namespace Vestigium.Suite.Network.TraceIQ.ViewModels;
 
 public partial class DashboardViewModel : ObservableObject
 {
+    private readonly SettingsViewModel _settings;
+
+    public DashboardViewModel(SettingsViewModel settings) => _settings = settings;
+
     public ObservableCollection<DashboardPage> Pages { get; } = [];
 
     [ObservableProperty] private string _target = "";
     [ObservableProperty] private bool _ready;
     [ObservableProperty] private string _status = "Finish a Path Ping to open the dashboard.";
     [ObservableProperty] private DashboardPage? _selected;
-    [ObservableProperty] private bool _legend = true;
+    public bool Legend
+    {
+        get => _settings.ShowLegend;
+        set => _settings.ShowLegend = value;
+    }
 
-    partial void OnLegendChanged(bool value)
+    public void ApplyLegend()
     {
         foreach (var page in Pages)
         {
-            ChartView.SetLegendVisible(page.Chart, value);
+            ChartView.SetLegendVisible(page.Chart, Legend);
             if (page.Control is not null)
-                ChartView.SetLegendVisible(page.Control, value);
+                ChartView.SetLegendVisible(page.Control, Legend);
         }
     }
 
@@ -37,6 +45,7 @@ public partial class DashboardViewModel : ObservableObject
         foreach (var row in graded)
             Pages.Add(DashboardPage.Hop(row));
         Selected = Pages[0];
+        ApplyLegend();
         Ready = true;
         Status = $"{graded.Count} hops. Overview compares them. A tab per hop shows that hop only.";
     }
