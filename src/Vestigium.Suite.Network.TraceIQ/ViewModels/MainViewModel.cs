@@ -183,6 +183,8 @@ public sealed partial class MainViewModel : ObservableObject
             var job = NetworkHelper.IcmpTrace(Target.Trim(), options);
             job.ProgressChanged += (_, p) => Post(p);
             var result = await job.RunAsync(token).ConfigureAwait(true);
+            if (token.IsCancellationRequested || result.Status == NetworkJobStatus.Cancelled)
+                throw new OperationCanceledException(token);
             _resolved = result.ResolvedAddress ?? _resolved;
             FillFinal(result.Hops.Select(HopRow.From));
             TrimPastTarget(result.ResolvedAddress);
@@ -193,8 +195,7 @@ public sealed partial class MainViewModel : ObservableObject
             Protocol = result.ProbeProtocol.ToString();
             SetStatus(result.Status.ToString());
             StopTicker();
-            IsBusy = false;
-            _ = PingAfterAsync(token);
+            await PingAfterAsync(token).ConfigureAwait(true);
         }
         catch (OperationCanceledException)
         {
