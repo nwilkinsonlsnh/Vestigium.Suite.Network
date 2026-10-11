@@ -23,32 +23,36 @@
         </ItemsControl.ItemTemplate>
       </ItemsControl>
     </ScrollViewer>
-    <DockPanel Grid.Column="2">
-      <ItemsControl x:Name="PageSections"
-                    DockPanel.Dock="Top"
-                    Visibility="Collapsed"
-                    Margin="0,0,0,8">
-        <ItemsControl.ItemsPanel>
-          <ItemsPanelTemplate>
-            <StackPanel Orientation="Horizontal" />
-          </ItemsPanelTemplate>
-        </ItemsControl.ItemsPanel>
-        <ItemsControl.ItemTemplate>
-          <DataTemplate>
-            <RadioButton Style="{DynamicResource RadioButton.VerticalNav}"
-                         Content="{Binding Title}"
-                         GroupName="TraceIqPageSections"
-                         IsChecked="{Binding IsSelected, Mode=TwoWay}"
-                         Margin="0,0,8,0"
-                         HorizontalContentAlignment="Left" />
-          </DataTemplate>
-        </ItemsControl.ItemTemplate>
-      </ItemsControl>
-      <FlowDocumentScrollViewer x:Name="Reader"
-                                VerticalScrollBarVisibility="Auto"
-                                IsToolBarVisible="False"
-                                Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}"
-                                Background="{DynamicResource Vestigium.Brushes.Surface.Window}" />
-    </DockPanel>
+    <Border Grid.Column="2" Style="{DynamicResource Border.Card}" Padding="24,16,24,16" Margin="0,0,8,0">
+      <DockPanel>
+        <ItemsControl x:Name="PageSections"
+                      DockPanel.Dock="Top"
+                      Visibility="Collapsed"
+                      Margin="0,0,0,12">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <StackPanel Orientation="Horizontal" />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <RadioButton Style="{DynamicResource RadioButton.VerticalNav}"
+                           Content="{Binding Title}"
+                           GroupName="TraceIqPageSections"
+                           IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                           Margin="0,0,8,0"
+                           HorizontalContentAlignment="Left" />
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        <FlowDocumentScrollViewer x:Name="Reader"
+                                  VerticalScrollBarVisibility="Auto"
+                                  IsToolBarVisible="False"
+                                  MaxWidth="760"
+                                  HorizontalAlignment="Left"
+                                  Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}"
+                                  Background="Transparent" />
+      </DockPanel>
+    </Border>
   </Grid>
 </UserControl>
