@@ -26,9 +26,11 @@
         <DataGridTextColumn Header="Sent" Binding="{Binding Sent}" Width="70" />
         <DataGridTextColumn Header="Received" Binding="{Binding Received}" Width="90" />
         <DataGridTextColumn Header="Loss" Binding="{Binding Loss}" Width="70" />
-        <DataGridTextColumn Header="Min" Binding="{Binding Min}" Width="70" />
-        <DataGridTextColumn Header="Avg" Binding="{Binding Avg}" Width="70" />
-        <DataGridTextColumn Header="Max" Binding="{Binding Max}" Width="70" />
+        <DataGridTextColumn Header="Min" Binding="{Binding Min}" Width="60" />
+        <DataGridTextColumn Header="Q1" Binding="{Binding Q1}" Width="60" />
+        <DataGridTextColumn Header="Median" Binding="{Binding Median}" Width="70" />
+        <DataGridTextColumn Header="Q3" Binding="{Binding Q3}" Width="60" />
+        <DataGridTextColumn Header="Max" Binding="{Binding Max}" Width="60" />
       </DataGrid.Columns>
     </DataGrid>
   </DockPanel>
