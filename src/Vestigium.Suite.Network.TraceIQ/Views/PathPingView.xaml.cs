@@ -1,6 +1,5 @@
-using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls;
+using Vestigium.Suite.Network.TraceIQ.ViewModels;
 
 namespace Vestigium.Suite.Network.TraceIQ.Views;
 
@@ -8,14 +7,11 @@ public partial class PathPingView : UserControl
 {
     public PathPingView() => InitializeComponent();
 
-    private void MarkRow(object sender, RoutedEventArgs e)
+    private void MarkRow(object sender, DataGridRowEventArgs e)
     {
-        if (sender is not DataGridRow row || row.Item is not ViewModels.PathPingRow item || DataContext is not ViewModels.PathPingViewModel vm)
+        if (e.Row.Item is not PathPingRow item || DataContext is not PathPingViewModel vm || !item.Lossy)
             return;
-        if (item.Lossy)
-        {
-            row.Background = vm.LossFillBrush;
-            row.Foreground = vm.LossInkBrush;
-        }
+        e.Row.Background = vm.LossFillBrush;
+        e.Row.Foreground = vm.LossInkBrush;
     }
 }
