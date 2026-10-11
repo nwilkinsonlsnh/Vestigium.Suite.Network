@@ -120,6 +120,8 @@ public partial class PathPingViewModel : ObservableObject
             job.ProgressChanged += (_, p) =>
             {
                 Tick(1);
+                var sample = p.LastStatus == nameof(IcmpEchoStatus.Success) ? p.LastRoundtripMs : (long?)null;
+                _ = Dispatch(() => row.Note(p.Sent, p.Received, sample));
                 if (p.Received == 0 && row.WalkMisses + p.Sent >= dead)
                     hop.Cancel();
             };
@@ -227,6 +229,25 @@ public partial class PathPingRow : ObservableObject
     [ObservableProperty] private string _max = "";
     public int WalkMisses { get; init; }
     public IReadOnlyList<long> Samples { get; private set; } = [];
+
+    public void Note(int sent, int received, long? sample)
+    {
+        Sent = sent;
+        Received = received;
+        Loss = Math.Max(0, sent - received).ToString();
+        if (sample is not { } ms)
+            return;
+        var list = Samples.ToList();
+        list.Add(ms);
+        list.Sort();
+        Samples = list;
+        var five = Five(Samples);
+        Min = five.Min;
+        Q1 = five.Q1;
+        Median = five.Median;
+        Q3 = five.Q3;
+        Max = five.Max;
+    }
 
     public void Apply(IcmpEchoResult result, bool dead)
     {
