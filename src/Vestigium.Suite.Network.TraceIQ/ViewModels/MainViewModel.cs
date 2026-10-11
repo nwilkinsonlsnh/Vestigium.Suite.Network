@@ -92,8 +92,7 @@ public sealed partial class MainViewModel : ObservableObject
     private string _family = "All";
 
     [ObservableProperty]
-    private int _selectedInterfaceIndex;
-
+    
     [ObservableProperty]
     private string _source = string.Empty;
 
@@ -492,9 +491,10 @@ public sealed partial class MainViewModel : ObservableObject
             return false;
         }
 
-        if (Settings.SelectedInterfaceIndex < 0)
+        if (!string.IsNullOrWhiteSpace(Settings.SelectedInterfaceId)
+            && Settings.Adapters.All(a => !a.Id.Equals(Settings.SelectedInterfaceId, StringComparison.OrdinalIgnoreCase)))
         {
-            reject = "Interface index cannot be negative";
+            reject = "That interface is not on this PC";
             return false;
         }
 
@@ -505,7 +505,7 @@ public sealed partial class MainViewModel : ObservableObject
             return false;
         }
 
-        Bind.InterfaceIndex = Settings.SelectedInterfaceIndex;
+        Bind.InterfaceIndex = InterfaceIndexOf(Settings.SelectedInterfaceId) ?? 0;
         Bind.SourceAddress = string.IsNullOrWhiteSpace(source) ? null : source;
         options = new IcmpTraceOptions
         {
