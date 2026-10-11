@@ -12,7 +12,7 @@
       <ItemsControl ItemsSource="{Binding Topics}">
         <ItemsControl.ItemTemplate>
           <DataTemplate>
-            <RadioButton Style="{StaticResource RadioButton.VerticalNav}"
+            <RadioButton Style="{DynamicResource RadioButton.VerticalNav}"
                          Content="{Binding Title}"
                          GroupName="TraceIqHelpTopics"
                          IsChecked="{Binding IsSelected, Mode=TwoWay}"
@@ -23,6 +23,32 @@
         </ItemsControl.ItemTemplate>
       </ItemsControl>
     </ScrollViewer>
-    <TextBlock Grid.Column="2" Text="{Binding Body}" TextWrapping="Wrap" FontSize="14" />
+    <DockPanel Grid.Column="2">
+      <ItemsControl x:Name="PageSections"
+                    DockPanel.Dock="Top"
+                    Visibility="Collapsed"
+                    Margin="0,0,0,8">
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate>
+            <StackPanel Orientation="Horizontal" />
+          </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <RadioButton Style="{DynamicResource RadioButton.VerticalNav}"
+                         Content="{Binding Title}"
+                         GroupName="TraceIqPageSections"
+                         IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                         Margin="0,0,8,0"
+                         HorizontalContentAlignment="Left" />
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+      <FlowDocumentScrollViewer x:Name="Reader"
+                                VerticalScrollBarVisibility="Auto"
+                                IsToolBarVisible="False"
+                                Foreground="{DynamicResource Vestigium.Brushes.Text.Primary}"
+                                Background="{DynamicResource Vestigium.Brushes.Surface.Window}" />
+    </DockPanel>
   </Grid>
 </UserControl>
