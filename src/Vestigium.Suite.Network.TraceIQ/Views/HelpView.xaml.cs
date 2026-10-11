@@ -127,9 +127,9 @@ public sealed class HelpTopic : INotifyPropertyChanged
                 Document.Blocks.Add(Link(parts[0], parts.Length == 2 ? parts[1] : parts[0]));
                 continue;
             }
-            if (line.StartsWith("\x1c", StringComparison.Ordinal))
+            if (line.StartsWith("img:", StringComparison.Ordinal))
             {
-                Document.Blocks.Add(Picture(line[1..]));
+                Document.Blocks.Add(Picture(line[4..]));
                 continue;
             }
             if (line.StartsWith("\x1b", StringComparison.Ordinal))
