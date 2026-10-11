@@ -1,0 +1,19 @@
+<UserControl x:Class="Vestigium.Suite.Network.TraceIQ.Views.ExportsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="{DynamicResource Vestigium.Brushes.Surface.Window}">
+  <StackPanel Margin="20" HorizontalAlignment="Left">
+    <TextBlock Style="{DynamicResource TextBlock.Standard}" Text="Export the raw rows." Margin="0,0,0,12" />
+    <CheckBox Content="TraceIQ" Style="{DynamicResource CheckBox.Standard}"
+              IsChecked="{Binding IncludeTrace}" Margin="0,0,0,8" />
+    <CheckBox Content="Path Ping" Style="{DynamicResource CheckBox.Standard}"
+              IsChecked="{Binding IncludePath}" Margin="0,0,0,8" />
+    <CheckBox Content="Open File after Save" Style="{DynamicResource CheckBox.Standard}"
+              IsChecked="{Binding OpenFile}" Margin="0,0,0,8" />
+    <CheckBox Content="Open Folder after Save" Style="{DynamicResource CheckBox.Standard}"
+              IsChecked="{Binding OpenFolder}" Margin="0,0,0,16" />
+    <Button Content="Export" Style="{DynamicResource Button.Primary}"
+            Command="{Binding ExportCommand}" Padding="16,4" HorizontalAlignment="Left" />
+    <TextBlock Style="{DynamicResource TextBlock.Caption}" Text="{Binding Folder}" Margin="0,12,0,0" />
+  </StackPanel>
+</UserControl>
