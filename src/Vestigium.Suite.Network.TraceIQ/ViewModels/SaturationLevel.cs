@@ -11,4 +11,6 @@ public sealed record SaturationLevel(string Level, string Intent, string Feel, i
 
     public static SaturationLevel Find(string? level)
         => All.FirstOrDefault(x => x.Level.Equals(level, StringComparison.OrdinalIgnoreCase)) ?? Standard;
+
+    public override string ToString() => Level;
 }
