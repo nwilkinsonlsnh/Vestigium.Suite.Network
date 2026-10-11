@@ -2,7 +2,7 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              Background="{DynamicResource Vestigium.Brushes.Surface.Window}">
-  <DockPanel Margin="12,4,12,12">
+  <DockPanel Margin="8,0,8,4">
     <ItemsControl DockPanel.Dock="Top" ItemsSource="{Binding Pages}" Margin="20,0,0,0">
       <ItemsControl.ItemsPanel>
         <ItemsPanelTemplate>
@@ -21,17 +21,17 @@
         </DataTemplate>
       </ItemsControl.ItemTemplate>
     </ItemsControl>
-    <Grid DockPanel.Dock="Top" Margin="0,4,0,6">
+    <Grid DockPanel.Dock="Top" Margin="0,0,0,2">
       <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="44,0,0,0">
         <RadioButton Content="All" Style="{DynamicResource RadioButton.Pill}"
                      GroupName="DashView" IsChecked="{Binding ViewIsAll, Mode=OneWay}"
                      Command="{Binding AllCommand}" Margin="0,0,8,0" />
-        <RadioButton Content="Steady" Style="{DynamicResource RadioButton.Pill}"
-                     GroupName="DashView" IsChecked="{Binding ViewIsSteady, Mode=OneWay}"
-                     Command="{Binding ToggleSteadyCommand}" Margin="0,0,8,0" />
         <RadioButton Content="IQR" Style="{DynamicResource RadioButton.Pill}"
                      GroupName="DashView" IsChecked="{Binding ViewIsIqr, Mode=OneWay}"
-                     Command="{Binding ToggleIqrCommand}" />
+                     Command="{Binding ToggleIqrCommand}" Margin="0,0,8,0" />
+        <RadioButton Content="Steady" Style="{DynamicResource RadioButton.Pill}"
+                     GroupName="DashView" IsChecked="{Binding ViewIsSteady, Mode=OneWay}"
+                     Command="{Binding ToggleSteadyCommand}" />
       </StackPanel>
       <Button Content="Legend" Style="{DynamicResource Button.Secondary}"
               Command="{Binding ToggleLegendCommand}" Padding="12,2"
@@ -43,7 +43,7 @@
           <RowDefinition Height="*" />
           <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <ContentControl Grid.Row="0" Content="{Binding Chart}" Margin="0,0,0,8" />
+        <ContentControl Grid.Row="0" Content="{Binding Chart}" Margin="0,0,0,2" />
         <ContentControl Grid.Row="1" Content="{Binding Control}" />
       </Grid>
     </DockPanel>
