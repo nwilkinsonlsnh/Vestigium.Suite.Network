@@ -167,7 +167,10 @@ public sealed partial class DashboardPage : ObservableObject
         });
         var ys = row.Samples.Select(s => (double)s).ToArray();
         var xs = Enumerable.Range(1, ys.Length).Select(i => (double)i).ToArray();
-        ControlLimits? limits = samples.Distinct().Count() > 1 ? series.ControlLimits() : null;
+        var center = samples.Count == 0 ? 0 : samples.Average();
+        var limits = samples.Distinct().Count() > 1
+            ? series.ControlLimits()
+            : ControlLimits.FromCaller(center, center + 1, Math.Max(0, center - 1));
         var control = ChartView.From(new ChartSpec
         {
             Kind = ChartKind.Control,
