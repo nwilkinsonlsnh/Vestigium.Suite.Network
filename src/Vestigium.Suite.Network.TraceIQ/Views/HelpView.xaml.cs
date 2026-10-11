@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
+using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 
 namespace Vestigium.Suite.Network.TraceIQ.Views;
@@ -116,6 +117,11 @@ public sealed class HelpTopic : INotifyPropertyChanged
                 Document.Blocks.Add(Link(parts[0], parts.Length == 2 ? parts[1] : parts[0]));
                 continue;
             }
+            if (line.StartsWith("\x1c", StringComparison.Ordinal))
+            {
+                Document.Blocks.Add(Picture(line[1..]));
+                continue;
+            }
             if (line.StartsWith("\x1b", StringComparison.Ordinal))
             {
                 var parts = line[1..].Split('|', 2);
@@ -158,6 +164,17 @@ public sealed class HelpTopic : INotifyPropertyChanged
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    private static Block Picture(string name)
+    {
+        var image = new System.Windows.Controls.Image
+        {
+            Source = new BitmapImage(new Uri($"pack://application:,,,/Help/{name}", UriKind.Absolute)),
+            MaxWidth = 640,
+            Stretch = System.Windows.Media.Stretch.Uniform
+        };
+        return new BlockUIContainer(image) { Margin = new Thickness(0, 4, 0, 12) };
+    }
 
     private static Paragraph Link(string url, string label)
     {
