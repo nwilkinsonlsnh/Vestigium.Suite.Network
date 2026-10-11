@@ -99,9 +99,11 @@
           </DataTemplate>
         </ComboBox.ItemTemplate>
       </ComboBox>
-      <StackPanel Visibility="{Binding CustomOpen, Converter={StaticResource BoolToVis}}">
-        <Label Style="{StaticResource Label.Standard}" Content="Gap (ms)" />
-        <nud:VestigiumNumericUpDown Value="{Binding PathIntervalMs}" Minimum="10" Maximum="5000" Margin="0,0,0,12" />
+      <StackPanel Orientation="Horizontal" Visibility="{Binding CustomOpen, Converter={StaticResource BoolToVis}}" Margin="0,0,0,12">
+        <nud:VestigiumNumericUpDown Value="{Binding PathCustomPings}" Minimum="1" Maximum="100" Width="90" />
+        <TextBlock Style="{DynamicResource TextBlock.Standard}" Text="pings per" VerticalAlignment="Center" Margin="8,0" />
+        <nud:VestigiumNumericUpDown Value="{Binding PathCustomPerMs}" Minimum="10" Maximum="60000" Width="110" />
+        <TextBlock Style="{DynamicResource TextBlock.Standard}" Text="ms" VerticalAlignment="Center" Margin="8,0,0,0" />
       </StackPanel>
       <Label Style="{StaticResource Label.Standard}" Content="Hops at a time" />
       <nud:VestigiumNumericUpDown Value="{Binding PathWidth}" Minimum="1" Maximum="20" Margin="0,0,0,12" />
