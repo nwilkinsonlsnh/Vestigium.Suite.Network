@@ -89,7 +89,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private decimal _maxHops = 30;
     [ObservableProperty] private decimal _parallel = 10;
     [ObservableProperty] private decimal _probes = 5;
-    [ObservableProperty] private int _selectedInterfaceIndex;
+    [ObservableProperty] private string _selectedInterfaceId = "";
     [ObservableProperty] private string _source = "";
     [ObservableProperty] private string _family = "All";
     [ObservableProperty] private decimal _mruMax = 10;
@@ -109,7 +109,7 @@ public sealed partial class SettingsViewModel : ObservableObject
             MaxHops = data.MaxHops;
             Parallel = data.Parallel;
             Probes = data.Probes;
-            SelectedInterfaceIndex = data.InterfaceIndex;
+            SelectedInterfaceId = data.InterfaceId ?? "";
             Source = data.Source ?? "";
             Family = string.IsNullOrWhiteSpace(data.Family) ? "All" : data.Family;
             MruMax = Math.Clamp(data.MruMax, 1, MruMaxLimit);
@@ -134,7 +134,7 @@ public sealed partial class SettingsViewModel : ObservableObject
             MaxHops = (int)MaxHops,
             Parallel = (int)Parallel,
             Probes = (int)Probes,
-            InterfaceIndex = SelectedInterfaceIndex,
+            InterfaceId = SelectedInterfaceId,
             Source = Source,
             Family = Family,
             MruMax = (int)MruMax,
