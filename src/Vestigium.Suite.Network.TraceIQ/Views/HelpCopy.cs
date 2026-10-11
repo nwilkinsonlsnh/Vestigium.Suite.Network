@@ -69,9 +69,9 @@ public static class HelpCopy
     private static Draft Dashboard()
         => new("Dashboard",
         [
-            "Dashboard reads the grade you just finished. It does not ping again. The tab opens when Path Ping completes, and it draws what that grade collected.",
-            "Overview compares the steps. It is the middle time of each step, in order, so you can see where the path gets slower. It is a comparison, not a pile of every reply.",
-            "A step tab is that step alone. The top chart is the shape of its times, with a line for the running share. The bottom chart is the times in the order they came back, with a center line and a band. The pills under the step tabs change which replies those charts are drawn from. Each one is below."
+            "Dashboard is where a grade becomes an answer. The walk told you the path. The grade counted what came back. Dashboard draws that count so you can see which step is steady, which step is slow, and which step only looks slow because a few replies were.",
+            "Use it when the question is about the connection. Is this target far, or is one step on the way the problem. Is a step slow all the time, or only when it is asked hard. Did the grade push a step past what it can answer. The pictures are how you tell those apart.",
+            "Overview is the comparison. It is the middle time of each step, in order, so a step that is slower than its neighbors stands out. A step tab is that step alone. The top chart is the shape of its times. The bottom chart is the times in the order they came back. The pills change which replies those charts are drawn from, so you can look at the whole grade, the ordinary replies, the steady body, or the slow tail."
         ],
         [
             new("All",
