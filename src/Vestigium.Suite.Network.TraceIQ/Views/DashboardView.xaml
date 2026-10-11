@@ -23,12 +23,15 @@
     </ItemsControl>
     <Grid DockPanel.Dock="Top" Margin="0,4,0,6">
       <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="44,0,0,0">
-        <Button Content="All" Style="{DynamicResource Button.Secondary}"
-                Command="{Binding AllCommand}" Padding="12,2" Margin="0,0,8,0" />
-        <Button Content="Steady" Style="{DynamicResource Button.Secondary}"
-                Command="{Binding ToggleSteadyCommand}" Padding="12,2" Margin="0,0,8,0" />
-        <Button Content="IQR" Style="{DynamicResource Button.Secondary}"
-                Command="{Binding ToggleIqrCommand}" Padding="12,2" />
+        <RadioButton Content="All" Style="{DynamicResource RadioButton.Pill}"
+                     GroupName="DashView" IsChecked="{Binding ViewIsAll}"
+                     Command="{Binding AllCommand}" Margin="0,0,8,0" />
+        <RadioButton Content="Steady" Style="{DynamicResource RadioButton.Pill}"
+                     GroupName="DashView" IsChecked="{Binding ViewIsSteady}"
+                     Command="{Binding ToggleSteadyCommand}" Margin="0,0,8,0" />
+        <RadioButton Content="IQR" Style="{DynamicResource RadioButton.Pill}"
+                     GroupName="DashView" IsChecked="{Binding ViewIsIqr}"
+                     Command="{Binding ToggleIqrCommand}" />
       </StackPanel>
       <Button Content="Legend" Style="{DynamicResource Button.Secondary}"
               Command="{Binding ToggleLegendCommand}" Padding="12,2"
