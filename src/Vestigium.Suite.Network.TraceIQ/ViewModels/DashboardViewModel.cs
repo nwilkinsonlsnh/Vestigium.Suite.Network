@@ -24,6 +24,9 @@ public partial class DashboardViewModel : ObservableObject
     [ObservableProperty] private DashboardPage? _selected;
     [ObservableProperty] private bool _steady;
     [ObservableProperty] private bool _iqr;
+    public bool ViewIsAll => !Steady && !Iqr;
+    public bool ViewIsSteady => Steady;
+    public bool ViewIsIqr => Iqr;
     public bool Legend
     {
         get => _settings.ShowLegend;
@@ -48,6 +51,9 @@ public partial class DashboardViewModel : ObservableObject
             return;
         Steady = steady;
         Iqr = iqr;
+        OnPropertyChanged(nameof(ViewIsAll));
+        OnPropertyChanged(nameof(ViewIsSteady));
+        OnPropertyChanged(nameof(ViewIsIqr));
         Rebuild();
     }
 
