@@ -24,8 +24,8 @@
         <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
           <Style.Triggers>
             <DataTrigger Binding="{Binding Lossy}" Value="True">
-              <Setter Property="Background" Value="#33C47A00" />
-              <Setter Property="Foreground" Value="#C47A00" />
+              <Setter Property="Background" Value="{Binding DataContext.LossFillBrush, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+              <Setter Property="Foreground" Value="{Binding DataContext.LossInkBrush, RelativeSource={RelativeSource AncestorType=UserControl}}" />
             </DataTrigger>
           </Style.Triggers>
         </Style>
