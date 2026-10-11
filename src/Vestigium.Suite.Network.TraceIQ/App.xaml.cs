@@ -59,6 +59,12 @@ public partial class App : Application
                     Subject = "Grade the path",
                     Description = "Enabled when a walk reaches the target."
                 },
+                new VestigiumNavItemSpec("Dashboard")
+                {
+                    Title = "Dashboard",
+                    Subject = "The grade",
+                    Description = "Enabled when Path Ping finishes."
+                },
                 new VestigiumNavItemSpec("Settings")
                 {
                     Title = "Settings",
@@ -74,6 +80,19 @@ public partial class App : Application
         if (!string.IsNullOrWhiteSpace(settings.LastTarget))
             trace.Target = settings.LastTarget;
         var path = new PathPingViewModel(settings) { StatusBar = chrome.Status };
+        var dash = new DashboardViewModel();
+        var dashItem = window.HostShell["Dashboard"];
+        if (dashItem is not null)
+        {
+            dashItem.IsEnabled = false;
+            dashItem.Content = new DashboardView { DataContext = dash };
+        }
+        path.Completed += (_, _) =>
+        {
+            dash.Offer(path.Target, path.Rows.ToList());
+            if (dashItem is not null)
+                dashItem.IsEnabled = dash.Ready;
+        };
         var pathItem = window.HostShell["Path Ping"];
         if (pathItem is not null)
         {
