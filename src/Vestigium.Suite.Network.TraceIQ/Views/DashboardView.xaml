@@ -3,11 +3,14 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              Background="{DynamicResource Vestigium.Brushes.Surface.Window}">
   <DockPanel Margin="12">
-    <TextBlock DockPanel.Dock="Top" Margin="0,0,0,8">
-      <Run Text="{Binding Target, Mode=OneWay}" FontWeight="SemiBold" />
-      <Run Text="   " />
-      <Run Text="{Binding Status, Mode=OneWay}" />
-    </TextBlock>
+    <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+      <ToggleButton DockPanel.Dock="Right" Content="Legend" IsChecked="{Binding Legend}" Padding="12,2" />
+      <TextBlock VerticalAlignment="Center">
+        <Run Text="{Binding Target, Mode=OneWay}" FontWeight="SemiBold" />
+        <Run Text="   " />
+        <Run Text="{Binding Status, Mode=OneWay}" />
+      </TextBlock>
+    </DockPanel>
     <ListBox DockPanel.Dock="Top" ItemsSource="{Binding Pages}"
              SelectedItem="{Binding Selected}"
              Background="Transparent" BorderThickness="0" Margin="0,0,0,8">
@@ -24,10 +27,14 @@
     </ListBox>
     <DockPanel DataContext="{Binding Selected}">
       <TextBlock DockPanel.Dock="Top" Text="{Binding Summary}" Margin="0,0,0,8" TextWrapping="Wrap" />
-      <DockPanel>
-        <ContentControl DockPanel.Dock="Top" Content="{Binding Chart}" Height="280" Margin="0,0,0,8" />
-        <ContentControl Content="{Binding Control}" Height="280" />
-      </DockPanel>
+      <Grid>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="*" />
+          <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <ContentControl Grid.Row="0" Content="{Binding Chart}" Margin="0,0,0,8" />
+        <ContentControl Grid.Row="1" Content="{Binding Control}" />
+      </Grid>
     </DockPanel>
   </DockPanel>
 </UserControl>
