@@ -144,7 +144,7 @@ public sealed partial class DashboardPage : ObservableObject
         if (steady && samples.Count > 1 && samples.Distinct().Count() > 1)
         {
             var series0 = NumericSeries.From(samples.Select(s => (decimal)s), "band");
-            var band = series0.ControlLimits();
+            var band = Band(series0, samples.Average());
             var kept = samples.Where(s => (double)s >= band.Lower && (double)s <= band.Upper).ToArray();
             if (kept.Length > 0)
                 run = kept;
@@ -158,6 +158,7 @@ public sealed partial class DashboardPage : ObservableObject
             if (body.Length > 0)
                 pile = body;
         }
+        var runSeries = NumericSeries.From(run.Select(s => (decimal)s), $"ttl-{row.Ttl}-run");
         var series = NumericSeries.From(pile.Select(s => (decimal)s), $"ttl-{row.Ttl}");
         var chart = ChartView.From(new ChartSpec
         {
@@ -168,10 +169,7 @@ public sealed partial class DashboardPage : ObservableObject
         });
         var ys = run.Select(s => (double)s).ToArray();
         var xs = Enumerable.Range(1, ys.Length).Select(i => (double)i).ToArray();
-        var center = run.Count == 0 ? 0 : run.Average();
-        var limits = run.Distinct().Count() > 1
-            ? series.ControlLimits()
-            : ControlLimits.FromCaller(center, center + 1, Math.Max(0, center - 1));
+        var limits = Band(runSeries, run.Count == 0 ? 0 : run.Average());
         var control = ChartView.From(new ChartSpec
         {
             Kind = ChartKind.Control,
@@ -190,6 +188,19 @@ public sealed partial class DashboardPage : ObservableObject
         };
     }
 
+
+    private static ControlLimits Band(NumericSeries series, double center)
+    {
+        try
+        {
+            if (series.Count > 1)
+                return series.ControlLimits();
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        return ControlLimits.FromCaller(center, center + 1, Math.Max(0, center - 1));
+    }
     private static double Median(PathPingRow row)
     {
         var s = row.Samples;
