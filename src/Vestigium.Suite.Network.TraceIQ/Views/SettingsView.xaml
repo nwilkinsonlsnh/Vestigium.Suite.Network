@@ -6,8 +6,8 @@
   <UserControl.Resources>
     <BooleanToVisibilityConverter x:Key="BoolToVis" />
   </UserControl.Resources>
-  <DockPanel Margin="12">
-    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Left" Margin="20,0,0,12">
+  <StackPanel Margin="12" HorizontalAlignment="Left">
+    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,0,12">
       <RadioButton Style="{DynamicResource RadioButton.HorizontalTab}" Content="TraceIQ"
                    IsChecked="{Binding TracePageOpen}" GroupName="SettingsPage" Margin="0,0,8,0" />
       <RadioButton Style="{DynamicResource RadioButton.HorizontalTab}" Content="Advanced"
@@ -20,10 +20,9 @@
                    IsChecked="{Binding ThemePageOpen}" GroupName="SettingsPage" />
     </StackPanel>
 
-    <Button Content="Defaults" Style="{DynamicResource Button.Secondary}"
-            Command="{Binding RestoreDefaultsCommand}" Padding="12,2" Margin="20,0,0,12"
-            HorizontalAlignment="Left" />
-    <StackPanel HorizontalAlignment="Left" Width="520" Margin="20,0,0,0"
+    <Border Style="{DynamicResource Border.Card}" Padding="20" MinWidth="520" HorizontalAlignment="Left">
+      <Grid>
+<StackPanel HorizontalAlignment="Left" Width="520" Margin="0"
                 Visibility="{Binding TracePageOpen, Converter={StaticResource BoolToVis}}">
       <TextBlock Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap" Margin="0,0,0,16"
                  Text="The adapter the walk leaves on. Any lets Windows pick." />
@@ -37,7 +36,7 @@
       <ComboBox Style="{DynamicResource ComboBox.Standard}" ItemsSource="{Binding Families}" SelectedItem="{Binding Family}" />
     </StackPanel>
 
-    <StackPanel HorizontalAlignment="Left" Width="520" Margin="20,0,0,0"
+    <StackPanel HorizontalAlignment="Left" Width="520" Margin="0"
                 Visibility="{Binding AdvancedPageOpen, Converter={StaticResource BoolToVis}}">
       <Label Style="{StaticResource Label.Standard}" Content="Protocol" />
       <ComboBox Style="{DynamicResource ComboBox.Standard}" ItemsSource="{Binding Protocols}" SelectedItem="{Binding ProtocolChoice}" Margin="0,0,0,8" />
@@ -51,7 +50,7 @@
       <nud:VestigiumNumericUpDown Value="{Binding Probes}" Minimum="1" Maximum="5" Margin="0,0,0,12" />
     </StackPanel>
 
-    <StackPanel HorizontalAlignment="Left" Width="520" Margin="20,0,0,0"
+    <StackPanel HorizontalAlignment="Left" Width="520" Margin="0"
                 Visibility="{Binding MruPageOpen, Converter={StaticResource BoolToVis}}">
       <Label Style="{StaticResource Label.Standard}" Content="MRU max" />
       <nud:VestigiumNumericUpDown Value="{Binding MruMax}" Minimum="1" Maximum="30" Margin="0,0,0,12" />
@@ -72,7 +71,7 @@
       </ItemsControl>
     </StackPanel>
 
-    <StackPanel HorizontalAlignment="Left" Width="640" Margin="20,0,0,0"
+    <StackPanel HorizontalAlignment="Left" Width="640" Margin="0"
                 Visibility="{Binding PathPageOpen, Converter={StaticResource BoolToVis}}">
       <Label Style="{StaticResource Label.Standard}" Content="Saturation" />
       <ComboBox Style="{DynamicResource ComboBox.Standard}" ItemsSource="{Binding Saturations}" SelectedValuePath="Level"
@@ -100,7 +99,7 @@
       <nud:VestigiumNumericUpDown Value="{Binding PathDeadAfter}" Minimum="3" Maximum="30" Margin="0,0,0,12" />
     </StackPanel>
 
-    <StackPanel HorizontalAlignment="Left" Width="420" Margin="20,0,0,0"
+    <StackPanel HorizontalAlignment="Left" Width="420" Margin="0"
                 Visibility="{Binding ThemePageOpen, Converter={StaticResource BoolToVis}}">
       <Label Style="{StaticResource Label.Standard}" Content="Palette" />
       <ComboBox Style="{DynamicResource ComboBox.Standard}" ItemsSource="{Binding Themes}" DisplayMemberPath="DisplayName" SelectedValuePath="Id"
@@ -110,5 +109,11 @@
       <Label Style="{StaticResource Label.Standard}" Content="Status bar dock" />
       <ComboBox Style="{DynamicResource ComboBox.Standard}" ItemsSource="{Binding BarPositions}" SelectedItem="{Binding BarPosition}" />
     </StackPanel>
-  </DockPanel>
+        </Grid>
+    </Border>
+
+    <Button Content="Defaults" Style="{DynamicResource Button.Secondary}"
+            Command="{Binding RestoreDefaultsCommand}" Padding="12,2" Margin="0,12,0,0"
+            HorizontalAlignment="Left" />
+  </StackPanel>
 </UserControl>
