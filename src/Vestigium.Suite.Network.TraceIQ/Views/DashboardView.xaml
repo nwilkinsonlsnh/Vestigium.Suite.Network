@@ -24,13 +24,13 @@
     <Grid DockPanel.Dock="Top" Margin="0,4,0,6">
       <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="44,0,0,0">
         <RadioButton Content="All" Style="{DynamicResource RadioButton.Pill}"
-                     GroupName="DashView" IsChecked="{Binding ViewIsAll}"
+                     GroupName="DashView" IsChecked="{Binding ViewIsAll, Mode=OneWay}"
                      Command="{Binding AllCommand}" Margin="0,0,8,0" />
         <RadioButton Content="Steady" Style="{DynamicResource RadioButton.Pill}"
-                     GroupName="DashView" IsChecked="{Binding ViewIsSteady}"
+                     GroupName="DashView" IsChecked="{Binding ViewIsSteady, Mode=OneWay}"
                      Command="{Binding ToggleSteadyCommand}" Margin="0,0,8,0" />
         <RadioButton Content="IQR" Style="{DynamicResource RadioButton.Pill}"
-                     GroupName="DashView" IsChecked="{Binding ViewIsIqr}"
+                     GroupName="DashView" IsChecked="{Binding ViewIsIqr, Mode=OneWay}"
                      Command="{Binding ToggleIqrCommand}" />
       </StackPanel>
       <Button Content="Legend" Style="{DynamicResource Button.Secondary}"
