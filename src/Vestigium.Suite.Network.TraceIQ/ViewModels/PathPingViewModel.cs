@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -20,6 +21,7 @@ public partial class PathPingViewModel : ObservableObject
     public PathPingViewModel(SettingsViewModel settings)
     {
         _settings = settings;
+        _settings.PropertyChanged += OnSettingsChanged;
         _ticker = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(100) };
         _ticker.Tick += (_, _) => SetElapsed(Format(_elapsed.Elapsed));
     }
@@ -33,8 +35,20 @@ public partial class PathPingViewModel : ObservableObject
     [ObservableProperty] private bool _running;
     [ObservableProperty] private string _status = "Run a trace that reaches the target.";
 
+    public string LossFill => _settings.LossFill;
+    public string LossInk => _settings.LossInk;
+
     public bool CanRun => Ready && !Running && !string.IsNullOrWhiteSpace(Target);
     public bool CanCancel => Running;
+
+    private void OnSettingsChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is nameof(SettingsViewModel.LossFill) or nameof(SettingsViewModel.LossInk))
+        {
+            OnPropertyChanged(nameof(LossFill));
+            OnPropertyChanged(nameof(LossInk));
+        }
+    }
 
     public void Offer(string target, IReadOnlyList<HopRow> hops)
     {

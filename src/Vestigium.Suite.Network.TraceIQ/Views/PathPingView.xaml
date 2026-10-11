@@ -1,7 +1,11 @@
 <UserControl x:Class="Vestigium.Suite.Network.TraceIQ.Views.PathPingView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Vestigium.Suite.Network.TraceIQ.Views"
              Background="{DynamicResource Vestigium.Brushes.Surface.Window}">
+  <UserControl.Resources>
+    <local:HexToBrushConverter x:Key="HexToBrush" />
+  </UserControl.Resources>
   <DockPanel Margin="12">
     <Grid DockPanel.Dock="Top" Margin="0,0,0,8">
       <Grid.ColumnDefinitions>
@@ -21,11 +25,17 @@
     <DataGrid ItemsSource="{Binding Rows}" Style="{DynamicResource DataGrid.Standard}" AutoGenerateColumns="False" IsReadOnly="True"
               HeadersVisibility="Column" CanUserAddRows="False">
       <DataGrid.RowStyle>
-        <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
+        <Style TargetType="DataGridRow" BasedOn="{StaticResource DataGridRow.Standard}">
           <Style.Triggers>
             <DataTrigger Binding="{Binding Lossy}" Value="True">
-              <Setter Property="Background" Value="#33C47A00" />
-              <Setter Property="Foreground" Value="#C47A00" />
+              <Setter Property="Background"
+                      Value="{Binding DataContext.LossFill,
+                              RelativeSource={RelativeSource AncestorType=UserControl},
+                              Converter={StaticResource HexToBrush}}" />
+              <Setter Property="Foreground"
+                      Value="{Binding DataContext.LossInk,
+                              RelativeSource={RelativeSource AncestorType=UserControl},
+                              Converter={StaticResource HexToBrush}}" />
             </DataTrigger>
           </Style.Triggers>
         </Style>
