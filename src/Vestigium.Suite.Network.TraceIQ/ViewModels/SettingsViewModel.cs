@@ -88,7 +88,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private bool _barVisible;
     [ObservableProperty] private VestigiumStatusBarPosition _barPosition;
     [ObservableProperty] private decimal _maxHops = 30;
-    [ObservableProperty] private decimal _parallel = 10;
+    [ObservableProperty] private decimal _parallel = 20;
     [ObservableProperty] private decimal _probes = 5;
     [ObservableProperty] private string _selectedInterfaceId = "";
     [ObservableProperty] private string _source = "";
