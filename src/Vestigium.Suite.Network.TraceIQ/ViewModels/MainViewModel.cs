@@ -56,6 +56,7 @@ public sealed partial class MainViewModel : ObservableObject
     private readonly Stopwatch _elapsed = new();
     private readonly DispatcherTimer _ticker;
 
+    public event EventHandler? RouteReady;
     public SettingsViewModel Settings { get; }
 
     public MainViewModel(SettingsViewModel settings)
@@ -194,6 +195,8 @@ public sealed partial class MainViewModel : ObservableObject
             ProgressMax = Math.Max(ProgressMax, Hops.Count);
             Progress = ProgressMax;
             Reached = result.Reached ? "Yes" : "No";
+            if (result.Reached)
+                RouteReady?.Invoke(this, EventArgs.Empty);
             Protocol = result.ProbeProtocol.ToString();
             SetStatus(result.Status.ToString());
             StopTicker();
