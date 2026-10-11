@@ -10,6 +10,7 @@ namespace Vestigium.Suite.Network.TraceIQ.ViewModels;
 public partial class DashboardViewModel : ObservableObject
 {
     private readonly SettingsViewModel _settings;
+    private IReadOnlyList<PathPingRow> _rows = [];
 
     public DashboardViewModel(SettingsViewModel settings) => _settings = settings;
 
@@ -41,6 +42,13 @@ public partial class DashboardViewModel : ObservableObject
             page.IsSelected = ReferenceEquals(page, value);
     }
 
+    public void Rebuild()
+    {
+        if (_rows.Count == 0)
+            return;
+        Offer(Target, _rows);
+    }
+
     public void ApplyLegend()
     {
         foreach (var page in Pages)
@@ -56,6 +64,7 @@ public partial class DashboardViewModel : ObservableObject
         var graded = rows.Where(r => r.Samples.Count > 0).ToList();
         if (graded.Count == 0 || string.IsNullOrWhiteSpace(target))
             return;
+        _rows = graded;
         Target = target;
         Pages.Clear();
         Pages.Add(DashboardPage.Overview(graded));
