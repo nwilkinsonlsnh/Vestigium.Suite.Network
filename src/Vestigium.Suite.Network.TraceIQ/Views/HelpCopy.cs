@@ -84,7 +84,7 @@ public static class HelpCopy
                 "On the top chart, look at where the tall bars sit. That cluster is how the step usually answers. A bar standing alone, far to the right, is a reply that was much slower than the rest. The rising line is the running share. It climbs fast through the cluster and flattens once most replies are counted. A flat line with a small bar far out means a few slow replies, not a step that is slow all the time.",
                 "On the bottom chart, read left to right. A line that stays near the center is a step that held. A hook at the right edge is the step getting slower as the grade went on. That hook is the thing Flood can draw, when the asks come faster than the step will answer. Points above the upper band left the band. They are marked so you can see them.",
                 "Use All when you want the whole story, including the slow ones. If the cluster is tight and the hook is small, the step is fine and the tail is noise. If the cluster is wide, or the hook climbs and stays up, the step was under pressure.",
-                "\x1call.jpg"
+                "img:all.jpg"
             ]),
             new("IQR",
             [
@@ -92,7 +92,7 @@ public static class HelpCopy
                 "Use it when All is hard to read because a few slow replies stretch the chart. The middle half is how the step behaves most of the time. A tight group here means the step is consistent. A wide group here means the step varies even without the extremes.",
                 "What to look for is the width. A middle half that spans a millisecond or two is a steady step. A middle half that spans ten is a step whose ordinary replies already wander. That is a different finding from a tail. A tail is a few bad replies. A wide middle half is the step itself.",
                 "IQR only redraws the top chart. The run chart underneath stays the full set, so you can still see the order. Read the top for the body. Read the bottom if you still want the sequence.",
-                "\x1ciqr.jpg"
+                "img:iqr.jpg"
             ]),
             new("Steady",
             [
@@ -100,7 +100,7 @@ public static class HelpCopy
                 "Use it after you have seen a hook on All and you want to know what the step looks like without that hook. If Steady is a flat line near the center, the step is fine and the hook was the cost of asking too fast. If Steady is still wandering, the step is uneven on its own.",
                 "What to look for is the line on the bottom chart. Flat and close to the center is the result you want. A line that steps up and stays up, even inside the band, is a step that got slower and did not come back. That is worth a note even though it never left the band.",
                 "A step whose replies are all the same has no spread, so there is no band to cut. Steady shows that step as it is.",
-                "\x1csteady.jpg"
+                "img:steady.jpg"
             ]),
             new("Tail",
             [
@@ -108,7 +108,7 @@ public static class HelpCopy
                 "Use it when All shows a hook and you want to see only that hook. How many points are there. Do they climb, or are they scattered. A climb at the end of the run is the step falling behind as the asks kept coming. Scattered points are single slow replies, which is ordinary on a long grade.",
                 "What to look for is the shape. A rising curve is pressure. The step, or the path in front of it, could not keep up. A handful of points with no pattern is noise. A tail with no points means every reply stayed in the band, which is the best result on this page.",
                 "Tail does not mean the data was bad. It means these replies were unlike the rest. Read them as the cost of the grade, or as a step that stumbled, depending on the shape.",
-                "\x1ctail.jpg"
+                "img:tail.jpg"
             ])
         ]);
 
@@ -181,13 +181,13 @@ public static class HelpCopy
             new("The Grade",
             [
                 Term("CL", "The center line. On the bottom chart it is the average of the replies for that step, drawn across the run. Read the line of times against it. A line that stays near the center is a step that held. A line that drifts up and away from it is a step that got slower as the grade went on. The center line is the middle of the band. Steady is the replies between the lines around it."),
-                "\x1ccl.jpg",
+                "img:cl.jpg",
                 Term("Duration", "The window, in seconds. New asks stop when it ends. An ask already out is given only the time that is left, so the run finishes at the mark you set."),
                 Term("ECDF", "The running share, drawn as the rising line on the top chart. Read it from the right-hand axis, which is a percent. At any time on the bottom axis, the line says what share of the replies were that fast or faster. It climbs steeply through the tall bars, because that is where most replies sit, and it flattens once they are counted. A line that is already near the top with a small bar still out to the right means almost every reply was fast and a few were slow. That is a tail, not a step that is slow all the time."),
-                "\x1cecdf.jpg",
+                "img:ecdf.jpg",
                 Term("IQR", "The middle half of the replies, from the first quarter to the third. The fastest quarter and the slowest quarter are left out. A tight middle half is a consistent hop. A wide one is a hop whose ordinary replies already wander."),
                 Term("LCL", "The bottom of the band. It is the center line minus the spread. A reply below it was faster than the step usually is. On a grade that is rare, and it is still marked, because it left the band. Most of what you will read is the top of the band. The bottom is there so the band has two edges."),
-                "\x1cband.jpg",
+                "img:band.jpg",
                 Term("Loss", "The asks that did not come back, as a count. A hop with loss is dropping replies. A hop with no loss answered every ask."),
                 Term("Median", "The middle time. Half the replies were faster and half were slower. It is a better read of a hop than the fastest or the slowest, because one odd reply does not move it."),
                 Term("Path Ping", "A grade of a path you already have. It pings the hops the walk found, for a window you set, and writes what came back. Compare it with a trace. A trace finds the path and takes a few times at each step. Path Ping stays on those steps and asks them many times, so you can see loss, the spread, and whether a step slows as it is asked. A trace answers who is on the way. Path Ping answers whether they hold."),
