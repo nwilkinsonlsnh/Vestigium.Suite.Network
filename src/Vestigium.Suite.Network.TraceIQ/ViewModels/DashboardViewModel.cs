@@ -24,9 +24,12 @@ public partial class DashboardViewModel : ObservableObject
     [ObservableProperty] private DashboardPage? _selected;
     [ObservableProperty] private bool _steady;
     [ObservableProperty] private bool _iqr;
-    public bool ViewIsAll => !Steady && !Iqr;
+    [ObservableProperty] private bool _tail;
+    public bool ViewIsAll => !Steady && !Iqr && !Tail;
     public bool ViewIsSteady => Steady;
     public bool ViewIsIqr => Iqr;
+    public bool ViewIsTail => Tail;
+    public bool ShowViews => Selected is { IsOverview: false };
     public bool Legend
     {
         get => _settings.ShowLegend;
@@ -37,23 +40,28 @@ public partial class DashboardViewModel : ObservableObject
     private void ToggleLegend() => Legend = !Legend;
 
     [RelayCommand]
-    private void All() => SetView(false, false);
+    private void All() => SetView(false, false, false);
 
     [RelayCommand]
-    private void ToggleSteady() => SetView(true, false);
+    private void ToggleSteady() => SetView(true, false, false);
 
     [RelayCommand]
-    private void ToggleIqr() => SetView(false, true);
+    private void ToggleIqr() => SetView(false, true, false);
 
-    private void SetView(bool steady, bool iqr)
+    [RelayCommand]
+    private void ToggleTail() => SetView(false, false, true);
+
+    private void SetView(bool steady, bool iqr, bool tail)
     {
-        if (Steady == steady && Iqr == iqr)
+        if (Steady == steady && Iqr == iqr && Tail == tail)
             return;
         Steady = steady;
         Iqr = iqr;
+        Tail = tail;
         OnPropertyChanged(nameof(ViewIsAll));
         OnPropertyChanged(nameof(ViewIsSteady));
         OnPropertyChanged(nameof(ViewIsIqr));
+        OnPropertyChanged(nameof(ViewIsTail));
         Rebuild();
     }
 
@@ -78,6 +86,7 @@ public partial class DashboardViewModel : ObservableObject
     {
         foreach (var page in Pages)
             page.IsSelected = ReferenceEquals(page, value);
+        OnPropertyChanged(nameof(ShowViews));
         Publish();
     }
 
@@ -109,7 +118,7 @@ public partial class DashboardViewModel : ObservableObject
         Pages.Clear();
         Pages.Add(DashboardPage.Overview(graded));
         foreach (var row in graded)
-            Pages.Add(DashboardPage.Hop(row, Steady, Iqr));
+            Pages.Add(DashboardPage.Hop(row, Steady, Iqr, Tail));
         Selected = Pages.FirstOrDefault(p => p.Header == keep) ?? Pages[0];
         OnSelectedChanged(Selected);
         ApplyLegend();
@@ -149,15 +158,17 @@ public sealed partial class DashboardPage : ObservableObject
         };
     }
 
-    public static DashboardPage Hop(PathPingRow row, bool steady, bool iqr)
+    public static DashboardPage Hop(PathPingRow row, bool steady, bool iqr, bool tail)
     {
         var samples = row.Samples;
         var run = samples;
-        if (steady && samples.Count > 1 && samples.Distinct().Count() > 1)
+        if ((steady || tail) && samples.Count > 1 && samples.Distinct().Count() > 1)
         {
             var series0 = NumericSeries.From(samples.Select(s => (decimal)s), "band");
             var band = Band(series0, samples.Average());
-            var kept = samples.Where(s => (double)s >= band.Lower && (double)s <= band.Upper).ToArray();
+            var kept = tail
+                ? samples.Where(s => (double)s < band.Lower || (double)s > band.Upper).ToArray()
+                : samples.Where(s => (double)s >= band.Lower && (double)s <= band.Upper).ToArray();
             if (kept.Length > 0)
                 run = kept;
         }
