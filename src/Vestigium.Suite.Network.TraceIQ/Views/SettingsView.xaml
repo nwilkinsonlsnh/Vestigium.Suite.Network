@@ -107,6 +107,10 @@
       <nud:VestigiumNumericUpDown Value="{Binding PathWidth}" Minimum="1" Maximum="20" Margin="0,0,0,12" />
       <Label Style="{StaticResource Label.Standard}" Content="Duration (Seconds)" />
       <nud:VestigiumNumericUpDown Value="{Binding PathSeconds}" Minimum="1" Maximum="180" Margin="0,0,0,12" />
+      <Label Style="{StaticResource Label.Standard}" Content="Loss Fill" />
+      <TextBox Style="{DynamicResource TextBox.Standard}" Text="{Binding LossFill, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,12" />
+      <Label Style="{StaticResource Label.Standard}" Content="Loss Ink" />
+      <TextBox Style="{DynamicResource TextBox.Standard}" Text="{Binding LossInk, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,12" />
       <Label Style="{StaticResource Label.Standard}" Content="Dead After" />
       <nud:VestigiumNumericUpDown Value="{Binding PathDeadAfter}" Minimum="3" Maximum="30" Margin="0,0,0,12" />
     </StackPanel>
