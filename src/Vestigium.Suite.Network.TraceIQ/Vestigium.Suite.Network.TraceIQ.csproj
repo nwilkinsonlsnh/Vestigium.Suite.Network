@@ -19,6 +19,7 @@
     <PackageReference Include="Vestigium.Converters" Version="$(VestigiumConvertersVersion)" />
     <PackageReference Include="Vestigium.Helpers.Analytics" Version="$(VestigiumAnalyticsVersion)" />
     <PackageReference Include="Vestigium.Helpers.Charts" Version="$(VestigiumChartsVersion)" />
+    <PackageReference Include="Vestigium.Helpers.ClosedXml" Version="1.0.1" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="TraceIQ.ico" />
