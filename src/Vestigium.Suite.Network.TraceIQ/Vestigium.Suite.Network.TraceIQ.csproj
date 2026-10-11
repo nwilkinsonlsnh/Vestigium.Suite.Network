@@ -24,4 +24,7 @@
   <ItemGroup>
     <Resource Include="TraceIQ.ico" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Help\*.jpg" />
+  </ItemGroup>
 </Project>
