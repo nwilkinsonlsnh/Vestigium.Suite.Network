@@ -148,6 +148,8 @@ public sealed partial class SettingsViewModel : ObservableObject
         {
             _loading = false;
         }
+        if (!string.IsNullOrWhiteSpace(SelectedThemeId) && _themes.Current?.Id != SelectedThemeId)
+            _themes.SwitchTheme(SelectedThemeId);
     }
 
     public TraceIqSettings Capture()
