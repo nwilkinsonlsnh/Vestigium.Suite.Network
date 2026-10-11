@@ -33,7 +33,7 @@ public sealed partial class SettingsViewModel : ObservableObject
 
         Interfaces = AdapterChoices.From(_adapters);
         Families = ["All", "IPv4", "IPv6"];
-        Sources = SourceChoices.From(_adapters);
+        Sources = SourceChoices.From(_adapters, SelectedInterfaceId);
         _selectedThemeId = themes.Current?.Id ?? themes.AvailableThemes.FirstOrDefault()?.Id;
         _barPosition = chrome.Status.Position;
         _barVisible = chrome.ShowStatusBar;
@@ -251,7 +251,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     partial void OnMaxHopsChanged(decimal value) => Persist();
     partial void OnParallelChanged(decimal value) => Persist();
     partial void OnProbesChanged(decimal value) => Persist();
-    partial void OnSelectedInterfaceIndexChanged(int value)
+    partial void OnSelectedInterfaceIdChanged(string value)
     {
         var keep = Source;
         Sources = SourceChoices.From(_adapters, value);
