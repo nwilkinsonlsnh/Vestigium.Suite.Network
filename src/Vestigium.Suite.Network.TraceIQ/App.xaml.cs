@@ -2,6 +2,7 @@ using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using Vestigium.Controls.DependencyInjection;
 using Vestigium.Controls.Shell;
+using Vestigium.Controls.StatusBar;
 using Vestigium.Converters;
 using Vestigium.Converters.DependencyInjection;
 using Vestigium.Suite.Network.Shell;
@@ -75,6 +76,14 @@ public partial class App : Application
         if (settingsItem is not null)
             settingsItem.Content = new SettingsView { DataContext = settings };
 
+        var elapsed = new StatusBarColumn
+        {
+            Key = "elapsed",
+            Slot = StatusBarSlot.Center,
+            Kind = StatusBarColumnKind.Text,
+            Text = ""
+        };
+        chrome.Status.Engine.Columns.Insert(1, elapsed);
         chrome.Status.Message = "Idle";
         return window;
     }
