@@ -60,10 +60,13 @@ public partial class PathPingViewModel : ObservableObject
         Running = true;
         Notify();
         var level = SaturationLevel.Find(_settings.PathSaturation);
+        var interval = level.Level == "Custom"
+            ? Math.Clamp((int)_settings.PathIntervalMs, 10, 5000)
+            : level.IntervalMs;
         var width = Math.Clamp((int)_settings.PathWidth, 1, 20);
         var seconds = Math.Clamp((int)_settings.PathSeconds, 1, 180);
         var dead = Math.Clamp((int)_settings.PathDeadAfter, 3, 30);
-        var count = Math.Max(1, seconds * 1000 / level.IntervalMs);
+        var count = Math.Max(1, seconds * 1000 / interval);
         _done = 0;
         _total = Rows.Count * count;
         Status = $"Grading  0/{_total}";
@@ -74,7 +77,7 @@ public partial class PathPingViewModel : ObservableObject
         var gate = new SemaphoreSlim(width);
         try
         {
-            var tasks = Rows.Select(row => GradeAsync(row, count, level.IntervalMs, dead, gate, token)).ToArray();
+            var tasks = Rows.Select(row => GradeAsync(row, count, interval, dead, gate, token)).ToArray();
             await Task.WhenAll(tasks).ConfigureAwait(true);
             if (token.IsCancellationRequested)
                 Status = "Cancelled";
