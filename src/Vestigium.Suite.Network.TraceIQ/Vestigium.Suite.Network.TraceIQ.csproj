@@ -4,6 +4,7 @@
     <RootNamespace>Vestigium.Suite.Network.TraceIQ</RootNamespace>
     <AssemblyName>TraceIQ</AssemblyName>
     <ApplicationTitle>TraceIQ</ApplicationTitle>
+    <ApplicationIcon>TraceIQ.ico</ApplicationIcon>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
@@ -18,5 +19,8 @@
     <PackageReference Include="Vestigium.Converters" Version="$(VestigiumConvertersVersion)" />
     <PackageReference Include="Vestigium.Helpers.Analytics" Version="$(VestigiumAnalyticsVersion)" />
     <PackageReference Include="Vestigium.Helpers.Charts" Version="$(VestigiumChartsVersion)" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="TraceIQ.ico" />
   </ItemGroup>
 </Project>
