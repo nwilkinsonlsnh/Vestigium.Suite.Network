@@ -35,7 +35,9 @@
     <StackPanel HorizontalAlignment="Left" Width="520" Margin="20,0,0,0"
                 Visibility="{Binding AdvancedPageOpen, Converter={StaticResource BoolToVis}}">
       <Label Style="{StaticResource Label.Standard}" Content="Protocol" />
-      <ComboBox ItemsSource="{Binding Protocols}" SelectedItem="{Binding ProtocolChoice}" Margin="0,0,0,12" />
+      <ComboBox ItemsSource="{Binding Protocols}" SelectedItem="{Binding ProtocolChoice}" Margin="0,0,0,8" />
+      <CheckBox Content="Second pass on silent hops" IsChecked="{Binding SecondPass}"
+                IsEnabled="{Binding SecondPassEnabled}" Margin="0,0,0,12" />
       <Label Style="{StaticResource Label.Standard}" Content="Max hops" />
       <nud:VestigiumNumericUpDown Value="{Binding MaxHops}" Minimum="1" Maximum="64" Margin="0,0,0,12" />
       <Label Style="{StaticResource Label.Standard}" Content="Parallel" />
