@@ -44,6 +44,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     public IReadOnlyList<AdapterChoice> Interfaces { get; }
     public IReadOnlyList<SourceChoice> Sources { get; private set; }
     public IReadOnlyList<string> Protocols { get; } = ["ICMP", "UDP", "TCP", "Hybrid"];
+    public IReadOnlyList<SaturationLevel> Saturations { get; } = SaturationLevel.All;
     public IReadOnlyList<string> Families { get; }
     public IReadOnlyList<VestigiumStatusBarPosition> BarPositions { get; } =
     [
@@ -58,6 +59,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(AdvancedPageOpen))]
     [NotifyPropertyChangedFor(nameof(MruPageOpen))]
     [NotifyPropertyChangedFor(nameof(ThemePageOpen))]
+    [NotifyPropertyChangedFor(nameof(PathPageOpen))]
     private string _settingsPage = "TraceIQ";
 
     public bool TracePageOpen
@@ -84,6 +86,12 @@ public sealed partial class SettingsViewModel : ObservableObject
         set { if (value) SettingsPage = "Theme"; }
     }
 
+    public bool PathPageOpen
+    {
+        get => SettingsPage == "PathPing";
+        set { if (value) SettingsPage = "PathPing"; }
+    }
+
     [ObservableProperty] private string? _selectedThemeId;
     [ObservableProperty] private bool _barVisible;
     [ObservableProperty] private VestigiumStatusBarPosition _barPosition;
@@ -95,6 +103,9 @@ public sealed partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private string _family = "All";
     [ObservableProperty] private string _protocolChoice = "Hybrid";
     [ObservableProperty] private bool _secondPass;
+    [ObservableProperty] private string _pathSaturation = "Standard";
+    [ObservableProperty] private decimal _pathWidth = 4;
+    [ObservableProperty] private decimal _pathSeconds = 30;
     [ObservableProperty] private decimal _mruMax = 10;
     [ObservableProperty] private decimal _stickyMax = 3;
 
@@ -117,6 +128,9 @@ public sealed partial class SettingsViewModel : ObservableObject
             Family = string.IsNullOrWhiteSpace(data.Family) ? "All" : data.Family;
             ProtocolChoice = string.IsNullOrWhiteSpace(data.Protocol) ? "Hybrid" : data.Protocol;
             SecondPass = data.SecondPass;
+            PathSaturation = string.IsNullOrWhiteSpace(data.PathSaturation) ? "Standard" : data.PathSaturation;
+            PathWidth = Math.Clamp(data.PathWidth, 1, 20);
+            PathSeconds = Math.Clamp(data.PathSeconds, 1, 180);
             MruMax = Math.Clamp(data.MruMax, 1, MruMaxLimit);
             StickyMax = Math.Clamp(data.StickyMax, 0, StickyMaxLimit);
             Mru.Clear();
@@ -144,6 +158,9 @@ public sealed partial class SettingsViewModel : ObservableObject
             Family = Family,
             Protocol = ProtocolChoice,
             SecondPass = SecondPass,
+            PathSaturation = PathSaturation,
+            PathWidth = (int)PathWidth,
+            PathSeconds = (int)PathSeconds,
             MruMax = (int)MruMax,
             StickyMax = (int)StickyMax,
             Mru = Mru.ToList()
@@ -278,6 +295,9 @@ public sealed partial class SettingsViewModel : ObservableObject
 
     public bool SecondPassEnabled => ProtocolChoice == "Hybrid";
     partial void OnSecondPassChanged(bool value) => Persist();
+    partial void OnPathSaturationChanged(string value) => Persist();
+    partial void OnPathWidthChanged(decimal value) => Persist();
+    partial void OnPathSecondsChanged(decimal value) => Persist();
     partial void OnMruMaxChanged(decimal value) { Trim(); Persist(); }
     partial void OnStickyMaxChanged(decimal value) { Trim(); Persist(); }
 
