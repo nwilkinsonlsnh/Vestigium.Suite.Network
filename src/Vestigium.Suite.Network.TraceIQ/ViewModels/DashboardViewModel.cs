@@ -36,7 +36,7 @@ public sealed class DashboardPage
     public string Header { get; init; } = "";
     public string Summary { get; init; } = "";
     public FrameworkElement Chart { get; init; } = null!;
-    public FrameworkElement? Ecdf { get; init; }
+    public FrameworkElement? Control { get; init; }
     public bool IsOverview { get; init; }
 
     public static DashboardPage Overview(IReadOnlyList<PathPingRow> rows)
@@ -67,14 +67,25 @@ public sealed class DashboardPage
             Kind = ChartKind.Histogram,
             Title = "Histogram",
             Source = series,
-            Options = new ChartOptions { YLabel = "Count", XLabel = "RTT ms", ShowLegend = true, ShowEcdf = true, Height = 360 }
+            Options = new ChartOptions { YLabel = "Count", XLabel = "RTT ms", ShowLegend = true, ShowEcdf = true, Height = 280 }
+        });
+        var ys = row.Samples.Select(s => (double)s).ToArray();
+        var xs = Enumerable.Range(1, ys.Length).Select(i => (double)i).ToArray();
+        var control = ChartView.From(new ChartSpec
+        {
+            Kind = ChartKind.Control,
+            Title = "RTT in order",
+            Series = [new ChartSeries { Name = "RTT", X = xs, Y = ys }],
+            Limits = series.ControlLimits(),
+            Options = new ChartOptions { YLabel = "RTT ms", XLabel = "Sample", ShowLegend = true, Height = 280 }
         });
         var five = Five(row.Samples);
         return new DashboardPage
         {
             Header = $"TTL {row.Ttl}",
             Summary = $"{row.Address}   {row.Name}   Sent {row.Sent}   Received {row.Received}   Loss {row.Loss}   min {five.min}   Q1 {five.q1}   median {five.median}   Q3 {five.q3}   max {five.max}",
-            Chart = chart
+            Chart = chart,
+            Control = control
         };
     }
 
