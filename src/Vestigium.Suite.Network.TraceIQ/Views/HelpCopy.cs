@@ -191,7 +191,6 @@ public static class HelpCopy
                 Term("UCL", "The top of the band. A reply above it left the band and is part of the tail. It is how the charts mark a reply that was unlike the rest."),
                 Term("Saturation", "How hard the grade asks. It sets the gap between pings. It does not set how many hops are graded at once. That is Hops at a time. Low waits 2 seconds, for a fragile or production path. Standard waits 1 second, a normal diagnostic. Medium waits half a second, enough replies to trust the loss. High waits a quarter second, more replies in the same window. Flood waits 10 milliseconds, 100 pings a second, as many replies as the window allows. A higher level fills the charts. It is also what can push a step into a tail."),
                 Term("Duration", "The window, in seconds. New asks stop when it ends. An ask already out is given only the time that is left, so the run finishes at the mark you set."),
-                Term("Saturation", "How hard the grade asks. It is the gap between pings, not how many hops are graded at once. A longer gap is gentler. A shorter gap collects more replies in the same window, and it is also what can push a step into a tail.")
             ]),
             new("The Ask",
             [
