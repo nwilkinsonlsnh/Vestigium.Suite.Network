@@ -21,6 +21,7 @@ public sealed class TraceIqSettings
     public int PathWidth { get; set; } = 4;
     public int PathSeconds { get; set; } = 30;
     public int PathDeadAfter { get; set; } = 10;
+    public bool ShowLegend { get; set; } = true;
     public int MruMax { get; set; } = 10;
     public int StickyMax { get; set; } = 3;
     public List<MruEntry> Mru { get; set; } = [];
