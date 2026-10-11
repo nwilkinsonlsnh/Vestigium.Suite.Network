@@ -24,14 +24,7 @@
     </ListBox>
     <DockPanel DataContext="{Binding Selected}">
       <TextBlock DockPanel.Dock="Top" Text="{Binding Summary}" Margin="0,0,0,8" TextWrapping="Wrap" />
-      <Grid>
-        <Grid.ColumnDefinitions>
-          <ColumnDefinition Width="*" />
-          <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
-        <ContentControl Grid.Column="0" Content="{Binding Chart}" Margin="0,0,8,0" />
-        <ContentControl Grid.Column="1" Content="{Binding Ecdf}" />
-      </Grid>
+      <ContentControl Content="{Binding Chart}" />
     </DockPanel>
   </DockPanel>
 </UserControl>
