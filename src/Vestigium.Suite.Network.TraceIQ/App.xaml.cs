@@ -86,7 +86,7 @@ public partial class App : Application
         if (!string.IsNullOrWhiteSpace(settings.LastTarget))
             trace.Target = settings.LastTarget;
         var path = new PathPingViewModel(settings) { StatusBar = chrome.Status };
-        var dash = new DashboardViewModel(settings);
+        var dash = new DashboardViewModel(settings) { StatusBar = chrome.Status };
         settings.PropertyChanged += (_, e) =>
         {
             if (e.PropertyName == nameof(SettingsViewModel.ShowLegend))
@@ -138,6 +138,12 @@ public partial class App : Application
         };
         chrome.Status.Engine.Columns.Insert(1, elapsed);
         chrome.Status.Message = "Idle";
+        window.TabShown = key =>
+        {
+            if (key == "TraceIQ") trace.Publish();
+            else if (key == "Path Ping") path.Publish();
+            else if (key == "Dashboard") dash.Publish();
+        };
         return window;
     }
 }
