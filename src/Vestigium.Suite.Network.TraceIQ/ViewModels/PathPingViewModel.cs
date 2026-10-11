@@ -1,7 +1,9 @@
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Vestigium.Controls.StatusBar;
 using Vestigium.Helpers.Network;
 
 namespace Vestigium.Suite.Network.TraceIQ.ViewModels;
@@ -10,9 +12,19 @@ public partial class PathPingViewModel : ObservableObject
 {
     private readonly SettingsViewModel _settings;
     private CancellationTokenSource? _cts;
+    private readonly Stopwatch _elapsed = new();
+    private readonly DispatcherTimer _ticker;
+    private int _done;
+    private int _total;
 
-    public PathPingViewModel(SettingsViewModel settings) => _settings = settings;
+    public PathPingViewModel(SettingsViewModel settings)
+    {
+        _settings = settings;
+        _ticker = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(100) };
+        _ticker.Tick += (_, _) => SetElapsed(Format(_elapsed.Elapsed));
+    }
 
+    public VestigiumStatusBarViewModel? StatusBar { get; set; }
     public ObservableCollection<PathPingRow> Rows { get; } = [];
 
     [ObservableProperty] private string _target = "";
@@ -33,7 +45,7 @@ public partial class PathPingViewModel : ObservableObject
         Target = target;
         Rows.Clear();
         foreach (var hop in valid)
-            Rows.Add(new PathPingRow { Ttl = hop.Ttl, Address = hop.Address, Name = hop.Name });
+            Rows.Add(new PathPingRow { Ttl = hop.Ttl, Address = hop.Address, Name = hop.Name, WalkMisses = Misses(hop) });
         Ready = true;
         Status = $"{Rows.Count} hops from the walk. Path Ping grades those hops.";
         Notify();
@@ -46,15 +58,22 @@ public partial class PathPingViewModel : ObservableObject
         var token = _cts.Token;
         Running = true;
         Notify();
-        Status = "Grading";
         var level = SaturationLevel.Find(_settings.PathSaturation);
         var width = Math.Clamp((int)_settings.PathWidth, 1, 20);
         var seconds = Math.Clamp((int)_settings.PathSeconds, 1, 180);
+        var dead = Math.Clamp((int)_settings.PathDeadAfter, 3, 30);
         var count = Math.Max(1, seconds * 1000 / level.IntervalMs);
+        _done = 0;
+        _total = Rows.Count * count;
+        Status = $"Grading  0/{_total}";
+        SetProgress(0);
+        _elapsed.Restart();
+        _ticker.Start();
+        SetElapsed(Format(_elapsed.Elapsed));
         var gate = new SemaphoreSlim(width);
         try
         {
-            var tasks = Rows.Select(row => GradeAsync(row, count, level.IntervalMs, gate, token)).ToArray();
+            var tasks = Rows.Select(row => GradeAsync(row, count, level.IntervalMs, dead, gate, token)).ToArray();
             await Task.WhenAll(tasks).ConfigureAwait(true);
             Status = token.IsCancellationRequested ? "Cancelled" : "Done";
         }
@@ -64,6 +83,10 @@ public partial class PathPingViewModel : ObservableObject
         }
         finally
         {
+            _ticker.Stop();
+            SetElapsed(Format(_elapsed.Elapsed));
+            SetMessage("Idle");
+            HideProgress();
             Running = false;
             Notify();
             _cts.Dispose();
@@ -74,11 +97,19 @@ public partial class PathPingViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanCancel))]
     private void Cancel() => _cts?.Cancel();
 
-    private async Task GradeAsync(PathPingRow row, int count, int intervalMs, SemaphoreSlim gate, CancellationToken token)
+    private async Task GradeAsync(PathPingRow row, int count, int intervalMs, int dead, SemaphoreSlim gate, CancellationToken token)
     {
         await gate.WaitAsync(token).ConfigureAwait(true);
+        using var hop = CancellationTokenSource.CreateLinkedTokenSource(token);
         try
         {
+            if (row.WalkMisses >= dead)
+            {
+                await Dispatch(() => row.Skip("100%  from the walk")).ConfigureAwait(true);
+                Tick(count);
+                return;
+            }
+
             var job = NetworkHelper.IcmpEcho(row.Address, new IcmpEchoOptions
             {
                 Count = count,
@@ -86,17 +117,79 @@ public partial class PathPingViewModel : ObservableObject
                 Timeout = TimeSpan.FromSeconds(2),
                 MaxDuration = TimeSpan.FromSeconds(Math.Clamp((int)_settings.PathSeconds, 1, 180))
             });
-            var result = await job.RunAsync(token).ConfigureAwait(true);
-            await Dispatch(() => row.Apply(result)).ConfigureAwait(true);
+            job.ProgressChanged += (_, p) =>
+            {
+                Tick(1);
+                if (p.Received == 0 && row.WalkMisses + p.Sent >= dead)
+                    hop.Cancel();
+            };
+            var result = await job.RunAsync(hop.Token).ConfigureAwait(true);
+            var skipped = result.Received == 0 && row.WalkMisses + result.Sent >= dead;
+            await Dispatch(() => row.Apply(result, skipped)).ConfigureAwait(true);
+            if (result.Sent < count)
+                Tick(count - result.Sent);
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException) when (!token.IsCancellationRequested)
         {
-            throw;
+            await Dispatch(() => row.Skip("100%  dead")).ConfigureAwait(true);
         }
         finally
         {
             gate.Release();
         }
+    }
+
+    private void Tick(int n)
+    {
+        var done = Interlocked.Add(ref _done, n);
+        var total = Math.Max(1, _total);
+        var pct = Math.Clamp(done * 100.0 / total, 0, 100);
+        var dispatcher = System.Windows.Application.Current?.Dispatcher;
+        if (dispatcher is null || dispatcher.CheckAccess())
+            Show(done, pct);
+        else
+            dispatcher.Invoke(() => Show(done, pct));
+    }
+
+    private void Show(int done, double pct)
+    {
+        Status = $"Grading  {Math.Min(done, _total)}/{_total}";
+        SetMessage(Status);
+        SetProgress(pct);
+    }
+
+    private void SetMessage(string value)
+    {
+        if (StatusBar is not null)
+            StatusBar.Message = value;
+    }
+
+    private void SetProgress(double pct)
+    {
+        StatusBar?.Engine.PostImmediate("progress", new StatusBarUpdate
+        {
+            Progress = pct,
+            IsProgressVisible = true
+        });
+    }
+
+    private void HideProgress()
+    {
+        StatusBar?.Engine.PostImmediate("progress", new StatusBarUpdate { IsProgressVisible = false, Progress = 0 });
+    }
+
+    private void SetElapsed(string value)
+    {
+        StatusBar?.Engine.PostImmediate("elapsed", new StatusBarUpdate { Text = value });
+    }
+
+    private static string Format(TimeSpan elapsed)
+        => $"{(int)elapsed.TotalMinutes} min {elapsed.Seconds} sec {(int)(elapsed.TotalMilliseconds % 1000)} ms";
+
+    private static int Misses(HopRow hop)
+    {
+        var cells = new[] { hop.P1, hop.P2, hop.P3, hop.P4, hop.P5, hop.P6, hop.P7, hop.P8, hop.P9, hop.P10 };
+        return cells.Count(c => c == "*");
     }
 
     private static Task Dispatch(Action action)
@@ -132,13 +225,14 @@ public partial class PathPingRow : ObservableObject
     [ObservableProperty] private string _median = "";
     [ObservableProperty] private string _q3 = "";
     [ObservableProperty] private string _max = "";
+    public int WalkMisses { get; init; }
     public IReadOnlyList<long> Samples { get; private set; } = [];
 
-    public void Apply(IcmpEchoResult result)
+    public void Apply(IcmpEchoResult result, bool dead)
     {
         Sent = result.Sent;
         Received = result.Received;
-        Loss = $"{result.LossPercent:0.#}%";
+        Loss = dead ? "100%  dead" : $"{result.LossPercent:0.#}%";
         Samples = result.Replies
             .Where(r => r.Status == IcmpEchoStatus.Success)
             .Select(r => r.RoundtripTimeMs)
@@ -152,16 +246,20 @@ public partial class PathPingRow : ObservableObject
         Max = five.Max;
     }
 
+    public void Skip(string reason)
+    {
+        Loss = reason;
+        Sent = 0;
+        Received = 0;
+    }
+
     private static (string Min, string Q1, string Median, string Q3, string Max) Five(IReadOnlyList<long> samples)
     {
         if (samples.Count == 0)
             return ("", "", "", "", "");
-        return (At(samples, 0), Quartile(samples, 0.25), Quartile(samples, 0.5), Quartile(samples, 0.75), At(samples, 1));
+        return (At(samples, 0), At(samples, 0.25), At(samples, 0.5), At(samples, 0.75), At(samples, 1));
     }
 
     private static string At(IReadOnlyList<long> samples, double p)
-        => samples[(int)Math.Round((samples.Count - 1) * p)].ToString();
-
-    private static string Quartile(IReadOnlyList<long> samples, double p)
         => samples[(int)Math.Round((samples.Count - 1) * p)].ToString();
 }
