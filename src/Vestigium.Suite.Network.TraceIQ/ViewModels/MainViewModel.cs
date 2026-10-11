@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Windows;
 using System.Net;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -133,6 +134,8 @@ public sealed partial class MainViewModel : ObservableObject
         _cts = new CancellationTokenSource();
         var token = _cts.Token;
         IsBusy = true;
+        var started = Stopwatch.StartNew();
+        SetElapsed("");
         var remembered = Target.Trim();
         Hops.Clear();
         _reachedTtl = 0;
@@ -167,12 +170,14 @@ public sealed partial class MainViewModel : ObservableObject
             Reached = result.Reached ? "Yes" : "No";
             Protocol = result.ProbeProtocol.ToString();
             SetStatus(result.Status.ToString());
+            SetElapsed(FormatElapsed(started.Elapsed));
             IsBusy = false;
             _ = PingAfterAsync(token);
         }
         catch (OperationCanceledException)
         {
             SetStatus("Cancelled");
+            SetElapsed(FormatElapsed(started.Elapsed));
         }
         catch (Exception ex)
         {
@@ -544,6 +549,17 @@ public sealed partial class MainViewModel : ObservableObject
     {
         if (StatusBar is not null)
             StatusBar.Message = value;
+    }
+
+    private void SetElapsed(string value)
+    {
+        StatusBar?.Engine.PostImmediate("elapsed", new StatusBarUpdate { Text = value });
+    }
+
+    private static string FormatElapsed(TimeSpan elapsed)
+    {
+        var ms = (int)(elapsed.TotalMilliseconds % 1000);
+        return $"{(int)elapsed.TotalMinutes} min {elapsed.Seconds} sec {ms} ms";
     }
 }
 
