@@ -156,9 +156,7 @@ public static class HelpCopy
 
     private static Draft Glossary()
         => new("Glossary",
-        [
-            "The words this window uses, and what they mean here. Trace and Path Ping are both defined, so the difference between finding a path and grading one is in one place."
-        ],
+        [],
         [
             new("Tabs",
             [
@@ -191,8 +189,23 @@ public static class HelpCopy
                 Term("Steady", "The replies inside the band. The band is the center plus and minus the spread. Steady is the hop as it behaves when it is not being pushed. Flat and near the center is the result you want."),
                 Term("Tail", "The replies that left the band. A climb at the end of the run is the hop falling behind as the asks kept coming. Scattered points are single slow replies. No points means every reply stayed in the band."),
                 Term("UCL", "The top of the band. A reply above it left the band and is part of the tail. It is how the charts mark a reply that was unlike the rest."),
-                Term("Saturation", "The gap between asks during the grade. Low leaves a long gap. Flood asks a hundred times a second. It is not how many hops are graded at once. That is Hops at a time."),
-                Term("Duration", "The window, in seconds. New asks stop when it ends. An ask already out is given only the time that is left, so the run finishes at the mark you set.")
+                Term("Saturation", "How hard the grade asks. It sets the gap between pings. It does not set how many hops are graded at once. That is Hops at a time. Low waits 2 seconds, for a fragile or production path. Standard waits 1 second, a normal diagnostic. Medium waits half a second, enough replies to trust the loss. High waits a quarter second, more replies in the same window. Flood waits 10 milliseconds, 100 pings a second, as many replies as the window allows. A higher level fills the charts. It is also what can push a step into a tail."),
+                Term("Duration", "The window, in seconds. New asks stop when it ends. An ask already out is given only the time that is left, so the run finishes at the mark you set."),
+                Term("Saturation", "How hard the grade asks. It is the gap between pings, not how many hops are graded at once. A longer gap is gentler. A shorter gap collects more replies in the same window, and it is also what can push a step into a tail.")
+            ]),
+            new("The Ask",
+            [
+                Term("Ping", "One ask and one answer. A small packet goes out. If the step is willing, a small packet comes back, and the time between them is the round trip. A ping that does not come back is a loss. Path Ping is many pings, to the steps the walk found."),
+                Term("ICMP", "The usual way to ping. It is a short message that asks a step to answer. Most traces and most pings use it. A step that answers ICMP will show an address and a time. A step that blocks it shows as a star."),
+                Term("UDP", "An ask sent as a datagram instead of an ICMP echo. Some paths answer this when they do not answer ICMP. The walk can use it on its own, or as the second try in Hybrid."),
+                Term("TCP", "An ask sent as a connection attempt. Some paths answer this when they answer neither ICMP nor UDP. It is the third way the walk can ask."),
+                Term("Hybrid", "The walk tries ICMP first. A step that answers is done. A step that is silent gets a second pass, if you allow it, using the other asks. Hybrid is for a path where some steps speak ICMP and some do not. ICMP, UDP, and TCP alone each use one ask. Hybrid uses the first that works, so a quiet step is not written off after a single no.")
+            ]),
+            new("The Address",
+            [
+                Term("Address Family", "Which kind of address the walk may use. IPv4, IPv6, or All. All lets the walk use whichever the target answers on."),
+                Term("IPv4", "The older, shorter address. Four numbers. Most of what you trace on an internal network is IPv4."),
+                Term("IPv6", "The newer, longer address. Use it when the target is IPv6, or when you want to see the IPv6 path on purpose.")
             ])
         ]);
 
