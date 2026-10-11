@@ -143,7 +143,7 @@ public sealed partial class DashboardPage : ObservableObject
         {
             var series0 = NumericSeries.From(samples.Select(s => (decimal)s), "band");
             var limits = series0.ControlLimits();
-            samples = samples.Where(s => (double)s >= limits.Lcl && (double)s <= limits.Ucl).ToArray();
+            samples = samples.Where(s => (double)s >= limits.Lower && (double)s <= limits.Upper).ToArray();
             if (samples.Count == 0)
                 samples = row.Samples;
         }
