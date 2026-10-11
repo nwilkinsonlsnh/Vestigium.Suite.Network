@@ -34,6 +34,14 @@ public partial class DashboardViewModel : ObservableObject
     private void ToggleLegend() => Legend = !Legend;
 
     [RelayCommand]
+    private void All()
+    {
+        Steady = false;
+        Iqr = false;
+        Rebuild();
+    }
+
+    [RelayCommand]
     private void ToggleSteady()
     {
         Steady = !Steady;
@@ -51,8 +59,8 @@ public partial class DashboardViewModel : ObservableObject
     {
         if (StatusBar is null)
             return;
-        StatusBar.Message = Selected?.Summary ?? Status;
-        StatusBar.Engine.PostImmediate("elapsed", new StatusBarUpdate { Text = "" });
+        StatusBar.Message = "Dashboard";
+        StatusBar.Engine.PostImmediate("elapsed", new StatusBarUpdate { Text = Selected?.Summary ?? Status });
     }
 
     [RelayCommand]
