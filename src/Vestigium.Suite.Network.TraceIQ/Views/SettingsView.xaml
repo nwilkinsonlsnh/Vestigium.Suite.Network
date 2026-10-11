@@ -75,13 +75,16 @@
                 SelectedValue="{Binding PathSaturation}" Margin="0,0,0,12">
         <ComboBox.ItemTemplate>
           <DataTemplate>
-            <TextBlock>
-              <Run Text="{Binding Level}" FontWeight="SemiBold" />
-              <Run Text="  " />
-              <Run Text="{Binding Intent}" />
-              <Run Text="  ·  " />
-              <Run Text="{Binding Feel}" />
-            </TextBlock>
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="90" />
+                <ColumnDefinition Width="280" />
+                <ColumnDefinition Width="280" />
+              </Grid.ColumnDefinitions>
+              <TextBlock Grid.Column="0" Text="{Binding Level}" FontWeight="SemiBold" />
+              <TextBlock Grid.Column="1" Text="{Binding Intent}" />
+              <TextBlock Grid.Column="2" Text="{Binding Feel}" />
+            </Grid>
           </DataTemplate>
         </ComboBox.ItemTemplate>
       </ComboBox>
