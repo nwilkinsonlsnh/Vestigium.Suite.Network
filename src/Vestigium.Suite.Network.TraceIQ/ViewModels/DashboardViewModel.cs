@@ -28,6 +28,13 @@ public partial class DashboardViewModel : ObservableObject
     [RelayCommand]
     private void ToggleLegend() => Legend = !Legend;
 
+    [RelayCommand]
+    private void Select(DashboardPage? page)
+    {
+        if (page is not null)
+            Selected = page;
+    }
+
     partial void OnSelectedChanged(DashboardPage? value)
     {
         foreach (var page in Pages)
