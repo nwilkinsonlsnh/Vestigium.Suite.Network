@@ -36,7 +36,7 @@ public partial class PathPingViewModel : ObservableObject
             Rows.Add(new PathPingRow { Ttl = hop.Ttl, Address = hop.Address, Name = hop.Name });
         Ready = true;
         Status = $"{Rows.Count} hops from the walk. Path Ping grades those hops.";
-        OnPropertyChanged(nameof(CanRun));
+        Notify();
     }
 
     [RelayCommand(CanExecute = nameof(CanRun))]
@@ -128,16 +128,40 @@ public partial class PathPingRow : ObservableObject
     [ObservableProperty] private int _received;
     [ObservableProperty] private string _loss = "";
     [ObservableProperty] private string _min = "";
-    [ObservableProperty] private string _avg = "";
+    [ObservableProperty] private string _q1 = "";
+    [ObservableProperty] private string _median = "";
+    [ObservableProperty] private string _q3 = "";
     [ObservableProperty] private string _max = "";
+    public IReadOnlyList<long> Samples { get; private set; } = [];
 
     public void Apply(IcmpEchoResult result)
     {
         Sent = result.Sent;
         Received = result.Received;
         Loss = $"{result.LossPercent:0.#}%";
-        Min = result.MinMs?.ToString() ?? "";
-        Avg = result.AverageMs is { } avg ? $"{avg:0.#}" : "";
-        Max = result.MaxMs?.ToString() ?? "";
+        Samples = result.Replies
+            .Where(r => r.Status == IcmpEchoStatus.Success)
+            .Select(r => r.RoundtripTimeMs)
+            .OrderBy(x => x)
+            .ToArray();
+        var five = Five(Samples);
+        Min = five.Min;
+        Q1 = five.Q1;
+        Median = five.Median;
+        Q3 = five.Q3;
+        Max = five.Max;
     }
+
+    private static (string Min, string Q1, string Median, string Q3, string Max) Five(IReadOnlyList<long> samples)
+    {
+        if (samples.Count == 0)
+            return ("", "", "", "", "");
+        return (At(samples, 0), Quartile(samples, 0.25), Quartile(samples, 0.5), Quartile(samples, 0.75), At(samples, 1));
+    }
+
+    private static string At(IReadOnlyList<long> samples, double p)
+        => samples[(int)Math.Round((samples.Count - 1) * p)].ToString();
+
+    private static string Quartile(IReadOnlyList<long> samples, double p)
+        => samples[(int)Math.Round((samples.Count - 1) * p)].ToString();
 }
