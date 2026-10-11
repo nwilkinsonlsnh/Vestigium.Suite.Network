@@ -14,6 +14,17 @@ public partial class DashboardViewModel : ObservableObject
     [ObservableProperty] private bool _ready;
     [ObservableProperty] private string _status = "Finish a Path Ping to open the dashboard.";
     [ObservableProperty] private DashboardPage? _selected;
+    [ObservableProperty] private bool _legend = true;
+
+    partial void OnLegendChanged(bool value)
+    {
+        foreach (var page in Pages)
+        {
+            ChartView.SetLegendVisible(page.Chart, value);
+            if (page.Control is not null)
+                ChartView.SetLegendVisible(page.Control, value);
+        }
+    }
 
     public void Offer(string target, IReadOnlyList<PathPingRow> rows)
     {
