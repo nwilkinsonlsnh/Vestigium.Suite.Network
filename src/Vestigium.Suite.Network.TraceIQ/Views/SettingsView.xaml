@@ -44,7 +44,7 @@
       <nud:VestigiumNumericUpDown Value="{Binding MaxHops}" Minimum="1" Maximum="64" Margin="0,0,0,12" />
       <Label Style="{StaticResource Label.Standard}" Content="Parallel" />
       <nud:VestigiumNumericUpDown Value="{Binding Parallel}" Minimum="1" Maximum="30" Margin="0,0,0,12" />
-      <Label Style="{StaticResource Label.Standard}" Content="Probes" />
+      <Label Style="{StaticResource Label.Standard}" Content="Probes (RTT)" />
       <nud:VestigiumNumericUpDown Value="{Binding Probes}" Minimum="1" Maximum="5" Margin="0,0,0,12" />
     </StackPanel>
 
