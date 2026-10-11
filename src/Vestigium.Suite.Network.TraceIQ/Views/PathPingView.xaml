@@ -19,12 +19,7 @@
     </Grid>
     <TextBlock DockPanel.Dock="Top" Text="{Binding Status}" Style="{DynamicResource TextBlock.Standard}" Margin="0,0,0,8" />
     <DataGrid ItemsSource="{Binding Rows}" Style="{DynamicResource DataGrid.Standard}" AutoGenerateColumns="False" IsReadOnly="True"
-              HeadersVisibility="Column" CanUserAddRows="False">
-      <DataGrid.RowStyle>
-        <Style TargetType="DataGridRow" BasedOn="{DynamicResource DataGridRow.Standard}">
-          <EventSetter Event="Loaded" Handler="MarkRow" />
-        </Style>
-      </DataGrid.RowStyle>
+              HeadersVisibility="Column" CanUserAddRows="False" LoadingRow="MarkRow">
       <DataGrid.Columns>
         <DataGridTextColumn Header="TTL" Binding="{Binding Ttl}" Width="60" />
         <DataGridTextColumn Header="Address" Binding="{Binding Address}" Width="160" />
