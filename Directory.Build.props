@@ -10,7 +10,7 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <NeutralLanguage>en-US</NeutralLanguage>
     <VestigiumNetworkVersion>1.6.3</VestigiumNetworkVersion>
-    <VestigiumAnalyticsVersion>1.0.1</VestigiumAnalyticsVersion>
+    <VestigiumAnalyticsVersion>1.0.4</VestigiumAnalyticsVersion>
     <VestigiumChartsVersion>1.0.10</VestigiumChartsVersion>
     <VestigiumLoggingVersion>1.7.1</VestigiumLoggingVersion>
     <VestigiumThemesVersion>1.0.6</VestigiumThemesVersion>
