@@ -180,8 +180,14 @@ public static class HelpCopy
             ]),
             new("The Grade",
             [
+                Term("CL", "The center line. On the bottom chart it is the average of the replies for that step, drawn across the run. Read the line of times against it. A line that stays near the center is a step that held. A line that drifts up and away from it is a step that got slower as the grade went on. The center line is the middle of the band. Steady is the replies between the lines around it."),
+                "\x1ccl.jpg",
                 Term("Duration", "The window, in seconds. New asks stop when it ends. An ask already out is given only the time that is left, so the run finishes at the mark you set."),
+                Term("ECDF", "The running share, drawn as the rising line on the top chart. Read it from the right-hand axis, which is a percent. At any time on the bottom axis, the line says what share of the replies were that fast or faster. It climbs steeply through the tall bars, because that is where most replies sit, and it flattens once they are counted. A line that is already near the top with a small bar still out to the right means almost every reply was fast and a few were slow. That is a tail, not a step that is slow all the time."),
+                "\x1cecdf.jpg",
                 Term("IQR", "The middle half of the replies, from the first quarter to the third. The fastest quarter and the slowest quarter are left out. A tight middle half is a consistent hop. A wide one is a hop whose ordinary replies already wander."),
+                Term("LCL", "The bottom of the band. It is the center line minus the spread. A reply below it was faster than the step usually is. On a grade that is rare, and it is still marked, because it left the band. Most of what you will read is the top of the band. The bottom is there so the band has two edges."),
+                "\x1cband.jpg",
                 Term("Loss", "The asks that did not come back, as a count. A hop with loss is dropping replies. A hop with no loss answered every ask."),
                 Term("Median", "The middle time. Half the replies were faster and half were slower. It is a better read of a hop than the fastest or the slowest, because one odd reply does not move it."),
                 Term("Path Ping", "A grade of a path you already have. It pings the hops the walk found, for a window you set, and writes what came back. Compare it with a trace. A trace finds the path and takes a few times at each step. Path Ping stays on those steps and asks them many times, so you can see loss, the spread, and whether a step slows as it is asked. A trace answers who is on the way. Path Ping answers whether they hold."),
@@ -190,7 +196,7 @@ public static class HelpCopy
                 Term("Sent", "How many asks went out to that hop during the grade."),
                 Term("Steady", "The replies inside the band. The band is the center plus and minus the spread. Steady is the hop as it behaves when it is not being pushed. Flat and near the center is the result you want."),
                 Term("Tail", "The replies that left the band. A climb at the end of the run is the hop falling behind as the asks kept coming. Scattered points are single slow replies. No points means every reply stayed in the band."),
-                Term("UCL", "The top of the band. A reply above it left the band and is part of the tail. It is how the charts mark a reply that was unlike the rest.")
+                Term("UCL", "The top of the band. It is the center line plus the spread. A reply above it left the band and is part of the tail. On the bottom chart those points are marked, so you can see them against the line. A few points over the line are ordinary. A run of points over the line, climbing, is a step falling behind. The band is the center line with the top and the bottom around it. Steady keeps what is inside. Tail keeps what left.")
             ]),
             new("The Ask",
             [
