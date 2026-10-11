@@ -3,6 +3,7 @@ using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Vestigium.Helpers.Analytics;
+using Vestigium.Controls.StatusBar;
 using Vestigium.Helpers.Charts;
 
 namespace Vestigium.Suite.Network.TraceIQ.ViewModels;
@@ -13,6 +14,7 @@ public partial class DashboardViewModel : ObservableObject
     private IReadOnlyList<PathPingRow> _rows = [];
 
     public DashboardViewModel(SettingsViewModel settings) => _settings = settings;
+    public VestigiumStatusBarViewModel? StatusBar { get; set; }
 
     public ObservableCollection<DashboardPage> Pages { get; } = [];
 
@@ -20,6 +22,8 @@ public partial class DashboardViewModel : ObservableObject
     [ObservableProperty] private bool _ready;
     [ObservableProperty] private string _status = "Finish a Path Ping to open the dashboard.";
     [ObservableProperty] private DashboardPage? _selected;
+    [ObservableProperty] private bool _steady;
+    [ObservableProperty] private bool _iqr;
     public bool Legend
     {
         get => _settings.ShowLegend;
@@ -28,6 +32,28 @@ public partial class DashboardViewModel : ObservableObject
 
     [RelayCommand]
     private void ToggleLegend() => Legend = !Legend;
+
+    [RelayCommand]
+    private void ToggleSteady()
+    {
+        Steady = !Steady;
+        Rebuild();
+    }
+
+    [RelayCommand]
+    private void ToggleIqr()
+    {
+        Iqr = !Iqr;
+        Rebuild();
+    }
+
+    public void Publish()
+    {
+        if (StatusBar is null)
+            return;
+        StatusBar.Message = Selected?.Summary ?? Status;
+        StatusBar.Engine.PostImmediate("elapsed", new StatusBarUpdate { Text = "" });
+    }
 
     [RelayCommand]
     private void Select(DashboardPage? page)
@@ -40,6 +66,7 @@ public partial class DashboardViewModel : ObservableObject
     {
         foreach (var page in Pages)
             page.IsSelected = ReferenceEquals(page, value);
+        Publish();
     }
 
     public void Rebuild()
@@ -69,10 +96,11 @@ public partial class DashboardViewModel : ObservableObject
         Pages.Clear();
         Pages.Add(DashboardPage.Overview(graded));
         foreach (var row in graded)
-            Pages.Add(DashboardPage.Hop(row));
+            Pages.Add(DashboardPage.Hop(row, Steady, Iqr));
         Selected = Pages[0];
         OnSelectedChanged(Selected);
         ApplyLegend();
+        Publish();
         Ready = true;
         Status = $"{graded.Count} hops. Overview compares them. A tab per hop shows that hop only.";
     }
@@ -108,9 +136,28 @@ public sealed partial class DashboardPage : ObservableObject
         };
     }
 
-    public static DashboardPage Hop(PathPingRow row)
+    public static DashboardPage Hop(PathPingRow row, bool steady, bool iqr)
     {
-        var series = NumericSeries.From(row.Samples.Select(s => (decimal)s), $"ttl-{row.Ttl}");
+        var samples = row.Samples;
+        if (steady && samples.Count > 1)
+        {
+            var series0 = NumericSeries.From(samples.Select(s => (decimal)s), "band");
+            var limits = series0.ControlLimits();
+            samples = samples.Where(s => (double)s >= limits.Lcl && (double)s <= limits.Ucl).ToArray();
+            if (samples.Count == 0)
+                samples = row.Samples;
+        }
+        if (iqr && samples.Count > 3)
+        {
+            var sorted = samples.OrderBy(s => s).ToArray();
+            long At(double p) => sorted[(int)Math.Round((sorted.Length - 1) * p)];
+            var lo = At(0.25);
+            var hi = At(0.75);
+            var body = sorted.Where(s => s >= lo && s <= hi).ToArray();
+            if (body.Length > 0)
+                samples = body;
+        }
+        var series = NumericSeries.From(samples.Select(s => (decimal)s), $"ttl-{row.Ttl}");
         var chart = ChartView.From(new ChartSpec
         {
             Kind = ChartKind.Histogram,
