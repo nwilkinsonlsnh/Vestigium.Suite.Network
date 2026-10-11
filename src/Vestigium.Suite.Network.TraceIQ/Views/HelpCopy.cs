@@ -157,37 +157,42 @@ public static class HelpCopy
     private static Draft Glossary()
         => new("Glossary",
         [
-            "The words this window uses. A short meaning, in the sense of this program."
+            "The words this window uses, and what they mean here. Trace and Path Ping are both defined, so the difference between finding a path and grading one is in one place."
         ],
         [
             new("Tabs",
             [
-                Term("TraceIQ", "The walk. One target, one path, one line per hop."),
-                Term("Path Ping", "A grade of the hops the walk found. Not a new path."),
-                Term("Exports", "The rows already loaded, written to a workbook."),
-                Term("Dashboard", "A reading of the last grade. Not a second measurement."),
-                Term("Settings", "The knobs. Interface, protocol, MRU, the grade, and the theme.")
+                Term("TraceIQ", "The walk. You give it a target and it finds the path from this machine, one step at a time, and writes a line for each step. This is where you learn who is on the way and whether the walk reached the target."),
+                Term("Path Ping", "The grade. It takes the steps the walk found and asks them again for a window you set, then counts what came back. It does not find a new path. It tells you whether the path you found holds."),
+                Term("Exports", "The record. It writes the rows already on screen to a workbook on the desktop. The walk is one sheet. The grade is a summary and a sheet of every reply. It does not run anything."),
+                Term("Dashboard", "The reading. It draws the finished grade so you can see which step is steady, which is slow, and which only looks slow because a few replies were. It does not ping again."),
+                Term("Settings", "The knobs. Which adapter the walk leaves on, how it asks, how far it goes, how the grade presses, which targets are kept, and the look of the window.")
             ]),
-            new("The walk",
+            new("The Walk",
             [
-                Term("Hop", "One step on the path. A number, an address or a star, and times."),
-                Term("TTL", "The hop number. One is the first step out. It counts up."),
-                Term("Probe", "One ask of a hop. Probes (RTT) is how many asks."),
-                Term("RTT", "Round trip time. How long that ask took to come back, in milliseconds."),
-                Term("Reached", "The walk got to the target."),
-                Term("Star", "No answer from that hop.")
+                Term("Trace", "A trace finds the path. It asks the first step, then the next, and writes who answered at each one. When it finishes you have a list: the order of the steps, the address of each, and a time for each ask. A trace answers where the packets go. It does not answer whether that path is steady. That is the grade."),
+                Term("Hop", "One step on the path. It has a number, an address or a star, a name when one comes back, and a time for each ask. The first hop is the first step off this machine. The last is the target, when the walk reaches it."),
+                Term("TTL", "The hop number. It counts up as the walk goes out. One is the first step. Two is the next. It is how you read the list from near to far."),
+                Term("Probe", "One ask of a hop. Probes, in settings, is how many times each hop is asked. That number is how many time columns the grid and the export show."),
+                Term("RTT", "Round trip time. How long one ask took to go out and come back, in milliseconds. RTT 1 is the first ask. RTT 2 is the second. A very fast one prints as less than one. A star is an ask that did not come back."),
+                Term("Reached", "The walk got to the target. Reached is yes or no for the whole walk. A walk that is not reached still has a list. It is the record of how far it got."),
+                Term("Star", "No answer from that hop. The hop is still on the path. It is listed so you can see where the path went quiet. It is not skipped."),
+                Term("Parallel", "How many hops are asked at once during the walk. A higher number finishes a long path sooner. It is not how many times one hop is asked. That is Probes."),
+                Term("MRU", "Most recently used. The targets you have traced, kept in the box so you can pick one again. MRU max is how many are kept. A sticky is pinned to the top and does not count against that max. Sticky max is how many can be pinned.")
             ]),
-            new("The grade",
+            new("The Grade",
             [
-                Term("Sent", "Pings that went out to that hop."),
-                Term("Received", "Pings that came back."),
-                Term("Loss", "Sent minus received."),
-                Term("Median", "The middle time. Half the replies were faster, half were slower."),
-                Term("IQR", "The middle half of the replies, from Q1 to Q3."),
-                Term("Steady", "The replies inside the band. The hop as it behaves when it is not being pushed."),
-                Term("Tail", "The replies that left the band. The slow ones."),
-                Term("UCL", "The top of the band. A reply above it left the band."),
-                Term("Saturation", "The gap between pings. Not how many hops at once.")
+                Term("Path Ping", "A grade of a path you already have. It pings the hops the walk found, for a window you set, and writes what came back. Compare it with a trace. A trace finds the path and takes a few times at each step. Path Ping stays on those steps and asks them many times, so you can see loss, the spread, and whether a step slows as it is asked. A trace answers who is on the way. Path Ping answers whether they hold."),
+                Term("Sent", "How many asks went out to that hop during the grade."),
+                Term("Received", "How many of those asks came back. Sent minus received is the loss."),
+                Term("Loss", "The asks that did not come back, as a count. A hop with loss is dropping replies. A hop with no loss answered every ask."),
+                Term("Median", "The middle time. Half the replies were faster and half were slower. It is a better read of a hop than the fastest or the slowest, because one odd reply does not move it."),
+                Term("IQR", "The middle half of the replies, from the first quarter to the third. The fastest quarter and the slowest quarter are left out. A tight middle half is a consistent hop. A wide one is a hop whose ordinary replies already wander."),
+                Term("Steady", "The replies inside the band. The band is the center plus and minus the spread. Steady is the hop as it behaves when it is not being pushed. Flat and near the center is the result you want."),
+                Term("Tail", "The replies that left the band. A climb at the end of the run is the hop falling behind as the asks kept coming. Scattered points are single slow replies. No points means every reply stayed in the band."),
+                Term("UCL", "The top of the band. A reply above it left the band and is part of the tail. It is how the charts mark a reply that was unlike the rest."),
+                Term("Saturation", "The gap between asks during the grade. Low leaves a long gap. Flood asks a hundred times a second. It is not how many hops are graded at once. That is Hops at a time."),
+                Term("Duration", "The window, in seconds. New asks stop when it ends. An ask already out is given only the time that is left, so the run finishes at the mark you set.")
             ])
         ]);
 
