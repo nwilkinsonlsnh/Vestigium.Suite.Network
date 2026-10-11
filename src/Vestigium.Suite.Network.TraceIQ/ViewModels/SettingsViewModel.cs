@@ -139,7 +139,7 @@ public sealed partial class SettingsViewModel : ObservableObject
             ProtocolChoice = string.IsNullOrWhiteSpace(data.Protocol) ? "Hybrid" : data.Protocol;
             SecondPass = data.SecondPass;
             PathSaturation = string.IsNullOrWhiteSpace(data.PathSaturation) ? "Standard" : data.PathSaturation;
-            PathPingsPerSecond = Math.Clamp(data.PathPingsPerSecond == 0 ? 1 : data.PathPingsPerSecond, 1, 100);
+            PathPingsPerSecond = Math.Clamp(data.PathPingsPerSecond == 0 ? 1 : data.PathPingsPerSecond, 1, 1000);
             PathWidth = Math.Clamp(data.PathWidth, 1, 20);
             PathSeconds = Math.Clamp(data.PathSeconds, 1, 180);
             PathDeadAfter = Math.Clamp(data.PathDeadAfter, 3, 30);
