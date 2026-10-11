@@ -139,7 +139,7 @@ public sealed partial class DashboardPage : ObservableObject
     public static DashboardPage Hop(PathPingRow row, bool steady, bool iqr)
     {
         var samples = row.Samples;
-        if (steady && samples.Count > 1)
+        if (steady && samples.Count > 1 && samples.Distinct().Count() > 1)
         {
             var series0 = NumericSeries.From(samples.Select(s => (decimal)s), "band");
             var limits = series0.ControlLimits();
@@ -167,12 +167,13 @@ public sealed partial class DashboardPage : ObservableObject
         });
         var ys = row.Samples.Select(s => (double)s).ToArray();
         var xs = Enumerable.Range(1, ys.Length).Select(i => (double)i).ToArray();
+        ControlLimits? limits = samples.Distinct().Count() > 1 ? series.ControlLimits() : null;
         var control = ChartView.From(new ChartSpec
         {
             Kind = ChartKind.Control,
             Title = "RTT in order",
             Series = [new ChartSeries { Name = "RTT", X = xs, Y = ys }],
-            Limits = series.ControlLimits(),
+            Limits = limits,
             Options = ChartTheme.Apply(new ChartOptions { YLabel = "RTT ms", XLabel = "Sample", ShowLegend = true, Height = 280 })
         });
         var five = Five(row.Samples);
