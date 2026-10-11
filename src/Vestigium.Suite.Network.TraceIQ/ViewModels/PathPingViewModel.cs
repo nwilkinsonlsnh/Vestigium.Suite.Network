@@ -244,6 +244,7 @@ public partial class PathPingRow : ObservableObject
     [ObservableProperty] private int _sent;
     [ObservableProperty] private int _received;
     [ObservableProperty] private string _loss = "";
+    public bool Lossy => Received > 0 && Sent > Received;
     [ObservableProperty] private string _min = "";
     [ObservableProperty] private string _q1 = "";
     [ObservableProperty] private string _median = "";
@@ -257,6 +258,7 @@ public partial class PathPingRow : ObservableObject
         Sent = sent;
         Received = received;
         Loss = Math.Max(0, sent - received).ToString();
+        OnPropertyChanged(nameof(Lossy));
         if (sample is not { } ms)
             return;
         var list = Samples.ToList();
@@ -276,6 +278,7 @@ public partial class PathPingRow : ObservableObject
         Sent = result.Sent;
         Received = result.Received;
         Loss = result.Lost.ToString();
+        OnPropertyChanged(nameof(Lossy));
         Samples = result.Replies
             .Where(r => r.Status == IcmpEchoStatus.Success)
             .Select(r => r.RoundtripTimeMs)
