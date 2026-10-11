@@ -554,27 +554,3 @@ public static class HopEstimate
     }
 }
 
-public sealed record AdapterChoice(int Index, string Label);
-
-public static class AdapterChoices
-{
-    public static AdapterChoice Any { get; } = new(0, "Any (0)");
-
-    public static IReadOnlyList<AdapterChoice> From(IReadOnlyList<NetworkAdapter> adapters)
-    {
-        var list = new List<AdapterChoice> { Any };
-        if (adapters is null)
-            return list;
-
-        foreach (var adapter in adapters)
-        {
-            var index = adapter.InterfaceIndex ?? 0;
-            if (index < 1)
-                continue;
-            var name = string.IsNullOrWhiteSpace(adapter.Name) ? adapter.Id : adapter.Name;
-            list.Add(new AdapterChoice(index, $"{name}  ({index})"));
-        }
-
-        return list;
-    }
-}
