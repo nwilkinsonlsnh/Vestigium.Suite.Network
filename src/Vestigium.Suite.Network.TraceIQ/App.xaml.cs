@@ -7,6 +7,7 @@ using Vestigium.Converters;
 using Vestigium.Converters.DependencyInjection;
 using Vestigium.Helpers.Analytics;
 using Vestigium.Helpers.Charts;
+using Vestigium.Helpers.ClosedXml;
 using Vestigium.Suite.Network.Shell;
 using Vestigium.Suite.Network.TraceIQ.ViewModels;
 using Vestigium.Suite.Network.TraceIQ.Views;
@@ -26,6 +27,7 @@ public partial class App : Application
         {
             AnalyticsCatalog.Register(cfg);
             ChartsCatalog.Register(cfg);
+            ClosedXmlCatalog.Register(cfg);
         });
 
         Themes.RegisterSuiteV1();
@@ -65,6 +67,12 @@ public partial class App : Application
                     Subject = "Grade the path",
                     Description = "Enabled when a walk reaches the target."
                 },
+                new VestigiumNavItemSpec("Exports")
+                {
+                    Title = "Exports",
+                    Subject = "Raw rows",
+                    Description = "TraceIQ and Path Ping, as spreadsheets."
+                },
                 new VestigiumNavItemSpec("Dashboard")
                 {
                     Title = "Dashboard",
@@ -87,6 +95,7 @@ public partial class App : Application
             trace.Target = settings.LastTarget;
         var path = new PathPingViewModel(settings) { StatusBar = chrome.Status };
         var dash = new DashboardViewModel(settings) { StatusBar = chrome.Status };
+        var exports = new ExportsViewModel(trace, path) { StatusBar = chrome.Status };
         settings.PropertyChanged += (_, e) =>
         {
             if (e.PropertyName == nameof(SettingsViewModel.ShowLegend))
@@ -112,6 +121,9 @@ public partial class App : Application
             pathItem.IsEnabled = false;
             pathItem.Content = new PathPingView { DataContext = path };
         }
+        var exportsItem = window.HostShell["Exports"];
+        if (exportsItem is not null)
+            exportsItem.Content = new ExportsView { DataContext = exports };
         trace.RouteReady += (_, _) =>
         {
             path.Offer(trace.Target, trace.Hops.ToList());
@@ -143,6 +155,7 @@ public partial class App : Application
             if (key == "TraceIQ") trace.Publish();
             else if (key == "Path Ping") path.Publish();
             else if (key == "Dashboard") dash.Publish();
+            else if (key == "Exports") chrome.Status.Message = "Exports";
         };
         return window;
     }
