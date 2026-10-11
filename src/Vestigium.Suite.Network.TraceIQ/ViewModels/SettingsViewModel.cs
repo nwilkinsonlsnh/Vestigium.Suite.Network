@@ -43,6 +43,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     public IReadOnlyList<ThemeDefinition> Themes => _themes.AvailableThemes;
     public IReadOnlyList<AdapterChoice> Interfaces { get; }
     public IReadOnlyList<SourceChoice> Sources { get; private set; }
+    public IReadOnlyList<string> Protocols { get; } = ["ICMP", "UDP", "TCP", "Hybrid"];
     public IReadOnlyList<string> Families { get; }
     public IReadOnlyList<VestigiumStatusBarPosition> BarPositions { get; } =
     [
@@ -92,6 +93,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private string _selectedInterfaceId = "";
     [ObservableProperty] private string _source = "";
     [ObservableProperty] private string _family = "All";
+    [ObservableProperty] private string _protocolChoice = "Hybrid";
     [ObservableProperty] private decimal _mruMax = 10;
     [ObservableProperty] private decimal _stickyMax = 3;
 
@@ -112,6 +114,7 @@ public sealed partial class SettingsViewModel : ObservableObject
             SelectedInterfaceId = data.InterfaceId ?? "";
             Source = data.Source ?? "";
             Family = string.IsNullOrWhiteSpace(data.Family) ? "All" : data.Family;
+            ProtocolChoice = string.IsNullOrWhiteSpace(data.Protocol) ? "Hybrid" : data.Protocol;
             MruMax = Math.Clamp(data.MruMax, 1, MruMaxLimit);
             StickyMax = Math.Clamp(data.StickyMax, 0, StickyMaxLimit);
             Mru.Clear();
@@ -137,6 +140,7 @@ public sealed partial class SettingsViewModel : ObservableObject
             InterfaceId = SelectedInterfaceId,
             Source = Source,
             Family = Family,
+            Protocol = ProtocolChoice,
             MruMax = (int)MruMax,
             StickyMax = (int)StickyMax,
             Mru = Mru.ToList()
@@ -263,6 +267,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     }
     partial void OnSourceChanged(string value) => Persist();
     partial void OnFamilyChanged(string value) => Persist();
+    partial void OnProtocolChoiceChanged(string value) => Persist();
     partial void OnMruMaxChanged(decimal value) { Trim(); Persist(); }
     partial void OnStickyMaxChanged(decimal value) { Trim(); Persist(); }
 
