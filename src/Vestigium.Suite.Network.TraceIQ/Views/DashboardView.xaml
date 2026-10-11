@@ -4,27 +4,30 @@
              Background="{DynamicResource Vestigium.Brushes.Surface.Window}">
   <DockPanel Margin="12">
     <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
-      <ToggleButton DockPanel.Dock="Right" Content="Legend" IsChecked="{Binding Legend}" Padding="12,2" />
+      <Button DockPanel.Dock="Right" Content="Legend" Style="{StaticResource Button.Utility}"
+              Command="{Binding ToggleLegendCommand}" Padding="12,2" />
       <TextBlock VerticalAlignment="Center">
         <Run Text="{Binding Target, Mode=OneWay}" FontWeight="SemiBold" />
         <Run Text="   " />
         <Run Text="{Binding Status, Mode=OneWay}" />
       </TextBlock>
     </DockPanel>
-    <ListBox DockPanel.Dock="Top" ItemsSource="{Binding Pages}"
-             SelectedItem="{Binding Selected}"
-             Background="Transparent" BorderThickness="0" Margin="0,0,0,8">
-      <ListBox.ItemsPanel>
+    <ItemsControl DockPanel.Dock="Top" ItemsSource="{Binding Pages}" Margin="20,0,0,12">
+      <ItemsControl.ItemsPanel>
         <ItemsPanelTemplate>
           <StackPanel Orientation="Horizontal" />
         </ItemsPanelTemplate>
-      </ListBox.ItemsPanel>
-      <ListBox.ItemTemplate>
+      </ItemsControl.ItemsPanel>
+      <ItemsControl.ItemTemplate>
         <DataTemplate>
-          <TextBlock Text="{Binding Header}" Margin="10,4" />
+          <RadioButton Content="{Binding Header}"
+                       Style="{StaticResource RadioButton.HorizontalTab}"
+                       GroupName="DashHops"
+                       IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                       Margin="0,0,8,0" />
         </DataTemplate>
-      </ListBox.ItemTemplate>
-    </ListBox>
+      </ItemsControl.ItemTemplate>
+    </ItemsControl>
     <DockPanel DataContext="{Binding Selected}">
       <TextBlock DockPanel.Dock="Top" Text="{Binding Summary}" Margin="0,0,0,8" TextWrapping="Wrap" />
       <Grid>
