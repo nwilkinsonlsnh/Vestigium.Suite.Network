@@ -25,9 +25,8 @@
       </ItemsControl.ItemTemplate>
     </ItemsControl>
     <Grid DockPanel.Dock="Top" Margin="0,8,0,2">
-      <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="44,0,0,0"
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="108,0,0,0"
                   Visibility="{Binding ShowViews, Converter={StaticResource BoolToVis}}">
-        <TextBlock Style="{DynamicResource TextBlock.Caption}" Text="This hop" VerticalAlignment="Center" Margin="0,0,10,0" />
         <RadioButton Content="All" Style="{DynamicResource RadioButton.Pill}"
                      GroupName="DashView" IsChecked="{Binding ViewIsAll, Mode=OneWay}"
                      Command="{Binding AllCommand}" Margin="0,0,8,0" />
