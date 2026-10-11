@@ -88,7 +88,7 @@ public sealed partial class DashboardPage : ObservableObject
             Kind = ChartKind.Column,
             Title = "Median RTT by hop",
             Series = [new ChartSeries { Name = "Median", Y = medians, Labels = labels }],
-            Options = new ChartOptions { YLabel = "RTT ms", ShowLegend = false, Height = 360 }
+            Options = ChartTheme.Apply(new ChartOptions { YLabel = "RTT ms", ShowLegend = false, Height = 360 })
         });
         return new DashboardPage
         {
@@ -107,7 +107,7 @@ public sealed partial class DashboardPage : ObservableObject
             Kind = ChartKind.Histogram,
             Title = "Histogram",
             Source = series,
-            Options = new ChartOptions { YLabel = "Count", XLabel = "RTT ms", ShowLegend = true, ShowEcdf = true, Height = 280 }
+            Options = ChartTheme.Apply(new ChartOptions { YLabel = "Count", XLabel = "RTT ms", ShowLegend = true, ShowEcdf = true, Height = 280 })
         });
         var ys = row.Samples.Select(s => (double)s).ToArray();
         var xs = Enumerable.Range(1, ys.Length).Select(i => (double)i).ToArray();
@@ -117,7 +117,7 @@ public sealed partial class DashboardPage : ObservableObject
             Title = "RTT in order",
             Series = [new ChartSeries { Name = "RTT", X = xs, Y = ys }],
             Limits = series.ControlLimits(),
-            Options = new ChartOptions { YLabel = "RTT ms", XLabel = "Sample", ShowLegend = true, Height = 280 }
+            Options = ChartTheme.Apply(new ChartOptions { YLabel = "RTT ms", XLabel = "Sample", ShowLegend = true, Height = 280 })
         });
         var five = Five(row.Samples);
         return new DashboardPage
