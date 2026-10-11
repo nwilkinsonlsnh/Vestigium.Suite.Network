@@ -595,8 +595,19 @@ public sealed partial class MainViewModel : ObservableObject
         SetElapsed(FormatElapsed(_elapsed.Elapsed));
     }
 
+    private string _lastElapsed = "";
+
+    public void Publish()
+    {
+        if (StatusBar is null)
+            return;
+        StatusBar.Message = string.IsNullOrWhiteSpace(Status) ? "Idle" : Status;
+        StatusBar.Engine.PostImmediate("elapsed", new StatusBarUpdate { Text = _lastElapsed });
+    }
+
     private void SetElapsed(string value)
     {
+        _lastElapsed = value;
         StatusBar?.Engine.PostImmediate("elapsed", new StatusBarUpdate { Text = value });
     }
 
