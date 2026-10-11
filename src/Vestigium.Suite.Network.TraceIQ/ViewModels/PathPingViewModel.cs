@@ -188,8 +188,19 @@ public partial class PathPingViewModel : ObservableObject
         StatusBar?.Engine.PostImmediate("progress", new StatusBarUpdate { IsProgressVisible = false, Progress = 0 });
     }
 
+    private string _lastElapsed = "";
+
+    public void Publish()
+    {
+        if (StatusBar is null)
+            return;
+        StatusBar.Message = Status;
+        StatusBar.Engine.PostImmediate("elapsed", new StatusBarUpdate { Text = _lastElapsed });
+    }
+
     private void SetElapsed(string value)
     {
+        _lastElapsed = value;
         StatusBar?.Engine.PostImmediate("elapsed", new StatusBarUpdate { Text = value });
     }
 
