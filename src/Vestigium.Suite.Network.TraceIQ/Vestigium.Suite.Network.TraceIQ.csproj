@@ -21,6 +21,6 @@
     <PackageReference Include="Vestigium.Helpers.Charts" Version="$(VestigiumChartsVersion)" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="TraceIQ.ico" />
+    <Resource Include="TraceIQ.ico" />
   </ItemGroup>
 </Project>
