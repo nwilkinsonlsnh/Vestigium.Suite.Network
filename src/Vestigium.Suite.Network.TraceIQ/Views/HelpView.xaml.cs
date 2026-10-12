@@ -82,7 +82,7 @@ public partial class HelpView : UserControl
 
     private static string[] LicenseLines()
     {
-        var path = Path.Combine(AppContext.BaseDirectory, "LICENSE");
+        var path = System.IO.Path.Combine(AppContext.BaseDirectory, "LICENSE");
         if (!File.Exists(path))
             return ["The license file was not next to the program."];
         return File.ReadAllLines(path);
