@@ -21,7 +21,6 @@
         <Button Content="Cancel" Command="{Binding CancelCommand}" Style="{DynamicResource Button.Secondary}" Padding="16,4" />
       </StackPanel>
     </Grid>
-    <TextBlock DockPanel.Dock="Top" Text="{Binding Status}" Style="{DynamicResource TextBlock.Standard}" Margin="0,0,0,8" />
     <DataGrid ItemsSource="{Binding Rows}" Style="{DynamicResource DataGrid.Standard}" AutoGenerateColumns="False" IsReadOnly="True"
               HeadersVisibility="Column" CanUserAddRows="False">
       <DataGrid.RowStyle>
