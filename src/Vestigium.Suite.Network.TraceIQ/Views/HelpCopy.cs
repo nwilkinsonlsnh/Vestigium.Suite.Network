@@ -15,6 +15,7 @@ public static class HelpCopy
             Dashboard(),
             Settings(),
             Glossary(),
+            StatusIcons(),
             About(version),
             new("License", license.Count == 0 ? ["The license file was empty."] : license, [])
         ];
@@ -166,23 +167,6 @@ public static class HelpCopy
                 Term("Settings", "The knobs. Which adapter the walk leaves on, how it asks, how far it goes, how the grade presses, which targets are kept, and the look of the window."),
                 Term("TraceIQ", "The walk. You give it a target and it finds the path from this machine, one step at a time, and writes a line for each step. This is where you learn who is on the way and whether the walk reached the target.")
             ]),
-            new("TraceIQ Status",
-            [
-                "The circle after the step number on the walk. Hover shows the word. The export writes the word.",
-                Dot("22C55E", "Answered", "The step spoke on every ask. You have an address and a time for each probe. This is a step Path Ping can grade."),
-                Dot("EAB308", "Partial", "The step answered, but not every ask came back. At least one probe is a star. The address is real. The times you have are the ones that returned."),
-                Dot("EF4444", "No Answer", "Nothing came back. The address is a star, or every probe is a star. The walk still lists it, so you can see where the path went quiet."),
-                Dot("6B7280", "Waiting", "This step is still out. The walk has not settled it, or the address is known and the probes have not filled in yet.")
-            ]),
-            new("Path Ping Status",
-            [
-                "The circle after the step number on the grade. Hover shows the word. The export writes the word.",
-                Dot("22C55E", "Success", "Every probe came back. No loss. This step held for the window you asked."),
-                Dot("EAB308", "Warning", "Some probes came back and some did not. Loss is greater than zero. This is the step to open on the dashboard."),
-                Dot("EF4444", "No Answer", "The grade asked and every reply timed out. Nothing came back. A black hole. Dead After stops it, so the rest of the window is spent on steps that speak."),
-                Dot("F97316", "Refused", "The hop answered, but not with an echo. The reply was Time Exceeded, Unreachable, or a failure, and it came back fast. The hop is there. It will not echo."),
-                Dot("6B7280", "Skipped", "The walk already proved this step dead. The grade did not spend probes on it.")
-            ]),
             new("The Walk",
             [
                 Term("Hop", "One step on the path. It has a number, an address or a star, a name when one comes back, and a time for each ask. The first hop is the first step off this machine. The last is the target, when the walk reaches it."),
@@ -230,6 +214,30 @@ public static class HelpCopy
                 Term("Address Family", "Which kind of address the walk may use. IPv4, IPv6, or All. All lets the walk use whichever the target answers on."),
                 Term("IPv4", "The older, shorter address. Four numbers. Most of what you trace on an internal network is IPv4."),
                 Term("IPv6", "The newer, longer address. Use it when the target is IPv6, or when you want to see the IPv6 path on purpose.")
+            ])
+        ]);
+
+
+    private static Draft StatusIcons()
+        => new("Status Icons",
+        [
+            "The circle after the step number. Hover shows the word. The export writes the word."
+        ],
+        [
+            new("TraceIQ",
+            [
+                Dot("22C55E", "Answered", "The step spoke on every ask. You have an address and a time for each probe. This is a step Path Ping can grade."),
+                Dot("EAB308", "Partial", "The step answered, but not every ask came back. At least one probe is a star. The address is real. The times you have are the ones that returned."),
+                Dot("EF4444", "No Answer", "Nothing came back. The address is a star, or every probe is a star. The walk still lists it, so you can see where the path went quiet."),
+                Dot("6B7280", "Waiting", "This step is still out. The walk has not settled it, or the address is known and the probes have not filled in yet.")
+            ]),
+            new("Path Ping",
+            [
+                Dot("22C55E", "Success", "Every probe came back. No loss. This step held for the window you asked."),
+                Dot("EAB308", "Warning", "Some probes came back and some did not. Loss is greater than zero. This is the step to open on the dashboard."),
+                Dot("EF4444", "No Answer", "The grade asked and every reply timed out. Nothing came back. A black hole. Dead After stops it, so the rest of the window is spent on steps that speak."),
+                Dot("F97316", "Refused", "The hop answered, but not with an echo. The reply was Time Exceeded, Unreachable, or a failure, and it came back fast. The hop is there. It will not echo."),
+                Dot("6B7280", "Skipped", "The walk already proved this step dead. The grade did not spend probes on it.")
             ])
         ]);
 
