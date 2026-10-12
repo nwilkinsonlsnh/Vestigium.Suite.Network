@@ -134,12 +134,14 @@ public partial class PathPingViewModel : ObservableObject
                 return;
             }
 
+            // Count is the contract (rate × duration). Do not pass MaxDuration:
+            // the engine waits for each reply before the interval, so a wall-clock
+            // cap made slower hops send fewer packets. Dead After stops silent hops.
             var job = NetworkHelper.IcmpEcho(row.Address, new IcmpEchoOptions
             {
                 Count = count,
                 Interval = TimeSpan.FromMilliseconds(intervalMs),
                 Timeout = TimeSpan.FromSeconds(2),
-                MaxDuration = TimeSpan.FromSeconds(Math.Clamp((int)_settings.PathSeconds, 1, 180)),
                 AllowBurst = intervalMs < 200
             });
             job.ProgressChanged += (_, p) =>
