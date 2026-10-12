@@ -228,11 +228,11 @@ new("TraceIQ",
             ]),
             new("Path Ping",
             [
-                Dot("22C55E", "Success", "Every probe came back. No loss. This step held for the window you asked."),
-                Dot("EAB308", "Warning", "Some probes came back and some did not. Loss is greater than zero. This is the step to open on the dashboard."),
-                Dot("EF4444", "No Answer", "A black hole. The grade asked and nothing came back, so every probe waited the full 2 second timeout. That is why a silent hop is slow to call. Dead After stops it once the misses add up, and the rest of the window is spent on steps that speak."),
-                Dot("F97316", "Refused", "The hop answered at once, but not with an echo. Time Exceeded, Unreachable, or a failure came back in milliseconds, so Dead After trips quickly. Contrast that with No Answer: a refusal is an immediate failure, a black hole is a 2 second wait on every probe. The hop is there. It will not echo."),
-                Dot("6B7280", "Skipped", "The walk already proved this step dead. The grade did not spend probes on it.")
+                Dot("22C55E", "Success", "Every probe came back. Zero loss. The hop stayed responsive for the whole window."),
+                Dot("EAB308", "Warning", "Partial loss. Some probes failed and some did not. That is congestion, rate limiting, or an unstable hop. Open it on the dashboard."),
+                Dot("EF4444", "No Answer", "A black hole. Nothing came back, so each probe waited the full 2 second timeout. That wait is why a silent hop is slow to call. Dead After stops it once the misses add up, and the rest of the window goes to hops that answer."),
+                Dot("F97316", "Refused", "The hop rejected the ask at once. Time Exceeded, Destination Unreachable, or a failure came back in milliseconds, so Dead After trips without waiting. A refusal is an immediate failure. A black hole is a 2 second wait on every probe. The hop is there. It will not echo."),
+                Dot("6B7280", "Skipped", "The walk already proved this hop unresponsive. The grade did not spend probes on it.")
             ])
                     ])
         ]);
