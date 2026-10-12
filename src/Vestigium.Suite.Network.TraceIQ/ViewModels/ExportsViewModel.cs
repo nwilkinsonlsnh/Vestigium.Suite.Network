@@ -57,11 +57,11 @@ public partial class ExportsViewModel : ObservableObject
     private void WriteTrace(WorkbookSession book)
     {
         var count = Math.Clamp((int)_trace.Settings.Probes, 1, HopRow.MaxColumns);
-        var headers = new List<string> { "TTL", "Address", "Name", "Reached" };
+        var headers = new List<string> { "TTL", "Status", "Address", "Name", "Reached" };
         headers.AddRange(Enumerable.Range(1, count).Select(i => $"RTT {i} (ms)"));
         var rows = _trace.Hops.Select(h =>
         {
-            var cells = new List<object?> { h.Ttl, h.Address, h.Name, h.Reached ? "Yes" : "No" };
+            var cells = new List<object?> { h.Ttl, h.StatusText, h.Address, h.Name, h.Reached ? "Yes" : "No" };
             var values = new[] { h.P1, h.P2, h.P3, h.P4, h.P5, h.P6, h.P7, h.P8, h.P9, h.P10 };
             cells.AddRange(values.Take(count));
             return (IReadOnlyList<object?>)cells;
