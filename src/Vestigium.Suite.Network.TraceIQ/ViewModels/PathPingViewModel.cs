@@ -39,7 +39,10 @@ public partial class PathPingViewModel : ObservableObject
     public string LossFill => _settings.LossFill;
     public string LossInk => _settings.LossInk;
 
-    public bool CanRun => Ready && !Running && !string.IsNullOrWhiteSpace(Target);
+    public bool WalkBusy { get; set; }
+    public void RefreshRun() => RunCommand.NotifyCanExecuteChanged();
+
+    public bool CanRun => Ready && !Running && !WalkBusy && !string.IsNullOrWhiteSpace(Target);
     public bool CanCancel => Running;
 
     private void OnSettingsChanged(object? sender, PropertyChangedEventArgs e)
