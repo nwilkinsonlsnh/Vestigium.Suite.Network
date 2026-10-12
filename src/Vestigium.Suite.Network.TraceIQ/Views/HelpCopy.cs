@@ -37,7 +37,7 @@ public static class HelpCopy
         [
             "TraceIQ is the walk. You give it a target and it finds the path from this machine to that target, one step at a time, and writes what it finds.",
             "You type a name or an address, or you pick one you have used. Recent targets stay in the box. A pin keeps one at the top so it is always there. Trace starts the walk. Cancel stops it. While it runs, the bar under the target fills and the center of the status bar counts the time.",
-            "Each line is one step. The number is how far out that step is. One is the first step off this machine. The address is who answered. The name is what that address is called, when a name comes back. Then there is a time for each ask. RTT 1 is the first. RTT 2 is the second. The number of those columns is the Probes setting, so the grid shows exactly the asks you chose.",
+            "Each line is one step. The number is how far out that step is. The circle after it is the status. One is the first step off this machine. The address is who answered. The name is what that address is called, when a name comes back. Then there is a time for each ask. RTT 1 is the first. RTT 2 is the second. The number of those columns is the Probes setting, so the grid shows exactly the asks you chose.",
             "The list builds as answers come in. A step that is still out shows as waiting. A step that answers fills in its address and its times. A step that never answers stays a star, and it stays on the list, so you can see where the path went quiet. The walk does not skip a quiet step and pretend it was not there.",
             "Reached tells you whether the walk got to the target. Protocol tells you how it asked. The walk stops when it reaches the target, or when it has gone as far as Max hops. Parallel is how many steps are asked at once, which is how a long path finishes sooner. It is separate from Probes. Probes are the times on a single step.",
             "A time is how long that ask took to come back, in milliseconds. A very fast one prints as less than one. A star in a time column is an ask that did not come back. Reading across a line tells you how that step behaved. Reading down the list tells you the path.",
@@ -50,7 +50,7 @@ public static class HelpCopy
             "Path Ping grades the path the walk already found. The walk told you who is on the way. The grade tells you whether those steps hold.",
             "The page opens once a walk has reached the target. The target is the one from that walk. It is shown so you know what you are grading, and it is not a box you type in. A grade is of a path you have. It is not a search for a new one.",
             "Path Ping starts the grade. Cancel stops it. While it runs, the bar on the left fills and the center of the status bar counts the time. When it finishes, that time stays, so you can see how long the window took.",
-            "Each row is one step from the walk. Sent is how many asks went out. Received is how many came back. Loss is the difference, as a count. Min is the fastest reply. Q1, Median, and Q3 split the replies into quarters. Max is the slowest. A step with no replies has counts and no times, because there is nothing to summarize.",
+            "Each row is one step from the walk. The circle after the step number is the status. Sent is how many asks went out. Received is how many came back. Loss is the difference, as a count. Min is the fastest reply. Q1, Median, and Q3 split the replies into quarters. Max is the slowest. A step with no replies has counts and no times, because there is nothing to summarize.",
             "The grade asks several steps at once. How many is Hops at a time. The gap between asks is Saturation. Low leaves a long gap. Flood asks a hundred times a second. The two knobs are separate. One is how many steps. One is how fast each step is asked.",
             "Duration is the window. New asks stop when it ends, and an ask already out is given only the time that is left, so the run finishes at the mark you set. A step that never answers is not asked for the whole window. After Dead after failed asks, that step is marked and left, and the rest of the window is spent on the steps that speak.",
             "When the grade finishes you have a row for every step, with its counts and its spread. A step with loss, or a step whose max is far from its median, is the one to open on the dashboard. The rows are also what Exports writes, and what Dashboard reads."
@@ -61,8 +61,8 @@ public static class HelpCopy
         [
             "Exports writes the rows you already have to a workbook, so the numbers can leave the window and go to another desk. It writes what is loaded. It does not start a walk and it does not start a grade.",
             "You choose what goes in. TraceIQ writes the walk. Path Ping writes the grade. You can write one, or both. Open File after Save opens the workbook when it is written. Open Folder after Save opens the folder with the new file selected, so you can see it among the others.",
-            "The TraceIQ sheet is one row per step. The columns are the step number, the address, the name, whether it was reached, and a time for each probe you asked for. Three probes is RTT 1, RTT 2, and RTT 3. Five is five. The sheet matches the grid. It does not add empty columns past the probes you set.",
-            "The Path Ping sheet is the summary you see on the grade. One row per step, with sent, received, loss, and the five times. Path Ping Samples is the raw grade. One row per reply, with the step, the address, the sample number, and the time. That sheet is the population the summary came from, so a question about one slow reply can be answered from the file.",
+            "The TraceIQ sheet is one row per step. The columns are the step number, the status, the address, the name, whether it was reached, and a time for each probe you asked for. Three probes is RTT 1, RTT 2, and RTT 3. Five is five. The sheet matches the grid. It does not add empty columns past the probes you set.",
+            "The Path Ping sheet is the summary you see on the grade. One row per step, with status, sent, received, loss, and the five times. Path Ping Samples is the raw grade. One row per reply, with the step, the address, the sample number, and the time. That sheet is the population the summary came from, so a question about one slow reply can be answered from the file.",
             "The workbook is written to the desktop, under Vestigium, then Exports, then TraceIQ. The name carries the time, so a second export does not overwrite the first. The file stays on this machine. You open it, or you hand it on."
         ], []);
 
@@ -166,6 +166,23 @@ public static class HelpCopy
                 Term("Settings", "The knobs. Which adapter the walk leaves on, how it asks, how far it goes, how the grade presses, which targets are kept, and the look of the window."),
                 Term("TraceIQ", "The walk. You give it a target and it finds the path from this machine, one step at a time, and writes a line for each step. This is where you learn who is on the way and whether the walk reached the target.")
             ]),
+            new("TraceIQ Status",
+            [
+                "The circle after the step number on the walk. Hover shows the word. The export writes the word.",
+                Dot("22C55E", "Answered", "The step spoke on every ask. You have an address and a time for each probe. This is a step Path Ping can grade."),
+                Dot("EAB308", "Partial", "The step answered, but not every ask came back. At least one probe is a star. The address is real. The times you have are the ones that returned."),
+                Dot("EF4444", "No Answer", "Nothing came back. The address is a star, or every probe is a star. The walk still lists it, so you can see where the path went quiet."),
+                Dot("6B7280", "Waiting", "This step is still out. The walk has not settled it, or the address is known and the probes have not filled in yet.")
+            ]),
+            new("Path Ping Status",
+            [
+                "The circle after the step number on the grade. Hover shows the word. The export writes the word.",
+                Dot("22C55E", "Success", "Every probe came back. No loss. This step held for the window you asked."),
+                Dot("EAB308", "Warning", "Some probes came back and some did not. Loss is greater than zero. This is the step to open on the dashboard."),
+                Dot("EF4444", "No Answer", "The grade asked and every reply timed out. Nothing came back. A black hole. Dead After stops it, so the rest of the window is spent on steps that speak."),
+                Dot("F97316", "Refused", "The hop answered, but not with an echo. The reply was Time Exceeded, Unreachable, or a failure, and it came back fast. The hop is there. It will not echo."),
+                Dot("6B7280", "Skipped", "The walk already proved this step dead. The grade did not spend probes on it.")
+            ]),
             new("The Walk",
             [
                 Term("Hop", "One step on the path. It has a number, an address or a star, a name when one comes back, and a time for each ask. The first hop is the first step off this machine. The last is the target, when the walk reaches it."),
@@ -230,4 +247,6 @@ public static class HelpCopy
         ]);
 
     private static string Term(string word, string means) => "\x1b" + word + "|" + means;
+
+    private static string Dot(string hex, string name, string means) => "dot:#" + hex + "|" + name + "|" + means;
 }
