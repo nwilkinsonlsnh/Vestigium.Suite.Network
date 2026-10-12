@@ -221,10 +221,10 @@ public static class HelpCopy
             [
 new("TraceIQ",
             [
-                Dot("22C55E", "Answered", "The step spoke on every ask. You have an address and a time for each probe. This is a step Path Ping can grade."),
-                Dot("EAB308", "Partial", "The step answered, but not every ask came back. At least one probe is a star. The address is real. The times you have are the ones that returned."),
+                Dot("22C55E", "Answered", "Every probe came back. The hop has an address and a time for each ask. Path Ping can grade it."),
+                Dot("EAB308", "Partial", "The hop answered, but not every probe did. At least one is a star. The address is real. The times shown are the ones that returned."),
                 Dot("EF4444", "No Answer", "Nothing came back. The address is a star, or every probe is a star. The walk still lists it, so you can see where the path went quiet."),
-                Dot("6B7280", "Waiting", "This step is still out. The walk has not settled it, or the address is known and the probes have not filled in yet.")
+                Dot("6B7280", "Waiting", "This hop is still out. The walk has not settled it, or the address is known and the probes have not filled in.")
             ]),
             new("Path Ping",
             [
