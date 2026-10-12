@@ -41,6 +41,17 @@
       </DataGrid.RowStyle>
       <DataGrid.Columns>
         <DataGridTextColumn Header="TTL" Binding="{Binding Ttl}" Width="60" />
+        <DataGridTemplateColumn Header="Status" Width="70">
+          <DataGridTemplateColumn.CellTemplate>
+            <DataTemplate>
+              <Ellipse Width="12" Height="12"
+                       Fill="{Binding StatusBrush}"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       ToolTip="{Binding StatusText}" />
+            </DataTemplate>
+          </DataGridTemplateColumn.CellTemplate>
+        </DataGridTemplateColumn>
         <DataGridTextColumn Header="Address" Binding="{Binding Address}" Width="160" />
         <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*" />
         <DataGridTextColumn Header="Sent" Binding="{Binding Sent}" Width="70" />

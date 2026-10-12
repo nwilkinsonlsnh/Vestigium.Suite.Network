@@ -59,7 +59,6 @@ public partial class ExportsViewModel : ObservableObject
         var count = Math.Clamp((int)_trace.Settings.Probes, 1, HopRow.MaxColumns);
         var headers = new List<string> { "TTL", "Address", "Name", "Reached" };
         headers.AddRange(Enumerable.Range(1, count).Select(i => $"RTT {i} (ms)"));
-        var probes = new[] { "P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10" };
         var rows = _trace.Hops.Select(h =>
         {
             var cells = new List<object?> { h.Ttl, h.Address, h.Name, h.Reached ? "Yes" : "No" };
@@ -72,10 +71,10 @@ public partial class ExportsViewModel : ObservableObject
 
     private void WritePath(WorkbookSession book)
     {
-        var headers = new[] { "TTL", "Address", "Name", "Sent", "Received", "Loss", "Min", "Q1", "Median", "Q3", "Max" };
+        var headers = new[] { "TTL", "Status", "Address", "Name", "Sent", "Received", "Loss", "Min", "Q1", "Median", "Q3", "Max" };
         var rows = _path.Rows.Select(r => (IReadOnlyList<object?>)new object?[]
         {
-            r.Ttl, r.Address, r.Name, r.Sent, r.Received, r.Loss, r.Min, r.Q1, r.Median, r.Q3, r.Max
+            r.Ttl, r.StatusText, r.Address, r.Name, r.Sent, r.Received, r.Loss, r.Min, r.Q1, r.Median, r.Q3, r.Max
         }).ToList();
         book.Sheet("Path Ping").WriteTable(SheetTable.Create(headers, rows, "PathPing"));
 

@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Windows.Media;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -148,7 +149,7 @@ public partial class PathPingViewModel : ObservableObject
             {
                 Tick(1);
                 var sample = p.LastStatus == nameof(IcmpEchoStatus.Success) ? p.LastRoundtripMs : (long?)null;
-                _ = Dispatch(() => row.Note(p.Sent, p.Received, sample));
+                _ = Dispatch(() => row.Note(p.Sent, p.Received, sample, p.LastStatus));
                 if (p.Received == 0 && row.WalkMisses + p.Sent >= dead)
                     hop.Cancel();
             };
@@ -160,7 +161,7 @@ public partial class PathPingViewModel : ObservableObject
         }
         catch (OperationCanceledException) when (!token.IsCancellationRequested)
         {
-            await Dispatch(() => row.Skip(Math.Max(row.WalkMisses, dead))).ConfigureAwait(true);
+            await Dispatch(row.Close).ConfigureAwait(true);
         }
         finally
         {
@@ -254,6 +255,14 @@ public partial class PathPingViewModel : ObservableObject
 
 public partial class PathPingRow : ObservableObject
 {
+    private static readonly Brush SuccessBrush = Freeze("#22C55E");
+    private static readonly Brush WarningBrush = Freeze("#EAB308");
+    private static readonly Brush NoAnswerBrush = Freeze("#EF4444");
+    private static readonly Brush RefusedBrush = Freeze("#F97316");
+    private static readonly Brush SkippedBrush = Freeze("#6B7280");
+
+    private bool _sawError;
+
     [ObservableProperty] private int _ttl;
     [ObservableProperty] private string _address = "";
     [ObservableProperty] private string _name = "";
@@ -266,15 +275,20 @@ public partial class PathPingRow : ObservableObject
     [ObservableProperty] private string _median = "";
     [ObservableProperty] private string _q3 = "";
     [ObservableProperty] private string _max = "";
+    [ObservableProperty] private string _statusText = "";
+    [ObservableProperty] private Brush _statusBrush = Brushes.Transparent;
     public int WalkMisses { get; init; }
     public IReadOnlyList<long> Samples { get; private set; } = [];
 
-    public void Note(int sent, int received, long? sample)
+    public void Note(int sent, int received, long? sample, string? lastStatus)
     {
         Sent = sent;
         Received = received;
         Loss = Math.Max(0, sent - received).ToString();
         OnPropertyChanged(nameof(Lossy));
+        if (IsError(lastStatus))
+            _sawError = true;
+        Classify();
         if (sample is not { } ms)
             return;
         var list = Samples.ToList();
@@ -295,6 +309,7 @@ public partial class PathPingRow : ObservableObject
         Received = result.Received;
         Loss = result.Lost.ToString();
         OnPropertyChanged(nameof(Lossy));
+        _sawError = result.Replies.Any(r => r.Status is not IcmpEchoStatus.Success and not IcmpEchoStatus.TimedOut);
         Samples = result.Replies
             .Where(r => r.Status == IcmpEchoStatus.Success)
             .Select(r => r.RoundtripTimeMs)
@@ -306,6 +321,7 @@ public partial class PathPingRow : ObservableObject
         Median = five.Median;
         Q3 = five.Q3;
         Max = five.Max;
+        Classify();
     }
 
     public void Skip(int lost)
@@ -313,6 +329,44 @@ public partial class PathPingRow : ObservableObject
         Sent = lost;
         Received = 0;
         Loss = lost.ToString();
+        SetStatus("Skipped", SkippedBrush);
+    }
+
+    public void Close() => Classify();
+
+    private void Classify()
+    {
+        if (Sent <= 0)
+        {
+            SetStatus("", Brushes.Transparent);
+            return;
+        }
+        if (Received == Sent)
+            SetStatus("Success", SuccessBrush);
+        else if (Received > 0)
+            SetStatus("Warning", WarningBrush);
+        else if (_sawError)
+            SetStatus("Refused", RefusedBrush);
+        else
+            SetStatus("No Answer", NoAnswerBrush);
+    }
+
+    private void SetStatus(string text, Brush brush)
+    {
+        StatusText = text;
+        StatusBrush = brush;
+    }
+
+    private static bool IsError(string? status)
+        => status is not null
+           && status != nameof(IcmpEchoStatus.Success)
+           && status != nameof(IcmpEchoStatus.TimedOut);
+
+    private static Brush Freeze(string hex)
+    {
+        var brush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(hex));
+        brush.Freeze();
+        return brush;
     }
 
     private static (string Min, string Q1, string Median, string Q3, string Max) Five(IReadOnlyList<long> samples)
