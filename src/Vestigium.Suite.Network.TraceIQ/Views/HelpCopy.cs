@@ -3,7 +3,7 @@ namespace Vestigium.Suite.Network.TraceIQ.Views;
 public static class HelpCopy
 {
     public sealed record Draft(string Title, IReadOnlyList<string> Lines, IReadOnlyList<Section> Sections);
-    public sealed record Section(string Title, IReadOnlyList<string> Lines);
+    public sealed record Section(string Title, IReadOnlyList<string> Lines, IReadOnlyList<Section>? Children = null);
 
     public static IReadOnlyList<Draft> Topics(string version, IReadOnlyList<string> license)
         =>
@@ -15,7 +15,6 @@ public static class HelpCopy
             Dashboard(),
             Settings(),
             Glossary(),
-            StatusIcons(),
             About(version),
             new("License", license.Count == 0 ? ["The license file was empty."] : license, [])
         ];
@@ -214,17 +213,13 @@ public static class HelpCopy
                 Term("Address Family", "Which kind of address the walk may use. IPv4, IPv6, or All. All lets the walk use whichever the target answers on."),
                 Term("IPv4", "The older, shorter address. Four numbers. Most of what you trace on an internal network is IPv4."),
                 Term("IPv6", "The newer, longer address. Use it when the target is IPv6, or when you want to see the IPv6 path on purpose.")
-            ])
-        ]);
-
-
-    private static Draft StatusIcons()
-        => new("Status Icons",
-        [
-            "The circle after the step number. Hover shows the word. The export writes the word."
-        ],
-        [
-            new("TraceIQ",
+            ]),
+            new("Status Icons",
+            [
+                "The circle after the step number. Hover shows the word. The export writes the word."
+            ],
+            [
+new("TraceIQ",
             [
                 Dot("22C55E", "Answered", "The step spoke on every ask. You have an address and a time for each probe. This is a step Path Ping can grade."),
                 Dot("EAB308", "Partial", "The step answered, but not every ask came back. At least one probe is a star. The address is real. The times you have are the ones that returned."),
@@ -239,7 +234,9 @@ public static class HelpCopy
                 Dot("F97316", "Refused", "The hop answered, but not with an echo. The reply was Time Exceeded, Unreachable, or a failure, and it came back fast. The hop is there. It will not echo."),
                 Dot("6B7280", "Skipped", "The walk already proved this step dead. The grade did not spend probes on it.")
             ])
+                    ])
         ]);
+
 
     private static Draft About(string version)
         => new("About",
