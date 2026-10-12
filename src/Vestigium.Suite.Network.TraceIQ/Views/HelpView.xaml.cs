@@ -6,8 +6,10 @@ using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
+using System.Windows.Shapes;
 
 namespace Vestigium.Suite.Network.TraceIQ.Views;
 
@@ -132,6 +134,11 @@ public sealed class HelpTopic : INotifyPropertyChanged
                 Document.Blocks.Add(Picture(line[4..]));
                 continue;
             }
+            if (line.StartsWith("dot:", StringComparison.Ordinal))
+            {
+                Document.Blocks.Add(StatusRow(line[4..]));
+                continue;
+            }
             if (line.StartsWith("\x1b", StringComparison.Ordinal))
             {
                 var parts = line[1..].Split('|', 2);
@@ -174,6 +181,45 @@ public sealed class HelpTopic : INotifyPropertyChanged
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
+
+    private static Block StatusRow(string body)
+    {
+        var parts = body.Split('|', 3);
+        var hex = parts[0];
+        var name = parts.Length > 1 ? parts[1] : "";
+        var means = parts.Length > 2 ? parts[2] : "";
+        var color = (Color)ColorConverter.ConvertFromString(hex);
+        var dot = new Ellipse
+        {
+            Width = 12,
+            Height = 12,
+            Fill = new SolidColorBrush(color),
+            VerticalAlignment = VerticalAlignment.Center,
+            Margin = new Thickness(0, 0, 10, 0)
+        };
+        var title = new TextBlock
+        {
+            Text = name,
+            FontWeight = FontWeights.SemiBold,
+            FontSize = 15,
+            VerticalAlignment = VerticalAlignment.Center,
+            Margin = new Thickness(0, 0, 14, 0),
+            MinWidth = 96
+        };
+        var desc = new TextBlock
+        {
+            Text = means,
+            FontSize = 15,
+            TextWrapping = TextWrapping.Wrap,
+            VerticalAlignment = VerticalAlignment.Center
+        };
+        var row = new StackPanel { Orientation = Orientation.Horizontal };
+        row.Children.Add(dot);
+        row.Children.Add(title);
+        row.Children.Add(desc);
+        return new BlockUIContainer(row) { Margin = new Thickness(0, 2, 0, 10) };
+    }
 
     private static Block Picture(string name)
     {
