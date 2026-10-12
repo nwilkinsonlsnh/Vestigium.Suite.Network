@@ -56,6 +56,26 @@
             </DataTemplate>
           </ItemsControl.ItemTemplate>
         </ItemsControl>
+        <ItemsControl x:Name="ChildSections"
+                      DockPanel.Dock="Top"
+                      Visibility="Collapsed"
+                      Margin="24,0,0,12">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <StackPanel Orientation="Horizontal" />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <RadioButton Style="{DynamicResource RadioButton.VerticalNav}"
+                           Content="{Binding Title}"
+                           GroupName="TraceIqChildSections"
+                           IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                           Margin="0,0,8,0"
+                           HorizontalContentAlignment="Left" />
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
         <FlowDocumentScrollViewer x:Name="Reader"
                                   VerticalScrollBarVisibility="Auto"
                                   IsToolBarVisible="False"
