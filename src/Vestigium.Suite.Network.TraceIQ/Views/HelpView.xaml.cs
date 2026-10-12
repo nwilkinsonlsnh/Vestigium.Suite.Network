@@ -36,6 +36,8 @@ public partial class HelpView : UserControl
             Intro.Visibility = Visibility.Collapsed;
             PageSections.Visibility = Visibility.Collapsed;
             PageSections.ItemsSource = null;
+            ChildSections.Visibility = Visibility.Collapsed;
+            ChildSections.ItemsSource = null;
             Bind(topic.Document);
             return;
         }
@@ -53,7 +55,7 @@ public partial class HelpView : UserControl
         PageSections.Visibility = Visibility.Visible;
         var section = topic.Sections.FirstOrDefault(s => s.IsSelected) ?? topic.Sections[0];
         section.IsSelected = true;
-        Bind(section.Document);
+        ShowSection(section);
     }
 
     private void Bind(FlowDocument document, FlowDocumentScrollViewer? reader = null)
@@ -70,7 +72,16 @@ public partial class HelpView : UserControl
         {
             var topic = Topic(draft.Title, draft.Lines.ToArray());
             foreach (var section in draft.Sections)
-                topic.Sections.Add(Section(section.Title, section.Lines.ToArray()));
+            {
+                var page = Section(section.Title, section.Lines.ToArray());
+                if (section.Children is { Count: > 0 })
+                {
+                    foreach (var child in section.Children)
+                        page.Sections.Add(Section(child.Title, child.Lines.ToArray()));
+                    page.Sections[0].IsSelected = true;
+                }
+                topic.Sections.Add(page);
+            }
             if (topic.Sections.Count > 0)
             {
                 topic.Sections[0].IsSelected = true;
@@ -108,9 +119,48 @@ public partial class HelpView : UserControl
             section.PropertyChanged += (_, e) =>
             {
                 if (e.PropertyName == nameof(HelpTopic.IsSelected) && section.IsSelected && ReferenceEquals(Selected, topic))
-                    Bind(section.Document);
+                    ShowSection(section);
             };
+            foreach (var child in section.Sections)
+            {
+                child.PropertyChanged += (_, e) =>
+                {
+                    if (e.PropertyName == nameof(HelpTopic.IsSelected) && child.IsSelected && ReferenceEquals(Selected, topic))
+                        Bind(child.Document);
+                };
+            }
         }
+    }
+
+    private void ShowSection(HelpTopic section)
+    {
+        if (section.Sections.Count == 0)
+        {
+            ChildSections.Visibility = Visibility.Collapsed;
+            ChildSections.ItemsSource = null;
+            if (Selected is { Lines.Count: > 0 })
+            {
+                Bind(Selected.Document, Intro);
+                Intro.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                Intro.Visibility = Visibility.Collapsed;
+            }
+            Bind(section.Document);
+            return;
+        }
+
+        if (section.Lines.Count > 0)
+        {
+            Bind(section.Document, Intro);
+            Intro.Visibility = Visibility.Visible;
+        }
+        ChildSections.ItemsSource = section.Sections;
+        ChildSections.Visibility = Visibility.Visible;
+        var child = section.Sections.FirstOrDefault(s => s.IsSelected) ?? section.Sections[0];
+        child.IsSelected = true;
+        Bind(child.Document);
     }
 }
 
@@ -212,9 +262,18 @@ public sealed class HelpTopic : INotifyPropertyChanged
             Text = means,
             FontSize = 15,
             TextWrapping = TextWrapping.Wrap,
-            VerticalAlignment = VerticalAlignment.Center
+            VerticalAlignment = VerticalAlignment.Top
         };
-        var row = new StackPanel { Orientation = Orientation.Horizontal };
+        var row = new Grid { MaxWidth = 700 };
+        row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        Grid.SetColumn(dot, 0);
+        Grid.SetColumn(title, 1);
+        Grid.SetColumn(desc, 2);
+        dot.VerticalAlignment = VerticalAlignment.Top;
+        dot.Margin = new Thickness(0, 4, 10, 0);
+        title.VerticalAlignment = VerticalAlignment.Top;
         row.Children.Add(dot);
         row.Children.Add(title);
         row.Children.Add(desc);
