@@ -141,7 +141,10 @@ public sealed partial class MainViewModel : ObservableObject
     [NotifyCanExecuteChangedFor(nameof(CancelCommand))]
     private bool _isBusy;
 
-    private bool CanTrace() => !IsBusy && !string.IsNullOrWhiteSpace(Target);
+    public bool GradeRunning { get; set; }
+    public void RefreshTrace() => RunTraceCommand.NotifyCanExecuteChanged();
+
+    private bool CanTrace() => !IsBusy && !GradeRunning && !string.IsNullOrWhiteSpace(Target);
     private bool CanCancel() => IsBusy;
 
     [RelayCommand(CanExecute = nameof(CanTrace))]
