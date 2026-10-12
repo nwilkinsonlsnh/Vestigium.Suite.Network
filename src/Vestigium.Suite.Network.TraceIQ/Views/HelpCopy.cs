@@ -230,8 +230,8 @@ new("TraceIQ",
             [
                 Dot("22C55E", "Success", "Every probe came back. No loss. This step held for the window you asked."),
                 Dot("EAB308", "Warning", "Some probes came back and some did not. Loss is greater than zero. This is the step to open on the dashboard."),
-                Dot("EF4444", "No Answer", "The grade asked and every reply timed out. Nothing came back. A black hole. Dead After stops it, so the rest of the window is spent on steps that speak."),
-                Dot("F97316", "Refused", "The hop answered, but not with an echo. The reply was Time Exceeded, Unreachable, or a failure, and it came back fast. The hop is there. It will not echo."),
+                Dot("EF4444", "No Answer", "A black hole. The grade asked and nothing came back, so every probe waited the full 2 second timeout. That is why a silent hop is slow to call. Dead After stops it once the misses add up, and the rest of the window is spent on steps that speak."),
+                Dot("F97316", "Refused", "The hop answered at once, but not with an echo. Time Exceeded, Unreachable, or a failure came back in milliseconds, so Dead After trips quickly. Contrast that with No Answer: a refusal is an immediate failure, a black hole is a 2 second wait on every probe. The hop is there. It will not echo."),
                 Dot("6B7280", "Skipped", "The walk already proved this step dead. The grade did not spend probes on it.")
             ])
                     ])
