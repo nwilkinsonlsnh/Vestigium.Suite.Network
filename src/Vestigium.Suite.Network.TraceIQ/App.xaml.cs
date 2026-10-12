@@ -96,6 +96,20 @@ public partial class App : Application
         var path = new PathPingViewModel(settings) { StatusBar = chrome.Status };
         var dash = new DashboardViewModel(settings) { StatusBar = chrome.Status };
         var exports = new ExportsViewModel(trace, path) { StatusBar = chrome.Status };
+        path.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName != nameof(PathPingViewModel.Running))
+                return;
+            trace.GradeRunning = path.Running;
+            trace.RefreshTrace();
+        };
+        trace.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName != nameof(MainViewModel.IsBusy))
+                return;
+            path.WalkBusy = trace.IsBusy;
+            path.RefreshRun();
+        };
         settings.PropertyChanged += (_, e) =>
         {
             if (e.PropertyName == nameof(SettingsViewModel.ShowLegend))
