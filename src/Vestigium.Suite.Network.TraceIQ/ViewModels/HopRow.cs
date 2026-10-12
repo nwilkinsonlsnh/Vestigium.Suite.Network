@@ -1,3 +1,5 @@
+using System.Windows.Media;
+
 namespace Vestigium.Suite.Network.TraceIQ.ViewModels;
 
 public sealed class HopRow
@@ -20,6 +22,40 @@ public sealed class HopRow
     public string P8 { get; init; } = "";
     public string P9 { get; init; } = "";
     public string P10 { get; init; } = "";
+
+
+    public string StatusText => Classify().Text;
+    public Brush StatusBrush => Classify().Brush;
+
+    private (string Text, Brush Brush) Classify()
+    {
+        var probes = new[] { P1, P2, P3, P4, P5, P6, P7, P8, P9, P10 }
+            .Where(p => !string.IsNullOrWhiteSpace(p))
+            .ToArray();
+        if (Probes == "Waiting" || probes.Any(p => p == "Waiting"))
+            return ("Waiting", WaitingBrush);
+        var stars = probes.Count(p => p is "*" or "No reply");
+        var times = probes.Count(p => p is not "*" and not "No reply" and not "Waiting");
+        if (Address == "*" || (probes.Length > 0 && times == 0))
+            return ("No Answer", NoAnswerBrush);
+        if (stars > 0 && times > 0)
+            return ("Partial", PartialBrush);
+        if (times > 0)
+            return ("Answered", AnsweredBrush);
+        return ("Waiting", WaitingBrush);
+    }
+
+    private static readonly Brush AnsweredBrush = Freeze("#22C55E");
+    private static readonly Brush PartialBrush = Freeze("#EAB308");
+    private static readonly Brush NoAnswerBrush = Freeze("#EF4444");
+    private static readonly Brush WaitingBrush = Freeze("#6B7280");
+
+    private static Brush Freeze(string hex)
+    {
+        var brush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(hex));
+        brush.Freeze();
+        return brush;
+    }
 
     public static HopRow From(Vestigium.Helpers.Network.IcmpTraceHop hop)
     {
