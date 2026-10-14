@@ -95,66 +95,94 @@ public static class SecurityCollector
         }
     }
 
+    private static readonly (StoreLocation Location, string Label)[] CertLocations =
+    [
+        (StoreLocation.LocalMachine, "LM"),
+        (StoreLocation.CurrentUser, "CU")
+    ];
+
     private static void CollectCertificates(SecuritySnapshot snap, CancellationToken ct)
     {
-        var closed = new List<string>();
-        foreach (var name in CertStores)
+        var closed = 0;
+        var opened = 0;
+        foreach (var (location, label) in CertLocations)
         {
-            ct.ThrowIfCancellationRequested();
-            using var store = new X509Store(name, StoreLocation.LocalMachine);
-            try
+            foreach (var name in CertStores)
             {
-                store.Open(OpenFlags.ReadOnly);
-            }
-            catch (Exception)
-            {
-                closed.Add(name);
-                continue;
-            }
-
-            foreach (var cert in store.Certificates)
-            {
-                snap.Certificates.Add(new CertificateRow
+                ct.ThrowIfCancellationRequested();
+                using var store = new X509Store(name, location);
+                try
                 {
-                    Store = name,
-                    Subject = cert.Subject,
-                    Issuer = cert.Issuer,
-                    Thumbprint = cert.Thumbprint,
-                    NotAfter = cert.NotAfter.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
-                    HasPrivateKey = cert.HasPrivateKey ? "Yes" : ""
-                });
+                    store.Open(OpenFlags.ReadOnly);
+                    opened++;
+                }
+                catch (Exception)
+                {
+                    closed++;
+                    continue;
+                }
+
+                foreach (var cert in store.Certificates)
+                {
+                    snap.Certificates.Add(new CertificateRow
+                    {
+                        Location = label,
+                        Store = name,
+                        Subject = cert.Subject,
+                        Issuer = cert.Issuer,
+                        Thumbprint = cert.Thumbprint,
+                        NotAfter = cert.NotAfter.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                        HasPrivateKey = cert.HasPrivateKey ? "Yes" : ""
+                    });
+                }
             }
         }
 
-        if (closed.Count == CertStores.Length)
-            throw new InvalidOperationException("all certificate stores closed: " + string.Join(", ", closed));
+        if (opened == 0)
+            throw new InvalidOperationException("all certificate stores closed");
     }
 
     private static void CollectDrivers(SecuritySnapshot snap, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         var count = 0;
-        foreach (var mo in Query("SELECT DeviceName, DriverVersion, Manufacturer, IsSigned, Signer, InfName FROM Win32_PnPSignedDriver"))
+        foreach (var mo in Query("SELECT * FROM Win32_PnPSignedDriver"))
         {
             using (mo)
             {
-                if (count >= SecuritySnapshot.DriversCap)
-                {
-                    snap.DriversTruncated = true;
-                    break;
-                }
-                snap.Drivers.Add(new SignedDriverRow
-                {
-                    DeviceName = Str(mo, "DeviceName"),
-                    DriverVersion = Str(mo, "DriverVersion"),
-                    Manufacturer = Str(mo, "Manufacturer"),
-                    IsSigned = Str(mo, "IsSigned"),
-                    Signer = Str(mo, "Signer"),
-                    InfName = Str(mo, "InfName")
-                });
-                count++;
+                if (!AddDriver(snap, ref count, "PnP", Str(mo, "DeviceName"), Str(mo, "DriverVersion"), Str(mo, "Manufacturer"), Str(mo, "IsSigned"), Str(mo, "Signer"), Str(mo, "InfName")))
+                    return;
             }
         }
+        foreach (var mo in Query("SELECT * FROM Win32_SystemDriver"))
+        {
+            using (mo)
+            {
+                if (!AddDriver(snap, ref count, "System", Str(mo, "Name"), "", Str(mo, "PathName"), "", "", Str(mo, "State")))
+                    return;
+            }
+        }
+    }
+
+    private static bool AddDriver(SecuritySnapshot snap, ref int count, string source, string name, string version, string maker, string signed, string signer, string inf)
+    {
+        if (count >= SecuritySnapshot.DriversCap)
+        {
+            snap.DriversTruncated = true;
+            return false;
+        }
+        snap.Drivers.Add(new SignedDriverRow
+        {
+            Source = source,
+            DeviceName = name,
+            DriverVersion = version,
+            Manufacturer = maker,
+            IsSigned = signed,
+            Signer = signer,
+            InfName = inf
+        });
+        count++;
+        return true;
     }
 
     private static string EnabledLabel(object? value)
