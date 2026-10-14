@@ -9,4 +9,5 @@ public static class HostIds
     public const string RouteIQ = "RouteIQ";
     public const string ProbeHost = "ProbeHost";
     public const string ShareIQ = "ShareIQ";
+    public const string SysInfoIQ = "SysInfoIQ";
 }
