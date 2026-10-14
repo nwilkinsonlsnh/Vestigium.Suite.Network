@@ -29,13 +29,9 @@
             BorderThickness="1">
       <DataGrid Style="{StaticResource DataGrid.Compact}"
                 ItemsSource="{Binding SystemRows}"
-                IsReadOnly="True"
-                AutoGenerateColumns="False"
-                CanUserAddRows="False"
-                HeadersVisibility="Column"
-                VerticalScrollBarVisibility="Auto"
-                HorizontalScrollBarVisibility="Auto"
-                EnableRowVirtualization="True">
+                IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False"
+                HeadersVisibility="Column" VerticalScrollBarVisibility="Auto"
+                HorizontalScrollBarVisibility="Auto" EnableRowVirtualization="True">
         <DataGrid.Columns>
           <DataGridTextColumn Header="Field" Binding="{Binding Field}" Width="240" />
           <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*" />
@@ -43,31 +39,89 @@
       </DataGrid>
     </Border>
 
-    <Border Visibility="{Binding StoragePageOpen, Converter={StaticResource BoolToVis}}"
-            BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
-            BorderThickness="1">
-      <DataGrid Style="{StaticResource DataGrid.Compact}"
-                ItemsSource="{Binding StorageRows}"
-                IsReadOnly="True"
-                AutoGenerateColumns="False"
-                CanUserAddRows="False"
-                HeadersVisibility="Column">
-        <DataGrid.Columns>
-          <DataGridTextColumn Header="Field" Binding="{Binding Field}" Width="240" />
-          <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*" />
-        </DataGrid.Columns>
-      </DataGrid>
-    </Border>
+    <DockPanel Visibility="{Binding StoragePageOpen, Converter={StaticResource BoolToVis}}">
+      <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
+        <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="Disks"
+                     IsChecked="{Binding DisksOpen}" GroupName="StorageSection" Margin="0,0,8,0" />
+        <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="Logical"
+                     IsChecked="{Binding LogicalOpen}" GroupName="StorageSection" Margin="0,0,8,0" />
+        <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="Partitions"
+                     IsChecked="{Binding PartitionsOpen}" GroupName="StorageSection" Margin="0,0,8,0" />
+        <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="Volumes"
+                     IsChecked="{Binding VolumesOpen}" GroupName="StorageSection" />
+      </StackPanel>
+
+      <Border Visibility="{Binding DisksOpen, Converter={StaticResource BoolToVis}}"
+              BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
+        <DataGrid Style="{StaticResource DataGrid.Compact}" ItemsSource="{Binding DiskDrives}"
+                  IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column">
+          <DataGrid.Columns>
+            <DataGridTextColumn Header="Model" Binding="{Binding Model}" Width="*" />
+            <DataGridTextColumn Header="Interface" Binding="{Binding InterfaceType}" Width="100" />
+            <DataGridTextColumn Header="Size (GB)" Binding="{Binding SizeGb}" Width="100" />
+            <DataGridTextColumn Header="Serial" Binding="{Binding SerialNumber}" Width="180" />
+            <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="80" />
+            <DataGridTextColumn Header="Parts" Binding="{Binding Partitions}" Width="60" />
+          </DataGrid.Columns>
+        </DataGrid>
+      </Border>
+
+      <Border Visibility="{Binding LogicalOpen, Converter={StaticResource BoolToVis}}"
+              BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
+        <DataGrid Style="{StaticResource DataGrid.Compact}" ItemsSource="{Binding LogicalDisks}"
+                  IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column">
+          <DataGrid.Columns>
+            <DataGridTextColumn Header="Drive" Binding="{Binding DeviceId}" Width="70" />
+            <DataGridTextColumn Header="Label" Binding="{Binding VolumeName}" Width="*" />
+            <DataGridTextColumn Header="FS" Binding="{Binding FileSystem}" Width="70" />
+            <DataGridTextColumn Header="Type" Binding="{Binding DriveType}" Width="90" />
+            <DataGridTextColumn Header="Size (GB)" Binding="{Binding SizeGb}" Width="100" />
+            <DataGridTextColumn Header="Free (GB)" Binding="{Binding FreeGb}" Width="100" />
+            <DataGridTextColumn Header="Free %" Binding="{Binding FreePercent}" Width="70" />
+          </DataGrid.Columns>
+        </DataGrid>
+      </Border>
+
+      <Border Visibility="{Binding PartitionsOpen, Converter={StaticResource BoolToVis}}"
+              BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
+        <DataGrid Style="{StaticResource DataGrid.Compact}" ItemsSource="{Binding Partitions}"
+                  IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column">
+          <DataGrid.Columns>
+            <DataGridTextColumn Header="Disk" Binding="{Binding DiskNumber}" Width="60" />
+            <DataGridTextColumn Header="Part" Binding="{Binding PartitionNumber}" Width="60" />
+            <DataGridTextColumn Header="Letter" Binding="{Binding DriveLetter}" Width="70" />
+            <DataGridTextColumn Header="Size (GB)" Binding="{Binding SizeGb}" Width="100" />
+            <DataGridTextColumn Header="Offset (GB)" Binding="{Binding OffsetGb}" Width="100" />
+            <DataGridTextColumn Header="Boot" Binding="{Binding IsBoot}" Width="70" />
+            <DataGridTextColumn Header="System" Binding="{Binding IsSystem}" Width="70" />
+            <DataGridTextColumn Header="Hidden" Binding="{Binding IsHidden}" Width="70" />
+            <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="*" />
+          </DataGrid.Columns>
+        </DataGrid>
+      </Border>
+
+      <Border Visibility="{Binding VolumesOpen, Converter={StaticResource BoolToVis}}"
+              BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
+        <DataGrid Style="{StaticResource DataGrid.Compact}" ItemsSource="{Binding Volumes}"
+                  IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column">
+          <DataGrid.Columns>
+            <DataGridTextColumn Header="Letter" Binding="{Binding DriveLetter}" Width="70" />
+            <DataGridTextColumn Header="Label" Binding="{Binding Label}" Width="*" />
+            <DataGridTextColumn Header="FS" Binding="{Binding FileSystem}" Width="70" />
+            <DataGridTextColumn Header="Type" Binding="{Binding DriveType}" Width="90" />
+            <DataGridTextColumn Header="Size (GB)" Binding="{Binding SizeGb}" Width="100" />
+            <DataGridTextColumn Header="Free (GB)" Binding="{Binding FreeGb}" Width="100" />
+            <DataGridTextColumn Header="Health" Binding="{Binding Health}" Width="90" />
+            <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="90" />
+          </DataGrid.Columns>
+        </DataGrid>
+      </Border>
+    </DockPanel>
 
     <Border Visibility="{Binding NetworkPageOpen, Converter={StaticResource BoolToVis}}"
-            BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
-            BorderThickness="1">
-      <DataGrid Style="{StaticResource DataGrid.Compact}"
-                ItemsSource="{Binding NetworkRows}"
-                IsReadOnly="True"
-                AutoGenerateColumns="False"
-                CanUserAddRows="False"
-                HeadersVisibility="Column">
+            BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
+      <DataGrid Style="{StaticResource DataGrid.Compact}" ItemsSource="{Binding NetworkRows}"
+                IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column">
         <DataGrid.Columns>
           <DataGridTextColumn Header="Field" Binding="{Binding Field}" Width="240" />
           <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*" />
@@ -76,14 +130,9 @@
     </Border>
 
     <Border Visibility="{Binding SecurityPageOpen, Converter={StaticResource BoolToVis}}"
-            BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
-            BorderThickness="1">
-      <DataGrid Style="{StaticResource DataGrid.Compact}"
-                ItemsSource="{Binding SecurityRows}"
-                IsReadOnly="True"
-                AutoGenerateColumns="False"
-                CanUserAddRows="False"
-                HeadersVisibility="Column">
+            BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
+      <DataGrid Style="{StaticResource DataGrid.Compact}" ItemsSource="{Binding SecurityRows}"
+                IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column">
         <DataGrid.Columns>
           <DataGridTextColumn Header="Field" Binding="{Binding Field}" Width="240" />
           <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*" />
@@ -92,14 +141,9 @@
     </Border>
 
     <Border Visibility="{Binding SoftwarePageOpen, Converter={StaticResource BoolToVis}}"
-            BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
-            BorderThickness="1">
-      <DataGrid Style="{StaticResource DataGrid.Compact}"
-                ItemsSource="{Binding SoftwareRows}"
-                IsReadOnly="True"
-                AutoGenerateColumns="False"
-                CanUserAddRows="False"
-                HeadersVisibility="Column">
+            BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
+      <DataGrid Style="{StaticResource DataGrid.Compact}" ItemsSource="{Binding SoftwareRows}"
+                IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column">
         <DataGrid.Columns>
           <DataGridTextColumn Header="Field" Binding="{Binding Field}" Width="240" />
           <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*" />
@@ -108,14 +152,9 @@
     </Border>
 
     <Border Visibility="{Binding ProcessesPageOpen, Converter={StaticResource BoolToVis}}"
-            BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
-            BorderThickness="1">
-      <DataGrid Style="{StaticResource DataGrid.Compact}"
-                ItemsSource="{Binding ProcessRows}"
-                IsReadOnly="True"
-                AutoGenerateColumns="False"
-                CanUserAddRows="False"
-                HeadersVisibility="Column">
+            BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
+      <DataGrid Style="{StaticResource DataGrid.Compact}" ItemsSource="{Binding ProcessRows}"
+                IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column">
         <DataGrid.Columns>
           <DataGridTextColumn Header="Field" Binding="{Binding Field}" Width="240" />
           <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*" />
@@ -124,14 +163,9 @@
     </Border>
 
     <Border Visibility="{Binding EventsPageOpen, Converter={StaticResource BoolToVis}}"
-            BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
-            BorderThickness="1">
-      <DataGrid Style="{StaticResource DataGrid.Compact}"
-                ItemsSource="{Binding EventRows}"
-                IsReadOnly="True"
-                AutoGenerateColumns="False"
-                CanUserAddRows="False"
-                HeadersVisibility="Column">
+            BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
+      <DataGrid Style="{StaticResource DataGrid.Compact}" ItemsSource="{Binding EventRows}"
+                IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column">
         <DataGrid.Columns>
           <DataGridTextColumn Header="Field" Binding="{Binding Field}" Width="240" />
           <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*" />

@@ -3,6 +3,7 @@ using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Vestigium.Controls.StatusBar;
+using Vestigium.Suite.Network.SysInfoIQ.ViewModels.Rows;
 
 namespace Vestigium.Suite.Network.SysInfoIQ.ViewModels;
 
@@ -27,57 +28,39 @@ public sealed partial class MainViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(EventsPageOpen))]
     private string _category = "System";
 
-    public bool SystemPageOpen
-    {
-        get => Category == "System";
-        set { if (value) Category = "System"; }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(DisksOpen))]
+    [NotifyPropertyChangedFor(nameof(LogicalOpen))]
+    [NotifyPropertyChangedFor(nameof(PartitionsOpen))]
+    [NotifyPropertyChangedFor(nameof(VolumesOpen))]
+    private string _storageSection = "Disks";
 
-    public bool StoragePageOpen
-    {
-        get => Category == "Storage";
-        set { if (value) Category = "Storage"; }
-    }
+    public bool SystemPageOpen { get => Category == "System"; set { if (value) Category = "System"; } }
+    public bool StoragePageOpen { get => Category == "Storage"; set { if (value) Category = "Storage"; } }
+    public bool NetworkPageOpen { get => Category == "Network"; set { if (value) Category = "Network"; } }
+    public bool SecurityPageOpen { get => Category == "Security"; set { if (value) Category = "Security"; } }
+    public bool SoftwarePageOpen { get => Category == "Software"; set { if (value) Category = "Software"; } }
+    public bool ProcessesPageOpen { get => Category == "Processes"; set { if (value) Category = "Processes"; } }
+    public bool EventsPageOpen { get => Category == "Events"; set { if (value) Category = "Events"; } }
 
-    public bool NetworkPageOpen
-    {
-        get => Category == "Network";
-        set { if (value) Category = "Network"; }
-    }
-
-    public bool SecurityPageOpen
-    {
-        get => Category == "Security";
-        set { if (value) Category = "Security"; }
-    }
-
-    public bool SoftwarePageOpen
-    {
-        get => Category == "Software";
-        set { if (value) Category = "Software"; }
-    }
-
-    public bool ProcessesPageOpen
-    {
-        get => Category == "Processes";
-        set { if (value) Category = "Processes"; }
-    }
-
-    public bool EventsPageOpen
-    {
-        get => Category == "Events";
-        set { if (value) Category = "Events"; }
-    }
+    public bool DisksOpen { get => StorageSection == "Disks"; set { if (value) StorageSection = "Disks"; } }
+    public bool LogicalOpen { get => StorageSection == "Logical"; set { if (value) StorageSection = "Logical"; } }
+    public bool PartitionsOpen { get => StorageSection == "Partitions"; set { if (value) StorageSection = "Partitions"; } }
+    public bool VolumesOpen { get => StorageSection == "Volumes"; set { if (value) StorageSection = "Volumes"; } }
 
     public ObservableCollection<InventorySection> Sections { get; } = new();
 
     public ObservableCollection<SummaryRow> SystemRows { get; } = new();
-    public ObservableCollection<SummaryRow> StorageRows { get; } = new();
     public ObservableCollection<SummaryRow> NetworkRows { get; } = new();
     public ObservableCollection<SummaryRow> SecurityRows { get; } = new();
     public ObservableCollection<SummaryRow> SoftwareRows { get; } = new();
     public ObservableCollection<SummaryRow> ProcessRows { get; } = new();
     public ObservableCollection<SummaryRow> EventRows { get; } = new();
+
+    public ObservableCollection<DiskDriveRow> DiskDrives { get; } = new();
+    public ObservableCollection<LogicalDiskRow> LogicalDisks { get; } = new();
+    public ObservableCollection<PartitionRow> Partitions { get; } = new();
+    public ObservableCollection<VolumeRow> Volumes { get; } = new();
 
     [RelayCommand(CanExecute = nameof(CanCollect))]
     private async Task CollectAsync()
@@ -89,20 +72,28 @@ public sealed partial class MainViewModel : ObservableObject
         CollectCommand.NotifyCanExecuteChanged();
         Sections.Clear();
         SystemRows.Clear();
+        DiskDrives.Clear();
+        LogicalDisks.Clear();
+        Partitions.Clear();
+        Volumes.Clear();
 
         _cts = new CancellationTokenSource();
         var ct = _cts.Token;
         try
         {
-            Status("Collecting…");
+            Status("Collecting system…");
             var sections = await Task.Run(() => Collector.CollectBase(ct), ct).ConfigureAwait(true);
             foreach (var s in sections)
                 Sections.Add(s);
-
-            var now = DateTime.Now;
-            var rows = BuildSystemRows(sections, now);
-            foreach (var row in rows)
+            foreach (var row in BuildSystemRows(sections, DateTime.Now))
                 SystemRows.Add(row);
+
+            Status("Collecting storage…");
+            var storage = await Task.Run(() => StorageCollector.Collect(ct), ct).ConfigureAwait(true);
+            foreach (var r in storage.DiskDrives) DiskDrives.Add(r);
+            foreach (var r in storage.LogicalDisks) LogicalDisks.Add(r);
+            foreach (var r in storage.Partitions) Partitions.Add(r);
+            foreach (var r in storage.Volumes) Volumes.Add(r);
 
             Status("Idle");
         }
