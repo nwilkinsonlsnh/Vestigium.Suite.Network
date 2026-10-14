@@ -19,6 +19,8 @@ public partial class App : Application
 
     public static SettingsViewModel? Settings { get; private set; }
 
+    public static SysInfoSession? Session { get; private set; }
+
     protected override void OnStartup(StartupEventArgs e)
     {
         HostLog.Initialize(HostIds.SysInfoIQ);
@@ -58,7 +60,12 @@ public partial class App : Application
             }
         });
 
-        Settings = new SettingsViewModel(Themes, chrome);
+        var store = new SysInfoSettingsStore(SysInfoSettingsStore.DefaultRoot);
+        var session = new SysInfoSession(store, Themes, chrome);
+        Session = session;
+
+        Settings = new SettingsViewModel(Themes, chrome) { Session = session };
+        session.Attach(Settings);
 
         var sysItem = window.HostShell["SysInfo"];
         if (sysItem is not null)

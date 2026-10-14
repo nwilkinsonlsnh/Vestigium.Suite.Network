@@ -9,6 +9,7 @@ public sealed partial class SettingsViewModel : ObservableObject
 {
     private readonly ThemeManager _themes;
     private readonly VestigiumDefaultWindowViewModel _chrome;
+    private bool _loading;
 
     public SettingsViewModel(ThemeManager themes, VestigiumDefaultWindowViewModel chrome)
     {
@@ -27,6 +28,8 @@ public sealed partial class SettingsViewModel : ObservableObject
             }
         };
     }
+
+    public SysInfoSession? Session { get; set; }
 
     public IReadOnlyList<ThemeDefinition> Themes => _themes.AvailableThemes;
 
@@ -65,12 +68,33 @@ public sealed partial class SettingsViewModel : ObservableObject
     [ObservableProperty]
     private string _outputFolder = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
 
+    public void LoadFrom(SysInfoSettings data)
+    {
+        _loading = true;
+        try
+        {
+            if (!string.IsNullOrWhiteSpace(data.ThemeId))
+                SelectedThemeId = data.ThemeId;
+            BarPosition = string.Equals(data.StatusBarDock, "Top", StringComparison.OrdinalIgnoreCase)
+                ? VestigiumStatusBarPosition.Top
+                : VestigiumStatusBarPosition.Bottom;
+            BarVisible = data.StatusBarVisible;
+            if (!string.IsNullOrWhiteSpace(data.OutputFolder))
+                OutputFolder = data.OutputFolder;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
     partial void OnSelectedThemeIdChanged(string? value)
     {
         if (string.IsNullOrWhiteSpace(value))
             return;
         if (_themes.Current?.Id != value)
             _themes.SwitchTheme(value);
+        Persist();
     }
 
     partial void OnBarPositionChanged(VestigiumStatusBarPosition value)
@@ -80,10 +104,21 @@ public sealed partial class SettingsViewModel : ObservableObject
             _chrome.DockStatusBarBottomCommand.Execute(null);
         else
             _chrome.DockStatusBarTopCommand.Execute(null);
+        Persist();
     }
 
     partial void OnBarVisibleChanged(bool value)
     {
         _chrome.ShowStatusBar = value;
+        Persist();
+    }
+
+    partial void OnOutputFolderChanged(string value) => Persist();
+
+    private void Persist()
+    {
+        if (_loading)
+            return;
+        Session?.Save();
     }
 }
