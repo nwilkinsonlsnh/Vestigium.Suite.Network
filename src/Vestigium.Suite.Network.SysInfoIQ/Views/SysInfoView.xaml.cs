@@ -13,7 +13,7 @@ public partial class SysInfoView : UserControl
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
-        if (DataContext is MainViewModel vm && !vm.IsBusy && string.IsNullOrEmpty(vm.Summary))
+        if (DataContext is MainViewModel vm && !vm.IsBusy && vm.SystemRows.Count == 0)
             vm.CollectCommand.Execute(null);
     }
 }

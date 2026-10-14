@@ -7,14 +7,6 @@
     <BooleanToVisibilityConverter x:Key="BoolToVis" />
   </UserControl.Resources>
   <DockPanel Margin="12">
-    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,12">
-      <Button Content="Refresh" Command="{Binding CollectCommand}" Margin="0,0,8,0" />
-      <Button Content="Cancel" Command="{Binding CancelCommand}" />
-    </StackPanel>
-    <TextBlock DockPanel.Dock="Top"
-               Text="{Binding LastExport}"
-               Style="{StaticResource TextBlock.Caption}"
-               Margin="0,0,0,8" />
     <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,0,12">
       <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="System"
                    IsChecked="{Binding SystemPageOpen}" GroupName="SysInfoCategory" Margin="0,0,8,0" />
@@ -32,40 +24,119 @@
                    IsChecked="{Binding EventsPageOpen}" GroupName="SysInfoCategory" />
     </StackPanel>
 
-    <Grid Visibility="{Binding SystemPageOpen, Converter={StaticResource BoolToVis}}">
-      <Border BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
-              BorderThickness="1"
-              Background="{DynamicResource Vestigium.Brushes.Surface.Card}"
-              Padding="12">
-        <TextBox Text="{Binding Summary}"
-                 IsReadOnly="True"
-                 TextWrapping="NoWrap"
-                 FontFamily="Consolas"
-                 FontSize="13"
-                 Background="Transparent"
-                 BorderThickness="0"
-                 VerticalScrollBarVisibility="Auto"
-                 HorizontalScrollBarVisibility="Auto" />
-      </Border>
-    </Grid>
+    <Border Visibility="{Binding SystemPageOpen, Converter={StaticResource BoolToVis}}"
+            BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
+            BorderThickness="1">
+      <DataGrid Style="{StaticResource DataGrid.Compact}"
+                ItemsSource="{Binding SystemRows}"
+                IsReadOnly="True"
+                AutoGenerateColumns="False"
+                CanUserAddRows="False"
+                HeadersVisibility="Column"
+                VerticalScrollBarVisibility="Auto"
+                HorizontalScrollBarVisibility="Auto"
+                EnableRowVirtualization="True">
+        <DataGrid.Columns>
+          <DataGridTextColumn Header="Field" Binding="{Binding Field}" Width="240" />
+          <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*" />
+        </DataGrid.Columns>
+      </DataGrid>
+    </Border>
 
-    <TextBlock Visibility="{Binding StoragePageOpen, Converter={StaticResource BoolToVis}}"
-               Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap"
-               Text="Storage — DiskDrives, LogicalDisks, Partitions, Volumes. Placeholder. PR02." />
-    <TextBlock Visibility="{Binding NetworkPageOpen, Converter={StaticResource BoolToVis}}"
-               Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap"
-               Text="Network — IP, DNS, adapters, routes, ARP, listeners, TCP. Placeholder. PR02." />
-    <TextBlock Visibility="{Binding SecurityPageOpen, Converter={StaticResource BoolToVis}}"
-               Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap"
-               Text="Security — Firewall profiles and rules, certificates, signed drivers. Placeholder. Later PR." />
-    <TextBlock Visibility="{Binding SoftwarePageOpen, Converter={StaticResource BoolToVis}}"
-               Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap"
-               Text="Software — Installed software, hotfixes, features, ODBC, environment, SQL services. Placeholder. Later PR." />
-    <TextBlock Visibility="{Binding ProcessesPageOpen, Converter={StaticResource BoolToVis}}"
-               Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap"
-               Text="Processes — Processes, services, scheduled tasks, shares. Placeholder. PR03." />
-    <TextBlock Visibility="{Binding EventsPageOpen, Converter={StaticResource BoolToVis}}"
-               Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap"
-               Text="Events — System and application errors (last 7 days), SystemInformation, drivers. Placeholder. Later PR." />
+    <Border Visibility="{Binding StoragePageOpen, Converter={StaticResource BoolToVis}}"
+            BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
+            BorderThickness="1">
+      <DataGrid Style="{StaticResource DataGrid.Compact}"
+                ItemsSource="{Binding StorageRows}"
+                IsReadOnly="True"
+                AutoGenerateColumns="False"
+                CanUserAddRows="False"
+                HeadersVisibility="Column">
+        <DataGrid.Columns>
+          <DataGridTextColumn Header="Field" Binding="{Binding Field}" Width="240" />
+          <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*" />
+        </DataGrid.Columns>
+      </DataGrid>
+    </Border>
+
+    <Border Visibility="{Binding NetworkPageOpen, Converter={StaticResource BoolToVis}}"
+            BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
+            BorderThickness="1">
+      <DataGrid Style="{StaticResource DataGrid.Compact}"
+                ItemsSource="{Binding NetworkRows}"
+                IsReadOnly="True"
+                AutoGenerateColumns="False"
+                CanUserAddRows="False"
+                HeadersVisibility="Column">
+        <DataGrid.Columns>
+          <DataGridTextColumn Header="Field" Binding="{Binding Field}" Width="240" />
+          <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*" />
+        </DataGrid.Columns>
+      </DataGrid>
+    </Border>
+
+    <Border Visibility="{Binding SecurityPageOpen, Converter={StaticResource BoolToVis}}"
+            BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
+            BorderThickness="1">
+      <DataGrid Style="{StaticResource DataGrid.Compact}"
+                ItemsSource="{Binding SecurityRows}"
+                IsReadOnly="True"
+                AutoGenerateColumns="False"
+                CanUserAddRows="False"
+                HeadersVisibility="Column">
+        <DataGrid.Columns>
+          <DataGridTextColumn Header="Field" Binding="{Binding Field}" Width="240" />
+          <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*" />
+        </DataGrid.Columns>
+      </DataGrid>
+    </Border>
+
+    <Border Visibility="{Binding SoftwarePageOpen, Converter={StaticResource BoolToVis}}"
+            BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
+            BorderThickness="1">
+      <DataGrid Style="{StaticResource DataGrid.Compact}"
+                ItemsSource="{Binding SoftwareRows}"
+                IsReadOnly="True"
+                AutoGenerateColumns="False"
+                CanUserAddRows="False"
+                HeadersVisibility="Column">
+        <DataGrid.Columns>
+          <DataGridTextColumn Header="Field" Binding="{Binding Field}" Width="240" />
+          <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*" />
+        </DataGrid.Columns>
+      </DataGrid>
+    </Border>
+
+    <Border Visibility="{Binding ProcessesPageOpen, Converter={StaticResource BoolToVis}}"
+            BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
+            BorderThickness="1">
+      <DataGrid Style="{StaticResource DataGrid.Compact}"
+                ItemsSource="{Binding ProcessRows}"
+                IsReadOnly="True"
+                AutoGenerateColumns="False"
+                CanUserAddRows="False"
+                HeadersVisibility="Column">
+        <DataGrid.Columns>
+          <DataGridTextColumn Header="Field" Binding="{Binding Field}" Width="240" />
+          <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*" />
+        </DataGrid.Columns>
+      </DataGrid>
+    </Border>
+
+    <Border Visibility="{Binding EventsPageOpen, Converter={StaticResource BoolToVis}}"
+            BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
+            BorderThickness="1">
+      <DataGrid Style="{StaticResource DataGrid.Compact}"
+                ItemsSource="{Binding EventRows}"
+                IsReadOnly="True"
+                AutoGenerateColumns="False"
+                CanUserAddRows="False"
+                HeadersVisibility="Column">
+        <DataGrid.Columns>
+          <DataGridTextColumn Header="Field" Binding="{Binding Field}" Width="240" />
+          <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*" />
+        </DataGrid.Columns>
+      </DataGrid>
+    </Border>
   </DockPanel>
 </UserControl>
