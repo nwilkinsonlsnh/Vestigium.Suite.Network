@@ -19,6 +19,9 @@ public sealed partial class MainViewModel : ObservableObject
     private bool _isBusy;
 
     [ObservableProperty]
+    private string _progressMessage = "Collecting…";
+
+    [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(SystemPageOpen))]
     [NotifyPropertyChangedFor(nameof(StoragePageOpen))]
     [NotifyPropertyChangedFor(nameof(NetworkPageOpen))]
@@ -210,6 +213,7 @@ public sealed partial class MainViewModel : ObservableObject
 
     private void Status(string message)
     {
+        ProgressMessage = message;
         if (StatusBar is not null)
             StatusBar.Message = message;
     }
