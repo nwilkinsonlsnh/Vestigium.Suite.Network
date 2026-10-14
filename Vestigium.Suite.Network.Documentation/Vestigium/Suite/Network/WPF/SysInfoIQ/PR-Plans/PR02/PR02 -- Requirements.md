@@ -2,97 +2,59 @@
 
 **Document ID:** VEST-SUITE-NETWORK-SYSINFOIQ-PR02-REQ  
 **Host:** `Vestigium.Suite.Network.SysInfoIQ`  
-**Status:** Open  
+**Status:** Closed — accepted  
 **Date:** 14 October 2026  
+**Closed:** 14 October 2026  
 **Product papers:** [Requirements_v1.0.md](../../Requirements_v1.0.md), [Design_v1.0.md](../../Design_v1.0.md), [SectionsCatalog.md](../../SectionsCatalog.md)
 
-This file is the definition of done for PR02. Storage and Network category grids get real data. System stays as PR01 left it.
-
-Baseline: PR01 closed. Collect on load. System tab is a Field/Value grid. Storage and Network tabs are empty themed grids. No PowerShell. No automatic export.
+Storage and Network category grids have real data. System tab unchanged. Security, Software, Processes, Events remain empty by design.
 
 ---
 
-## Must land
+## Must land — Done
 
-### PR02.001 Storage collect
+### PR02.001 Storage collect — Done
 
-- Collect on the same load path as System. Failed section continues.
-- Sections:
-  - DiskDrives — `Win32_DiskDrive`
-  - LogicalDisks — `Win32_LogicalDisk`
-  - Partitions — `Win32_DiskPartition` (or MSFT_Partition if the namespace is available)
-  - Volumes — `Win32_Volume` (or MSFT_Volume)
-- No PowerShell. No wmic.exe.
+DiskDrives, LogicalDisks, Partitions, Volumes via System.Management. Failed section continues.
 
-### PR02.002 Storage grid
+### PR02.002 Storage grid — Done
 
-- Storage tab binds a multi-column `DataGrid.Compact`.
-- One grid, or one grid per section with a section picker. Default: one grid per section, selectable inside the tab.
-- Columns match the useful fields from the sample files (model, size, free, filesystem, letter, interface, serial, offset, type). Not every WMI property.
-- Sizes shown as GB to two decimals where the sample used bytes.
-- Empty result is an empty grid, not an error.
+Section picker: Disks | Logical | Partitions | Volumes. Themed DataGrid.Compact. Sizes in GB.
 
-### PR02.003 Network collect
+### PR02.003 Network collect — Done
 
-- Same load path. Failed section continues.
-- Sections:
-  - IPConfiguration — `NetworkInterface.GetAllNetworkInterfaces()` + `GetIPProperties`
-  - DNSConfiguration — per-adapter `DnsAddresses`
-  - NetworkInterfaceCards — `NetworkInterface` (MAC, speed, status, description)
-  - Routes — `IPGlobalProperties` or CIM `MSFT_NetRoute` / `Win32_IP4RouteTable`
-  - ARPTable — CIM or P/Invoke `GetIpNetTable`. Cap or page if the table is large.
-  - ListeningPorts — `IPGlobalProperties.GetActiveTcpListeners()` + UDP + process name where available
-  - TCPConnections — `IPGlobalProperties.GetActiveTcpConnections()` + owning process where available
-- No PowerShell. No netstat.exe. No wmic.exe.
+IP, DNS, NICs via NetworkInterface. Routes via Win32_IP4RouteTable. ARP via MSFT_NetNeighbor. Listeners and TCP via IPGlobalProperties. Caps on ARP and TCP.
 
-### PR02.004 Network grid
+### PR02.004 Network grid — Done
 
-- Network tab binds themed multi-column grids, one per section, selectable inside the tab.
-- Columns match the useful fields from the samples (address, mask, gateway, DNS, MAC, speed, state, local, remote, PID, process).
-- Loopback and tunnel adapters are included but marked. Not filtered out.
-- Empty result is an empty grid.
+Section picker: IP | DNS | NICs | Routes | ARP | Listeners | TCP.
 
-### PR02.005 Status and failure
+### PR02.005 Status and failure — Done
 
-- Status bar names the section being collected.
-- A failed section does not abort the run. The grid for that section shows a single error row or stays empty with the status noting the failure.
-- Collect still runs on load. No buttons return.
+Status names the section. Failed section continues. Final status notes failures and caps.
 
-### PR02.006 Tests
+### PR02.006 Tests — Done
 
-- Pure tests for row mapping (byte → GB, adapter filter labels, route row shape).
-- No live CIM. No live sockets.
+Pure mapping tests. No live CIM.
 
 ---
 
-## Must not change in PR02
+## Acceptance — Met
 
-- System tab shape and fields.
-- Settings and Help pages.
-- Other hosts.
-- Security, Software, Processes, Events sections.
-- Automatic export.
-- Remote collection.
-- Excel.
-- Query box (the grid is the surface; filter lands later).
-
----
-
-## Acceptance
-
-1. Open the app. System grid fills as before.
-2. Storage tab shows DiskDrives, LogicalDisks, Partitions, Volumes with real local data.
-3. Network tab shows the seven sections with real local data.
+1. System grid fills as before.
+2. Storage tab shows the four sections.
+3. Network tab shows the seven sections.
 4. A failed section does not blank the others.
-5. Status bar names the section. Idle when done.
+5. Status bar names the section.
 6. Tests green. No live CIM.
 
 ---
 
-## Parked
+## Parked (now PR03+)
 
+- Security tab (PR03).
+- Software, Processes, Events.
 - Query / filter on the grids.
 - Explicit export of Storage and Network.
-- Security, Software, Processes, Events (later PRs).
 - Elevation prompt.
 - Remote targets.
