@@ -11,6 +11,7 @@
     <ProjectReference Include="..\Vestigium.Suite.Network.Shell\Vestigium.Suite.Network.Shell.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsDiVersion)" />
     <PackageReference Include="Vestigium.Themes" Version="$(VestigiumThemesVersion)" />
     <PackageReference Include="Vestigium.Controls" Version="$(VestigiumControlsVersion)" />

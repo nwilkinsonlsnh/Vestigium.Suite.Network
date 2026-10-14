@@ -5,6 +5,8 @@ using Vestigium.Controls.Shell;
 using Vestigium.Converters;
 using Vestigium.Converters.DependencyInjection;
 using Vestigium.Suite.Network.Shell;
+using Vestigium.Suite.Network.SysInfoIQ.ViewModels;
+using Vestigium.Suite.Network.SysInfoIQ.Views;
 using Vestigium.Themes;
 
 namespace Vestigium.Suite.Network.SysInfoIQ;
@@ -14,6 +16,8 @@ public partial class App : Application
     public static ThemeManager Themes { get; } = new();
 
     public static IServiceProvider Services { get; private set; } = null!;
+
+    public static SettingsViewModel? Settings { get; private set; }
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -39,6 +43,34 @@ public partial class App : Application
     {
         var chrome = Services.GetRequiredService<VestigiumDefaultWindowViewModel>();
         var window = new SysInfoIqWindow(chrome);
+
+        window.HostShell.ApplySpec(new VestigiumShellSpec
+        {
+            Items =
+            {
+                new VestigiumNavItemSpec("SysInfo")
+                {
+                    Title = "SysInfo",
+                    Subject = "Inventory",
+                    Description = "Collect, organize, and export a local system inventory."
+                },
+                new VestigiumNavItemSpec("Settings")
+            }
+        });
+
+        Settings = new SettingsViewModel(Themes, chrome);
+
+        var sysItem = window.HostShell["SysInfo"];
+        if (sysItem is not null)
+        {
+            sysItem.Content = new SysInfoView();
+            window.HostShell.SelectedItem = sysItem;
+        }
+
+        var settingsItem = window.HostShell["Settings"];
+        if (settingsItem is not null)
+            settingsItem.Content = new SettingsView { DataContext = Settings };
+
         chrome.Status.Message = "Idle";
         return window;
     }

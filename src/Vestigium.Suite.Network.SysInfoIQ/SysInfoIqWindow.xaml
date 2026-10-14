@@ -3,11 +3,56 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:shell="clr-namespace:Vestigium.Controls.Shell;assembly=Vestigium.Controls"
         Title="SysInfoIQ"
-        Height="720" Width="1120"
-        MinHeight="480" MinWidth="800"
+        Height="860" Width="1280"
+        MinHeight="640" MinWidth="1024"
         WindowStartupLocation="Manual"
         Background="{DynamicResource Vestigium.Brushes.Surface.Window}">
   <DockPanel Style="{StaticResource DockPanel.Standard}">
+    <Menu DockPanel.Dock="Top" Background="{DynamicResource Vestigium.Brushes.Surface.Window}">
+      <MenuItem Header="_File">
+        <MenuItem Header="E_xit" Click="Exit_Click" />
+      </MenuItem>
+      <MenuItem Header="_View">
+        <MenuItem Header="Status bar visible" IsCheckable="True"
+                  IsChecked="{Binding ShowStatusBar, Mode=TwoWay}" />
+        <Separator />
+        <MenuItem Header="Status bar Top" Click="BarTop_Click" />
+        <MenuItem Header="Status bar Bottom" Click="BarBottom_Click" />
+        <Separator />
+        <MenuItem x:Name="ThemeMenu" Header="_Theme" />
+      </MenuItem>
+    </Menu>
+    <Grid DockPanel.Dock="Top" Margin="12,8,12,0">
+      <ItemsControl HorizontalAlignment="Left"
+                    ItemsSource="{Binding NavItems, ElementName=RootShell}">
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" />
+          </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <RadioButton Style="{StaticResource RadioButton.HorizontalTab}"
+                         Content="{Binding Header}"
+                         IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                         IsEnabled="{Binding IsEnabled}"
+                         GroupName="SysInfoIqMainNav"
+                         Checked="MainNav_Checked"
+                         Click="MainNav_Click"
+                         Margin="0,0,8,0" />
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+      <RadioButton x:Name="HelpTab"
+                   HorizontalAlignment="Right"
+                   VerticalAlignment="Center"
+                   Content="Help"
+                   Style="{StaticResource RadioButton.HorizontalTab}"
+                   GroupName="SysInfoIqMainNav"
+                   Checked="HelpTab_Checked"
+                   Unchecked="HelpTab_Unchecked"
+                   Margin="8,0,0,0" />
+    </Grid>
     <shell:VestigiumShell x:Name="RootShell"
                           ShowNav="False"
                           Status="{Binding Status}"

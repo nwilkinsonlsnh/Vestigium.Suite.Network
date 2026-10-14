@@ -1,0 +1,25 @@
+<UserControl x:Class="Vestigium.Suite.Network.SysInfoIQ.Views.HelpView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="{DynamicResource Vestigium.Brushes.Surface.Window}">
+  <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="24,16,24,16">
+    <StackPanel MaxWidth="720" HorizontalAlignment="Left">
+      <TextBlock FontSize="22" FontWeight="SemiBold" Margin="0,0,0,12"
+                 Text="SysInfoIQ" />
+      <TextBlock TextWrapping="Wrap" Margin="0,0,0,12"
+                 Text="SysInfoIQ collects a local Windows system inventory, organizes it, and exports it as UTF-8 text. It replaces the PowerShell collector. Collection uses managed .NET. It does not launch powershell.exe, pwsh.exe, or wmic.exe." />
+      <TextBlock FontSize="16" FontWeight="SemiBold" Margin="0,8,0,6" Text="Elevation" />
+      <TextBlock TextWrapping="Wrap" Margin="0,0,0,12"
+                 Text="Elevation is not required for the base summary. Later sections (event logs, some firewall, full driver list) are more complete when the process is elevated. Incomplete sections write an error file and the run continues." />
+      <TextBlock FontSize="16" FontWeight="SemiBold" Margin="0,8,0,6" Text="Logs" />
+      <TextBlock TextWrapping="Wrap" Margin="0,0,0,12"
+                 Text="Logs land under C:\ProgramData\Vestigium\Logs\SysInfoIQ." />
+      <TextBlock FontSize="16" FontWeight="SemiBold" Margin="0,8,0,6" Text="Export" />
+      <TextBlock TextWrapping="Wrap" Margin="0,0,0,12"
+                 Text="Export writes a timestamped folder under the output path configured on Settings. Files are named {Hostname}_{Section}.txt. A manifest lists what was written." />
+      <TextBlock FontSize="16" FontWeight="SemiBold" Margin="0,8,0,6" Text="Scope" />
+      <TextBlock TextWrapping="Wrap" Margin="0,0,0,12"
+                 Text="Local machine only. No remote scan. No scheduled collection. Full section list arrives in later PRs. PR01 ships chrome, logging, base summary, and text export." />
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

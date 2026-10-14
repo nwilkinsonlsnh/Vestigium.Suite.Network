@@ -1,0 +1,19 @@
+<UserControl x:Class="Vestigium.Suite.Network.SysInfoIQ.Views.SysInfoView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="{DynamicResource Vestigium.Brushes.Surface.Window}">
+  <DockPanel Margin="12">
+    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,12">
+      <Button Content="Collect" IsEnabled="False" Margin="0,0,8,0" />
+      <Button Content="Cancel" IsEnabled="False" />
+    </StackPanel>
+    <Border BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
+            BorderThickness="1"
+            Background="{DynamicResource Vestigium.Brushes.Surface.Card}"
+            Padding="16">
+      <TextBlock TextWrapping="Wrap"
+                 Style="{StaticResource TextBlock.Caption}"
+                 Text="SysInfo — inventory collection lands in PR01.004. Chrome and pages are PR01.002." />
+    </Border>
+  </DockPanel>
+</UserControl>
