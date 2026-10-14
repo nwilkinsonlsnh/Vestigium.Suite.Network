@@ -8,6 +8,8 @@ public sealed class InstalledSoftwareRow
     public string Version { get; init; } = "";
     public string Publisher { get; init; } = "";
     public string InstallDate { get; init; } = "";
+    public string Hidden { get; init; } = "";
+    public bool IsHidden { get; init; }
 }
 
 public sealed class HotfixRow
