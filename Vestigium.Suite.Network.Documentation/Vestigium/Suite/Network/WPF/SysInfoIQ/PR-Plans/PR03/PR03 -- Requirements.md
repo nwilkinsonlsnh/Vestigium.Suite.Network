@@ -2,79 +2,57 @@
 
 **Document ID:** VEST-SUITE-NETWORK-SYSINFOIQ-PR03-REQ  
 **Host:** `Vestigium.Suite.Network.SysInfoIQ`  
-**Status:** Open  
+**Status:** Closed — accepted  
 **Date:** 14 October 2026  
+**Closed:** 14 October 2026  
 **Product papers:** [Requirements_v1.0.md](../../Requirements_v1.0.md), [Design_v1.0.md](../../Design_v1.0.md), [SectionsCatalog.md](../../SectionsCatalog.md)
 
-This file is the definition of done for PR03. The Security tab gets real data. System, Storage, and Network stay as PR01/PR02 left them.
-
-Baseline: PR02 closed. Collect on load. Security tab is an empty themed grid. No PowerShell. No automatic export.
+Security tab has real data. System, Storage, and Network unchanged. Software, Processes, Events remain empty by design.
 
 ---
 
-## Must land
+## Must land — Done
 
-### PR03.001 Security collect
+### PR03.001 Security collect — Done
 
-- Collect on the same load path. Failed section continues.
-- Sections:
-  - FirewallProfiles — `MSFT_NetFirewallProfile` (root\StandardCimv2). Domain, Private, Public. Enabled state, default inbound/outbound.
-  - FirewallRules — `MSFT_NetFirewallRule`. Cap at 1000 enabled rules. Note truncation.
-  - Certificates — `X509Store` for LocalMachine My, Root, CA, TrustedPublisher. Thumbprint, subject, issuer, not-after, has private key.
-  - SignedDrivers — `Win32_PnPSignedDriver`. Device name, driver version, is signed, signer, driver date. Cap at 500.
-- No PowerShell. No netsh. No wmic.exe.
+Profiles and Rules via MSFT_Net*. Certificates via X509Store. Drivers via Win32_PnPSignedDriver and Win32_SystemDriver.
 
-### PR03.002 Security grid
+### PR03.002 Security grid — Done
 
-- Security tab binds multi-column `DataGrid.Compact`, one grid per section.
-- Section picker: **Profiles | Rules | Certificates | Drivers**
-- Columns match the useful fields from the samples. Not every CIM property.
-- Empty result is an empty grid, not an error.
-- Truncated sections note the cap in the status bar.
+Section picker: Profiles | Rules | Certificates | Drivers.
 
-### PR03.003 Status and failure
+### PR03.003 Status and failure — Done
 
-- Status bar names the section: `Security / Profiles`, `Security / Rules`, and so on.
-- A failed section does not abort the run. Its grid stays empty. The final status lists the failed section.
-- Collect still runs on load. No buttons return.
+Status names the section. Failed section continues. Caps noted.
 
-### PR03.004 Tests
+### PR03.004 Tests — Done
 
-- Pure tests for row shape, cap constants, and the failure list.
-- No live CIM. No live certificate store.
+Pure mapping tests. No live CIM.
+
+### Follow-ups landed during acceptance
+
+- Rules query fixed (`SELECT *`, enum labels). All rules, not only enabled.
+- Certificates from Local Machine and Current User. Location is the first column.
+- Drivers are all PnP plus system drivers, not signed-only. Source is the first column.
+- Shell scroll disabled so grids scroll inside the form. Loading overlay while collecting.
 
 ---
 
-## Must not change in PR03
+## Acceptance — Met
 
-- System, Storage, Network tabs.
-- Settings and Help pages.
-- Other hosts.
-- Software, Processes, Events sections.
-- Automatic export.
-- Remote collection.
-- Excel.
-- Query box.
+1. System, Storage, Network still fill.
+2. Security tab shows the four sections with real local data.
+3. Caps noted. Failed section does not blank the others.
+4. Status names the section.
+5. Tests green.
 
 ---
 
-## Acceptance
+## Parked (now PR04+)
 
-1. Open the app. System, Storage, and Network still fill.
-2. Security tab shows Profiles, Rules, Certificates, and Drivers with real local data.
-3. Firewall rules and signed drivers respect their caps. Status notes the cap.
-4. A failed section does not blank the others.
-5. Status bar names the section. Idle when done.
-6. Tests green. No live CIM.
-
----
-
-## Parked
-
-- Software tab (installed software, hotfixes, features, ODBC, env, SQL).
-- Processes tab (processes, services, tasks, shares).
-- Events tab (7-day errors, SystemInformation, drivers).
-- Query / filter.
-- Explicit export of Security.
+- Software tab (PR04).
+- Processes, Events.
+- Query bar / KQL.
+- Explicit export.
 - Elevation prompt.
 - Remote targets.
