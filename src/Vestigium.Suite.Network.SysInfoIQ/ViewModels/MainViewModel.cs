@@ -55,6 +55,15 @@ public sealed partial class MainViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(DriversOpen))]
     private string _securitySection = "Profiles";
 
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(InstalledOpen))]
+    [NotifyPropertyChangedFor(nameof(HotfixesOpen))]
+    [NotifyPropertyChangedFor(nameof(FeaturesOpen))]
+    [NotifyPropertyChangedFor(nameof(OdbcOpen))]
+    [NotifyPropertyChangedFor(nameof(EnvironmentOpen))]
+    [NotifyPropertyChangedFor(nameof(SqlOpen))]
+    private string _softwareSection = "Installed";
+
     public bool SystemPageOpen { get => Category == "System"; set { if (value) Category = "System"; } }
     public bool StoragePageOpen { get => Category == "Storage"; set { if (value) Category = "Storage"; } }
     public bool NetworkPageOpen { get => Category == "Network"; set { if (value) Category = "Network"; } }
@@ -81,10 +90,16 @@ public sealed partial class MainViewModel : ObservableObject
     public bool CertificatesOpen { get => SecuritySection == "Certificates"; set { if (value) SecuritySection = "Certificates"; } }
     public bool DriversOpen { get => SecuritySection == "Drivers"; set { if (value) SecuritySection = "Drivers"; } }
 
+    public bool InstalledOpen { get => SoftwareSection == "Installed"; set { if (value) SoftwareSection = "Installed"; } }
+    public bool HotfixesOpen { get => SoftwareSection == "Hotfixes"; set { if (value) SoftwareSection = "Hotfixes"; } }
+    public bool FeaturesOpen { get => SoftwareSection == "Features"; set { if (value) SoftwareSection = "Features"; } }
+    public bool OdbcOpen { get => SoftwareSection == "ODBC"; set { if (value) SoftwareSection = "ODBC"; } }
+    public bool EnvironmentOpen { get => SoftwareSection == "Environment"; set { if (value) SoftwareSection = "Environment"; } }
+    public bool SqlOpen { get => SoftwareSection == "SQL"; set { if (value) SoftwareSection = "SQL"; } }
+
     public ObservableCollection<InventorySection> Sections { get; } = new();
 
     public ObservableCollection<SummaryRow> SystemRows { get; } = new();
-    public ObservableCollection<SummaryRow> SoftwareRows { get; } = new();
     public ObservableCollection<SummaryRow> ProcessRows { get; } = new();
     public ObservableCollection<SummaryRow> EventRows { get; } = new();
 
@@ -105,6 +120,13 @@ public sealed partial class MainViewModel : ObservableObject
     public ObservableCollection<FirewallRuleRow> FirewallRules { get; } = new();
     public ObservableCollection<CertificateRow> Certificates { get; } = new();
     public ObservableCollection<SignedDriverRow> SignedDrivers { get; } = new();
+
+    public ObservableCollection<InstalledSoftwareRow> InstalledSoftware { get; } = new();
+    public ObservableCollection<HotfixRow> Hotfixes { get; } = new();
+    public ObservableCollection<FeatureRow> Features { get; } = new();
+    public ObservableCollection<OdbcRow> Odbc { get; } = new();
+    public ObservableCollection<EnvironmentRow> EnvironmentVars { get; } = new();
+    public ObservableCollection<SqlServiceRow> SqlServices { get; } = new();
 
     [RelayCommand(CanExecute = nameof(CanCollect))]
     private async Task CollectAsync()
@@ -131,6 +153,12 @@ public sealed partial class MainViewModel : ObservableObject
         FirewallRules.Clear();
         Certificates.Clear();
         SignedDrivers.Clear();
+        InstalledSoftware.Clear();
+        Hotfixes.Clear();
+        Features.Clear();
+        Odbc.Clear();
+        EnvironmentVars.Clear();
+        SqlServices.Clear();
 
         _cts = new CancellationTokenSource();
         var ct = _cts.Token;
@@ -170,7 +198,17 @@ public sealed partial class MainViewModel : ObservableObject
             foreach (var r in security.Certificates) Certificates.Add(r);
             foreach (var r in security.Drivers) SignedDrivers.Add(r);
 
-            Status(FinishNote(storage, network, security));
+            var software = await Task.Run(
+                () => SoftwareCollector.Collect(ct, name => Status($"Software / {name}")),
+                ct).ConfigureAwait(true);
+            foreach (var r in software.Installed) InstalledSoftware.Add(r);
+            foreach (var r in software.Hotfixes) Hotfixes.Add(r);
+            foreach (var r in software.Features) Features.Add(r);
+            foreach (var r in software.Odbc) Odbc.Add(r);
+            foreach (var r in software.Environment) EnvironmentVars.Add(r);
+            foreach (var r in software.Sql) SqlServices.Add(r);
+
+            Status(FinishNote(storage, network, security, software));
         }
         catch (OperationCanceledException)
         {
@@ -190,10 +228,13 @@ public sealed partial class MainViewModel : ObservableObject
         }
     }
 
-    private static string FinishNote(StorageSnapshot storage, NetworkSnapshot network, SecuritySnapshot security)
+    private static string FinishNote(StorageSnapshot storage, NetworkSnapshot network, SecuritySnapshot security, SoftwareSnapshot software)
     {
         var notes = new List<string>();
-        var failed = StorageCollector.Failures(storage).Concat(SecurityCollector.Failures(security)).ToList();
+        var failed = StorageCollector.Failures(storage)
+            .Concat(SecurityCollector.Failures(security))
+            .Concat(SoftwareCollector.Failures(software))
+            .ToList();
         if (failed.Count > 0)
             notes.Add("failed: " + string.Join(", ", failed));
         if (!string.IsNullOrWhiteSpace(network.Error))
@@ -206,6 +247,8 @@ public sealed partial class MainViewModel : ObservableObject
             notes.Add("Rules capped");
         if (security.DriversTruncated)
             notes.Add("Drivers capped");
+        if (software.FeaturesTruncated)
+            notes.Add("Features capped");
         return notes.Count == 0 ? "Idle" : "Idle (" + string.Join("; ", notes) + ")";
     }
 
