@@ -76,9 +76,6 @@ public static class SecurityCollector
         {
             using (mo)
             {
-                var enabled = Str(mo, "Enabled");
-                if (!string.Equals(enabled, "1", StringComparison.Ordinal) && !string.Equals(enabled, "True", StringComparison.OrdinalIgnoreCase))
-                    continue;
                 if (count >= SecuritySnapshot.RulesCap)
                 {
                     snap.RulesTruncated = true;
