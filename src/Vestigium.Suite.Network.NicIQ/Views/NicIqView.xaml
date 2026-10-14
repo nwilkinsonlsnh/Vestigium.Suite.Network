@@ -90,6 +90,10 @@
           </DataGridTemplateColumn>
           <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="2*" MinWidth="180" />
           <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="130" MinWidth="110" />
+          <DataGridTextColumn Header="IPv4 Address" Binding="{Binding Ipv4Address}" Width="140" MinWidth="120" />
+          <DataGridTextColumn Header="Subnet Mask" Binding="{Binding Ipv4SubnetMask}" Width="140" MinWidth="120" />
+          <DataGridTextColumn Header="CIDR" Binding="{Binding Ipv4Cidr}" Width="70" MinWidth="60" />
+          <DataGridTextColumn Header="IPv6 Address" Binding="{Binding Ipv6Address}" Width="280" MinWidth="200" />
           <DataGridTextColumn Header="MacAddress" Binding="{Binding MacAddress}" Width="150" MinWidth="130" />
           <DataGridTextColumn Header="Speed" Binding="{Binding Speed}" Width="110" MinWidth="90" />
           <DataGridTextColumn Header="Metric" Binding="{Binding Metric}" Width="80" MinWidth="70" />
