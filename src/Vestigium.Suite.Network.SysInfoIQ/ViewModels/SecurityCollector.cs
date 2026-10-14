@@ -72,10 +72,13 @@ public static class SecurityCollector
     {
         ct.ThrowIfCancellationRequested();
         var count = 0;
-        foreach (var mo in QueryCim("SELECT DisplayName, Enabled, Direction, Action, Profiles, Protocol FROM MSFT_NetFirewallRule WHERE Enabled = 1"))
+        foreach (var mo in QueryCim("SELECT DisplayName, Enabled, Direction, Action, Profiles, Protocol FROM MSFT_NetFirewallRule"))
         {
             using (mo)
             {
+                var enabled = Str(mo, "Enabled");
+                if (!string.Equals(enabled, "1", StringComparison.Ordinal) && !string.Equals(enabled, "True", StringComparison.OrdinalIgnoreCase))
+                    continue;
                 if (count >= SecuritySnapshot.RulesCap)
                 {
                     snap.RulesTruncated = true;
