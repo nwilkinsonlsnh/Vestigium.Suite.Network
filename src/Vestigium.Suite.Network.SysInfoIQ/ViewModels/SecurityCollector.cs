@@ -72,7 +72,7 @@ public static class SecurityCollector
     {
         ct.ThrowIfCancellationRequested();
         var count = 0;
-        foreach (var mo in QueryCim("SELECT DisplayName, Enabled, Direction, Action, Profiles, Protocol FROM MSFT_NetFirewallRule"))
+        foreach (var mo in QueryCim("SELECT * FROM MSFT_NetFirewallRule"))
         {
             using (mo)
             {
@@ -84,10 +84,10 @@ public static class SecurityCollector
                 snap.Rules.Add(new FirewallRuleRow
                 {
                     DisplayName = Str(mo, "DisplayName"),
-                    Enabled = Str(mo, "Enabled"),
-                    Direction = Str(mo, "Direction"),
-                    Action = Str(mo, "Action"),
-                    Profile = Str(mo, "Profiles"),
+                    Enabled = EnabledLabel(mo["Enabled"]),
+                    Direction = DirectionLabel(mo["Direction"]),
+                    Action = ActionLabel(mo["Action"]),
+                    Profile = ProfileLabel(mo["Profiles"]),
                     Protocol = Str(mo, "Protocol")
                 });
                 count++;
@@ -156,6 +156,30 @@ public static class SecurityCollector
             }
         }
     }
+
+    private static string EnabledLabel(object? value)
+        => Int(value) switch { 1 => "True", 2 => "False", _ => value?.ToString() ?? "" };
+
+    private static string DirectionLabel(object? value)
+        => Int(value) switch { 1 => "Inbound", 2 => "Outbound", _ => value?.ToString() ?? "" };
+
+    private static string ActionLabel(object? value)
+        => Int(value) switch { 2 => "Allow", 3 => "Block", 4 => "NotConfigured", _ => value?.ToString() ?? "" };
+
+    private static string ProfileLabel(object? value)
+    {
+        var bits = Int(value);
+        if (bits <= 0)
+            return value?.ToString() ?? "";
+        var names = new List<string>();
+        if ((bits & 1) != 0) names.Add("Domain");
+        if ((bits & 2) != 0) names.Add("Private");
+        if ((bits & 4) != 0) names.Add("Public");
+        return names.Count == 0 ? bits.ToString(CultureInfo.InvariantCulture) : string.Join(", ", names);
+    }
+
+    private static int Int(object? value)
+        => int.TryParse(value?.ToString(), out var n) ? n : 0;
 
     private static IEnumerable<ManagementObject> QueryCim(string wql)
     {
