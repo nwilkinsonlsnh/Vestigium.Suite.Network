@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Net.NetworkInformation;
+using System.Net.Sockets;
 using System.Text;
 using System.Windows.Media;
 using Vestigium.Helpers.Network;
@@ -43,6 +44,24 @@ public sealed class AdapterRow
     }
 
     public string Type => AdapterTypeName.Format(Source.Type);
+
+    public string Ipv4Address => FirstAddress(AddressFamily.InterNetwork)?.Address ?? string.Empty;
+
+    public string Ipv4SubnetMask => FirstAddress(AddressFamily.InterNetwork)?.SubnetMask ?? string.Empty;
+
+    public string Ipv4Cidr
+    {
+        get
+        {
+            var address = FirstAddress(AddressFamily.InterNetwork);
+            return address is null ? string.Empty : "/" + address.PrefixLength.ToString(CultureInfo.InvariantCulture);
+        }
+    }
+
+    public string Ipv6Address => FirstAddress(AddressFamily.InterNetworkV6)?.Address ?? string.Empty;
+
+    private UnicastAddress? FirstAddress(AddressFamily family)
+        => Source.UnicastAddresses.FirstOrDefault(a => a.Family == family);
 
     public string? MacAddress => Source.MacAddress;
 
