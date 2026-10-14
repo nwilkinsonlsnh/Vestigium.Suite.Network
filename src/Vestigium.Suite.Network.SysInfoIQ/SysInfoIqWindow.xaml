@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:shell="clr-namespace:Vestigium.Controls.Shell;assembly=Vestigium.Controls"
         Title="SysInfoIQ"
+        Icon="pack://application:,,,/Assets/SysInfoIQ.ico"
         Height="860" Width="1280"
         MinHeight="640" MinWidth="1024"
         WindowStartupLocation="Manual"

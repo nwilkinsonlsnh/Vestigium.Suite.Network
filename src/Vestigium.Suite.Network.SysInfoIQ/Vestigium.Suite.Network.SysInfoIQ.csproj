@@ -4,11 +4,13 @@
     <RootNamespace>Vestigium.Suite.Network.SysInfoIQ</RootNamespace>
     <AssemblyName>SysInfoIQ</AssemblyName>
     <ApplicationTitle>SysInfoIQ</ApplicationTitle>
+    <ApplicationIcon>Assets\SysInfoIQ.ico</ApplicationIcon>
     <NoWarn>$(NoWarn);NU1701</NoWarn>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Vestigium.Suite.Network.Shell\Vestigium.Suite.Network.Shell.csproj" />
+    <Resource Include="Assets\SysInfoIQ.ico" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
