@@ -28,8 +28,7 @@
                HorizontalScrollBarVisibility="Auto"
                MinHeight="220" />
     </Border>
-    <ListBox ItemsSource="{Binding Sections}"
-             DisplayMemberPath="Name">
+    <ListBox ItemsSource="{Binding Sections}">
       <ListBox.ItemTemplate>
         <DataTemplate>
           <TextBlock Text="{Binding Name}" />
