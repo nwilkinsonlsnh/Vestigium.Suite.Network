@@ -120,15 +120,17 @@ public sealed partial class MainViewModel : ObservableObject
             foreach (var row in BuildSystemRows(sections, DateTime.Now))
                 SystemRows.Add(row);
 
-            Status("Collecting storage…");
-            var storage = await Task.Run(() => StorageCollector.Collect(ct), ct).ConfigureAwait(true);
+            var storage = await Task.Run(
+                () => StorageCollector.Collect(ct, name => Status($"Storage / {name}")),
+                ct).ConfigureAwait(true);
             foreach (var r in storage.DiskDrives) DiskDrives.Add(r);
             foreach (var r in storage.LogicalDisks) LogicalDisks.Add(r);
             foreach (var r in storage.Partitions) Partitions.Add(r);
             foreach (var r in storage.Volumes) Volumes.Add(r);
 
-            Status("Collecting network…");
-            var network = await Task.Run(() => NetworkCollector.Collect(ct), ct).ConfigureAwait(true);
+            var network = await Task.Run(
+                () => NetworkCollector.Collect(ct, name => Status($"Network / {name}")),
+                ct).ConfigureAwait(true);
             foreach (var r in network.Ip) IpConfigs.Add(r);
             foreach (var r in network.Dns) DnsConfigs.Add(r);
             foreach (var r in network.Nics) Nics.Add(r);
@@ -137,10 +139,7 @@ public sealed partial class MainViewModel : ObservableObject
             foreach (var r in network.Listeners) Listeners.Add(r);
             foreach (var r in network.Tcp) Tcp.Add(r);
 
-            var note = network.ArpTruncated || network.TcpTruncated
-                ? "Idle (some tables capped)"
-                : "Idle";
-            Status(note);
+            Status(FinishNote(storage, network));
         }
         catch (OperationCanceledException)
         {
@@ -158,6 +157,21 @@ public sealed partial class MainViewModel : ObservableObject
             _cts = null;
             CollectCommand.NotifyCanExecuteChanged();
         }
+    }
+
+    private static string FinishNote(StorageSnapshot storage, NetworkSnapshot network)
+    {
+        var notes = new List<string>();
+        var failed = StorageCollector.Failures(storage);
+        if (failed.Count > 0)
+            notes.Add("failed: " + string.Join(", ", failed));
+        if (!string.IsNullOrWhiteSpace(network.Error))
+            notes.Add("network: " + network.Error);
+        if (network.ArpTruncated)
+            notes.Add("ARP capped");
+        if (network.TcpTruncated)
+            notes.Add("TCP capped");
+        return notes.Count == 0 ? "Idle" : "Idle (" + string.Join("; ", notes) + ")";
     }
 
     private bool CanCollect() => !IsBusy;
