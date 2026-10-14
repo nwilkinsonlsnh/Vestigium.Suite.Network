@@ -35,7 +35,7 @@
       <DataGrid Style="{StaticResource DataGrid.Compact}"
                 ItemsSource="{Binding SystemRows}"
                 IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False"
-                HeadersVisibility="Column" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" EnableRowVirtualization="True" ScrollViewer.CanContentScroll="True">
+                HeadersVisibility="Column" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Auto" EnableRowVirtualization="True" ScrollViewer.CanContentScroll="True" PreviewMouseWheel="Grid_PreviewMouseWheel">
         <DataGrid.Columns>
           <DataGridTextColumn Header="Field" Binding="{Binding Field}" Width="240" />
           <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*" />
@@ -58,7 +58,7 @@
       <Border Visibility="{Binding DisksOpen, Converter={StaticResource BoolToVis}}"
               BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
         <DataGrid Style="{StaticResource DataGrid.Compact}" ItemsSource="{Binding DiskDrives}"
-                  IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True">
+                  IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" PreviewMouseWheel="Grid_PreviewMouseWheel">
           <DataGrid.Columns>
             <DataGridTextColumn Header="Model" Binding="{Binding Model}" Width="*" />
             <DataGridTextColumn Header="Interface" Binding="{Binding InterfaceType}" Width="100" />
@@ -73,7 +73,7 @@
       <Border Visibility="{Binding LogicalOpen, Converter={StaticResource BoolToVis}}"
               BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
         <DataGrid Style="{StaticResource DataGrid.Compact}" ItemsSource="{Binding LogicalDisks}"
-                  IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True">
+                  IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" PreviewMouseWheel="Grid_PreviewMouseWheel">
           <DataGrid.Columns>
             <DataGridTextColumn Header="Drive" Binding="{Binding DeviceId}" Width="70" />
             <DataGridTextColumn Header="Label" Binding="{Binding VolumeName}" Width="*" />
@@ -89,7 +89,7 @@
       <Border Visibility="{Binding PartitionsOpen, Converter={StaticResource BoolToVis}}"
               BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
         <DataGrid Style="{StaticResource DataGrid.Compact}" ItemsSource="{Binding Partitions}"
-                  IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True">
+                  IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" PreviewMouseWheel="Grid_PreviewMouseWheel">
           <DataGrid.Columns>
             <DataGridTextColumn Header="Disk" Binding="{Binding DiskNumber}" Width="60" />
             <DataGridTextColumn Header="Part" Binding="{Binding PartitionNumber}" Width="60" />
@@ -107,7 +107,7 @@
       <Border Visibility="{Binding VolumesOpen, Converter={StaticResource BoolToVis}}"
               BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
         <DataGrid Style="{StaticResource DataGrid.Compact}" ItemsSource="{Binding Volumes}"
-                  IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True">
+                  IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" PreviewMouseWheel="Grid_PreviewMouseWheel">
           <DataGrid.Columns>
             <DataGridTextColumn Header="Letter" Binding="{Binding DriveLetter}" Width="70" />
             <DataGridTextColumn Header="Label" Binding="{Binding Label}" Width="*" />
@@ -143,7 +143,7 @@
       <Border Visibility="{Binding IpOpen, Converter={StaticResource BoolToVis}}"
               BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
         <DataGrid Style="{StaticResource DataGrid.Compact}" ItemsSource="{Binding IpConfigs}"
-                  IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True">
+                  IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" PreviewMouseWheel="Grid_PreviewMouseWheel">
           <DataGrid.Columns>
             <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="160" />
             <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="90" />
@@ -158,7 +158,7 @@
       <Border Visibility="{Binding DnsOpen, Converter={StaticResource BoolToVis}}"
               BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
         <DataGrid Style="{StaticResource DataGrid.Compact}" ItemsSource="{Binding DnsConfigs}"
-                  IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True">
+                  IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" PreviewMouseWheel="Grid_PreviewMouseWheel">
           <DataGrid.Columns>
             <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="180" />
             <DataGridTextColumn Header="DNS Servers" Binding="{Binding DnsServers}" Width="*" />
@@ -170,7 +170,7 @@
       <Border Visibility="{Binding NicsOpen, Converter={StaticResource BoolToVis}}"
               BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
         <DataGrid Style="{StaticResource DataGrid.Compact}" ItemsSource="{Binding Nics}"
-                  IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True">
+                  IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" PreviewMouseWheel="Grid_PreviewMouseWheel">
           <DataGrid.Columns>
             <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="160" />
             <DataGridTextColumn Header="Description" Binding="{Binding Description}" Width="*" />
@@ -185,7 +185,7 @@
       <Border Visibility="{Binding RoutesOpen, Converter={StaticResource BoolToVis}}"
               BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
         <DataGrid Style="{StaticResource DataGrid.Compact}" ItemsSource="{Binding Routes}"
-                  IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True">
+                  IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" PreviewMouseWheel="Grid_PreviewMouseWheel">
           <DataGrid.Columns>
             <DataGridTextColumn Header="Destination" Binding="{Binding Destination}" Width="*" />
             <DataGridTextColumn Header="Mask" Binding="{Binding Mask}" Width="140" />
@@ -199,7 +199,7 @@
       <Border Visibility="{Binding ArpOpen, Converter={StaticResource BoolToVis}}"
               BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
         <DataGrid Style="{StaticResource DataGrid.Compact}" ItemsSource="{Binding Arp}"
-                  IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True">
+                  IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" PreviewMouseWheel="Grid_PreviewMouseWheel">
           <DataGrid.Columns>
             <DataGridTextColumn Header="Address" Binding="{Binding Address}" Width="*" />
             <DataGridTextColumn Header="MAC" Binding="{Binding Mac}" Width="160" />
@@ -212,7 +212,7 @@
       <Border Visibility="{Binding ListenersOpen, Converter={StaticResource BoolToVis}}"
               BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
         <DataGrid Style="{StaticResource DataGrid.Compact}" ItemsSource="{Binding Listeners}"
-                  IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True">
+                  IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" PreviewMouseWheel="Grid_PreviewMouseWheel">
           <DataGrid.Columns>
             <DataGridTextColumn Header="Proto" Binding="{Binding Protocol}" Width="70" />
             <DataGridTextColumn Header="Local" Binding="{Binding LocalAddress}" Width="*" />
@@ -224,7 +224,7 @@
       <Border Visibility="{Binding TcpOpen, Converter={StaticResource BoolToVis}}"
               BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
         <DataGrid Style="{StaticResource DataGrid.Compact}" ItemsSource="{Binding Tcp}"
-                  IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True">
+                  IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" PreviewMouseWheel="Grid_PreviewMouseWheel">
           <DataGrid.Columns>
             <DataGridTextColumn Header="Local" Binding="{Binding LocalAddress}" Width="*" />
             <DataGridTextColumn Header="LPort" Binding="{Binding LocalPort}" Width="70" />
@@ -251,7 +251,7 @@
       <Border Visibility="{Binding ProfilesOpen, Converter={StaticResource BoolToVis}}"
               BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
         <DataGrid Style="{StaticResource DataGrid.Compact}" ItemsSource="{Binding FirewallProfiles}"
-                  IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True">
+                  IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" PreviewMouseWheel="Grid_PreviewMouseWheel">
           <DataGrid.Columns>
             <DataGridTextColumn Header="Profile" Binding="{Binding Name}" Width="120" />
             <DataGridTextColumn Header="Enabled" Binding="{Binding Enabled}" Width="90" />
@@ -266,7 +266,7 @@
       <Border Visibility="{Binding RulesOpen, Converter={StaticResource BoolToVis}}"
               BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
         <DataGrid Style="{StaticResource DataGrid.Compact}" ItemsSource="{Binding FirewallRules}"
-                  IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True">
+                  IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" PreviewMouseWheel="Grid_PreviewMouseWheel">
           <DataGrid.Columns>
             <DataGridTextColumn Header="Name" Binding="{Binding DisplayName}" Width="*" />
             <DataGridTextColumn Header="Enabled" Binding="{Binding Enabled}" Width="80" />
@@ -281,7 +281,7 @@
       <Border Visibility="{Binding CertificatesOpen, Converter={StaticResource BoolToVis}}"
               BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
         <DataGrid Style="{StaticResource DataGrid.Compact}" ItemsSource="{Binding Certificates}"
-                  IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True">
+                  IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" PreviewMouseWheel="Grid_PreviewMouseWheel">
           <DataGrid.Columns>
             <DataGridTextColumn Header="Store" Binding="{Binding Store}" Width="120" />
             <DataGridTextColumn Header="Subject" Binding="{Binding Subject}" Width="*" />
@@ -296,7 +296,7 @@
       <Border Visibility="{Binding DriversOpen, Converter={StaticResource BoolToVis}}"
               BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
         <DataGrid Style="{StaticResource DataGrid.Compact}" ItemsSource="{Binding SignedDrivers}"
-                  IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True">
+                  IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" PreviewMouseWheel="Grid_PreviewMouseWheel">
           <DataGrid.Columns>
             <DataGridTextColumn Header="Device" Binding="{Binding DeviceName}" Width="*" />
             <DataGridTextColumn Header="Version" Binding="{Binding DriverVersion}" Width="120" />
@@ -312,7 +312,7 @@
     <Border Visibility="{Binding SoftwarePageOpen, Converter={StaticResource BoolToVis}}"
             BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
       <DataGrid Style="{StaticResource DataGrid.Compact}" ItemsSource="{Binding SoftwareRows}"
-                IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True">
+                IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" PreviewMouseWheel="Grid_PreviewMouseWheel">
         <DataGrid.Columns>
           <DataGridTextColumn Header="Field" Binding="{Binding Field}" Width="240" />
           <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*" />
@@ -323,7 +323,7 @@
     <Border Visibility="{Binding ProcessesPageOpen, Converter={StaticResource BoolToVis}}"
             BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
       <DataGrid Style="{StaticResource DataGrid.Compact}" ItemsSource="{Binding ProcessRows}"
-                IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True">
+                IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" PreviewMouseWheel="Grid_PreviewMouseWheel">
         <DataGrid.Columns>
           <DataGridTextColumn Header="Field" Binding="{Binding Field}" Width="240" />
           <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*" />
@@ -334,7 +334,7 @@
     <Border Visibility="{Binding EventsPageOpen, Converter={StaticResource BoolToVis}}"
             BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
       <DataGrid Style="{StaticResource DataGrid.Compact}" ItemsSource="{Binding EventRows}"
-                IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True">
+                IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" PreviewMouseWheel="Grid_PreviewMouseWheel">
         <DataGrid.Columns>
           <DataGridTextColumn Header="Field" Binding="{Binding Field}" Width="240" />
           <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*" />
