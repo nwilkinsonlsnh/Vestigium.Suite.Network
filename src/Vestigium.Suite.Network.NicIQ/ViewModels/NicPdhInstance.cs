@@ -13,18 +13,18 @@ public static class NicPdhInstance
         if (live.Length == 0)
             return null;
 
-        foreach (var candidate in Candidates(name, description))
+        var candidates = Candidates(name, description).ToArray();
+
+        foreach (var candidate in candidates)
         {
-            var hit = live.FirstOrDefault(i => i.Equals(candidate, StringComparison.OrdinalIgnoreCase));
+            var hit = live.FirstOrDefault(i => NormalizedEquals(i, candidate));
             if (hit is not null)
                 return hit;
         }
 
-        foreach (var candidate in Candidates(name, description))
+        foreach (var candidate in candidates)
         {
-            var hit = live.FirstOrDefault(i =>
-                i.Contains(candidate, StringComparison.OrdinalIgnoreCase)
-                || candidate.Contains(i, StringComparison.OrdinalIgnoreCase));
+            var hit = live.FirstOrDefault(i => NormalizedContains(i, candidate));
             if (hit is not null)
                 return hit;
         }
@@ -36,7 +36,24 @@ public static class NicPdhInstance
     {
         if (string.IsNullOrWhiteSpace(value))
             return string.Empty;
-        return value.Trim().Replace('/', '_');
+        return value.Trim()
+            .Replace('/', '_')
+            .Replace('\\', '_')
+            .Replace('(', '[')
+            .Replace(')', ']');
+    }
+
+    private static bool NormalizedEquals(string live, string candidate)
+        => string.Equals(Normalize(live), Normalize(candidate), StringComparison.OrdinalIgnoreCase);
+
+    private static bool NormalizedContains(string live, string candidate)
+    {
+        var left = Normalize(live);
+        var right = Normalize(candidate);
+        if (left.Length == 0 || right.Length == 0)
+            return false;
+        return left.Contains(right, StringComparison.OrdinalIgnoreCase)
+            || right.Contains(left, StringComparison.OrdinalIgnoreCase);
     }
 
     private static IEnumerable<string> Candidates(string? name, string? description)

@@ -1,7 +1,11 @@
+using Vestigium.Logging;
+
 namespace Vestigium.Suite.Network.NicIQ.ViewModels;
 
 public sealed partial class MainViewModel
 {
+    private string? _lastPdhMiss;
+
     private async Task RunMonitorLoopAsync(CancellationToken token)
     {
         await Task.Yield();
@@ -39,11 +43,29 @@ public sealed partial class MainViewModel
                 if (!string.IsNullOrWhiteSpace(tick.Error))
                 {
                     Note("Failed", tick.Error);
+                    if (ChartWarming)
+                        ChartWarmStatus = tick.Error;
+                    if (!string.Equals(_lastPdhMiss, tick.Error, StringComparison.Ordinal))
+                    {
+                        _lastPdhMiss = tick.Error;
+                        VestigiumLog.Warning(
+                            0,
+                            VestigiumStatus.Failed,
+                            "NicIQ",
+                            "Monitor",
+                            tick.Error,
+                            properties: new Dictionary<string, string?>
+                            {
+                                ["name"] = name,
+                                ["description"] = description
+                            });
+                    }
                     PublishMonitorProgress();
                     await Task.Delay(TimeSpan.FromSeconds(2), token).ConfigureAwait(true);
                     continue;
                 }
 
+                _lastPdhMiss = null;
                 if (tick.Primed)
                 {
                     Note($"Monitoring {name}", tick.Instance);
@@ -65,6 +87,8 @@ public sealed partial class MainViewModel
             catch (Exception ex)
             {
                 Note("Failed", ex.Message);
+                if (ChartWarming)
+                    ChartWarmStatus = ex.Message;
                 try
                 {
                     PublishMonitorProgress();

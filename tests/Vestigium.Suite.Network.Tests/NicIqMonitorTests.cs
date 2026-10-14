@@ -20,6 +20,15 @@ public sealed class NicPdhInstanceTests
     }
 
     [Fact]
+    public void Resolve_normalizes_parentheses_to_brackets()
+    {
+        var live = "Qualcomm FastConnect 6900 Wi-Fi 6E Dual Band Simultaneous [DBS] WiFiCx Network Adapter";
+        var description = "Qualcomm FastConnect 6900 Wi-Fi 6E Dual Band Simultaneous (DBS) WiFiCx Network Adapter";
+        var hit = NicPdhInstance.Resolve("Wi-Fi", description, [live]);
+        Assert.Equal(live, hit);
+    }
+
+    [Fact]
     public void Resolve_skips_total_and_empty()
     {
         Assert.Null(NicPdhInstance.Resolve("Ethernet", "Ethernet", ["_Total"]));
