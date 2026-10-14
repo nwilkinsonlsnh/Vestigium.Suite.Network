@@ -1,39 +1,71 @@
 <UserControl x:Class="Vestigium.Suite.Network.SysInfoIQ.Views.SysInfoView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             Background="{DynamicResource Vestigium.Brushes.Surface.Window}">
+             Background="{DynamicResource Vestigium.Brushes.Surface.Window}"
+             Loaded="OnLoaded">
+  <UserControl.Resources>
+    <BooleanToVisibilityConverter x:Key="BoolToVis" />
+  </UserControl.Resources>
   <DockPanel Margin="12">
     <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,12">
-      <Button Content="Collect" Command="{Binding CollectCommand}" Margin="0,0,8,0" />
+      <Button Content="Refresh" Command="{Binding CollectCommand}" Margin="0,0,8,0" />
       <Button Content="Cancel" Command="{Binding CancelCommand}" />
     </StackPanel>
     <TextBlock DockPanel.Dock="Top"
                Text="{Binding LastExport}"
                Style="{StaticResource TextBlock.Caption}"
                Margin="0,0,0,8" />
-    <Border DockPanel.Dock="Top"
-            BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
-            BorderThickness="1"
-            Background="{DynamicResource Vestigium.Brushes.Surface.Card}"
-            Padding="12"
-            Margin="0,0,0,12">
-      <TextBox Text="{Binding Summary}"
-               IsReadOnly="True"
-               TextWrapping="NoWrap"
-               FontFamily="Consolas"
-               FontSize="13"
-               Background="Transparent"
-               BorderThickness="0"
-               VerticalScrollBarVisibility="Auto"
-               HorizontalScrollBarVisibility="Auto"
-               MinHeight="220" />
-    </Border>
-    <ListBox ItemsSource="{Binding Sections}">
-      <ListBox.ItemTemplate>
-        <DataTemplate>
-          <TextBlock Text="{Binding Name}" />
-        </DataTemplate>
-      </ListBox.ItemTemplate>
-    </ListBox>
+    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,0,12">
+      <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="System"
+                   IsChecked="{Binding SystemPageOpen}" GroupName="SysInfoCategory" Margin="0,0,8,0" />
+      <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="Storage"
+                   IsChecked="{Binding StoragePageOpen}" GroupName="SysInfoCategory" Margin="0,0,8,0" />
+      <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="Network"
+                   IsChecked="{Binding NetworkPageOpen}" GroupName="SysInfoCategory" Margin="0,0,8,0" />
+      <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="Security"
+                   IsChecked="{Binding SecurityPageOpen}" GroupName="SysInfoCategory" Margin="0,0,8,0" />
+      <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="Software"
+                   IsChecked="{Binding SoftwarePageOpen}" GroupName="SysInfoCategory" Margin="0,0,8,0" />
+      <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="Processes"
+                   IsChecked="{Binding ProcessesPageOpen}" GroupName="SysInfoCategory" Margin="0,0,8,0" />
+      <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="Events"
+                   IsChecked="{Binding EventsPageOpen}" GroupName="SysInfoCategory" />
+    </StackPanel>
+
+    <Grid Visibility="{Binding SystemPageOpen, Converter={StaticResource BoolToVis}}">
+      <Border BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
+              BorderThickness="1"
+              Background="{DynamicResource Vestigium.Brushes.Surface.Card}"
+              Padding="12">
+        <TextBox Text="{Binding Summary}"
+                 IsReadOnly="True"
+                 TextWrapping="NoWrap"
+                 FontFamily="Consolas"
+                 FontSize="13"
+                 Background="Transparent"
+                 BorderThickness="0"
+                 VerticalScrollBarVisibility="Auto"
+                 HorizontalScrollBarVisibility="Auto" />
+      </Border>
+    </Grid>
+
+    <TextBlock Visibility="{Binding StoragePageOpen, Converter={StaticResource BoolToVis}}"
+               Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap"
+               Text="Storage — DiskDrives, LogicalDisks, Partitions, Volumes. Placeholder. PR02." />
+    <TextBlock Visibility="{Binding NetworkPageOpen, Converter={StaticResource BoolToVis}}"
+               Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap"
+               Text="Network — IP, DNS, adapters, routes, ARP, listeners, TCP. Placeholder. PR02." />
+    <TextBlock Visibility="{Binding SecurityPageOpen, Converter={StaticResource BoolToVis}}"
+               Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap"
+               Text="Security — Firewall profiles and rules, certificates, signed drivers. Placeholder. Later PR." />
+    <TextBlock Visibility="{Binding SoftwarePageOpen, Converter={StaticResource BoolToVis}}"
+               Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap"
+               Text="Software — Installed software, hotfixes, features, ODBC, environment, SQL services. Placeholder. Later PR." />
+    <TextBlock Visibility="{Binding ProcessesPageOpen, Converter={StaticResource BoolToVis}}"
+               Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap"
+               Text="Processes — Processes, services, scheduled tasks, shares. Placeholder. PR03." />
+    <TextBlock Visibility="{Binding EventsPageOpen, Converter={StaticResource BoolToVis}}"
+               Style="{StaticResource TextBlock.Caption}" TextWrapping="Wrap"
+               Text="Events — System and application errors (last 7 days), SystemInformation, drivers. Placeholder. Later PR." />
   </DockPanel>
 </UserControl>

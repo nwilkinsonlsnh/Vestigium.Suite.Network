@@ -23,6 +23,58 @@ public sealed partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private string _lastExport = "";
 
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(SystemPageOpen))]
+    [NotifyPropertyChangedFor(nameof(StoragePageOpen))]
+    [NotifyPropertyChangedFor(nameof(NetworkPageOpen))]
+    [NotifyPropertyChangedFor(nameof(SecurityPageOpen))]
+    [NotifyPropertyChangedFor(nameof(SoftwarePageOpen))]
+    [NotifyPropertyChangedFor(nameof(ProcessesPageOpen))]
+    [NotifyPropertyChangedFor(nameof(EventsPageOpen))]
+    private string _category = "System";
+
+    public bool SystemPageOpen
+    {
+        get => Category == "System";
+        set { if (value) Category = "System"; }
+    }
+
+    public bool StoragePageOpen
+    {
+        get => Category == "Storage";
+        set { if (value) Category = "Storage"; }
+    }
+
+    public bool NetworkPageOpen
+    {
+        get => Category == "Network";
+        set { if (value) Category = "Network"; }
+    }
+
+    public bool SecurityPageOpen
+    {
+        get => Category == "Security";
+        set { if (value) Category = "Security"; }
+    }
+
+    public bool SoftwarePageOpen
+    {
+        get => Category == "Software";
+        set { if (value) Category = "Software"; }
+    }
+
+    public bool ProcessesPageOpen
+    {
+        get => Category == "Processes";
+        set { if (value) Category = "Processes"; }
+    }
+
+    public bool EventsPageOpen
+    {
+        get => Category == "Events";
+        set { if (value) Category = "Events"; }
+    }
+
     public ObservableCollection<InventorySection> Sections { get; } = new();
 
     [RelayCommand(CanExecute = nameof(CanCollect))]
