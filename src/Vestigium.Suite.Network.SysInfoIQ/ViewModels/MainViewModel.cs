@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Globalization;
+using System.Windows.Data;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Vestigium.Controls.StatusBar;
@@ -11,6 +13,12 @@ public sealed partial class MainViewModel : ObservableObject
 {
     private CancellationTokenSource? _cts;
 
+    public MainViewModel()
+    {
+        InstalledView = CollectionViewSource.GetDefaultView(InstalledSoftware);
+        InstalledView.Filter = FilterInstalled;
+    }
+
     public VestigiumStatusBarViewModel? StatusBar { get; set; }
 
     public SettingsViewModel? Settings { get; set; }
@@ -20,6 +28,11 @@ public sealed partial class MainViewModel : ObservableObject
 
     [ObservableProperty]
     private string _progressMessage = "Collecting…";
+
+    [ObservableProperty]
+    private bool _showHidden = true;
+
+    partial void OnShowHiddenChanged(bool value) => InstalledView.Refresh();
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(SystemPageOpen))]
@@ -122,6 +135,7 @@ public sealed partial class MainViewModel : ObservableObject
     public ObservableCollection<SignedDriverRow> SignedDrivers { get; } = new();
 
     public ObservableCollection<InstalledSoftwareRow> InstalledSoftware { get; } = new();
+    public ICollectionView InstalledView { get; }
     public ObservableCollection<HotfixRow> Hotfixes { get; } = new();
     public ObservableCollection<FeatureRow> Features { get; } = new();
     public ObservableCollection<OdbcRow> Odbc { get; } = new();
@@ -251,6 +265,9 @@ public sealed partial class MainViewModel : ObservableObject
             notes.Add("Features capped");
         return notes.Count == 0 ? "Idle" : "Idle (" + string.Join("; ", notes) + ")";
     }
+
+    private bool FilterInstalled(object item)
+        => ShowHidden || item is not InstalledSoftwareRow row || !row.IsHidden;
 
     private bool CanCollect() => !IsBusy;
 
