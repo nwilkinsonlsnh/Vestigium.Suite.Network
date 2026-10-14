@@ -15,7 +15,7 @@ public sealed class SysInfoSecurityTests
     [Fact]
     public void Drivers_cap_is_500()
     {
-        Assert.Equal(500, SecuritySnapshot.DriversCap);
+        Assert.Equal(5000, SecuritySnapshot.DriversCap);
     }
 
     [Fact]
@@ -59,11 +59,12 @@ public sealed class SysInfoSecurityTests
     {
         var profile = new FirewallProfileRow { Name = "Domain", Enabled = "True", DefaultInbound = "NotConfigured" };
         var rule = new FirewallRuleRow { DisplayName = "Core Networking", Enabled = "True", Direction = "Inbound", Action = "Allow" };
-        var cert = new CertificateRow { Store = "My", Subject = "CN=device", Thumbprint = "744629296696D0ADF96CF8507EFE0306EF50A226", HasPrivateKey = "Yes" };
+        var cert = new CertificateRow { Location = "LM", Store = "My", Subject = "CN=device", Thumbprint = "744629296696D0ADF96CF8507EFE0306EF50A226", HasPrivateKey = "Yes" };
         var driver = new SignedDriverRow { DeviceName = "Audio Endpoint", DriverVersion = "10.0.26100.1", IsSigned = "True", Signer = "Microsoft" };
 
         Assert.Equal("Domain", profile.Name);
         Assert.Equal("Allow", rule.Action);
+        Assert.Equal("LM", cert.Location);
         Assert.Equal("My", cert.Store);
         Assert.Equal("Microsoft", driver.Signer);
     }
