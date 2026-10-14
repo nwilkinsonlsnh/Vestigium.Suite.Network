@@ -5,13 +5,13 @@ namespace Vestigium.Suite.Network.Tests;
 
 internal static class NicAdapterFactory
 {
-    public static NetworkAdapter Up(string id, int metric, bool ipv4)
-        => Make(id, OperationalStatus.Up, metric, ipv4);
+    public static NetworkAdapter Up(string id, int metric, bool ipv4, params string[] gateways)
+        => Make(id, OperationalStatus.Up, metric, ipv4, gateways);
 
     public static NetworkAdapter Down(string id, int metric)
         => Make(id, OperationalStatus.Down, metric, ipv4: false);
 
-    private static NetworkAdapter Make(string id, OperationalStatus status, int metric, bool ipv4)
+    private static NetworkAdapter Make(string id, OperationalStatus status, int metric, bool ipv4, params string[] gateways)
     {
         IReadOnlyList<UnicastAddress> addresses = ipv4
             ? [new UnicastAddress(System.Net.Sockets.AddressFamily.InterNetwork, "192.0.2.10", 24, "255.255.255.0", false)]
@@ -27,7 +27,7 @@ internal static class NicAdapterFactory
             1_000_000_000,
             true,
             addresses,
-            [],
+            gateways,
             [],
             new DhcpInfo(null, null, null, null),
             NetbiosOverTcp.Unknown,

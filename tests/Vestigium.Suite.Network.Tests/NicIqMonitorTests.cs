@@ -49,6 +49,15 @@ public sealed class NicPrimaryAdapterTests
     }
 
     [Fact]
+    public void Pick_prefers_usable_gateway_over_lower_metric()
+    {
+        var tunnel = NicAdapterFactory.Up("ethernet3", metric: 1, ipv4: true, "0.0.0.0");
+        var wifi = NicAdapterFactory.Up("wifi", metric: 50, ipv4: true, "172.16.0.1");
+        var picked = NicPrimaryAdapter.Pick([tunnel, wifi]);
+        Assert.Equal("wifi", picked?.Id);
+    }
+
+    [Fact]
     public void Pick_keeps_preferred_when_still_up()
     {
         var a = NicAdapterFactory.Up("a", metric: 5, ipv4: true);

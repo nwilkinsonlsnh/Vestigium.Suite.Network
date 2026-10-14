@@ -4,7 +4,9 @@ using Vestigium.Helpers.Network;
 namespace Vestigium.Suite.Network.NicIQ.ViewModels;
 
 /// <summary>
-/// Default monitor NIC: Up, IP enabled, IPv4 address, lowest IPv4 metric.
+/// Default monitor NIC.
+/// Prefer Up, IP enabled, IPv4 address, and a usable gateway (not empty, not 0.0.0.0).
+/// Among those, lowest IPv4 metric. Fall back to the metric rule when none qualify.
 /// A saved Id wins when that adapter is still on the box.
 /// </summary>
 public static class NicPrimaryAdapter
@@ -24,6 +26,14 @@ public static class NicPrimaryAdapter
                 return kept;
         }
 
+        var withGateway = rows
+            .Where(a => a.Status == OperationalStatus.Up && a.IpEnabled && a.HasIpv4Unicast && HasUsableGateway(a))
+            .OrderBy(a => a.Ipv4Metric ?? int.MaxValue)
+            .ThenBy(a => a.Name, StringComparer.OrdinalIgnoreCase)
+            .FirstOrDefault();
+        if (withGateway is not null)
+            return withGateway;
+
         var primary = rows
             .Where(a => a.Status == OperationalStatus.Up && a.IpEnabled && a.HasIpv4Unicast)
             .OrderBy(a => a.Ipv4Metric ?? int.MaxValue)
@@ -37,5 +47,18 @@ public static class NicPrimaryAdapter
             .OrderBy(a => a.Ipv4Metric ?? int.MaxValue)
             .ThenBy(a => a.Name, StringComparer.OrdinalIgnoreCase)
             .FirstOrDefault();
+    }
+
+    private static bool HasUsableGateway(NetworkAdapter adapter)
+    {
+        foreach (var gateway in adapter.Gateways)
+        {
+            if (string.IsNullOrWhiteSpace(gateway))
+                continue;
+            if (gateway is "0.0.0.0" or "::")
+                continue;
+            return true;
+        }
+        return false;
     }
 }
