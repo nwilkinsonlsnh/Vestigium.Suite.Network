@@ -72,12 +72,21 @@ public sealed partial class MainViewModel
         var sampleShare = depth * 40d;
         var progress = Math.Min(95, 8 + sampleShare);
 
-        string status;
+        string? status = null;
         if (depth > 0)
             status = $"Collecting plot points  {depth} of {WarmReadyDepth}";
-        else
-            status = stage ?? "Resolving performance counters\u2026";
+        else if (stage is not null)
+            status = stage;
+        else if (IsPlaceholder(ChartWarmStatus))
+            status = "Resolving performance counters\u2026";
 
-        AdvanceWarm(status, progress);
+        if (status is not null)
+            AdvanceWarm(status, progress);
+        else
+            ChartWarmProgress = Math.Clamp(progress, 0, 100);
     }
+
+    private static bool IsPlaceholder(string status)
+        => string.IsNullOrWhiteSpace(status)
+            || status is "Opening performance counters\u2026" or "Resolving performance counters\u2026";
 }
