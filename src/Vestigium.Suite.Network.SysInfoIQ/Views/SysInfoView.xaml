@@ -7,6 +7,10 @@
       <Button Content="Collect" Command="{Binding CollectCommand}" Margin="0,0,8,0" />
       <Button Content="Cancel" Command="{Binding CancelCommand}" />
     </StackPanel>
+    <TextBlock DockPanel.Dock="Top"
+               Text="{Binding LastExport}"
+               Style="{StaticResource TextBlock.Caption}"
+               Margin="0,0,0,8" />
     <Border DockPanel.Dock="Top"
             BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
             BorderThickness="1"
@@ -25,8 +29,7 @@
                MinHeight="220" />
     </Border>
     <ListBox ItemsSource="{Binding Sections}"
-             DisplayMemberPath="Name"
-             SelectedValuePath="Content">
+             DisplayMemberPath="Name">
       <ListBox.ItemTemplate>
         <DataTemplate>
           <TextBlock Text="{Binding Name}" />

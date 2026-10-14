@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Vestigium.Controls.StatusBar;
@@ -19,6 +20,9 @@ public sealed partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private bool _isBusy;
 
+    [ObservableProperty]
+    private string _lastExport = "";
+
     public ObservableCollection<InventorySection> Sections { get; } = new();
 
     [RelayCommand(CanExecute = nameof(CanCollect))]
@@ -32,6 +36,7 @@ public sealed partial class MainViewModel : ObservableObject
         CancelCommand.NotifyCanExecuteChanged();
         Sections.Clear();
         Summary = "";
+        LastExport = "";
 
         _cts = new CancellationTokenSource();
         var ct = _cts.Token;
@@ -42,9 +47,21 @@ public sealed partial class MainViewModel : ObservableObject
             foreach (var s in sections)
                 Sections.Add(s);
 
-            var location = Settings?.OutputFolder ?? Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            var outputRoot = Settings?.OutputFolder;
+            if (string.IsNullOrWhiteSpace(outputRoot))
+                outputRoot = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+
             var now = DateTime.Now;
+            var hostname = ExtractHostname(sections) ?? Environment.MachineName;
+            var folderName = $"{hostname}_Inventory_{now:yyyyMMdd_HHmmss}";
+            var location = Path.Combine(outputRoot, folderName);
+
             Summary = Collector.BuildSummary(Sections, location, now);
+
+            Status("Writing export…");
+            var written = await Task.Run(() => Exporter.Write(outputRoot, hostname, Summary, Sections.ToList(), now), ct)
+                .ConfigureAwait(true);
+            LastExport = written;
             Status("Idle");
         }
         catch (OperationCanceledException)
@@ -78,5 +95,27 @@ public sealed partial class MainViewModel : ObservableObject
     {
         if (StatusBar is not null)
             StatusBar.Message = message;
+    }
+
+    private static string? ExtractHostname(IReadOnlyList<InventorySection> sections)
+    {
+        var cs = sections.FirstOrDefault(s => s.Name == "ComputerSystem" && !s.IsError);
+        if (cs is null)
+            return null;
+        foreach (var line in cs.Content.Split('\n'))
+        {
+            var idx = line.IndexOf(':');
+            if (idx < 0)
+                continue;
+            var key = line[..idx].Trim();
+            if (string.Equals(key, "DNSHostName", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(key, "Name", StringComparison.OrdinalIgnoreCase))
+            {
+                var value = line[(idx + 1)..].Trim();
+                if (!string.IsNullOrWhiteSpace(value))
+                    return value;
+            }
+        }
+        return null;
     }
 }
