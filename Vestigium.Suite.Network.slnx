@@ -13,6 +13,7 @@
     <Project Path="src/Vestigium.Suite.Network.ShareIQ/Vestigium.Suite.Network.ShareIQ.csproj" />
     <Project Path="src/Vestigium.Suite.Network.Shell/Vestigium.Suite.Network.Shell.csproj" />
     <Project Path="src/Vestigium.Suite.Network.TraceIQ/Vestigium.Suite.Network.TraceIQ.csproj" />
+    <Project Path="src/Vestigium.Suite.SysInfoIQ/Vestigium.Suite.SysInfoIQ.csproj" Id="7c51467f-e8ff-4079-b95e-140a607d6708" />
   </Folder>
   <Folder Name="/Tests/">
     <Project Path="tests/Vestigium.Suite.Network.Tests/Vestigium.Suite.Network.Tests.csproj" />
