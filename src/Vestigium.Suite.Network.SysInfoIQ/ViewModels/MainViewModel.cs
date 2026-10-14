@@ -35,6 +35,16 @@ public sealed partial class MainViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(VolumesOpen))]
     private string _storageSection = "Disks";
 
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IpOpen))]
+    [NotifyPropertyChangedFor(nameof(DnsOpen))]
+    [NotifyPropertyChangedFor(nameof(NicsOpen))]
+    [NotifyPropertyChangedFor(nameof(RoutesOpen))]
+    [NotifyPropertyChangedFor(nameof(ArpOpen))]
+    [NotifyPropertyChangedFor(nameof(ListenersOpen))]
+    [NotifyPropertyChangedFor(nameof(TcpOpen))]
+    private string _networkSection = "IP";
+
     public bool SystemPageOpen { get => Category == "System"; set { if (value) Category = "System"; } }
     public bool StoragePageOpen { get => Category == "Storage"; set { if (value) Category = "Storage"; } }
     public bool NetworkPageOpen { get => Category == "Network"; set { if (value) Category = "Network"; } }
@@ -48,10 +58,17 @@ public sealed partial class MainViewModel : ObservableObject
     public bool PartitionsOpen { get => StorageSection == "Partitions"; set { if (value) StorageSection = "Partitions"; } }
     public bool VolumesOpen { get => StorageSection == "Volumes"; set { if (value) StorageSection = "Volumes"; } }
 
+    public bool IpOpen { get => NetworkSection == "IP"; set { if (value) NetworkSection = "IP"; } }
+    public bool DnsOpen { get => NetworkSection == "DNS"; set { if (value) NetworkSection = "DNS"; } }
+    public bool NicsOpen { get => NetworkSection == "NICs"; set { if (value) NetworkSection = "NICs"; } }
+    public bool RoutesOpen { get => NetworkSection == "Routes"; set { if (value) NetworkSection = "Routes"; } }
+    public bool ArpOpen { get => NetworkSection == "ARP"; set { if (value) NetworkSection = "ARP"; } }
+    public bool ListenersOpen { get => NetworkSection == "Listeners"; set { if (value) NetworkSection = "Listeners"; } }
+    public bool TcpOpen { get => NetworkSection == "TCP"; set { if (value) NetworkSection = "TCP"; } }
+
     public ObservableCollection<InventorySection> Sections { get; } = new();
 
     public ObservableCollection<SummaryRow> SystemRows { get; } = new();
-    public ObservableCollection<SummaryRow> NetworkRows { get; } = new();
     public ObservableCollection<SummaryRow> SecurityRows { get; } = new();
     public ObservableCollection<SummaryRow> SoftwareRows { get; } = new();
     public ObservableCollection<SummaryRow> ProcessRows { get; } = new();
@@ -61,6 +78,14 @@ public sealed partial class MainViewModel : ObservableObject
     public ObservableCollection<LogicalDiskRow> LogicalDisks { get; } = new();
     public ObservableCollection<PartitionRow> Partitions { get; } = new();
     public ObservableCollection<VolumeRow> Volumes { get; } = new();
+
+    public ObservableCollection<IpConfigRow> IpConfigs { get; } = new();
+    public ObservableCollection<DnsConfigRow> DnsConfigs { get; } = new();
+    public ObservableCollection<NicRow> Nics { get; } = new();
+    public ObservableCollection<RouteRow> Routes { get; } = new();
+    public ObservableCollection<ArpRow> Arp { get; } = new();
+    public ObservableCollection<ListenerRow> Listeners { get; } = new();
+    public ObservableCollection<TcpRow> Tcp { get; } = new();
 
     [RelayCommand(CanExecute = nameof(CanCollect))]
     private async Task CollectAsync()
@@ -76,6 +101,13 @@ public sealed partial class MainViewModel : ObservableObject
         LogicalDisks.Clear();
         Partitions.Clear();
         Volumes.Clear();
+        IpConfigs.Clear();
+        DnsConfigs.Clear();
+        Nics.Clear();
+        Routes.Clear();
+        Arp.Clear();
+        Listeners.Clear();
+        Tcp.Clear();
 
         _cts = new CancellationTokenSource();
         var ct = _cts.Token;
@@ -95,7 +127,20 @@ public sealed partial class MainViewModel : ObservableObject
             foreach (var r in storage.Partitions) Partitions.Add(r);
             foreach (var r in storage.Volumes) Volumes.Add(r);
 
-            Status("Idle");
+            Status("Collecting network…");
+            var network = await Task.Run(() => NetworkCollector.Collect(ct), ct).ConfigureAwait(true);
+            foreach (var r in network.Ip) IpConfigs.Add(r);
+            foreach (var r in network.Dns) DnsConfigs.Add(r);
+            foreach (var r in network.Nics) Nics.Add(r);
+            foreach (var r in network.Routes) Routes.Add(r);
+            foreach (var r in network.Arp) Arp.Add(r);
+            foreach (var r in network.Listeners) Listeners.Add(r);
+            foreach (var r in network.Tcp) Tcp.Add(r);
+
+            var note = network.ArpTruncated || network.TcpTruncated
+                ? "Idle (some tables capped)"
+                : "Idle";
+            Status(note);
         }
         catch (OperationCanceledException)
         {
