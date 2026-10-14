@@ -13,9 +13,11 @@ public sealed class HostIdsTests
         Assert.Equal("DnsIQ", HostIds.DnsIQ);
         Assert.Equal("NicIQ", HostIds.NicIQ);
         Assert.Equal("RouteIQ", HostIds.RouteIQ);
+        Assert.Equal("SysInfoIQ", HostIds.SysInfoIQ);
         Assert.NotEqual("Network", HostIds.PingIQ);
         Assert.NotEqual("Network", HostIds.DnsIQ);
         Assert.NotEqual("Network", HostIds.NicIQ);
         Assert.NotEqual("Network", HostIds.RouteIQ);
+        Assert.NotEqual("Network", HostIds.SysInfoIQ);
     }
 }
