@@ -16,6 +16,7 @@
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsDiVersion)" />
     <PackageReference Include="System.Management" Version="9.0.0" />
+    <PackageReference Include="System.ServiceProcess.ServiceController" Version="9.0.0" />
     <PackageReference Include="Vestigium.Themes" Version="$(VestigiumThemesVersion)" />
     <PackageReference Include="Vestigium.Controls" Version="$(VestigiumControlsVersion)" />
     <PackageReference Include="Vestigium.Controls.StatusBar" Version="$(VestigiumStatusBarVersion)" />
