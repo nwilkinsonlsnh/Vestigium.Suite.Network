@@ -311,16 +311,100 @@
       </Border>
     </DockPanel>
 
-    <Border Visibility="{Binding SoftwarePageOpen, Converter={StaticResource BoolToVis}}"
-            BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
-      <DataGrid Style="{StaticResource DataGrid.Compact}" ItemsSource="{Binding SoftwareRows}"
-                IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" PreviewMouseWheel="Grid_PreviewMouseWheel">
-        <DataGrid.Columns>
-          <DataGridTextColumn Header="Field" Binding="{Binding Field}" Width="240" />
-          <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*" />
-        </DataGrid.Columns>
-      </DataGrid>
-    </Border>
+    <DockPanel Visibility="{Binding SoftwarePageOpen, Converter={StaticResource BoolToVis}}">
+      <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
+        <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="Installed"
+                     IsChecked="{Binding InstalledOpen}" GroupName="SoftwareSection" Margin="0,0,8,0" />
+        <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="Hotfixes"
+                     IsChecked="{Binding HotfixesOpen}" GroupName="SoftwareSection" Margin="0,0,8,0" />
+        <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="Features"
+                     IsChecked="{Binding FeaturesOpen}" GroupName="SoftwareSection" Margin="0,0,8,0" />
+        <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="ODBC"
+                     IsChecked="{Binding OdbcOpen}" GroupName="SoftwareSection" Margin="0,0,8,0" />
+        <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="Environment"
+                     IsChecked="{Binding EnvironmentOpen}" GroupName="SoftwareSection" Margin="0,0,8,0" />
+        <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="SQL"
+                     IsChecked="{Binding SqlOpen}" GroupName="SoftwareSection" />
+      </StackPanel>
+
+      <Border Visibility="{Binding InstalledOpen, Converter={StaticResource BoolToVis}}"
+              BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
+        <DataGrid Style="{StaticResource DataGrid.Compact}" ItemsSource="{Binding InstalledSoftware}"
+                  IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" PreviewMouseWheel="Grid_PreviewMouseWheel">
+          <DataGrid.Columns>
+            <DataGridTextColumn Header="Location" Binding="{Binding Location}" Width="70" />
+            <DataGridTextColumn Header="Arch" Binding="{Binding Arch}" Width="60" />
+            <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*" />
+            <DataGridTextColumn Header="Version" Binding="{Binding Version}" Width="120" />
+            <DataGridTextColumn Header="Publisher" Binding="{Binding Publisher}" Width="160" />
+            <DataGridTextColumn Header="Installed" Binding="{Binding InstallDate}" Width="100" />
+          </DataGrid.Columns>
+        </DataGrid>
+      </Border>
+
+      <Border Visibility="{Binding HotfixesOpen, Converter={StaticResource BoolToVis}}"
+              BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
+        <DataGrid Style="{StaticResource DataGrid.Compact}" ItemsSource="{Binding Hotfixes}"
+                  IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" PreviewMouseWheel="Grid_PreviewMouseWheel">
+          <DataGrid.Columns>
+            <DataGridTextColumn Header="KB" Binding="{Binding HotFixId}" Width="120" />
+            <DataGridTextColumn Header="Description" Binding="{Binding Description}" Width="*" />
+            <DataGridTextColumn Header="Installed On" Binding="{Binding InstalledOn}" Width="140" />
+            <DataGridTextColumn Header="Installed By" Binding="{Binding InstalledBy}" Width="160" />
+          </DataGrid.Columns>
+        </DataGrid>
+      </Border>
+
+      <Border Visibility="{Binding FeaturesOpen, Converter={StaticResource BoolToVis}}"
+              BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
+        <DataGrid Style="{StaticResource DataGrid.Compact}" ItemsSource="{Binding Features}"
+                  IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" PreviewMouseWheel="Grid_PreviewMouseWheel">
+          <DataGrid.Columns>
+            <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*" />
+            <DataGridTextColumn Header="State" Binding="{Binding State}" Width="100" />
+          </DataGrid.Columns>
+        </DataGrid>
+      </Border>
+
+      <Border Visibility="{Binding OdbcOpen, Converter={StaticResource BoolToVis}}"
+              BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
+        <DataGrid Style="{StaticResource DataGrid.Compact}" ItemsSource="{Binding Odbc}"
+                  IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" PreviewMouseWheel="Grid_PreviewMouseWheel">
+          <DataGrid.Columns>
+            <DataGridTextColumn Header="Location" Binding="{Binding Location}" Width="70" />
+            <DataGridTextColumn Header="Arch" Binding="{Binding Arch}" Width="60" />
+            <DataGridTextColumn Header="Kind" Binding="{Binding Kind}" Width="70" />
+            <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*" />
+            <DataGridTextColumn Header="Detail" Binding="{Binding Detail}" Width="*" />
+          </DataGrid.Columns>
+        </DataGrid>
+      </Border>
+
+      <Border Visibility="{Binding EnvironmentOpen, Converter={StaticResource BoolToVis}}"
+              BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
+        <DataGrid Style="{StaticResource DataGrid.Compact}" ItemsSource="{Binding EnvironmentVars}"
+                  IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" PreviewMouseWheel="Grid_PreviewMouseWheel">
+          <DataGrid.Columns>
+            <DataGridTextColumn Header="Scope" Binding="{Binding Scope}" Width="90" />
+            <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="200" />
+            <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*" />
+          </DataGrid.Columns>
+        </DataGrid>
+      </Border>
+
+      <Border Visibility="{Binding SqlOpen, Converter={StaticResource BoolToVis}}"
+              BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
+        <DataGrid Style="{StaticResource DataGrid.Compact}" ItemsSource="{Binding SqlServices}"
+                  IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" PreviewMouseWheel="Grid_PreviewMouseWheel">
+          <DataGrid.Columns>
+            <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="160" />
+            <DataGridTextColumn Header="Display" Binding="{Binding DisplayName}" Width="*" />
+            <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="100" />
+            <DataGridTextColumn Header="Start" Binding="{Binding StartType}" Width="100" />
+          </DataGrid.Columns>
+        </DataGrid>
+      </Border>
+    </DockPanel>
 
     <Border Visibility="{Binding ProcessesPageOpen, Converter={StaticResource BoolToVis}}"
             BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
