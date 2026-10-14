@@ -67,10 +67,16 @@ public partial class App : Application
         Settings = new SettingsViewModel(Themes, chrome) { Session = session };
         session.Attach(Settings);
 
+        var main = new MainViewModel
+        {
+            StatusBar = chrome.Status,
+            Settings = Settings
+        };
+
         var sysItem = window.HostShell["SysInfo"];
         if (sysItem is not null)
         {
-            sysItem.Content = new SysInfoView();
+            sysItem.Content = new SysInfoView { DataContext = main };
             window.HostShell.SelectedItem = sysItem;
         }
 

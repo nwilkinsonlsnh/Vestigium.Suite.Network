@@ -4,16 +4,34 @@
              Background="{DynamicResource Vestigium.Brushes.Surface.Window}">
   <DockPanel Margin="12">
     <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,12">
-      <Button Content="Collect" IsEnabled="False" Margin="0,0,8,0" />
-      <Button Content="Cancel" IsEnabled="False" />
+      <Button Content="Collect" Command="{Binding CollectCommand}" Margin="0,0,8,0" />
+      <Button Content="Cancel" Command="{Binding CancelCommand}" />
     </StackPanel>
-    <Border BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
+    <Border DockPanel.Dock="Top"
+            BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}"
             BorderThickness="1"
             Background="{DynamicResource Vestigium.Brushes.Surface.Card}"
-            Padding="16">
-      <TextBlock TextWrapping="Wrap"
-                 Style="{StaticResource TextBlock.Caption}"
-                 Text="SysInfo — inventory collection lands in PR01.004. Chrome and pages are PR01.002." />
+            Padding="12"
+            Margin="0,0,0,12">
+      <TextBox Text="{Binding Summary}"
+               IsReadOnly="True"
+               TextWrapping="NoWrap"
+               FontFamily="Consolas"
+               FontSize="13"
+               Background="Transparent"
+               BorderThickness="0"
+               VerticalScrollBarVisibility="Auto"
+               HorizontalScrollBarVisibility="Auto"
+               MinHeight="220" />
     </Border>
+    <ListBox ItemsSource="{Binding Sections}"
+             DisplayMemberPath="Name"
+             SelectedValuePath="Content">
+      <ListBox.ItemTemplate>
+        <DataTemplate>
+          <TextBlock Text="{Binding Name}" />
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
   </DockPanel>
 </UserControl>
