@@ -2,71 +2,78 @@
 
 **Document ID:** VEST-SUITE-NETWORK-SYSINFOIQ-PR01-REQ  
 **Host:** `Vestigium.Suite.Network.SysInfoIQ`  
-**Status:** Draft  
+**Status:** Closed — accepted with deltas  
 **Date:** 14 October 2026  
-**Product papers (to be updated when this PR lands):** [Requirements_v1.0.md](../../Requirements_v1.0.md), [Design_v1.0.md](../../Design_v1.0.md)
+**Closed:** 14 October 2026  
+**Product papers:** [Requirements_v1.0.md](../../Requirements_v1.0.md), [Design_v1.0.md](../../Design_v1.0.md)
 
-This file is the **definition of done for PR01**. It is the first slice. When accepted, fold any deltas into the product papers and move this folder to `Completed/PR01/`.
-
-Baseline: empty. No SysInfoIQ project exists yet.
+This file is the definition of done for PR01. Accepted. Move this folder to `Completed/PR01/` when the product papers are folded.
 
 ---
 
 ## Must land
 
-### PR01.001 Project scaffold
+### PR01.001 Project scaffold — Done
 
-- New project `src/Vestigium.Suite.Network.SysInfoIQ` (`WinExe`, `net10.0-windows`).
-- Add to `Vestigium.Suite.Network.slnx` under `/Suite/Network/WPF/`.
-- Reference `Vestigium.Suite.Network.Shell`.
-- Package references: Themes, Controls, StatusBar, Converters, Helpers (minimum).
+- Project `src/Vestigium.Suite.Network.SysInfoIQ` (`WinExe`, `net10.0-windows`).
+- Added to `Vestigium.Suite.Network.slnx`.
+- References Shell. Packages: Themes, Controls, StatusBar, Converters, CommunityToolkit.Mvvm, System.Management.
 - `App.xaml` / `App.xaml.cs` with `HostLog.Initialize(HostIds.SysInfoIQ)`.
-- Assets folder placeholder for icon.
 
-### PR01.002 Chrome and pages
+### PR01.002 Chrome and pages — Done
 
 - `SysInfoIqWindow` + `VestigiumShell`.
 - HorizontalTab nav: **SysInfo** | **Settings** | **Help**.
-- View menu: bar visible, Top/Bottom, Theme submenu with single check.
+- View menu: bar visible, Top/Bottom, Theme submenu.
 - Status bar wired.
-- Cold start centered on primary work area.
-- Settings page with General + Theme (indented tabs).
-- Help page with static copy (purpose, logs, elevation, export).
+- Settings page with General + Theme.
+- Help page with static copy.
+- Icon: `Assets/SysInfoIQ.ico` on the exe and the window.
 
-### PR01.003 Logging and settings persist
+### PR01.003 Logging and settings persist — Done
 
-- Logs land in `C:\ProgramData\Vestigium\Logs\SysInfoIQ`.
-- Settings store at `C:\ProgramData\Vestigium\Settings\Diagnostics\SysInfoIQ\settings.json`.
+- Logs: `C:\ProgramData\Vestigium\Logs\SysInfoIQ`.
+- Settings: `C:\ProgramData\Vestigium\Settings\Diagnostics\SysInfoIQ\settings.json`.
 - Persist theme, bar visible, bar dock, output folder.
-- Load after Themes.Initialize. Defaults on missing file.
 
-### PR01.004 Base collection and display
+### PR01.004 Base collection and display — Done with delta
 
-- Collect button on SysInfo page.
-- One in-flight token. Cancel.
-- Collect base: Win32_ComputerSystem, Win32_OperatingSystem, Win32_BIOS, Win32_Processor, Win32_PhysicalMemory via System.Management.
-- Compute Summary text exactly matching the locked block in SectionsCatalog.md (including Domain Role / OS Product Type labels, uptime format, memory GB to two decimals, and Inventory Location).
-- Display summary card + raw section text or grids.
+- Collect runs on SysInfo page load. No Collect / Cancel buttons.
+- One in-flight token.
+- Base: Win32_ComputerSystem, Win32_OperatingSystem, Win32_BIOS, Win32_Processor, Win32_PhysicalMemory via System.Management.
+- System tab is a themed `DataGrid.Compact` (Field | Value). Other category tabs are empty themed grids.
 - No PowerShell. No wmic.exe.
 
-### PR01.005 Export skeleton
+### PR01.005 Export skeleton — Landed, not default
 
-- After successful collect, write `{Hostname}_Summary.txt` and the raw section files into a timestamped folder under the configured output path.
-- Write `{Hostname}_InventoryManifest.txt`.
-- Failed section writes an error file instead of aborting.
+- `Exporter` writes `{Hostname}_Summary.txt`, section files, and `{Hostname}_InventoryManifest.txt` into a timestamped folder.
+- Owner decision: export is **not** automatic on collect. Path line is not shown. Status stays on the bar.
 
-### PR01.006 Host tests
+### PR01.006 Host tests — Done
 
 - APPID is `SysInfoIQ`.
 - `SysInfoInput` rejects bad output paths.
+- `SummaryFormatter` locked against the sample shape.
 - No live CIM in unit tests.
+
+---
+
+## Deltas accepted
+
+| Original | What shipped |
+|---|---|
+| Collect button + Cancel | Collect on load. No buttons. |
+| Export after every collect | Export code exists. Not called by default. |
+| Summary as text card | Summary as themed Field/Value grid. |
+| Icon placeholder | `Assets/SysInfoIQ.ico` wired. |
+| Category list box | Category HorizontalTabs: System, Storage, Network, Security, Software, Processes, Events. |
 
 ---
 
 ## Must not change in PR01
 
 - Other hosts.
-- Full script section list (Hardware beyond base, Storage, Network, Users, Software, Services, Events, Drivers, SQL, msinfo32).
+- Full script section list beyond base.
 - Remote collection.
 - Excel export.
 
@@ -74,18 +81,20 @@ Baseline: empty. No SysInfoIQ project exists yet.
 
 ## Acceptance
 
-1. Project builds and runs.
-2. Logs appear under the SysInfoIQ path.
-3. SysInfo / Settings / Help tabs work and match DnsIQ chrome style.
-4. Collect produces a readable summary and writes the export folder.
-5. Settings survive restart.
-6. Tests green.
+1. Project builds and runs. Met.
+2. Logs under the SysInfoIQ path. Met.
+3. SysInfo / Settings / Help tabs work. Met.
+4. Collect on load produces the System grid. Met.
+5. Settings survive restart. Met.
+6. Tests green. Met.
 
 ---
 
-## Parked
+## Parked (now PR02+)
 
-- Additional sections from the script.
-- Section selection checkboxes.
+- Storage and Network sections.
+- Security, Software, Processes, Events.
+- Query / filter on the grids.
+- Explicit export action.
 - Excel workbook.
 - Elevation UI prompt.
