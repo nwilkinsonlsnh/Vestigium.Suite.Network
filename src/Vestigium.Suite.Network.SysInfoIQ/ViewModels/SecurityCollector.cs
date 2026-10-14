@@ -97,6 +97,7 @@ public static class SecurityCollector
 
     private static void CollectCertificates(SecuritySnapshot snap, CancellationToken ct)
     {
+        var closed = new List<string>();
         foreach (var name in CertStores)
         {
             ct.ThrowIfCancellationRequested();
@@ -107,6 +108,7 @@ public static class SecurityCollector
             }
             catch (Exception)
             {
+                closed.Add(name);
                 continue;
             }
 
@@ -123,6 +125,9 @@ public static class SecurityCollector
                 });
             }
         }
+
+        if (closed.Count == CertStores.Length)
+            throw new InvalidOperationException("all certificate stores closed: " + string.Join(", ", closed));
     }
 
     private static void CollectDrivers(SecuritySnapshot snap, CancellationToken ct)
