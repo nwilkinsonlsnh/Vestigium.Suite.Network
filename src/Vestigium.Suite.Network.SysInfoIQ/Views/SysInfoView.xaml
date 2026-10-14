@@ -118,16 +118,119 @@
       </Border>
     </DockPanel>
 
-    <Border Visibility="{Binding NetworkPageOpen, Converter={StaticResource BoolToVis}}"
-            BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
-      <DataGrid Style="{StaticResource DataGrid.Compact}" ItemsSource="{Binding NetworkRows}"
-                IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column">
-        <DataGrid.Columns>
-          <DataGridTextColumn Header="Field" Binding="{Binding Field}" Width="240" />
-          <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*" />
-        </DataGrid.Columns>
-      </DataGrid>
-    </Border>
+    <DockPanel Visibility="{Binding NetworkPageOpen, Converter={StaticResource BoolToVis}}">
+      <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
+        <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="IP"
+                     IsChecked="{Binding IpOpen}" GroupName="NetworkSection" Margin="0,0,8,0" />
+        <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="DNS"
+                     IsChecked="{Binding DnsOpen}" GroupName="NetworkSection" Margin="0,0,8,0" />
+        <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="NICs"
+                     IsChecked="{Binding NicsOpen}" GroupName="NetworkSection" Margin="0,0,8,0" />
+        <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="Routes"
+                     IsChecked="{Binding RoutesOpen}" GroupName="NetworkSection" Margin="0,0,8,0" />
+        <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="ARP"
+                     IsChecked="{Binding ArpOpen}" GroupName="NetworkSection" Margin="0,0,8,0" />
+        <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="Listeners"
+                     IsChecked="{Binding ListenersOpen}" GroupName="NetworkSection" Margin="0,0,8,0" />
+        <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="TCP"
+                     IsChecked="{Binding TcpOpen}" GroupName="NetworkSection" />
+      </StackPanel>
+
+      <Border Visibility="{Binding IpOpen, Converter={StaticResource BoolToVis}}"
+              BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
+        <DataGrid Style="{StaticResource DataGrid.Compact}" ItemsSource="{Binding IpConfigs}"
+                  IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column">
+          <DataGrid.Columns>
+            <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="160" />
+            <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="90" />
+            <DataGridTextColumn Header="MAC" Binding="{Binding Mac}" Width="140" />
+            <DataGridTextColumn Header="Addresses" Binding="{Binding Addresses}" Width="*" />
+            <DataGridTextColumn Header="Gateways" Binding="{Binding Gateways}" Width="140" />
+            <DataGridTextColumn Header="DNS" Binding="{Binding Dns}" Width="160" />
+          </DataGrid.Columns>
+        </DataGrid>
+      </Border>
+
+      <Border Visibility="{Binding DnsOpen, Converter={StaticResource BoolToVis}}"
+              BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
+        <DataGrid Style="{StaticResource DataGrid.Compact}" ItemsSource="{Binding DnsConfigs}"
+                  IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column">
+          <DataGrid.Columns>
+            <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="180" />
+            <DataGridTextColumn Header="DNS Servers" Binding="{Binding DnsServers}" Width="*" />
+            <DataGridTextColumn Header="Suffix" Binding="{Binding Suffix}" Width="180" />
+          </DataGrid.Columns>
+        </DataGrid>
+      </Border>
+
+      <Border Visibility="{Binding NicsOpen, Converter={StaticResource BoolToVis}}"
+              BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
+        <DataGrid Style="{StaticResource DataGrid.Compact}" ItemsSource="{Binding Nics}"
+                  IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column">
+          <DataGrid.Columns>
+            <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="160" />
+            <DataGridTextColumn Header="Description" Binding="{Binding Description}" Width="*" />
+            <DataGridTextColumn Header="MAC" Binding="{Binding Mac}" Width="140" />
+            <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="90" />
+            <DataGridTextColumn Header="Mbps" Binding="{Binding SpeedMbps}" Width="80" />
+            <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="120" />
+          </DataGrid.Columns>
+        </DataGrid>
+      </Border>
+
+      <Border Visibility="{Binding RoutesOpen, Converter={StaticResource BoolToVis}}"
+              BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
+        <DataGrid Style="{StaticResource DataGrid.Compact}" ItemsSource="{Binding Routes}"
+                  IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column">
+          <DataGrid.Columns>
+            <DataGridTextColumn Header="Destination" Binding="{Binding Destination}" Width="*" />
+            <DataGridTextColumn Header="Mask" Binding="{Binding Mask}" Width="140" />
+            <DataGridTextColumn Header="Next Hop" Binding="{Binding NextHop}" Width="140" />
+            <DataGridTextColumn Header="IfIndex" Binding="{Binding InterfaceIndex}" Width="80" />
+            <DataGridTextColumn Header="Metric" Binding="{Binding Metric}" Width="80" />
+          </DataGrid.Columns>
+        </DataGrid>
+      </Border>
+
+      <Border Visibility="{Binding ArpOpen, Converter={StaticResource BoolToVis}}"
+              BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
+        <DataGrid Style="{StaticResource DataGrid.Compact}" ItemsSource="{Binding Arp}"
+                  IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column">
+          <DataGrid.Columns>
+            <DataGridTextColumn Header="Address" Binding="{Binding Address}" Width="*" />
+            <DataGridTextColumn Header="MAC" Binding="{Binding Mac}" Width="160" />
+            <DataGridTextColumn Header="State" Binding="{Binding State}" Width="100" />
+            <DataGridTextColumn Header="IfIndex" Binding="{Binding InterfaceIndex}" Width="80" />
+          </DataGrid.Columns>
+        </DataGrid>
+      </Border>
+
+      <Border Visibility="{Binding ListenersOpen, Converter={StaticResource BoolToVis}}"
+              BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
+        <DataGrid Style="{StaticResource DataGrid.Compact}" ItemsSource="{Binding Listeners}"
+                  IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column">
+          <DataGrid.Columns>
+            <DataGridTextColumn Header="Proto" Binding="{Binding Protocol}" Width="70" />
+            <DataGridTextColumn Header="Local" Binding="{Binding LocalAddress}" Width="*" />
+            <DataGridTextColumn Header="Port" Binding="{Binding Port}" Width="80" />
+          </DataGrid.Columns>
+        </DataGrid>
+      </Border>
+
+      <Border Visibility="{Binding TcpOpen, Converter={StaticResource BoolToVis}}"
+              BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
+        <DataGrid Style="{StaticResource DataGrid.Compact}" ItemsSource="{Binding Tcp}"
+                  IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column">
+          <DataGrid.Columns>
+            <DataGridTextColumn Header="Local" Binding="{Binding LocalAddress}" Width="*" />
+            <DataGridTextColumn Header="LPort" Binding="{Binding LocalPort}" Width="70" />
+            <DataGridTextColumn Header="Remote" Binding="{Binding RemoteAddress}" Width="*" />
+            <DataGridTextColumn Header="RPort" Binding="{Binding RemotePort}" Width="70" />
+            <DataGridTextColumn Header="State" Binding="{Binding State}" Width="100" />
+          </DataGrid.Columns>
+        </DataGrid>
+      </Border>
+    </DockPanel>
 
     <Border Visibility="{Binding SecurityPageOpen, Converter={StaticResource BoolToVis}}"
             BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
