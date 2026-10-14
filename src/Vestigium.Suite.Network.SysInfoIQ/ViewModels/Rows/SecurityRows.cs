@@ -23,6 +23,7 @@ public sealed class FirewallRuleRow
 
 public sealed class CertificateRow
 {
+    public string Location { get; init; } = "";
     public string Store { get; init; } = "";
     public string Subject { get; init; } = "";
     public string Issuer { get; init; } = "";
@@ -33,6 +34,7 @@ public sealed class CertificateRow
 
 public sealed class SignedDriverRow
 {
+    public string Source { get; init; } = "";
     public string DeviceName { get; init; } = "";
     public string DriverVersion { get; init; } = "";
     public string Manufacturer { get; init; } = "";
@@ -44,7 +46,7 @@ public sealed class SignedDriverRow
 public sealed class SecuritySnapshot
 {
     public const int RulesCap = 1000;
-    public const int DriversCap = 500;
+    public const int DriversCap = 5000;
 
     public List<FirewallProfileRow> Profiles { get; } = new();
     public List<FirewallRuleRow> Rules { get; } = new();
