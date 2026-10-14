@@ -232,16 +232,78 @@
       </Border>
     </DockPanel>
 
-    <Border Visibility="{Binding SecurityPageOpen, Converter={StaticResource BoolToVis}}"
-            BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
-      <DataGrid Style="{StaticResource DataGrid.Compact}" ItemsSource="{Binding SecurityRows}"
-                IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column">
-        <DataGrid.Columns>
-          <DataGridTextColumn Header="Field" Binding="{Binding Field}" Width="240" />
-          <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*" />
-        </DataGrid.Columns>
-      </DataGrid>
-    </Border>
+    <DockPanel Visibility="{Binding SecurityPageOpen, Converter={StaticResource BoolToVis}}">
+      <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
+        <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="Profiles"
+                     IsChecked="{Binding ProfilesOpen}" GroupName="SecuritySection" Margin="0,0,8,0" />
+        <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="Rules"
+                     IsChecked="{Binding RulesOpen}" GroupName="SecuritySection" Margin="0,0,8,0" />
+        <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="Certificates"
+                     IsChecked="{Binding CertificatesOpen}" GroupName="SecuritySection" Margin="0,0,8,0" />
+        <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="Drivers"
+                     IsChecked="{Binding DriversOpen}" GroupName="SecuritySection" />
+      </StackPanel>
+
+      <Border Visibility="{Binding ProfilesOpen, Converter={StaticResource BoolToVis}}"
+              BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
+        <DataGrid Style="{StaticResource DataGrid.Compact}" ItemsSource="{Binding FirewallProfiles}"
+                  IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column">
+          <DataGrid.Columns>
+            <DataGridTextColumn Header="Profile" Binding="{Binding Name}" Width="120" />
+            <DataGridTextColumn Header="Enabled" Binding="{Binding Enabled}" Width="90" />
+            <DataGridTextColumn Header="Inbound" Binding="{Binding DefaultInbound}" Width="*" />
+            <DataGridTextColumn Header="Outbound" Binding="{Binding DefaultOutbound}" Width="*" />
+            <DataGridTextColumn Header="Log Allowed" Binding="{Binding LogAllowed}" Width="100" />
+            <DataGridTextColumn Header="Log Blocked" Binding="{Binding LogBlocked}" Width="100" />
+          </DataGrid.Columns>
+        </DataGrid>
+      </Border>
+
+      <Border Visibility="{Binding RulesOpen, Converter={StaticResource BoolToVis}}"
+              BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
+        <DataGrid Style="{StaticResource DataGrid.Compact}" ItemsSource="{Binding FirewallRules}"
+                  IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column">
+          <DataGrid.Columns>
+            <DataGridTextColumn Header="Name" Binding="{Binding DisplayName}" Width="*" />
+            <DataGridTextColumn Header="Enabled" Binding="{Binding Enabled}" Width="80" />
+            <DataGridTextColumn Header="Direction" Binding="{Binding Direction}" Width="90" />
+            <DataGridTextColumn Header="Action" Binding="{Binding Action}" Width="80" />
+            <DataGridTextColumn Header="Profile" Binding="{Binding Profile}" Width="140" />
+            <DataGridTextColumn Header="Protocol" Binding="{Binding Protocol}" Width="80" />
+          </DataGrid.Columns>
+        </DataGrid>
+      </Border>
+
+      <Border Visibility="{Binding CertificatesOpen, Converter={StaticResource BoolToVis}}"
+              BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
+        <DataGrid Style="{StaticResource DataGrid.Compact}" ItemsSource="{Binding Certificates}"
+                  IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column">
+          <DataGrid.Columns>
+            <DataGridTextColumn Header="Store" Binding="{Binding Store}" Width="120" />
+            <DataGridTextColumn Header="Subject" Binding="{Binding Subject}" Width="*" />
+            <DataGridTextColumn Header="Issuer" Binding="{Binding Issuer}" Width="*" />
+            <DataGridTextColumn Header="Thumbprint" Binding="{Binding Thumbprint}" Width="200" />
+            <DataGridTextColumn Header="Expires" Binding="{Binding NotAfter}" Width="100" />
+            <DataGridTextColumn Header="Key" Binding="{Binding HasPrivateKey}" Width="60" />
+          </DataGrid.Columns>
+        </DataGrid>
+      </Border>
+
+      <Border Visibility="{Binding DriversOpen, Converter={StaticResource BoolToVis}}"
+              BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
+        <DataGrid Style="{StaticResource DataGrid.Compact}" ItemsSource="{Binding SignedDrivers}"
+                  IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column">
+          <DataGrid.Columns>
+            <DataGridTextColumn Header="Device" Binding="{Binding DeviceName}" Width="*" />
+            <DataGridTextColumn Header="Version" Binding="{Binding DriverVersion}" Width="120" />
+            <DataGridTextColumn Header="Manufacturer" Binding="{Binding Manufacturer}" Width="140" />
+            <DataGridTextColumn Header="Signed" Binding="{Binding IsSigned}" Width="70" />
+            <DataGridTextColumn Header="Signer" Binding="{Binding Signer}" Width="140" />
+            <DataGridTextColumn Header="INF" Binding="{Binding InfName}" Width="120" />
+          </DataGrid.Columns>
+        </DataGrid>
+      </Border>
+    </DockPanel>
 
     <Border Visibility="{Binding SoftwarePageOpen, Converter={StaticResource BoolToVis}}"
             BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
