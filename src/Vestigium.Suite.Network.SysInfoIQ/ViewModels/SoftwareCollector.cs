@@ -77,9 +77,15 @@ public static class SoftwareCollector
                 using var child = key.OpenSubKey(sub);
                 if (child is null)
                     continue;
-                var name = child.GetValue("DisplayName")?.ToString();
-                if (string.IsNullOrWhiteSpace(name))
-                    continue;
+                var display = child.GetValue("DisplayName")?.ToString();
+                var quiet = child.GetValue("QuietDisplayName")?.ToString();
+                var name = !string.IsNullOrWhiteSpace(display) ? display
+                    : !string.IsNullOrWhiteSpace(quiet) ? quiet
+                    : sub;
+                var system = child.GetValue("SystemComponent")?.ToString() == "1";
+                var childOf = !string.IsNullOrWhiteSpace(child.GetValue("ParentKeyName")?.ToString());
+                var noDisplay = string.IsNullOrWhiteSpace(display);
+                var hidden = system || childOf || noDisplay;
                 snap.Installed.Add(new InstalledSoftwareRow
                 {
                     Location = location,
@@ -87,7 +93,9 @@ public static class SoftwareCollector
                     Name = name,
                     Version = child.GetValue("DisplayVersion")?.ToString() ?? "",
                     Publisher = child.GetValue("Publisher")?.ToString() ?? "",
-                    InstallDate = child.GetValue("InstallDate")?.ToString() ?? ""
+                    InstallDate = child.GetValue("InstallDate")?.ToString() ?? "",
+                    Hidden = hidden ? "Yes" : "",
+                    IsHidden = hidden
                 });
             }
         }
