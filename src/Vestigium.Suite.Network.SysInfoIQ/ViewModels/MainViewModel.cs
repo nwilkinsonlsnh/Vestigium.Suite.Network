@@ -45,6 +45,13 @@ public sealed partial class MainViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(TcpOpen))]
     private string _networkSection = "IP";
 
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ProfilesOpen))]
+    [NotifyPropertyChangedFor(nameof(RulesOpen))]
+    [NotifyPropertyChangedFor(nameof(CertificatesOpen))]
+    [NotifyPropertyChangedFor(nameof(DriversOpen))]
+    private string _securitySection = "Profiles";
+
     public bool SystemPageOpen { get => Category == "System"; set { if (value) Category = "System"; } }
     public bool StoragePageOpen { get => Category == "Storage"; set { if (value) Category = "Storage"; } }
     public bool NetworkPageOpen { get => Category == "Network"; set { if (value) Category = "Network"; } }
@@ -66,10 +73,14 @@ public sealed partial class MainViewModel : ObservableObject
     public bool ListenersOpen { get => NetworkSection == "Listeners"; set { if (value) NetworkSection = "Listeners"; } }
     public bool TcpOpen { get => NetworkSection == "TCP"; set { if (value) NetworkSection = "TCP"; } }
 
+    public bool ProfilesOpen { get => SecuritySection == "Profiles"; set { if (value) SecuritySection = "Profiles"; } }
+    public bool RulesOpen { get => SecuritySection == "Rules"; set { if (value) SecuritySection = "Rules"; } }
+    public bool CertificatesOpen { get => SecuritySection == "Certificates"; set { if (value) SecuritySection = "Certificates"; } }
+    public bool DriversOpen { get => SecuritySection == "Drivers"; set { if (value) SecuritySection = "Drivers"; } }
+
     public ObservableCollection<InventorySection> Sections { get; } = new();
 
     public ObservableCollection<SummaryRow> SystemRows { get; } = new();
-    public ObservableCollection<SummaryRow> SecurityRows { get; } = new();
     public ObservableCollection<SummaryRow> SoftwareRows { get; } = new();
     public ObservableCollection<SummaryRow> ProcessRows { get; } = new();
     public ObservableCollection<SummaryRow> EventRows { get; } = new();
@@ -86,6 +97,11 @@ public sealed partial class MainViewModel : ObservableObject
     public ObservableCollection<ArpRow> Arp { get; } = new();
     public ObservableCollection<ListenerRow> Listeners { get; } = new();
     public ObservableCollection<TcpRow> Tcp { get; } = new();
+
+    public ObservableCollection<FirewallProfileRow> FirewallProfiles { get; } = new();
+    public ObservableCollection<FirewallRuleRow> FirewallRules { get; } = new();
+    public ObservableCollection<CertificateRow> Certificates { get; } = new();
+    public ObservableCollection<SignedDriverRow> SignedDrivers { get; } = new();
 
     [RelayCommand(CanExecute = nameof(CanCollect))]
     private async Task CollectAsync()
@@ -108,6 +124,10 @@ public sealed partial class MainViewModel : ObservableObject
         Arp.Clear();
         Listeners.Clear();
         Tcp.Clear();
+        FirewallProfiles.Clear();
+        FirewallRules.Clear();
+        Certificates.Clear();
+        SignedDrivers.Clear();
 
         _cts = new CancellationTokenSource();
         var ct = _cts.Token;
@@ -139,7 +159,15 @@ public sealed partial class MainViewModel : ObservableObject
             foreach (var r in network.Listeners) Listeners.Add(r);
             foreach (var r in network.Tcp) Tcp.Add(r);
 
-            Status(FinishNote(storage, network));
+            var security = await Task.Run(
+                () => SecurityCollector.Collect(ct, name => Status($"Security / {name}")),
+                ct).ConfigureAwait(true);
+            foreach (var r in security.Profiles) FirewallProfiles.Add(r);
+            foreach (var r in security.Rules) FirewallRules.Add(r);
+            foreach (var r in security.Certificates) Certificates.Add(r);
+            foreach (var r in security.Drivers) SignedDrivers.Add(r);
+
+            Status(FinishNote(storage, network, security));
         }
         catch (OperationCanceledException)
         {
@@ -159,10 +187,10 @@ public sealed partial class MainViewModel : ObservableObject
         }
     }
 
-    private static string FinishNote(StorageSnapshot storage, NetworkSnapshot network)
+    private static string FinishNote(StorageSnapshot storage, NetworkSnapshot network, SecuritySnapshot security)
     {
         var notes = new List<string>();
-        var failed = StorageCollector.Failures(storage);
+        var failed = StorageCollector.Failures(storage).Concat(SecurityCollector.Failures(security)).ToList();
         if (failed.Count > 0)
             notes.Add("failed: " + string.Join(", ", failed));
         if (!string.IsNullOrWhiteSpace(network.Error))
@@ -171,6 +199,10 @@ public sealed partial class MainViewModel : ObservableObject
             notes.Add("ARP capped");
         if (network.TcpTruncated)
             notes.Add("TCP capped");
+        if (security.RulesTruncated)
+            notes.Add("Rules capped");
+        if (security.DriversTruncated)
+            notes.Add("Drivers capped");
         return notes.Count == 0 ? "Idle" : "Idle (" + string.Join("; ", notes) + ")";
     }
 
