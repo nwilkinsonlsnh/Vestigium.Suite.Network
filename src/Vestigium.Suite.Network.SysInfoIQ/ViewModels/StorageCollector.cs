@@ -5,38 +5,33 @@ namespace Vestigium.Suite.Network.SysInfoIQ.ViewModels;
 
 public static class StorageCollector
 {
-    public static StorageSnapshot Collect(CancellationToken ct)
+    public static StorageSnapshot Collect(CancellationToken ct, Action<string>? progress = null)
     {
         var snap = new StorageSnapshot();
-        CollectDiskDrives(snap, ct);
-        CollectLogicalDisks(snap, ct);
-        CollectPartitions(snap, ct);
-        CollectVolumes(snap, ct);
+        Run(progress, "DiskDrives", ct, () => CollectDiskDrives(snap, ct), msg => snap.DiskDrivesError = msg);
+        Run(progress, "LogicalDisks", ct, () => CollectLogicalDisks(snap, ct), msg => snap.LogicalDisksError = msg);
+        Run(progress, "Partitions", ct, () => CollectPartitions(snap, ct), msg => snap.PartitionsError = msg);
+        Run(progress, "Volumes", ct, () => CollectVolumes(snap, ct), msg => snap.VolumesError = msg);
         return snap;
     }
 
-    private static void CollectDiskDrives(StorageSnapshot snap, CancellationToken ct)
+    public static IReadOnlyList<string> Failures(StorageSnapshot snap)
     {
+        var list = new List<string>();
+        if (!string.IsNullOrWhiteSpace(snap.DiskDrivesError)) list.Add("DiskDrives");
+        if (!string.IsNullOrWhiteSpace(snap.LogicalDisksError)) list.Add("LogicalDisks");
+        if (!string.IsNullOrWhiteSpace(snap.PartitionsError)) list.Add("Partitions");
+        if (!string.IsNullOrWhiteSpace(snap.VolumesError)) list.Add("Volumes");
+        return list;
+    }
+
+    private static void Run(Action<string>? progress, string name, CancellationToken ct, Action body, Action<string> onError)
+    {
+        progress?.Invoke(name);
         try
         {
             ct.ThrowIfCancellationRequested();
-            foreach (var mo in Query("SELECT * FROM Win32_DiskDrive"))
-            {
-                using (mo)
-                {
-                    snap.DiskDrives.Add(new DiskDriveRow
-                    {
-                        DeviceId = Str(mo, "DeviceID"),
-                        Model = Str(mo, "Caption"),
-                        InterfaceType = Str(mo, "InterfaceType"),
-                        SizeGb = SizeFormat.Gb(mo["Size"]),
-                        SerialNumber = Str(mo, "SerialNumber").Trim(),
-                        Status = Str(mo, "Status"),
-                        Partitions = Str(mo, "Partitions"),
-                        MediaType = Str(mo, "MediaType")
-                    });
-                }
-            }
+            body();
         }
         catch (OperationCanceledException)
         {
@@ -44,122 +39,111 @@ public static class StorageCollector
         }
         catch (Exception ex)
         {
-            snap.DiskDrivesError = ex.Message;
+            onError(ex.Message);
+        }
+    }
+
+    private static void CollectDiskDrives(StorageSnapshot snap, CancellationToken ct)
+    {
+        foreach (var mo in Query("SELECT * FROM Win32_DiskDrive"))
+        {
+            ct.ThrowIfCancellationRequested();
+            using (mo)
+            {
+                snap.DiskDrives.Add(new DiskDriveRow
+                {
+                    DeviceId = Str(mo, "DeviceID"),
+                    Model = Str(mo, "Caption"),
+                    InterfaceType = Str(mo, "InterfaceType"),
+                    SizeGb = SizeFormat.Gb(mo["Size"]),
+                    SerialNumber = Str(mo, "SerialNumber").Trim(),
+                    Status = Str(mo, "Status"),
+                    Partitions = Str(mo, "Partitions"),
+                    MediaType = Str(mo, "MediaType")
+                });
+            }
         }
     }
 
     private static void CollectLogicalDisks(StorageSnapshot snap, CancellationToken ct)
     {
-        try
+        foreach (var mo in Query("SELECT * FROM Win32_LogicalDisk"))
         {
             ct.ThrowIfCancellationRequested();
-            foreach (var mo in Query("SELECT * FROM Win32_LogicalDisk"))
+            using (mo)
             {
-                using (mo)
+                snap.LogicalDisks.Add(new LogicalDiskRow
                 {
-                    snap.LogicalDisks.Add(new LogicalDiskRow
-                    {
-                        DeviceId = Str(mo, "DeviceID"),
-                        VolumeName = Str(mo, "VolumeName"),
-                        FileSystem = Str(mo, "FileSystem"),
-                        DriveType = SizeFormat.DriveTypeName(mo["DriveType"]),
-                        SizeGb = SizeFormat.Gb(mo["Size"]),
-                        FreeGb = SizeFormat.Gb(mo["FreeSpace"]),
-                        FreePercent = SizeFormat.Percent(mo["FreeSpace"], mo["Size"]),
-                        VolumeSerial = Str(mo, "VolumeSerialNumber")
-                    });
-                }
+                    DeviceId = Str(mo, "DeviceID"),
+                    VolumeName = Str(mo, "VolumeName"),
+                    FileSystem = Str(mo, "FileSystem"),
+                    DriveType = SizeFormat.DriveTypeName(mo["DriveType"]),
+                    SizeGb = SizeFormat.Gb(mo["Size"]),
+                    FreeGb = SizeFormat.Gb(mo["FreeSpace"]),
+                    FreePercent = SizeFormat.Percent(mo["FreeSpace"], mo["Size"]),
+                    VolumeSerial = Str(mo, "VolumeSerialNumber")
+                });
             }
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            snap.LogicalDisksError = ex.Message;
         }
     }
 
     private static void CollectPartitions(StorageSnapshot snap, CancellationToken ct)
     {
-        try
+        ct.ThrowIfCancellationRequested();
+        var rows = TryStorageNamespace(
+            "SELECT DiskNumber, PartitionNumber, DriveLetter, Size, Offset, GptType, IsBoot, IsSystem, IsHidden, OperationalStatus FROM MSFT_Partition",
+            MapPartition);
+        if (rows is null)
         {
-            ct.ThrowIfCancellationRequested();
-            var rows = TryStorageNamespace(
-                "SELECT DiskNumber, PartitionNumber, DriveLetter, Size, Offset, GptType, IsBoot, IsSystem, IsHidden, OperationalStatus FROM MSFT_Partition",
-                MapPartition);
-            if (rows is null)
+            rows = new List<PartitionRow>();
+            foreach (var mo in Query("SELECT * FROM Win32_DiskPartition"))
             {
-                rows = new List<PartitionRow>();
-                foreach (var mo in Query("SELECT * FROM Win32_DiskPartition"))
+                using (mo)
                 {
-                    using (mo)
+                    rows.Add(new PartitionRow
                     {
-                        rows.Add(new PartitionRow
-                        {
-                            DiskNumber = Str(mo, "DiskIndex"),
-                            PartitionNumber = Str(mo, "Index"),
-                            Type = Str(mo, "Type"),
-                            SizeGb = SizeFormat.Gb(mo["Size"]),
-                            OffsetGb = SizeFormat.Gb(mo["StartingOffset"]),
-                            IsBoot = Str(mo, "BootPartition"),
-                            IsSystem = Str(mo, "PrimaryPartition"),
-                            Status = Str(mo, "Status")
-                        });
-                    }
+                        DiskNumber = Str(mo, "DiskIndex"),
+                        PartitionNumber = Str(mo, "Index"),
+                        Type = Str(mo, "Type"),
+                        SizeGb = SizeFormat.Gb(mo["Size"]),
+                        OffsetGb = SizeFormat.Gb(mo["StartingOffset"]),
+                        IsBoot = Str(mo, "BootPartition"),
+                        IsSystem = Str(mo, "PrimaryPartition"),
+                        Status = Str(mo, "Status")
+                    });
                 }
             }
-            snap.Partitions.AddRange(rows);
         }
-        catch (OperationCanceledException)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            snap.PartitionsError = ex.Message;
-        }
+        snap.Partitions.AddRange(rows);
     }
 
     private static void CollectVolumes(StorageSnapshot snap, CancellationToken ct)
     {
-        try
+        ct.ThrowIfCancellationRequested();
+        var rows = TryStorageNamespace(
+            "SELECT DriveLetter, FileSystemLabel, FileSystem, DriveType, Size, SizeRemaining, HealthStatus, OperationalStatus, Path FROM MSFT_Volume",
+            MapVolume);
+        if (rows is null)
         {
-            ct.ThrowIfCancellationRequested();
-            var rows = TryStorageNamespace(
-                "SELECT DriveLetter, FileSystemLabel, FileSystem, DriveType, Size, SizeRemaining, HealthStatus, OperationalStatus, Path FROM MSFT_Volume",
-                MapVolume);
-            if (rows is null)
+            rows = new List<VolumeRow>();
+            foreach (var mo in Query("SELECT * FROM Win32_Volume"))
             {
-                rows = new List<VolumeRow>();
-                foreach (var mo in Query("SELECT * FROM Win32_Volume"))
+                using (mo)
                 {
-                    using (mo)
+                    rows.Add(new VolumeRow
                     {
-                        rows.Add(new VolumeRow
-                        {
-                            DriveLetter = Str(mo, "DriveLetter"),
-                            Label = Str(mo, "Label"),
-                            FileSystem = Str(mo, "FileSystem"),
-                            DriveType = Str(mo, "DriveType"),
-                            SizeGb = SizeFormat.Gb(mo["Capacity"]),
-                            FreeGb = SizeFormat.Gb(mo["FreeSpace"]),
-                            Path = Str(mo, "DeviceID")
-                        });
-                    }
+                        DriveLetter = Str(mo, "DriveLetter"),
+                        Label = Str(mo, "Label"),
+                        FileSystem = Str(mo, "FileSystem"),
+                        DriveType = Str(mo, "DriveType"),
+                        SizeGb = SizeFormat.Gb(mo["Capacity"]),
+                        FreeGb = SizeFormat.Gb(mo["FreeSpace"]),
+                        Path = Str(mo, "DeviceID")
+                    });
                 }
             }
-            snap.Volumes.AddRange(rows);
         }
-        catch (OperationCanceledException)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            snap.VolumesError = ex.Message;
-        }
+        snap.Volumes.AddRange(rows);
     }
 
     private static PartitionRow MapPartition(ManagementObject mo) => new()

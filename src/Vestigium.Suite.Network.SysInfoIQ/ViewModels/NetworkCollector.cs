@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Management;
 using System.Net.NetworkInformation;
 using Vestigium.Suite.Network.SysInfoIQ.ViewModels.Rows;
@@ -7,16 +6,24 @@ namespace Vestigium.Suite.Network.SysInfoIQ.ViewModels;
 
 public static class NetworkCollector
 {
-    public static NetworkSnapshot Collect(CancellationToken ct)
+    public static NetworkSnapshot Collect(CancellationToken ct, Action<string>? progress = null)
     {
         var snap = new NetworkSnapshot();
+        Run(progress, "Adapters", ct, () => CollectAdapters(snap, ct), msg => snap.Error = msg);
+        Run(progress, "Routes", ct, () => CollectRoutes(snap, ct), msg => snap.Error = Append(snap.Error, "Routes: " + msg));
+        Run(progress, "ARP", ct, () => CollectArp(snap, ct), msg => snap.Error = Append(snap.Error, "ARP: " + msg));
+        Run(progress, "Listeners", ct, () => CollectListeners(snap, ct), msg => snap.Error = Append(snap.Error, "Listeners: " + msg));
+        Run(progress, "TCP", ct, () => CollectTcp(snap, ct), msg => snap.Error = Append(snap.Error, "TCP: " + msg));
+        return snap;
+    }
+
+    private static void Run(Action<string>? progress, string name, CancellationToken ct, Action body, Action<string> onError)
+    {
+        progress?.Invoke(name);
         try
         {
-            CollectAdapters(snap, ct);
-            CollectRoutes(snap, ct);
-            CollectArp(snap, ct);
-            CollectListeners(snap, ct);
-            CollectTcp(snap, ct);
+            ct.ThrowIfCancellationRequested();
+            body();
         }
         catch (OperationCanceledException)
         {
@@ -24,10 +31,12 @@ public static class NetworkCollector
         }
         catch (Exception ex)
         {
-            snap.Error = ex.Message;
+            onError(ex.Message);
         }
-        return snap;
     }
+
+    private static string Append(string? existing, string next)
+        => string.IsNullOrWhiteSpace(existing) ? next : existing + "; " + next;
 
     private static void CollectAdapters(NetworkSnapshot snap, CancellationToken ct)
     {
@@ -74,64 +83,50 @@ public static class NetworkCollector
     private static void CollectRoutes(NetworkSnapshot snap, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
-        try
+        using var searcher = new ManagementObjectSearcher("SELECT * FROM Win32_IP4RouteTable");
+        using var results = searcher.Get();
+        foreach (ManagementObject mo in results)
         {
-            using var searcher = new ManagementObjectSearcher("SELECT * FROM Win32_IP4RouteTable");
-            using var results = searcher.Get();
-            foreach (ManagementObject mo in results)
+            using (mo)
             {
-                using (mo)
+                snap.Routes.Add(new RouteRow
                 {
-                    snap.Routes.Add(new RouteRow
-                    {
-                        Destination = Str(mo, "Destination"),
-                        Mask = Str(mo, "Mask"),
-                        NextHop = Str(mo, "NextHop"),
-                        InterfaceIndex = Str(mo, "InterfaceIndex"),
-                        Metric = Str(mo, "Metric1")
-                    });
-                }
+                    Destination = Str(mo, "Destination"),
+                    Mask = Str(mo, "Mask"),
+                    NextHop = Str(mo, "NextHop"),
+                    InterfaceIndex = Str(mo, "InterfaceIndex"),
+                    Metric = Str(mo, "Metric1")
+                });
             }
-        }
-        catch (Exception)
-        {
-            // routes stay empty
         }
     }
 
     private static void CollectArp(NetworkSnapshot snap, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
-        try
+        var scope = new ManagementScope(@"\\.\root\StandardCimv2");
+        scope.Connect();
+        using var searcher = new ManagementObjectSearcher(scope, new ObjectQuery("SELECT * FROM MSFT_NetNeighbor"));
+        using var results = searcher.Get();
+        var count = 0;
+        foreach (ManagementObject mo in results)
         {
-            var scope = new ManagementScope(@"\\.\root\StandardCimv2");
-            scope.Connect();
-            using var searcher = new ManagementObjectSearcher(scope, new ObjectQuery("SELECT * FROM MSFT_NetNeighbor"));
-            using var results = searcher.Get();
-            var count = 0;
-            foreach (ManagementObject mo in results)
+            using (mo)
             {
-                using (mo)
+                if (count >= NetworkSnapshot.ArpCap)
                 {
-                    if (count >= NetworkSnapshot.ArpCap)
-                    {
-                        snap.ArpTruncated = true;
-                        break;
-                    }
-                    snap.Arp.Add(new ArpRow
-                    {
-                        Address = Str(mo, "IPAddress"),
-                        Mac = Str(mo, "LinkLayerAddress"),
-                        State = Str(mo, "State"),
-                        InterfaceIndex = Str(mo, "InterfaceIndex")
-                    });
-                    count++;
+                    snap.ArpTruncated = true;
+                    break;
                 }
+                snap.Arp.Add(new ArpRow
+                {
+                    Address = Str(mo, "IPAddress"),
+                    Mac = Str(mo, "LinkLayerAddress"),
+                    State = Str(mo, "State"),
+                    InterfaceIndex = Str(mo, "InterfaceIndex")
+                });
+                count++;
             }
-        }
-        catch (Exception)
-        {
-            // ARP stays empty
         }
     }
 
