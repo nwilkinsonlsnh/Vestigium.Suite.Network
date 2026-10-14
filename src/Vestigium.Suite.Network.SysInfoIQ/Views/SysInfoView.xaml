@@ -325,11 +325,14 @@
                      IsChecked="{Binding EnvironmentOpen}" GroupName="SoftwareSection" Margin="0,0,8,0" />
         <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="SQL"
                      IsChecked="{Binding SqlOpen}" GroupName="SoftwareSection" />
+        <CheckBox Content="Show hidden" IsChecked="{Binding ShowHidden}"
+                  Margin="16,0,0,0" VerticalAlignment="Center"
+                  Visibility="{Binding InstalledOpen, Converter={StaticResource BoolToVis}}" />
       </StackPanel>
 
       <Border Visibility="{Binding InstalledOpen, Converter={StaticResource BoolToVis}}"
               BorderBrush="{DynamicResource Vestigium.Brushes.Stroke.Subtle}" BorderThickness="1">
-        <DataGrid Style="{StaticResource DataGrid.Compact}" ItemsSource="{Binding InstalledSoftware}"
+        <DataGrid Style="{StaticResource DataGrid.Compact}" ItemsSource="{Binding InstalledView}"
                   IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" PreviewMouseWheel="Grid_PreviewMouseWheel">
           <DataGrid.Columns>
             <DataGridTextColumn Header="Location" Binding="{Binding Location}" Width="70" />
@@ -338,6 +341,7 @@
             <DataGridTextColumn Header="Version" Binding="{Binding Version}" Width="120" />
             <DataGridTextColumn Header="Publisher" Binding="{Binding Publisher}" Width="160" />
             <DataGridTextColumn Header="Installed" Binding="{Binding InstallDate}" Width="100" />
+            <DataGridTextColumn Header="Hidden" Binding="{Binding Hidden}" Width="70" />
           </DataGrid.Columns>
         </DataGrid>
       </Border>
