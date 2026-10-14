@@ -7,7 +7,7 @@
 **Date:** 14 October 2026  
 **Binding:** Requirements v1.0 wins on the window. Design v1.0 wins on types. This file wins on the slice.
 
-**Goal:** Fill the Software tab with real local data in themed multi-column grids. Collect on the existing load path. Failed section continues.
+**Goal:** Fill the Software tab with real local data in themed multi-column grids. Collect on the existing load path. Failed section continues. Location and bitness come from the registry key, not from a product field.
 
 **Not:** Processes, Events. Not export. Not query bar. Not PowerShell. Not `Win32_Product`. Not remote.
 
@@ -27,18 +27,31 @@ One PR. Four build slices plus owner gate.
 |---|---|
 | Installed, Hotfixes, Features, ODBC, Environment, SQL | Matches SectionsCatalog Software / Runtime. Six sections, one tab. |
 | Registry for installed software | `Win32_Product` is slow and can trigger MSI repair. Owner said no. |
-| Both hives, both bitness | HKLM and HKCU, 32 and 64. Same idea as LM/CU on certificates. |
+| Four Uninstall keys | HKLM and HKCU, native and WOW6432Node. Location and Arch are stamped from the key. |
+| Same four keys for ODBC | `SOFTWARE\ODBC` and `SOFTWARE\WOW6432Node\ODBC` under HKLM and HKCU. Kind is Driver or DSN. |
 | Environment from the three scopes | Process, User, Machine. Scope is a column so the query bar can filter later. |
 | SQL by service name | ServiceController filtered to MSSQL* and SQL*. No SQL browser COM. |
 | One grid per section inside the tab | Same chrome as Storage, Network, Security. |
 | Same load path | Owner removed buttons. Do not bring them back. |
-| Pure tests | No live registry or services in the test project. |
+| Pure tests | Hive map and arch map are pure. No live registry. |
+
+### Registry map
+
+| Key | Location | Arch |
+|---|---|---|
+| `HKLM\SOFTWARE\...` | LM | x64 |
+| `HKLM\SOFTWARE\WOW6432Node\...` | LM | x86 |
+| `HKCU\SOFTWARE\...` | CU | x64 |
+| `HKCU\SOFTWARE\WOW6432Node\...` | CU | x86 |
+
+On a 32-bit OS the native key is still labeled x86. The WOW6432Node key is absent and that open is skipped.
 
 ### Rejected alternatives
 
 | Idea | Why out |
 |---|---|
 | `Win32_Product` | Slow. Can repair MSI. Registry is the door. |
+| Guess bitness from a registry value | Unreliable. The key path is the fact. |
 | All remaining tabs in one PR | Too big. Software only. |
 | Export these sections now | Export is not default. Park it. |
 | Query bar now | Owner parked it. Filter later. |
@@ -61,7 +74,7 @@ One PR. Four build slices plus owner gate.
 | Type | File | Role |
 |---|---|---|
 | `SoftwareCollector` | `ViewModels/SoftwareCollector.cs` | Installed, Hotfixes, Features, ODBC, Environment, SQL. Returns row lists. |
-| Row DTOs | `ViewModels/Rows/SoftwareRows.cs` | One type per section. |
+| Row DTOs | `ViewModels/Rows/SoftwareRows.cs` | One type per section. Installed and ODBC carry Location and Arch. |
 | `MainViewModel` | existing | Calls the collector on the load path. Binds the grids. |
 | Section picker | `Views/SysInfoView.xaml` | Inside Software: Installed, Hotfixes, Features, ODBC, Environment, SQL. |
 
@@ -71,6 +84,8 @@ One PR. Four build slices plus owner gate.
 
 SysInfo page, category tabs unchanged.  
 Software: section tabs over a themed grid.  
+Installed grid: Location, Arch, then name and version.  
+ODBC grid: Location, Arch, Kind, then name.  
 Status bar: current section, then Idle.
 
 ---
@@ -120,8 +135,8 @@ When this plan finishes, move the whole `PR04/` folder to `PR-Plans/Completed/PR
 | Role | Watch |
 |---|---|
 | Alvin | No PowerShell. No `Win32_Product`. Registry and managed doors only. |
-| Theodore | Failed section continues. Tests off the registry and the service list. |
-| Simon | Columns match the sample files. Earlier tabs unchanged. |
+| Theodore | Failed section continues. Tests off the registry and the service list. Hive map is pure. |
+| Simon | Location and Arch match the key. Earlier tabs unchanged. |
 
 ---
 

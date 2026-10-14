@@ -18,10 +18,22 @@ Baseline: PR03 closed. Collect on load. Software tab is an empty themed grid. No
 
 - Collect on the same load path. Failed section continues.
 - Sections:
-  - InstalledSoftware — registry Uninstall keys. HKLM and HKCU, 32-bit and 64-bit. Name, version, publisher, install date. Prefer registry over `Win32_Product`.
+  - InstalledSoftware — registry Uninstall keys. Four opens:
+    - `HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall` → LM, x64
+    - `HKLM\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall` → LM, x86
+    - `HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall` → CU, x64
+    - `HKCU\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall` → CU, x86
+    - Location and Arch come from which key was opened, not from a product field.
+    - Name, version, publisher, install date.
+    - Prefer registry over `Win32_Product`.
   - Hotfixes — `Win32_QuickFixEngineering`. HotFixID, description, installed on, installed by.
   - Features — `MSFT_OptionalFeature`. Name, state. Enabled and disabled both. Cap at 500.
-  - ODBC — registry `SOFTWARE\ODBC\ODBCINST.INI` and `SOFTWARE\ODBC\ODBC.INI`. Drivers and DSNs. 32-bit and 64-bit.
+  - ODBC — drivers and DSNs from the same four hives:
+    - `HKLM\SOFTWARE\ODBC` → LM, x64
+    - `HKLM\SOFTWARE\WOW6432Node\ODBC` → LM, x86
+    - `HKCU\SOFTWARE\ODBC` → CU, x64
+    - `HKCU\SOFTWARE\WOW6432Node\ODBC` → CU, x86
+    - Location and Arch from the key. Kind is Driver or DSN.
   - Environment — `Environment.GetEnvironmentVariables` for Process, User, and Machine. Name, value, scope.
   - SQL — `ServiceController` filtered to MSSQL* and SQL* names. Name, display, status, start type.
 - No PowerShell. No wmic.exe. No `Win32_Product`.
@@ -30,7 +42,9 @@ Baseline: PR03 closed. Collect on load. Software tab is an empty themed grid. No
 
 - Software tab binds multi-column `DataGrid.Compact`, one grid per section.
 - Section picker: **Installed | Hotfixes | Features | ODBC | Environment | SQL**
-- Columns match the useful fields from the samples. Not every registry value.
+- Installed columns start with **Location** (LM / CU) then **Arch** (x64 / x86).
+- ODBC columns start with **Location** then **Arch** then **Kind** (Driver / DSN).
+- Other columns match the useful fields from the samples. Not every registry value.
 - Empty result is an empty grid, not an error.
 - Truncated sections note the cap in the status bar.
 
@@ -42,7 +56,7 @@ Baseline: PR03 closed. Collect on load. Software tab is an empty themed grid. No
 
 ### PR04.004 Tests
 
-- Pure tests for row shape, cap constants, and the failure list.
+- Pure tests for row shape, the hive-to-location map, the hive-to-arch map, cap constants, and the failure list.
 - No live registry. No live services.
 
 ---
@@ -64,10 +78,12 @@ Baseline: PR03 closed. Collect on load. Software tab is an empty themed grid. No
 
 1. Open the app. System, Storage, Network, and Security still fill.
 2. Software tab shows Installed, Hotfixes, Features, ODBC, Environment, and SQL with real local data.
-3. Installed software includes HKLM and HKCU. Environment shows Process, User, and Machine.
-4. A failed section does not blank the others.
-5. Status bar names the section. Idle when done.
-6. Tests green. No live registry.
+3. Installed rows show LM or CU and x64 or x86 from the key that produced them.
+4. ODBC rows show the same Location and Arch, plus Driver or DSN.
+5. Environment shows Process, User, and Machine.
+6. A failed section does not blank the others.
+7. Status bar names the section. Idle when done.
+8. Tests green. No live registry.
 
 ---
 
