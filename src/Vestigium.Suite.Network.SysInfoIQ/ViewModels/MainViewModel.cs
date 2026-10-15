@@ -185,11 +185,18 @@ public sealed partial class MainViewModel : ObservableObject
             foreach (var row in BuildSystemRows(sections, DateTime.Now))
                 SystemRows.Add(row);
 
-            // TSHOOT: other collectors disconnected
-            // var storage = await Task.Run(() => StorageCollector.Collect(ct, name => Status($"Storage / {name}")), ct).ConfigureAwait(true);
-            // ... etc.
+            Status("Collecting storage…");
+            var storage = await Task.Run(
+                () => StorageCollector.Collect(ct, name => Status($"Storage / {name}")),
+                ct).ConfigureAwait(true);
+            foreach (var r in storage.DiskDrives) DiskDrives.Add(r);
+            foreach (var r in storage.LogicalDisks) LogicalDisks.Add(r);
+            foreach (var r in storage.Partitions) Partitions.Add(r);
+            foreach (var r in storage.Volumes) Volumes.Add(r);
 
-            Status("Idle (System only)");
+            // TSHOOT: Network/Security/Software still disconnected
+
+            Status("Idle (System + Storage)");
         }
         catch (OperationCanceledException)
         {
