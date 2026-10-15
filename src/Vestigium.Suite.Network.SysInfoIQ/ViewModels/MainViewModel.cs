@@ -194,9 +194,21 @@ public sealed partial class MainViewModel : ObservableObject
             foreach (var r in storage.Partitions) Partitions.Add(r);
             foreach (var r in storage.Volumes) Volumes.Add(r);
 
-            // TSHOOT: Network/Security/Software still disconnected
+            Status("Collecting network…");
+            var network = await Task.Run(
+                () => NetworkCollector.Collect(ct, name => Status($"Network / {name}")),
+                ct).ConfigureAwait(true);
+            foreach (var r in network.Ip) IpConfigs.Add(r);
+            foreach (var r in network.Dns) DnsConfigs.Add(r);
+            foreach (var r in network.Nics) Nics.Add(r);
+            foreach (var r in network.Routes) Routes.Add(r);
+            foreach (var r in network.Arp) Arp.Add(r);
+            foreach (var r in network.Listeners) Listeners.Add(r);
+            foreach (var r in network.Tcp) Tcp.Add(r);
 
-            Status("Idle (System + Storage)");
+            // TSHOOT: Security/Software still disconnected
+
+            Status("Idle (System + Storage + Network)");
         }
         catch (OperationCanceledException)
         {
