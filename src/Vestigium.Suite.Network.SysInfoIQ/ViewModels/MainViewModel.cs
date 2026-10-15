@@ -1,7 +1,9 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
+using System.Windows;
 using System.Windows.Data;
+using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Vestigium.Controls.StatusBar;
@@ -198,13 +200,14 @@ public sealed partial class MainViewModel : ObservableObject
             var network = await Task.Run(
                 () => NetworkCollector.Collect(ct, name => Status($"Network / {name}")),
                 ct).ConfigureAwait(true);
-            foreach (var r in network.Ip) IpConfigs.Add(r);
-            foreach (var r in network.Dns) DnsConfigs.Add(r);
-            foreach (var r in network.Nics) Nics.Add(r);
-            foreach (var r in network.Routes) Routes.Add(r);
-            foreach (var r in network.Arp) Arp.Add(r);
-            foreach (var r in network.Listeners) Listeners.Add(r);
-            foreach (var r in network.Tcp) Tcp.Add(r);
+
+            await AddAll(IpConfigs, network.Ip);
+            await AddAll(DnsConfigs, network.Dns);
+            await AddAll(Nics, network.Nics);
+            await AddAll(Routes, network.Routes);
+            await AddAll(Arp, network.Arp);
+            await AddAll(Listeners, network.Listeners);
+            await AddAll(Tcp, network.Tcp);
 
             // TSHOOT: Security/Software still disconnected
 
@@ -228,6 +231,20 @@ public sealed partial class MainViewModel : ObservableObject
         }
     }
 
+    private static async Task AddAll<T>(ObservableCollection<T> target, IEnumerable<T> rows)
+    {
+        var batch = 0;
+        foreach (var row in rows)
+        {
+            target.Add(row);
+            if (++batch == 100)
+            {
+                batch = 0;
+                await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+            }
+        }
+    }
+
     private static string FinishNote(StorageSnapshot storage, NetworkSnapshot network, SecuritySnapshot security, SoftwareSnapshot software)
     {
         return "Idle";
@@ -240,9 +257,22 @@ public sealed partial class MainViewModel : ObservableObject
 
     private void Status(string message)
     {
-        ProgressMessage = message;
-        if (StatusBar is not null)
-            StatusBar.Message = message;
+        var dispatcher = Application.Current?.Dispatcher;
+        if (dispatcher is null || dispatcher.CheckAccess())
+        {
+            ProgressMessage = message;
+            if (StatusBar is not null)
+                StatusBar.Message = message;
+        }
+        else
+        {
+            dispatcher.BeginInvoke(DispatcherPriority.Background, () =>
+            {
+                ProgressMessage = message;
+                if (StatusBar is not null)
+                    StatusBar.Message = message;
+            });
+        }
     }
 
     private static IReadOnlyList<SummaryRow> BuildSystemRows(IReadOnlyList<InventorySection> sections, DateTime now)
