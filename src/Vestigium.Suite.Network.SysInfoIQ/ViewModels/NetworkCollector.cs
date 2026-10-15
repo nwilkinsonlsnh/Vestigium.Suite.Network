@@ -9,11 +9,33 @@ public static class NetworkCollector
     public static NetworkSnapshot Collect(CancellationToken ct, Action<string>? progress = null)
     {
         var snap = new NetworkSnapshot();
-        Run(progress, "Adapters", ct, () => CollectAdapters(snap, ct), msg => snap.Error = msg);
-        Run(progress, "Routes", ct, () => CollectRoutes(snap, ct), msg => snap.Error = Append(snap.Error, "Routes: " + msg));
-        Run(progress, "ARP", ct, () => CollectArp(snap, ct), msg => snap.Error = Append(snap.Error, "ARP: " + msg));
-        Run(progress, "Listeners", ct, () => CollectListeners(snap, ct), msg => snap.Error = Append(snap.Error, "Listeners: " + msg));
-        Run(progress, "TCP", ct, () => CollectTcp(snap, ct), msg => snap.Error = Append(snap.Error, "TCP: " + msg));
+
+        var adapters = Task.Run(() =>
+        {
+            Run(progress, "Adapters", ct, () => CollectAdapters(snap, ct), msg => snap.Error = msg);
+        }, ct);
+
+        var routes = Task.Run(() =>
+        {
+            Run(progress, "Routes", ct, () => CollectRoutes(snap, ct), msg => snap.Error = Append(snap.Error, "Routes: " + msg));
+        }, ct);
+
+        var arp = Task.Run(() =>
+        {
+            Run(progress, "ARP", ct, () => CollectArp(snap, ct), msg => snap.Error = Append(snap.Error, "ARP: " + msg));
+        }, ct);
+
+        var listeners = Task.Run(() =>
+        {
+            Run(progress, "Listeners", ct, () => CollectListeners(snap, ct), msg => snap.Error = Append(snap.Error, "Listeners: " + msg));
+        }, ct);
+
+        var tcp = Task.Run(() =>
+        {
+            Run(progress, "TCP", ct, () => CollectTcp(snap, ct), msg => snap.Error = Append(snap.Error, "TCP: " + msg));
+        }, ct);
+
+        Task.WaitAll(adapters, routes, arp, listeners, tcp);
         return snap;
     }
 
