@@ -16,13 +16,15 @@ public sealed partial class MainViewModel : ObservableObject
     private CancellationTokenSource? _cts;
     private NetworkSnapshot? _pendingNetwork;
     private SecuritySnapshot? _pendingSecurity;
+    private SoftwareSnapshot? _pendingSoftware;
     private readonly HashSet<string> _filledNetwork = new();
     private readonly HashSet<string> _filledSecurity = new();
+    private readonly HashSet<string> _filledSoftware = new();
 
     public MainViewModel()
     {
         InstalledView = CollectionViewSource.GetDefaultView(InstalledSoftware);
-        InstalledView.Filter = FilterInstalled;
+        // Always show hidden. Filter removed.
     }
 
     public VestigiumStatusBarViewModel? StatusBar { get; set; }
@@ -34,11 +36,6 @@ public sealed partial class MainViewModel : ObservableObject
 
     [ObservableProperty]
     private string _progressMessage = "Collecting…";
-
-    [ObservableProperty]
-    private bool _showHidden = true;
-
-    partial void OnShowHiddenChanged(bool value) => InstalledView.Refresh();
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(SystemPageOpen))]
@@ -56,6 +53,8 @@ public sealed partial class MainViewModel : ObservableObject
             _ = FillNetworkSectionAsync(NetworkSection);
         if (value == "Security" && _pendingSecurity is not null)
             _ = FillSecuritySectionAsync(SecuritySection);
+        if (value == "Software" && _pendingSoftware is not null)
+            _ = FillSoftwareSectionAsync(SoftwareSection);
     }
 
     [ObservableProperty]
@@ -102,6 +101,12 @@ public sealed partial class MainViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(EnvironmentOpen))]
     [NotifyPropertyChangedFor(nameof(SqlOpen))]
     private string _softwareSection = "Installed";
+
+    partial void OnSoftwareSectionChanged(string value)
+    {
+        if (Category == "Software" && _pendingSoftware is not null)
+            _ = FillSoftwareSectionAsync(value);
+    }
 
     public bool SystemPageOpen { get => Category == "System"; set { if (value) Category = "System"; } }
     public bool StoragePageOpen { get => Category == "Storage"; set { if (value) Category = "Storage"; } }
@@ -201,8 +206,10 @@ public sealed partial class MainViewModel : ObservableObject
         SqlServices.Clear();
         _pendingNetwork = null;
         _pendingSecurity = null;
+        _pendingSoftware = null;
         _filledNetwork.Clear();
         _filledSecurity.Clear();
+        _filledSoftware.Clear();
 
         _cts = new CancellationTokenSource();
         var ct = _cts.Token;
@@ -234,12 +241,19 @@ public sealed partial class MainViewModel : ObservableObject
                 () => SecurityCollector.Collect(ct, name => Status($"Security / {name}")),
                 ct).ConfigureAwait(true);
 
+            Status("Collecting software…");
+            _pendingSoftware = await Task.Run(
+                () => SoftwareCollector.Collect(ct, name => Status($"Software / {name}")),
+                ct).ConfigureAwait(true);
+
             if (Category == "Network")
                 await FillNetworkSectionAsync(NetworkSection);
             if (Category == "Security")
                 await FillSecuritySectionAsync(SecuritySection);
+            if (Category == "Software")
+                await FillSoftwareSectionAsync(SoftwareSection);
 
-            Status("Idle (System + Storage + Network + Security ready)");
+            Status("Idle (all sections ready)");
         }
         catch (OperationCanceledException)
         {
@@ -325,6 +339,41 @@ public sealed partial class MainViewModel : ObservableObject
         _filledSecurity.Add(section);
     }
 
+    private async Task FillSoftwareSectionAsync(string section)
+    {
+        if (_pendingSoftware is null || _filledSoftware.Contains(section))
+            return;
+        var software = _pendingSoftware;
+        switch (section)
+        {
+            case "Installed":
+                InstalledSoftware.Clear();
+                await AddAllYield(InstalledSoftware, software.Installed);
+                break;
+            case "Hotfixes":
+                Hotfixes.Clear();
+                AddAllSync(Hotfixes, software.Hotfixes);
+                break;
+            case "Features":
+                Features.Clear();
+                await AddAllYield(Features, software.Features);
+                break;
+            case "ODBC":
+                Odbc.Clear();
+                AddAllSync(Odbc, software.Odbc);
+                break;
+            case "Environment":
+                EnvironmentVars.Clear();
+                AddAllSync(EnvironmentVars, software.Environment);
+                break;
+            case "SQL":
+                SqlServices.Clear();
+                AddAllSync(SqlServices, software.Sql);
+                break;
+        }
+        _filledSoftware.Add(section);
+    }
+
     private static void AddAllSync<T>(ObservableCollection<T> target, IEnumerable<T> rows)
     {
         foreach (var row in rows)
@@ -349,9 +398,6 @@ public sealed partial class MainViewModel : ObservableObject
     {
         return "Idle";
     }
-
-    private bool FilterInstalled(object item)
-        => ShowHidden || item is not InstalledSoftwareRow row || !row.IsHidden;
 
     private bool CanCollect() => !IsBusy;
 
