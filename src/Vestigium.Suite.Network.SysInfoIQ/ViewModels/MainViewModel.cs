@@ -249,43 +249,49 @@ public sealed partial class MainViewModel : ObservableObject
         {
             case "IP":
                 IpConfigs.Clear();
-                await AddAll(IpConfigs, network.Ip);
+                AddAllSync(IpConfigs, network.Ip);
                 break;
             case "DNS":
                 DnsConfigs.Clear();
-                await AddAll(DnsConfigs, network.Dns);
+                AddAllSync(DnsConfigs, network.Dns);
                 break;
             case "NICs":
                 Nics.Clear();
-                await AddAll(Nics, network.Nics);
+                AddAllSync(Nics, network.Nics);
                 break;
             case "Routes":
                 Routes.Clear();
-                await AddAll(Routes, network.Routes);
+                AddAllSync(Routes, network.Routes);
                 break;
             case "ARP":
                 Arp.Clear();
-                await AddAll(Arp, network.Arp);
+                await AddAllYield(Arp, network.Arp);
                 break;
             case "Listeners":
                 Listeners.Clear();
-                await AddAll(Listeners, network.Listeners);
+                AddAllSync(Listeners, network.Listeners);
                 break;
             case "TCP":
                 Tcp.Clear();
-                await AddAll(Tcp, network.Tcp);
+                await AddAllYield(Tcp, network.Tcp);
                 break;
         }
         _filledNetwork.Add(section);
     }
 
-    private static async Task AddAll<T>(ObservableCollection<T> target, IEnumerable<T> rows)
+    private static void AddAllSync<T>(ObservableCollection<T> target, IEnumerable<T> rows)
+    {
+        foreach (var row in rows)
+            target.Add(row);
+    }
+
+    private static async Task AddAllYield<T>(ObservableCollection<T> target, IEnumerable<T> rows)
     {
         var batch = 0;
         foreach (var row in rows)
         {
             target.Add(row);
-            if (++batch == 500)
+            if (++batch == 1000)
             {
                 batch = 0;
                 await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
