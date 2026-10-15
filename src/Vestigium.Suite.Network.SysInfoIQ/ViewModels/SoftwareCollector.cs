@@ -18,12 +18,15 @@ public static class SoftwareCollector
     public static SoftwareSnapshot Collect(CancellationToken ct, Action<string>? progress = null)
     {
         var snap = new SoftwareSnapshot();
-        Run(progress, "Installed", ct, () => CollectInstalled(snap, ct), msg => snap.InstalledError = msg);
-        Run(progress, "Hotfixes", ct, () => CollectHotfixes(snap, ct), msg => snap.HotfixesError = msg);
-        Run(progress, "Features", ct, () => CollectFeatures(snap, ct), msg => snap.FeaturesError = msg);
-        Run(progress, "ODBC", ct, () => CollectOdbc(snap, ct), msg => snap.OdbcError = msg);
-        Run(progress, "Environment", ct, () => CollectEnvironment(snap, ct), msg => snap.EnvironmentError = msg);
-        Run(progress, "SQL", ct, () => CollectSql(snap, ct), msg => snap.SqlError = msg);
+
+        var installed = Task.Run(() => Run(progress, "Installed", ct, () => CollectInstalled(snap, ct), msg => snap.InstalledError = msg), ct);
+        var hotfixes = Task.Run(() => Run(progress, "Hotfixes", ct, () => CollectHotfixes(snap, ct), msg => snap.HotfixesError = msg), ct);
+        var features = Task.Run(() => Run(progress, "Features", ct, () => CollectFeatures(snap, ct), msg => snap.FeaturesError = msg), ct);
+        var odbc = Task.Run(() => Run(progress, "ODBC", ct, () => CollectOdbc(snap, ct), msg => snap.OdbcError = msg), ct);
+        var env = Task.Run(() => Run(progress, "Environment", ct, () => CollectEnvironment(snap, ct), msg => snap.EnvironmentError = msg), ct);
+        var sql = Task.Run(() => Run(progress, "SQL", ct, () => CollectSql(snap, ct), msg => snap.SqlError = msg), ct);
+
+        Task.WaitAll(installed, hotfixes, features, odbc, env, sql);
         return snap;
     }
 
