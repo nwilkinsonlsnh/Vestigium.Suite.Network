@@ -185,44 +185,11 @@ public sealed partial class MainViewModel : ObservableObject
             foreach (var row in BuildSystemRows(sections, DateTime.Now))
                 SystemRows.Add(row);
 
-            var storage = await Task.Run(
-                () => StorageCollector.Collect(ct, name => Status($"Storage / {name}")),
-                ct).ConfigureAwait(true);
-            foreach (var r in storage.DiskDrives) DiskDrives.Add(r);
-            foreach (var r in storage.LogicalDisks) LogicalDisks.Add(r);
-            foreach (var r in storage.Partitions) Partitions.Add(r);
-            foreach (var r in storage.Volumes) Volumes.Add(r);
+            // TSHOOT: other collectors disconnected
+            // var storage = await Task.Run(() => StorageCollector.Collect(ct, name => Status($"Storage / {name}")), ct).ConfigureAwait(true);
+            // ... etc.
 
-            var network = await Task.Run(
-                () => NetworkCollector.Collect(ct, name => Status($"Network / {name}")),
-                ct).ConfigureAwait(true);
-            foreach (var r in network.Ip) IpConfigs.Add(r);
-            foreach (var r in network.Dns) DnsConfigs.Add(r);
-            foreach (var r in network.Nics) Nics.Add(r);
-            foreach (var r in network.Routes) Routes.Add(r);
-            foreach (var r in network.Arp) Arp.Add(r);
-            foreach (var r in network.Listeners) Listeners.Add(r);
-            foreach (var r in network.Tcp) Tcp.Add(r);
-
-            var security = await Task.Run(
-                () => SecurityCollector.Collect(ct, name => Status($"Security / {name}")),
-                ct).ConfigureAwait(true);
-            foreach (var r in security.Profiles) FirewallProfiles.Add(r);
-            foreach (var r in security.Rules) FirewallRules.Add(r);
-            foreach (var r in security.Certificates) Certificates.Add(r);
-            foreach (var r in security.Drivers) SignedDrivers.Add(r);
-
-            var software = await Task.Run(
-                () => SoftwareCollector.Collect(ct, name => Status($"Software / {name}")),
-                ct).ConfigureAwait(true);
-            foreach (var r in software.Installed) InstalledSoftware.Add(r);
-            foreach (var r in software.Hotfixes) Hotfixes.Add(r);
-            foreach (var r in software.Features) Features.Add(r);
-            foreach (var r in software.Odbc) Odbc.Add(r);
-            foreach (var r in software.Environment) EnvironmentVars.Add(r);
-            foreach (var r in software.Sql) SqlServices.Add(r);
-
-            Status(FinishNote(storage, network, security, software));
+            Status("Idle (System only)");
         }
         catch (OperationCanceledException)
         {
@@ -244,26 +211,7 @@ public sealed partial class MainViewModel : ObservableObject
 
     private static string FinishNote(StorageSnapshot storage, NetworkSnapshot network, SecuritySnapshot security, SoftwareSnapshot software)
     {
-        var notes = new List<string>();
-        var failed = StorageCollector.Failures(storage)
-            .Concat(SecurityCollector.Failures(security))
-            .Concat(SoftwareCollector.Failures(software))
-            .ToList();
-        if (failed.Count > 0)
-            notes.Add("failed: " + string.Join(", ", failed));
-        if (!string.IsNullOrWhiteSpace(network.Error))
-            notes.Add("network: " + network.Error);
-        if (network.ArpTruncated)
-            notes.Add("ARP capped");
-        if (network.TcpTruncated)
-            notes.Add("TCP capped");
-        if (security.RulesTruncated)
-            notes.Add("Rules capped");
-        if (security.DriversTruncated)
-            notes.Add("Drivers capped");
-        if (software.FeaturesTruncated)
-            notes.Add("Features capped");
-        return notes.Count == 0 ? "Idle" : "Idle (" + string.Join("; ", notes) + ")";
+        return "Idle";
     }
 
     private bool FilterInstalled(object item)
