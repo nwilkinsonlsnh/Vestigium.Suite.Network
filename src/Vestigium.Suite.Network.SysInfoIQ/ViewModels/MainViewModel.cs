@@ -14,6 +14,7 @@ namespace Vestigium.Suite.Network.SysInfoIQ.ViewModels;
 public sealed partial class MainViewModel : ObservableObject
 {
     private CancellationTokenSource? _cts;
+    private NetworkSnapshot? _pendingNetwork;
 
     public MainViewModel()
     {
@@ -45,6 +46,12 @@ public sealed partial class MainViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(ProcessesPageOpen))]
     [NotifyPropertyChangedFor(nameof(EventsPageOpen))]
     private string _category = "System";
+
+    partial void OnCategoryChanged(string value)
+    {
+        if (value == "Network" && _pendingNetwork is not null)
+            _ = FillNetworkAsync(_pendingNetwork);
+    }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(DisksOpen))]
@@ -175,6 +182,7 @@ public sealed partial class MainViewModel : ObservableObject
         Odbc.Clear();
         EnvironmentVars.Clear();
         SqlServices.Clear();
+        _pendingNetwork = null;
 
         _cts = new CancellationTokenSource();
         var ct = _cts.Token;
@@ -197,21 +205,15 @@ public sealed partial class MainViewModel : ObservableObject
             foreach (var r in storage.Volumes) Volumes.Add(r);
 
             Status("Collecting network…");
-            var network = await Task.Run(
+            _pendingNetwork = await Task.Run(
                 () => NetworkCollector.Collect(ct, name => Status($"Network / {name}")),
                 ct).ConfigureAwait(true);
 
-            await AddAll(IpConfigs, network.Ip);
-            await AddAll(DnsConfigs, network.Dns);
-            await AddAll(Nics, network.Nics);
-            await AddAll(Routes, network.Routes);
-            await AddAll(Arp, network.Arp);
-            await AddAll(Listeners, network.Listeners);
-            await AddAll(Tcp, network.Tcp);
+            // Do not fill grids here. Fill only when user opens the Network tab.
+            if (Category == "Network")
+                await FillNetworkAsync(_pendingNetwork);
 
-            // TSHOOT: Security/Software still disconnected
-
-            Status("Idle (System + Storage + Network)");
+            Status("Idle (System + Storage + Network ready)");
         }
         catch (OperationCanceledException)
         {
@@ -229,6 +231,27 @@ public sealed partial class MainViewModel : ObservableObject
             _cts = null;
             CollectCommand.NotifyCanExecuteChanged();
         }
+    }
+
+    private async Task FillNetworkAsync(NetworkSnapshot network)
+    {
+        if (network is null)
+            return;
+        IpConfigs.Clear();
+        DnsConfigs.Clear();
+        Nics.Clear();
+        Routes.Clear();
+        Arp.Clear();
+        Listeners.Clear();
+        Tcp.Clear();
+        await AddAll(IpConfigs, network.Ip);
+        await AddAll(DnsConfigs, network.Dns);
+        await AddAll(Nics, network.Nics);
+        await AddAll(Routes, network.Routes);
+        await AddAll(Arp, network.Arp);
+        await AddAll(Listeners, network.Listeners);
+        await AddAll(Tcp, network.Tcp);
+        _pendingNetwork = null;
     }
 
     private static async Task AddAll<T>(ObservableCollection<T> target, IEnumerable<T> rows)
