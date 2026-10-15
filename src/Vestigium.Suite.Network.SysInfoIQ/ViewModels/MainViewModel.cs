@@ -15,7 +15,9 @@ public sealed partial class MainViewModel : ObservableObject
 {
     private CancellationTokenSource? _cts;
     private NetworkSnapshot? _pendingNetwork;
+    private SecuritySnapshot? _pendingSecurity;
     private readonly HashSet<string> _filledNetwork = new();
+    private readonly HashSet<string> _filledSecurity = new();
 
     public MainViewModel()
     {
@@ -52,6 +54,8 @@ public sealed partial class MainViewModel : ObservableObject
     {
         if (value == "Network" && _pendingNetwork is not null)
             _ = FillNetworkSectionAsync(NetworkSection);
+        if (value == "Security" && _pendingSecurity is not null)
+            _ = FillSecuritySectionAsync(SecuritySection);
     }
 
     [ObservableProperty]
@@ -83,6 +87,12 @@ public sealed partial class MainViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(CertificatesOpen))]
     [NotifyPropertyChangedFor(nameof(DriversOpen))]
     private string _securitySection = "Profiles";
+
+    partial void OnSecuritySectionChanged(string value)
+    {
+        if (Category == "Security" && _pendingSecurity is not null)
+            _ = FillSecuritySectionAsync(value);
+    }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(InstalledOpen))]
@@ -190,7 +200,9 @@ public sealed partial class MainViewModel : ObservableObject
         EnvironmentVars.Clear();
         SqlServices.Clear();
         _pendingNetwork = null;
+        _pendingSecurity = null;
         _filledNetwork.Clear();
+        _filledSecurity.Clear();
 
         _cts = new CancellationTokenSource();
         var ct = _cts.Token;
@@ -217,10 +229,17 @@ public sealed partial class MainViewModel : ObservableObject
                 () => NetworkCollector.Collect(ct, name => Status($"Network / {name}")),
                 ct).ConfigureAwait(true);
 
+            Status("Collecting security…");
+            _pendingSecurity = await Task.Run(
+                () => SecurityCollector.Collect(ct, name => Status($"Security / {name}")),
+                ct).ConfigureAwait(true);
+
             if (Category == "Network")
                 await FillNetworkSectionAsync(NetworkSection);
+            if (Category == "Security")
+                await FillSecuritySectionAsync(SecuritySection);
 
-            Status("Idle (System + Storage + Network ready)");
+            Status("Idle (System + Storage + Network + Security ready)");
         }
         catch (OperationCanceledException)
         {
@@ -277,6 +296,33 @@ public sealed partial class MainViewModel : ObservableObject
                 break;
         }
         _filledNetwork.Add(section);
+    }
+
+    private async Task FillSecuritySectionAsync(string section)
+    {
+        if (_pendingSecurity is null || _filledSecurity.Contains(section))
+            return;
+        var security = _pendingSecurity;
+        switch (section)
+        {
+            case "Profiles":
+                FirewallProfiles.Clear();
+                AddAllSync(FirewallProfiles, security.Profiles);
+                break;
+            case "Rules":
+                FirewallRules.Clear();
+                await AddAllYield(FirewallRules, security.Rules);
+                break;
+            case "Certificates":
+                Certificates.Clear();
+                AddAllSync(Certificates, security.Certificates);
+                break;
+            case "Drivers":
+                SignedDrivers.Clear();
+                await AddAllYield(SignedDrivers, security.Drivers);
+                break;
+        }
+        _filledSecurity.Add(section);
     }
 
     private static void AddAllSync<T>(ObservableCollection<T> target, IEnumerable<T> rows)
