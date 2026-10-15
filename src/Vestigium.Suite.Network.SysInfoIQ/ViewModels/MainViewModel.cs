@@ -15,6 +15,7 @@ public sealed partial class MainViewModel : ObservableObject
 {
     private CancellationTokenSource? _cts;
     private NetworkSnapshot? _pendingNetwork;
+    private readonly HashSet<string> _filledNetwork = new();
 
     public MainViewModel()
     {
@@ -50,7 +51,7 @@ public sealed partial class MainViewModel : ObservableObject
     partial void OnCategoryChanged(string value)
     {
         if (value == "Network" && _pendingNetwork is not null)
-            _ = FillNetworkAsync(_pendingNetwork);
+            _ = FillNetworkSectionAsync(NetworkSection);
     }
 
     [ObservableProperty]
@@ -69,6 +70,12 @@ public sealed partial class MainViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(ListenersOpen))]
     [NotifyPropertyChangedFor(nameof(TcpOpen))]
     private string _networkSection = "IP";
+
+    partial void OnNetworkSectionChanged(string value)
+    {
+        if (Category == "Network" && _pendingNetwork is not null)
+            _ = FillNetworkSectionAsync(value);
+    }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ProfilesOpen))]
@@ -183,6 +190,7 @@ public sealed partial class MainViewModel : ObservableObject
         EnvironmentVars.Clear();
         SqlServices.Clear();
         _pendingNetwork = null;
+        _filledNetwork.Clear();
 
         _cts = new CancellationTokenSource();
         var ct = _cts.Token;
@@ -209,9 +217,8 @@ public sealed partial class MainViewModel : ObservableObject
                 () => NetworkCollector.Collect(ct, name => Status($"Network / {name}")),
                 ct).ConfigureAwait(true);
 
-            // Do not fill grids here. Fill only when user opens the Network tab.
             if (Category == "Network")
-                await FillNetworkAsync(_pendingNetwork);
+                await FillNetworkSectionAsync(NetworkSection);
 
             Status("Idle (System + Storage + Network ready)");
         }
@@ -233,25 +240,43 @@ public sealed partial class MainViewModel : ObservableObject
         }
     }
 
-    private async Task FillNetworkAsync(NetworkSnapshot network)
+    private async Task FillNetworkSectionAsync(string section)
     {
-        if (network is null)
+        if (_pendingNetwork is null || _filledNetwork.Contains(section))
             return;
-        IpConfigs.Clear();
-        DnsConfigs.Clear();
-        Nics.Clear();
-        Routes.Clear();
-        Arp.Clear();
-        Listeners.Clear();
-        Tcp.Clear();
-        await AddAll(IpConfigs, network.Ip);
-        await AddAll(DnsConfigs, network.Dns);
-        await AddAll(Nics, network.Nics);
-        await AddAll(Routes, network.Routes);
-        await AddAll(Arp, network.Arp);
-        await AddAll(Listeners, network.Listeners);
-        await AddAll(Tcp, network.Tcp);
-        _pendingNetwork = null;
+        var network = _pendingNetwork;
+        switch (section)
+        {
+            case "IP":
+                IpConfigs.Clear();
+                await AddAll(IpConfigs, network.Ip);
+                break;
+            case "DNS":
+                DnsConfigs.Clear();
+                await AddAll(DnsConfigs, network.Dns);
+                break;
+            case "NICs":
+                Nics.Clear();
+                await AddAll(Nics, network.Nics);
+                break;
+            case "Routes":
+                Routes.Clear();
+                await AddAll(Routes, network.Routes);
+                break;
+            case "ARP":
+                Arp.Clear();
+                await AddAll(Arp, network.Arp);
+                break;
+            case "Listeners":
+                Listeners.Clear();
+                await AddAll(Listeners, network.Listeners);
+                break;
+            case "TCP":
+                Tcp.Clear();
+                await AddAll(Tcp, network.Tcp);
+                break;
+        }
+        _filledNetwork.Add(section);
     }
 
     private static async Task AddAll<T>(ObservableCollection<T> target, IEnumerable<T> rows)
@@ -260,7 +285,7 @@ public sealed partial class MainViewModel : ObservableObject
         foreach (var row in rows)
         {
             target.Add(row);
-            if (++batch == 100)
+            if (++batch == 500)
             {
                 batch = 0;
                 await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
