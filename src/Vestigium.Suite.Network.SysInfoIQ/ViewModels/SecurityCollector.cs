@@ -12,10 +12,28 @@ public static class SecurityCollector
     public static SecuritySnapshot Collect(CancellationToken ct, Action<string>? progress = null)
     {
         var snap = new SecuritySnapshot();
-        Run(progress, "Profiles", ct, () => CollectProfiles(snap, ct), msg => snap.ProfilesError = msg);
-        Run(progress, "Rules", ct, () => CollectRules(snap, ct), msg => snap.RulesError = msg);
-        Run(progress, "Certificates", ct, () => CollectCertificates(snap, ct), msg => snap.CertificatesError = msg);
-        Run(progress, "Drivers", ct, () => CollectDrivers(snap, ct), msg => snap.DriversError = msg);
+
+        var profiles = Task.Run(() =>
+        {
+            Run(progress, "Profiles", ct, () => CollectProfiles(snap, ct), msg => snap.ProfilesError = msg);
+        }, ct);
+
+        var rules = Task.Run(() =>
+        {
+            Run(progress, "Rules", ct, () => CollectRules(snap, ct), msg => snap.RulesError = msg);
+        }, ct);
+
+        var certs = Task.Run(() =>
+        {
+            Run(progress, "Certificates", ct, () => CollectCertificates(snap, ct), msg => snap.CertificatesError = msg);
+        }, ct);
+
+        var drivers = Task.Run(() =>
+        {
+            Run(progress, "Drivers", ct, () => CollectDrivers(snap, ct), msg => snap.DriversError = msg);
+        }, ct);
+
+        Task.WaitAll(profiles, rules, certs, drivers);
         return snap;
     }
 
