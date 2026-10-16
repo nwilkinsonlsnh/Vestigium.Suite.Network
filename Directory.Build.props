@@ -23,7 +23,7 @@
     <VestigiumPerfMonCoreVersion>0.1.6</VestigiumPerfMonCoreVersion>
     <VestigiumPerfMonCpuVersion>0.1.2</VestigiumPerfMonCpuVersion>
     <VestigiumPerfMonMemoryVersion>0.1.2</VestigiumPerfMonMemoryVersion>
-    <VestigiumSystemInfoVersion>1.1.0</VestigiumSystemInfoVersion>
+    <VestigiumSystemInfoVersion>1.2.0</VestigiumSystemInfoVersion>
     <VestigiumQueryBarVersion>1.0.3</VestigiumQueryBarVersion>
     <VestigiumClosedXmlVersion>1.0.1</VestigiumClosedXmlVersion>
     <VestigiumKqlVersion>1.0.4</VestigiumKqlVersion>
