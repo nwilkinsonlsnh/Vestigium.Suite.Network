@@ -1,5 +1,5 @@
-using System.Management;
 using System.Text;
+using Vestigium.Helpers.SystemInfo;
 
 namespace Vestigium.Suite.Network.SysInfoIQ.ViewModels;
 
@@ -7,12 +7,15 @@ public static class Collector
 {
     public static IReadOnlyList<InventorySection> CollectBase(CancellationToken ct)
     {
-        var sections = new List<InventorySection>();
-        sections.Add(Query("ComputerSystem", "ComputerSystem.txt", "SELECT * FROM Win32_ComputerSystem", ct));
-        sections.Add(Query("OperatingSystem", "OperatingSystem.txt", "SELECT * FROM Win32_OperatingSystem", ct));
-        sections.Add(Query("BIOS", "BIOS.txt", "SELECT * FROM Win32_BIOS", ct));
-        sections.Add(Query("CPU", "CPU.txt", "SELECT * FROM Win32_Processor", ct));
-        sections.Add(Query("Memory", "Memory.txt", "SELECT * FROM Win32_PhysicalMemory", ct));
+        ct.ThrowIfCancellationRequested();
+        var inventory = SystemInventory.ReadBase();
+        var sections = new List<InventorySection>
+        {
+            Section("ComputerSystem", "ComputerSystem.txt", inventory.ComputerSystem),
+            Section("OperatingSystem", "OperatingSystem.txt", inventory.OperatingSystem),
+            Section("BIOS", "BIOS.txt", inventory.Bios),
+            Section("CPU", "CPU.txt", inventory.Processor)
+        };
         return sections;
     }
 
@@ -23,7 +26,7 @@ public static class Collector
         var bios = Find(sections, "BIOS");
         var cpu = Find(sections, "CPU");
 
-        var hostname = Value(cs, "DNSHostName") ?? Value(cs, "Name") ?? Environment.MachineName;
+        var hostname = Value(cs, "Hostname") ?? Environment.MachineName;
         var domain = Value(cs, "Domain") ?? "";
         var role = Int(cs, "DomainRole");
         var productType = Int(os, "ProductType");
@@ -31,15 +34,15 @@ public static class Collector
         var model = Value(cs, "Model") ?? "";
         var serial = Value(bios, "SerialNumber") ?? "";
         var caption = Value(os, "Caption") ?? "";
-        var arch = Value(os, "OSArchitecture") ?? "";
+        var arch = Value(os, "Architecture") ?? "";
         var version = Value(os, "Version") ?? "";
         var build = Value(os, "BuildNumber") ?? "";
         var install = Date(os, "InstallDate");
         var boot = Date(os, "LastBootUpTime");
         var processor = Value(cpu, "Name")?.Trim() ?? "";
-        var sockets = Int(cs, "NumberOfProcessors");
-        var logical = Int(cs, "NumberOfLogicalProcessors");
-        var memBytes = Long(cs, "TotalPhysicalMemory");
+        var sockets = Int(cs, "Sockets");
+        var logical = Int(cs, "LogicalProcessors");
+        var memBytes = Long(cs, "TotalPhysicalMemoryBytes");
         var memGb = memBytes / 1024d / 1024d / 1024d;
         var user = SummaryFormatter.ShortUser(Value(cs, "UserName"));
 
@@ -49,46 +52,30 @@ public static class Collector
             sockets, logical, memGb, user, now, inventoryLocation);
     }
 
-    private static InventorySection Query(string name, string file, string wql, CancellationToken ct)
+    private static InventorySection Section<T>(string name, string file, Fact<T> fact)
     {
-        ct.ThrowIfCancellationRequested();
-        try
+        if (!fact.IsOk)
+            return new InventorySection { Name = name, FileName = file.Replace(".txt", "_ERROR.txt"), Content = "Unavailable", IsError = true };
+        return new InventorySection { Name = name, FileName = file, Content = Format(fact.Value) };
+    }
+
+    private static string Format(object value)
+    {
+        var sb = new StringBuilder();
+        foreach (var prop in value.GetType().GetProperties())
         {
-            using var searcher = new ManagementObjectSearcher(wql);
-            using var results = searcher.Get();
-            var sb = new StringBuilder();
-            foreach (ManagementObject mo in results)
+            var raw = prop.GetValue(value);
+            var text = raw switch
             {
-                using (mo)
-                {
-                    foreach (var prop in mo.Properties)
-                    {
-                        var val = prop.Value;
-                        var text = val switch
-                        {
-                            null => "",
-                            Array arr => string.Join(", ", arr.Cast<object>()),
-                            _ => val.ToString() ?? ""
-                        };
-                        sb.Append(prop.Name.PadRight(42));
-                        sb.Append(": ");
-                        sb.AppendLine(text);
-                    }
-                    sb.AppendLine();
-                }
-            }
-            return new InventorySection { Name = name, FileName = file, Content = sb.ToString() };
-        }
-        catch (Exception ex)
-        {
-            return new InventorySection
-            {
-                Name = name,
-                FileName = file.Replace(".txt", "_ERROR.txt"),
-                Content = ex.Message,
-                IsError = true
+                null => "",
+                DateTime dt => dt.ToString("yyyyMMddHHmmss.000000-000", System.Globalization.CultureInfo.InvariantCulture),
+                _ => raw.ToString() ?? ""
             };
+            sb.Append(prop.Name.PadRight(42));
+            sb.Append(": ");
+            sb.AppendLine(text);
         }
+        return sb.ToString();
     }
 
     private static InventorySection? Find(IReadOnlyList<InventorySection> sections, string name)
@@ -121,13 +108,8 @@ public static class Collector
         var raw = Value(section, key);
         if (string.IsNullOrWhiteSpace(raw))
             return null;
-        try
-        {
-            return ManagementDateTimeConverter.ToDateTime(raw);
-        }
-        catch
-        {
-            return DateTime.TryParse(raw, out var d) ? d : null;
-        }
+        return DateTime.TryParseExact(raw, "yyyyMMddHHmmss.000000-000", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var d)
+            ? d
+            : DateTime.TryParse(raw, out var parsed) ? parsed : null;
     }
 }
