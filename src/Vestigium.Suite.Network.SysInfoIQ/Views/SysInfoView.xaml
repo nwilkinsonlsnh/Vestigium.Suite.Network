@@ -325,9 +325,6 @@
                      IsChecked="{Binding EnvironmentOpen}" GroupName="SoftwareSection" Margin="0,0,8,0" />
         <RadioButton Style="{StaticResource RadioButton.HorizontalTab}" Content="SQL"
                      IsChecked="{Binding SqlOpen}" GroupName="SoftwareSection" />
-        <CheckBox Content="Show hidden" IsChecked="{Binding ShowHidden}"
-                  Margin="16,0,0,0" VerticalAlignment="Center"
-                  Visibility="{Binding InstalledOpen, Converter={StaticResource BoolToVis}}" />
       </StackPanel>
 
       <Border Visibility="{Binding InstalledOpen, Converter={StaticResource BoolToVis}}"
