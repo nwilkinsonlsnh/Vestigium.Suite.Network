@@ -4,8 +4,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Win32;
 using Vestigium.Helpers.SystemInfo;
-using Vestigium.Helpers.SystemInfo.Cpu;
-using MemoryInfo = Vestigium.Helpers.SystemInfo.Memory.MemoryFacts;
+using MemoryInfo = Vestigium.Helpers.SystemInfo.MemoryFacts;
 
 namespace Vestigium.Suite.Network.NicIQ.ViewModels;
 
