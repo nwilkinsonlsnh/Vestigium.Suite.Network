@@ -2,7 +2,7 @@ using System.Windows;
 using Vestigium.Helpers.Analytics;
 using Vestigium.Helpers.Charts;
 using Vestigium.Helpers.PerfMon.Memory;
-using MemoryInfo = Vestigium.Helpers.SystemInfo.Memory.MemoryFacts;
+using MemoryInfo = Vestigium.Helpers.SystemInfo.MemoryFacts;
 
 namespace Vestigium.Suite.Network.NicIQ.ViewModels;
 
