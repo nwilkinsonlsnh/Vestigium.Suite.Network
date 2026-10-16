@@ -5,8 +5,8 @@ using Vestigium.Helpers.Network;
 using Vestigium.Helpers.PerfMon.Cpu;
 using Vestigium.Helpers.PerfMon.Memory;
 using Vestigium.Helpers.SystemInfo;
-using CpuInfo = Vestigium.Helpers.SystemInfo.Cpu.CpuFacts;
-using MemoryInfo = Vestigium.Helpers.SystemInfo.Memory.MemoryFacts;
+using CpuInfo = Vestigium.Helpers.SystemInfo.CpuFacts;
+using MemoryInfo = Vestigium.Helpers.SystemInfo.MemoryFacts;
 using PdhNic = Vestigium.Helpers.PerfMon.Network.NetworkInterface;
 
 namespace Vestigium.Suite.Network.NicIQ.ViewModels;
