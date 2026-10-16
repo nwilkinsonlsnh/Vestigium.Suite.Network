@@ -223,7 +223,7 @@ public sealed partial class MainViewModel : ObservableObject
 
             Status("Collecting storage…");
             var storage = await Task.Run(
-                () => StorageCollector.Collect(ct, name => Status($"Storage / {name}")),
+                () => InventoryMap.ToStorage(Vestigium.Helpers.SystemInfo.SystemInventory.ReadStorage()),
                 ct).ConfigureAwait(true);
             foreach (var r in storage.DiskDrives) DiskDrives.Add(r);
             foreach (var r in storage.LogicalDisks) LogicalDisks.Add(r);
@@ -232,7 +232,7 @@ public sealed partial class MainViewModel : ObservableObject
 
             Status("Collecting network…");
             _pendingNetwork = await Task.Run(
-                () => NetworkCollector.Collect(ct, name => Status($"Network / {name}")),
+                () => InventoryMap.ToNetwork(Vestigium.Helpers.SystemInfo.SystemInventory.ReadNetwork()),
                 ct).ConfigureAwait(true);
 
             Status("Collecting security…");
