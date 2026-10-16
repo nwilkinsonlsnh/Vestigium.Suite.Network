@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Folder Include="Vestigium\Suite\Network\WPF\SysInfoIQ\PR-Plans\Completed\" />
     <Folder Include="Vestigium\Suite\Network\WPF\TraceIQ\PR-Plans\Completed\" />
     <None Include="Vestigium\**\*.md" />
     <EmbeddedResource Remove="Vestigium\Suite\Network\WPF\NicIQ\PR-Plans\PR01\**" />
