@@ -237,12 +237,12 @@ public sealed partial class MainViewModel : ObservableObject
 
             Status("Collecting security…");
             _pendingSecurity = await Task.Run(
-                () => SecurityCollector.Collect(ct, name => Status($"Security / {name}")),
+                () => InventoryMap.ToSecurity(Vestigium.Helpers.SystemInfo.SystemInventory.ReadSecurity()),
                 ct).ConfigureAwait(true);
 
             Status("Collecting software…");
             _pendingSoftware = await Task.Run(
-                () => SoftwareCollector.Collect(ct, name => Status($"Software / {name}")),
+                () => InventoryMap.ToSoftware(Vestigium.Helpers.SystemInfo.SystemInventory.ReadSoftware()),
                 ct).ConfigureAwait(true);
 
             if (Category == "Network")
