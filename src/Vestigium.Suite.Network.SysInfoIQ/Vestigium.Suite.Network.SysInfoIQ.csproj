@@ -10,7 +10,6 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Vestigium.Suite.Network.Shell\Vestigium.Suite.Network.Shell.csproj" />
-    <ProjectReference Include="..\..\..\Vestigium.Helpers\src\Vestigium.Helpers.SystemInfo\Vestigium.Helpers.SystemInfo.csproj" />
     <Resource Include="Assets\SysInfoIQ.ico" />
   </ItemGroup>
   <ItemGroup>
@@ -18,6 +17,7 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsDiVersion)" />
     <PackageReference Include="System.Management" Version="9.0.0" />
     <PackageReference Include="System.ServiceProcess.ServiceController" Version="9.0.0" />
+    <PackageReference Include="Vestigium.Helpers.SystemInfo" Version="$(VestigiumSystemInfoVersion)" />
     <PackageReference Include="Vestigium.Themes" Version="$(VestigiumThemesVersion)" />
     <PackageReference Include="Vestigium.Controls" Version="$(VestigiumControlsVersion)" />
     <PackageReference Include="Vestigium.Controls.StatusBar" Version="$(VestigiumStatusBarVersion)" />
