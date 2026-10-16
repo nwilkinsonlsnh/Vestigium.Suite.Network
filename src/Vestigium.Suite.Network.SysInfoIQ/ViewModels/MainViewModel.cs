@@ -24,7 +24,6 @@ public sealed partial class MainViewModel : ObservableObject
     public MainViewModel()
     {
         InstalledView = CollectionViewSource.GetDefaultView(InstalledSoftware);
-        // Always show hidden. Filter removed.
     }
 
     public VestigiumStatusBarViewModel? StatusBar { get; set; }
@@ -394,11 +393,6 @@ public sealed partial class MainViewModel : ObservableObject
         }
     }
 
-    private static string FinishNote(StorageSnapshot storage, NetworkSnapshot network, SecuritySnapshot security, SoftwareSnapshot software)
-    {
-        return "Idle";
-    }
-
     private bool CanCollect() => !IsBusy;
 
     private void Status(string message)
@@ -428,7 +422,7 @@ public sealed partial class MainViewModel : ObservableObject
         var bios = sections.FirstOrDefault(s => s.Name == "BIOS" && !s.IsError);
         var cpu = sections.FirstOrDefault(s => s.Name == "CPU" && !s.IsError);
 
-        var hostname = Value(cs, "DNSHostName") ?? Value(cs, "Name") ?? Environment.MachineName;
+        var hostname = Value(cs, "Hostname") ?? Environment.MachineName;
         var domain = Value(cs, "Domain") ?? "";
         var role = Int(cs, "DomainRole");
         var productType = Int(os, "ProductType");
@@ -436,15 +430,15 @@ public sealed partial class MainViewModel : ObservableObject
         var model = Value(cs, "Model") ?? "";
         var serial = Value(bios, "SerialNumber") ?? "";
         var caption = Value(os, "Caption") ?? "";
-        var arch = Value(os, "OSArchitecture") ?? "";
+        var arch = Value(os, "Architecture") ?? "";
         var version = Value(os, "Version") ?? "";
         var build = Value(os, "BuildNumber") ?? "";
         var install = Date(os, "InstallDate");
         var boot = Date(os, "LastBootUpTime");
         var processor = Value(cpu, "Name")?.Trim() ?? "";
-        var sockets = Int(cs, "NumberOfProcessors");
-        var logical = Int(cs, "NumberOfLogicalProcessors");
-        var memBytes = Long(cs, "TotalPhysicalMemory");
+        var sockets = Int(cs, "Sockets");
+        var logical = Int(cs, "LogicalProcessors");
+        var memBytes = Long(cs, "TotalPhysicalMemoryBytes");
         var memGb = memBytes / 1024d / 1024d / 1024d;
         var user = SummaryFormatter.ShortUser(Value(cs, "UserName"));
         if (string.IsNullOrWhiteSpace(user))
@@ -504,13 +498,8 @@ public sealed partial class MainViewModel : ObservableObject
         var raw = Value(section, key);
         if (string.IsNullOrWhiteSpace(raw))
             return null;
-        try
-        {
-            return System.Management.ManagementDateTimeConverter.ToDateTime(raw);
-        }
-        catch
-        {
-            return DateTime.TryParse(raw, out var d) ? d : null;
-        }
+        return DateTime.TryParseExact(raw, "yyyyMMddHHmmss.000000-000", CultureInfo.InvariantCulture, DateTimeStyles.None, out var d)
+            ? d
+            : DateTime.TryParse(raw, out var parsed) ? parsed : null;
     }
 }
