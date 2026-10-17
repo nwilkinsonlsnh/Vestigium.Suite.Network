@@ -1,6 +1,5 @@
 using System.Collections.ObjectModel;
 using System.Windows.Data;
-using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Vestigium.Helpers.Kql;
@@ -18,7 +17,6 @@ public sealed partial class MainViewModel
     private KqlBoundQuery? _neighborBound;
     private KqlBoundQuery? _connectionBound;
     private RouteIqSession? _queryBook;
-    private bool _filtersArmed;
 
     public RouteIqSession? QueryBook
     {
@@ -53,24 +51,6 @@ public sealed partial class MainViewModel
 
     [ObservableProperty]
     private string _connectionQuery = string.Empty;
-
-    partial void OnRouteQueryChanged(string value) => Arm(_routeDelay);
-
-    partial void OnNeighborQueryChanged(string value) => Arm(_neighborDelay);
-
-    partial void OnConnectionQueryChanged(string value) => Arm(_connectionDelay);
-
-    private void Arm(DispatcherTimer timer)
-    {
-        if (!_filtersArmed)
-        {
-            ArmFilters();
-            _filtersArmed = true;
-        }
-
-        timer.Stop();
-        timer.Start();
-    }
 
     [RelayCommand]
     private void ClearRouteQuery() => RouteQuery = string.Empty;
@@ -151,6 +131,26 @@ public sealed partial class MainViewModel
     {
         if (entry is not null)
             QueryBook?.Remove(entry);
+    }
+
+    public void ApplyRoute()
+    {
+        _routeBound = Compile(RouteQuery, _routeSession);
+        Refresh(Ipv4Routes, RouteFilter);
+        Refresh(Ipv6Routes, RouteFilter);
+    }
+
+    public void ApplyNeighbor()
+    {
+        _neighborBound = Compile(NeighborQuery, _neighborSession);
+        Refresh(Ipv4Neighbors, NeighborFilter);
+        Refresh(Ipv6Neighbors, NeighborFilter);
+    }
+
+    public void ApplyConnection()
+    {
+        _connectionBound = Compile(ConnectionQuery, _connectionSession);
+        Refresh(Connections, ConnectionFilter);
     }
 
     private void Remember(string tab, string text, KqlBoundQuery? bound)
