@@ -17,6 +17,12 @@ public partial class RoutesView : UserControl
 
     private void OnSizeChanged(object sender, SizeChangedEventArgs e) => FitIpv4();
 
+    private void OnRouteFilter(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is MainViewModel host)
+            host.ApplyRoute();
+    }
+
     private void OnRouteCommit(object sender, RoutedEventArgs e)
     {
         if (DataContext is MainViewModel host)
