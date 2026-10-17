@@ -30,6 +30,12 @@ public partial class ConnectionsView : UserControl
     private CustomPopupPlacement[] PlaceLegend(Size popupSize, Size targetSize, Point offset)
         => [new CustomPopupPlacement(new Point(targetSize.Width - popupSize.Width, targetSize.Height + 4), PopupPrimaryAxis.Horizontal)];
 
+    private void OnConnectionFilter(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is MainViewModel host)
+            host.ApplyConnection();
+    }
+
     private void OnConnectionCommit(object sender, RoutedEventArgs e)
     {
         if (DataContext is MainViewModel host)
