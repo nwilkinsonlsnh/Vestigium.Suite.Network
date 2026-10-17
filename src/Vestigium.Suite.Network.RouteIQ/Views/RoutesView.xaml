@@ -23,6 +23,7 @@
                                Queries="{Binding RouteMru}"
                                Limit="{Binding QueryBook.QueryMruLimit}"
                                CloseOnApply="{Binding QueryBook.Current.CloseMruOnApply}"
+                               FilterRequested="OnRouteFilter"
                                LostFocus="OnRouteCommit"
                                PreviewKeyDown="OnRouteKey"
                                PinRequested="OnRoutePin" />
