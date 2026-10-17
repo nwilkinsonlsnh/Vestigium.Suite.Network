@@ -24,7 +24,7 @@
     <VestigiumPerfMonCpuVersion>0.1.2</VestigiumPerfMonCpuVersion>
     <VestigiumPerfMonMemoryVersion>0.1.2</VestigiumPerfMonMemoryVersion>
     <VestigiumSystemInfoVersion>1.2.0</VestigiumSystemInfoVersion>
-    <VestigiumQueryBarVersion>1.0.4</VestigiumQueryBarVersion>
+    <VestigiumQueryBarVersion>1.1.0</VestigiumQueryBarVersion>
     <VestigiumClosedXmlVersion>1.0.1</VestigiumClosedXmlVersion>
     <VestigiumKqlVersion>1.0.4</VestigiumKqlVersion>
     <VestigiumLogParserVersion>1.0.0</VestigiumLogParserVersion>
