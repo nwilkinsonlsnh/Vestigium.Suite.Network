@@ -23,6 +23,7 @@
                                Queries="{Binding NeighborMru}"
                                Limit="{Binding QueryBook.QueryMruLimit}"
                                CloseOnApply="{Binding QueryBook.Current.CloseMruOnApply}"
+                               FilterRequested="OnNeighborFilter"
                                LostFocus="OnNeighborCommit"
                                PreviewKeyDown="OnNeighborKey"
                                PinRequested="OnNeighborPin" />
