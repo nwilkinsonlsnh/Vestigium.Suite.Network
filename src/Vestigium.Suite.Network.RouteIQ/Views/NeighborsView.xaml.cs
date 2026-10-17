@@ -17,6 +17,12 @@ public partial class NeighborsView : UserControl
 
     private void OnSizeChanged(object sender, SizeChangedEventArgs e) => FitIpv4();
 
+    private void OnNeighborFilter(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is MainViewModel host)
+            host.ApplyNeighbor();
+    }
+
     private void OnNeighborCommit(object sender, RoutedEventArgs e)
     {
         if (DataContext is MainViewModel host)
