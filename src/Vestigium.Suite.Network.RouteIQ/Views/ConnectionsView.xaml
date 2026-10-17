@@ -53,6 +53,7 @@
                              Queries="{Binding ConnectionMru}"
                              Limit="{Binding QueryBook.QueryMruLimit}"
                              CloseOnApply="{Binding QueryBook.Current.CloseMruOnApply}"
+                             FilterRequested="OnConnectionFilter"
                              LostFocus="OnConnectionCommit"
                              PreviewKeyDown="OnConnectionKey"
                              PinRequested="OnConnectionPin" />
